@@ -1,2 +1,2 @@
 pub mod red_louse;
-pub mod enemy_kind;
+pub mod enemy_enum;

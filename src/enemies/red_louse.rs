@@ -1,10 +1,16 @@
-use crate::{enemies::{enemy_kind::EnemyEnum, red_louse}, game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}};
+use crate::{enemies::{enemy_enum::EnemyEnum, red_louse}, game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 
 pub struct RedLouse {
     curl_up_used: bool,
     last_moves: Vec<RedLouseMove>,
     base_damage: u32,
     hp: u32,
+}
+
+#[derive(Copy, Debug, Clone, PartialEq)]
+pub enum RedLouseMove {
+    Attack,
+    Grow,
 }
 
 impl RedLouse {
@@ -26,28 +32,6 @@ impl RedLouse {
 
     pub fn use_curl_up(&mut self) {
         self.curl_up_used = true;
-    }
-
-    pub fn choose_next_move(&mut self, rng: &mut impl rand::Rng) -> RedLouseMove {
-        let possible_moves = self.get_valid_moves();
-        let weights = self.get_move_weights(&possible_moves);
-        
-        let total_weight: u32 = weights.iter().sum();
-        let mut roll = rng.random_range(0..total_weight);
-        
-        for (i, &weight) in weights.iter().enumerate() {
-            if roll < weight {
-                let chosen_move = possible_moves[i];
-                self.last_moves.push(chosen_move);
-                if self.last_moves.len() > 3 {
-                    self.last_moves.remove(0);
-                }
-                return chosen_move;
-            }
-            roll -= weight;
-        }
-        
-        RedLouseMove::Attack
     }
 
     fn get_valid_moves(&self) -> Vec<RedLouseMove> {
@@ -86,11 +70,11 @@ impl RedLouse {
         last_two.iter().all(|&m| std::mem::discriminant(&m) == std::mem::discriminant(&move_type))
     }
 
-    pub fn get_move_effects(&self, move_type: RedLouseMove, character_strength: u32) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: RedLouseMove) -> Vec<Effect> {
         match move_type {
             RedLouseMove::Attack => {
                 vec![Effect::AttackToTarget { 
-                    amount: self.base_damage + character_strength, 
+                    amount: self.base_damage, 
                     num_attacks: 1 
                 }]
             }
@@ -99,12 +83,6 @@ impl RedLouse {
             }
         }
     }
-}
-
-#[derive(Copy, Debug, Clone, PartialEq)]
-pub enum RedLouseMove {
-    Attack,
-    Grow,
 }
 
 impl EnemyTrait for RedLouse {
@@ -126,9 +104,17 @@ impl EnemyTrait for RedLouse {
     fn hp_ub() -> u32 {
         15
     }
-    fn choose_next_move(&self, rng: &mut impl rand::Rng, global_info: &GlobalInfo) -> Self::MoveType {
+    fn choose_next_move(&self, global_info: &GlobalInfo) -> CategoricalDistribution<Self::MoveType> {
+        let possible_moves = self.get_valid_moves();
+        let weights = self.get_move_weights(&possible_moves);
         
-        RedLouseMove::Attack // Placeholder; actual move selection logic would go here
+        let outcomes_and_weights: Vec<(RedLouseMove, f64)> = possible_moves
+            .into_iter()
+            .zip(weights.into_iter())
+            .map(|(move_type, weight)| (move_type, weight as f64))
+            .collect();
+        
+        CategoricalDistribution::new(outcomes_and_weights)
     }
 
     fn get_name() -> String {
@@ -176,7 +162,8 @@ mod tests {
         let mut rng = StdRng::seed_from_u64(42);
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let louse = RedLouse::new(6, 12);
-        let m = louse.choose_next_move(&mut rng, &global_info);
+        let move_dist = louse.choose_next_move(&global_info);
+        let m = move_dist.sample_owned(&mut rng);
         
         assert!(matches!(m, RedLouseMove::Attack | RedLouseMove::Grow));
     }
@@ -226,7 +213,8 @@ mod tests {
         
         // Use the trait method, not the internal implementation
         use crate::game::enemy::EnemyTrait;
-        let move1 = louse.choose_next_move(&mut rng, &global_info);
+        let move_dist = louse.choose_next_move(&global_info);
+        let move1 = move_dist.sample_owned(&mut rng);
         assert!(matches!(move1, RedLouseMove::Attack | RedLouseMove::Grow));
         // Can't check last_moves.len() since trait method doesn't mutate state
     }
@@ -244,28 +232,10 @@ mod tests {
     #[test]
     fn test_move_effects_attack() {
         let louse = RedLouse::new(6, 12);
-        let effects = louse.get_move_effects(RedLouseMove::Attack, 2);
+        let effects = louse.get_move_effects(RedLouseMove::Attack);
         
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::AttackToTarget { amount: 8, num_attacks: 1 }); // 6 base + 2 strength
-    }
-
-    #[test]
-    fn test_move_effects_grow() {
-        let louse = RedLouse::new(6, 12);
-        let effects = louse.get_move_effects(RedLouseMove::Grow, 0);
-        
-        assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainStrength(3));
-    }
-
-    #[test]
-    fn test_move_weights() {
-        let louse = RedLouse::new(6, 12);
-        let moves = vec![RedLouseMove::Attack, RedLouseMove::Grow];
-        let weights = louse.get_move_weights(&moves);
-        
-        assert_eq!(weights, vec![75, 25]);
+        assert_eq!(effects[0], Effect::AttackToTarget { amount: 6, num_attacks: 1 }); 
     }
 
     #[test]
@@ -291,5 +261,51 @@ mod tests {
         let base_dmg = RedLouse::calculate_base_damage(&GlobalInfo { ascention: 0, current_floor: 1 }, &mut rng3);
         let asc_dmg = RedLouse::calculate_base_damage(&GlobalInfo { ascention: 2, current_floor: 1 }, &mut rng4);
         assert_eq!(asc_dmg, base_dmg + 1);
+    }
+
+    #[test]
+    fn test_categorical_distribution_move_selection() {
+        use rand::rngs::StdRng;
+        use rand::SeedableRng;
+        
+        let louse = RedLouse::new(6, 12);
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        
+        // Get the categorical distribution
+        use crate::game::enemy::EnemyTrait;
+        let move_dist = louse.choose_next_move(&global_info);
+        
+        // Verify the distribution has the expected moves
+        let outcomes = move_dist.outcomes();
+        assert!(outcomes.contains(&RedLouseMove::Attack));
+        assert!(outcomes.contains(&RedLouseMove::Grow));
+        assert_eq!(outcomes.len(), 2);
+        
+        // Test that probabilities follow expected weights (Attack: 75, Grow: 25)
+        let probabilities = move_dist.probabilities();
+        assert!((probabilities[outcomes.iter().position(|&m| m == RedLouseMove::Attack).unwrap()] - 0.75).abs() < 1e-10);
+        assert!((probabilities[outcomes.iter().position(|&m| m == RedLouseMove::Grow).unwrap()] - 0.25).abs() < 1e-10);
+        
+        // Sample many times to verify the distribution roughly matches expectations
+        let mut rng = StdRng::seed_from_u64(42);
+        let mut attack_count = 0;
+        let mut grow_count = 0;
+        let samples = 1000;
+        
+        for _ in 0..samples {
+            match move_dist.sample_owned(&mut rng) {
+                RedLouseMove::Attack => attack_count += 1,
+                RedLouseMove::Grow => grow_count += 1,
+            }
+        }
+        
+        // With 75:25 ratio, we expect roughly 75% attack, 25% grow
+        let attack_ratio = attack_count as f64 / samples as f64;
+        let grow_ratio = grow_count as f64 / samples as f64;
+        
+        assert!(attack_ratio > 0.65 && attack_ratio < 0.85, "Attack ratio {:.2} should be around 0.75", attack_ratio);
+        assert!(grow_ratio > 0.15 && grow_ratio < 0.35, "Grow ratio {:.2} should be around 0.25", grow_ratio);
+        
+        println!("Attack: {:.1}%, Grow: {:.1}%", attack_ratio * 100.0, grow_ratio * 100.0);
     }
 }

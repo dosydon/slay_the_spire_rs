@@ -1,4 +1,4 @@
-use crate::{enemies::enemy_kind::EnemyEnum, game::{character_battle_info::CharacterBattleInfo, effect::Effect, global_info::GlobalInfo}};
+use crate::{enemies::enemy_enum::EnemyEnum, battle::character_battle_info::CharacterBattleInfo, game::global_info::GlobalInfo, utils::CategoricalDistribution};
 
 pub struct EnemyInGame {
     pub enemy: EnemyEnum,
@@ -27,6 +27,6 @@ pub trait EnemyTrait {
     fn instantiate(rng: &mut impl rand::Rng, _global_info: &GlobalInfo) -> Self;
     fn hp_lb() -> u32;
     fn hp_ub() -> u32;
-    fn choose_next_move(&self, rng: &mut impl rand::Rng, global_info: &GlobalInfo) -> Self::MoveType;
+    fn choose_next_move(&self, global_info: &GlobalInfo) -> CategoricalDistribution<Self::MoveType>;
     fn get_name() -> String;
 }

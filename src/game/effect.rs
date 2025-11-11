@@ -1,4 +1,4 @@
-use crate::game::target::Entity;
+use crate::battle::target::Entity;
 
 
 #[derive(Copy, Debug, Clone, PartialEq)]

@@ -1,4 +1,9 @@
-use crate::{enemies::{red_louse::RedLouse, enemy_kind::EnemyEnum}, game::{action::Action, card::Card, character_battle_info::CharacterBattleInfo, deck::Deck, effect::{Effect, BaseEffect}, enemy::{EnemyInGame, EnemyTrait}, target::Entity, global_info::GlobalInfo}};
+pub mod action;
+pub mod character_battle_info;
+pub mod target;
+
+use crate::{enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum}, game::{card::Card, deck::Deck, effect::BaseEffect, enemy::{EnemyInGame, EnemyTrait}, global_info::GlobalInfo}};
+use self::{action::Action, character_battle_info::CharacterBattleInfo, target::Entity};
 
 #[derive(Debug)]
 pub struct Player {
@@ -12,22 +17,9 @@ impl Player {
         }
     }
 
-//    /// Delegate methods to character
-//    pub fn take_damage(&mut self, damage: u32) -> u32 {
-//        self.character.take_damage(damage)
-//    }
-//
-//    pub fn gain_block(&mut self, amount: u32) {
-//        self.character.gain_block(amount);
-//    }
-//
     pub fn spend_energy(&mut self, amount: u32) -> bool {
         self.battle_info.spend_energy(amount)
     }
-//
-//    pub fn get_hp(&self) -> u32 {
-//        self.battle_info.get_hp()
-//    }
 
     pub fn get_energy(&self) -> u32 {
         self.battle_info.get_energy()
@@ -237,27 +229,17 @@ impl Battle {
     pub fn enemy_turn(&mut self, rng: &mut impl rand::Rng, _global_info: &GlobalInfo) {
         let mut all_effects = Vec::new();
         
-        for enemy in self.enemies.iter_mut() {
-            match &mut enemy.enemy {
+        for (i, enemy) in self.enemies.iter_mut().enumerate() {
+            let source = Entity::Enemy(i);
+            match &enemy.enemy {
                 EnemyEnum::RedLouse(red_louse) => {
-                    let mv = red_louse.choose_next_move(rng);
-                    let effects = red_louse.get_move_effects(mv, enemy.battle_info.get_strength());
+                    use crate::game::enemy::EnemyTrait;
+                    let move_distribution = red_louse.choose_next_move(_global_info);
+                    let mv = move_distribution.sample_owned(rng);
+                    let effects = red_louse.get_move_effects(mv);
                     for effect in effects {
-                        let with_target = match effect {
-                            Effect::AttackToTarget { amount, num_attacks } => {
-                                BaseEffect::AttackToTarget { source: Entity::Enemy(0), target: Entity::Player, amount, num_attacks }
-                            }
-                            Effect::GainStrength(amount) => {
-                                BaseEffect::GainStrength { source: Entity::Enemy(0), amount }
-                            }
-                            Effect::GainDefense(amount) => {
-                                BaseEffect::GainDefense { source: Entity::Enemy(0), amount }
-                            }
-                            Effect::ApplyVulnerable(duration) => {
-                                BaseEffect::ApplyVulnerable { target: Entity::Player, duration }
-                            }
-                        };
-                        all_effects.push(with_target);
+                        let base_effect = BaseEffect::from_effect(effect, source, Entity::Player);
+                        all_effects.push(base_effect);
                     }
                 }
             }
@@ -483,11 +465,6 @@ mod tests {
             // Check enemy took damage (Strike deals 6 damage)
             assert_eq!(battle.enemies[0].battle_info.get_hp(), enemy_hp_before - 6);
         }
-        
-        // === ENEMY TURN ===
-        
-        // Enemy starts turn (should reset their block and status effects)
-        battle.enemies[0].battle_info.refresh();
         
         // Enemy acts (Red Louse will either attack or gain strength)
         let player_hp_before_enemy = battle.player.battle_info.get_hp();
