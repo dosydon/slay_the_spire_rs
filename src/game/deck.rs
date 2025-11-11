@@ -14,6 +14,7 @@ impl Deck {
     
     pub fn draw_card(&mut self) -> Option<Card> {
         self.cards.pop()
+
     }
 
     pub fn add_card(&mut self, card: Card) {

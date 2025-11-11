@@ -83,7 +83,7 @@ impl CharacterBattleInfo {
     }
 
     /// Start of turn - reset block and decrement status effects
-    pub fn start_turn(&mut self) {
+    pub fn refresh(&mut self) {
         self.block = 0;
         if self.vulnerable_turns > 0 {
             self.vulnerable_turns -= 1;
@@ -226,12 +226,12 @@ mod tests {
         character.gain_block(10);
         character.apply_vulnerable(3);
         
-        character.start_turn();
+        character.refresh();
         
         assert_eq!(character.block, 0);
         assert_eq!(character.vulnerable_turns, 2);
         
-        character.start_turn();
+        character.refresh();
         assert_eq!(character.vulnerable_turns, 1);
     }
 

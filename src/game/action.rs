@@ -1,6 +1,6 @@
-use crate::game::target::Target;
+use crate::game::target::Entity;
 
 pub enum Action {
-    PlayCard(usize, Target), // Play a card from hand by its index with a target
+    PlayCard(usize, Entity), // Play a card from hand by its index with a target
     EndTurn,                 // End the current turn
 }

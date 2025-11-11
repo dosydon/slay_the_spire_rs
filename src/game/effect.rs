@@ -1,4 +1,4 @@
-use crate::game::target::Target;
+use crate::game::target::Entity;
 
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -8,50 +8,41 @@ pub enum Effect {
         num_attacks: u32,
     },
     GainDefense (u32),
-    Vulnerable (u32),
+    ApplyVulnerable (u32),
     GainStrength (u32),
 }
 
-impl Effect {
-    pub fn with_target(self, target: Target) -> EffectWithTarget {
-        match self {
-            Effect::AttackToTarget { amount, num_attacks } => {
-                EffectWithTarget::AttackToTarget { target, amount, num_attacks }
-            }
-            Effect::GainDefense(amount) => EffectWithTarget::GainDefense { amount },
-            Effect::Vulnerable(duration) => EffectWithTarget::Vulnerable { duration },
-            Effect::GainStrength(amount) => EffectWithTarget::GainStrength { amount },
-        }
-    }
-}
-
 #[derive(Copy, Debug, Clone, PartialEq)]
-pub enum EffectWithTarget {
+pub enum BaseEffect {
     AttackToTarget {
-        target: Target,
+        source: Entity,
+        target: Entity,
         amount: u32,
         num_attacks: u32,
     },
     GainDefense {
+        source: Entity,
         amount: u32,
     },
-    Vulnerable {
+    ApplyVulnerable {
+        target: Entity,
         duration: u32,
     },
     GainStrength {
+        source: Entity,
         amount: u32,
     },
 }
 
-impl EffectWithTarget {
-    pub fn from_effect(effect: Effect, target: Target) -> Self {
+impl BaseEffect {
+    pub fn from_effect(effect: Effect, source: Entity, target: Entity) -> Self {
         match effect {
             Effect::AttackToTarget { amount, num_attacks } => {
-                EffectWithTarget::AttackToTarget { target, amount, num_attacks }
+                BaseEffect::AttackToTarget { source, target, amount, num_attacks }
             }
-            Effect::GainDefense(amount) => EffectWithTarget::GainDefense { amount },
-            Effect::Vulnerable(duration) => EffectWithTarget::Vulnerable { duration },
-            Effect::GainStrength(amount) => EffectWithTarget::GainStrength { amount },
+            Effect::GainDefense(amount) => BaseEffect::GainDefense { source, amount },
+            Effect::ApplyVulnerable(duration) => BaseEffect::ApplyVulnerable { target, duration },
+            Effect::GainStrength(amount) => BaseEffect::GainStrength { source, amount },
         }
     }
 }
