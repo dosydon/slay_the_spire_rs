@@ -1,0 +1,188 @@
+use crate::game::{card::Card, deck::Deck};
+
+#[derive(Debug, Clone)]
+pub struct DeckHandPile {
+    deck: Deck,
+    hand: Vec<Card>,
+    discard_pile: Vec<Card>,
+}
+
+impl DeckHandPile {
+    pub fn new(initial_deck: Deck) -> Self {
+        let mut deck = initial_deck.clone();
+        let mut hand = Vec::new();
+        
+        // Take the first 5 cards as the initial hand (same logic as initialize_game)
+        for _ in 0..5 {
+            if let Some(card) = deck.draw_card() {
+                hand.push(card);
+            }
+        }
+        
+        DeckHandPile {
+            deck,
+            hand,
+            discard_pile: Vec::new(),
+        }
+    }
+    
+    pub fn draw_card(&mut self) -> Option<Card> {
+        // If deck is empty, shuffle discard pile into deck
+        if self.is_deck_empty() && !self.discard_pile.is_empty() {
+            self.shuffle_discard_into_deck();
+        }
+        
+        // Draw from deck if available
+        if let Some(card) = self.deck.draw_card() {
+            self.hand.push(card.clone());
+            Some(card)
+        } else {
+            None
+        }
+    }
+    
+    pub fn discard_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
+        if hand_index < self.hand.len() {
+            let card = self.hand.remove(hand_index);
+            self.discard_pile.push(card.clone());
+            Some(card)
+        } else {
+            None
+        }
+    }
+    
+    pub fn discard_entire_hand(&mut self) {
+        while !self.hand.is_empty() {
+            let card = self.hand.remove(0);
+            self.discard_pile.push(card);
+        }
+    }
+    
+    pub fn shuffle_discard_into_deck(&mut self) {
+        // Move all cards from discard pile to deck
+        while let Some(card) = self.discard_pile.pop() {
+            self.deck.add_card(card);
+        }
+        
+        // Shuffle the deck
+        let mut rng = rand::rng();
+        self.deck.shuffle(&mut rng);
+    }
+    
+    pub fn add_card_to_hand(&mut self, card: Card) {
+        self.hand.push(card);
+    }
+    
+    pub fn add_card_to_deck(&mut self, card: Card) {
+        self.deck.add_card(card);
+    }
+    
+    pub fn add_card_to_discard(&mut self, card: Card) {
+        self.discard_pile.push(card);
+    }
+    
+    // Play card from hand (removes from hand, returns the card)
+    pub fn play_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
+        if hand_index < self.hand.len() {
+            Some(self.hand.remove(hand_index))
+        } else {
+            None
+        }
+    }
+    
+    // Getters
+    pub fn get_hand(&self) -> &Vec<Card> {
+        &self.hand
+    }
+    
+    pub fn get_deck(&self) -> &Deck {
+        &self.deck
+    }
+    
+    pub fn get_discard_pile(&self) -> &Vec<Card> {
+        &self.discard_pile
+    }
+    
+    pub fn hand_size(&self) -> usize {
+        self.hand.len()
+    }
+    
+    pub fn deck_size(&self) -> usize {
+        self.deck.size()
+    }
+    
+    pub fn discard_pile_size(&self) -> usize {
+        self.discard_pile.len()
+    }
+    
+    pub fn total_cards(&self) -> usize {
+        self.hand.len() + self.deck.size() + self.discard_pile.len()
+    }
+    
+    // Helper methods
+    fn is_deck_empty(&self) -> bool {
+        self.deck.is_empty()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::cards::ironclad::{strike::strike, defend::defend};
+
+    #[test]
+    fn test_deck_hand_pile_creation() {
+        let cards = vec![strike(), defend(), strike(), defend(), strike()];
+        let deck = Deck::new(cards);
+        let original_deck_size = deck.size();
+        let deck_hand_pile = DeckHandPile::new(deck.clone());
+        
+        // Initial hand should have 5 cards, deck should be empty, discard empty
+        assert_eq!(deck_hand_pile.hand_size(), 5);
+        assert_eq!(deck_hand_pile.deck_size(), 0);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 0);
+        assert_eq!(deck_hand_pile.total_cards(), original_deck_size);
+        
+        // Original deck should be unchanged
+        assert_eq!(deck.size(), original_deck_size);
+    }
+    
+    #[test]
+    fn test_discard_card() {
+        let cards = vec![strike(), defend(), strike()];
+        let deck = Deck::new(cards);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+        
+        // Discard a card from hand
+        let discarded = deck_hand_pile.discard_card_from_hand(0);
+        assert!(discarded.is_some());
+        assert_eq!(deck_hand_pile.hand_size(), 2);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 1);
+    }
+    
+    #[test]
+    fn test_play_card() {
+        let cards = vec![strike(), defend(), strike()];
+        let deck = Deck::new(cards);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+        
+        let initial_hand_size = deck_hand_pile.hand_size();
+        let played_card = deck_hand_pile.play_card_from_hand(0);
+        
+        assert!(played_card.is_some());
+        assert_eq!(deck_hand_pile.hand_size(), initial_hand_size - 1);
+        // Playing a card doesn't put it in discard pile automatically
+        assert_eq!(deck_hand_pile.discard_pile_size(), 0);
+    }
+    
+    #[test]
+    fn test_discard_hand() {
+        let cards = vec![strike(), defend(), strike(), defend(), strike()];
+        let deck = Deck::new(cards);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+        
+        deck_hand_pile.discard_entire_hand();
+        assert_eq!(deck_hand_pile.hand_size(), 0);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 5);
+    }
+}

@@ -3,14 +3,11 @@ pub mod character_battle_info;
 pub mod target;
 pub mod events;
 pub mod listeners;
+pub mod player;
+pub mod deck_hand_pile;
 
-use crate::{enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum}, game::{card::Card, deck::Deck, effect::BaseEffect, enemy::{EnemyInGame, EnemyTrait}, global_info::GlobalInfo, player::Player}};
-use self::{action::Action, target::Entity, events::{BattleEvent, EventListener}};
-
-pub enum Phase {
-    MainPhase,
-    SelectEnemyPhase,
-}
+use crate::{enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum}, game::{card::Card, deck::Deck, effect::BaseEffect, enemy::{EnemyInGame, EnemyTrait}, global_info::GlobalInfo}};
+use self::{action::Action, target::Entity, events::{BattleEvent, EventListener}, player::Player, deck_hand_pile::DeckHandPile};
 
 pub enum GameError {
     InvalidAction,
@@ -21,15 +18,13 @@ pub enum GameError {
 pub struct Battle {
     player: Player,
     enemies: Vec<EnemyInGame>,
-    hand: Vec<Card>,
-    deck: Deck,
-    phase: Phase,
+    cards: DeckHandPile,
     event_listeners: Vec<Box<dyn EventListener>>,
 }
 
 impl Battle {
     pub fn new(deck: Deck, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Self {
-        let (deck, hand) = deck.initialize_game();
+        let cards = DeckHandPile::new(deck);
         let mut battle = Battle {
             player: Player::new(80, 3),
             enemies: vec![{
@@ -37,9 +32,7 @@ impl Battle {
                 let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
                 EnemyInGame::new(EnemyEnum::RedLouse(red_louse), hp)
             }],
-            hand: hand,
-            deck,
-            phase: Phase::MainPhase,
+            cards,
             event_listeners: Vec::new(),
         };
         
@@ -96,12 +89,9 @@ impl Battle {
     }
     
     pub fn get_hand(&self) -> &Vec<Card> {
-        &self.hand
+        self.cards.get_hand()
     }
     
-    pub fn get_phase(&self) -> &Phase {
-        &self.phase
-    }
     
     pub fn is_battle_over(&self) -> bool {
         !self.player.is_alive() || self.enemies.iter().all(|e| !e.battle_info.is_alive())
@@ -118,7 +108,7 @@ impl Battle {
     pub fn eval_action(&mut self, action: Action) {
         match action {
             Action::PlayCard(idx, target) => {
-                if idx < self.hand.len() && self.is_valid_target(&target) {
+                if idx < self.cards.hand_size() && self.is_valid_target(&target) {
                     self.play_card(idx, target);
                 }
             }
@@ -126,25 +116,21 @@ impl Battle {
                 // End turn functionality will be handled externally 
                 // or through a separate game loop manager
             }
-//            Action::SelectEnemy(idx) => {
-//                if idx < self.enemies.len() {
-//                    self.select_enemy(idx);
-//                }
-//            }
         }
     }
 
     pub fn play_card(&mut self, idx: usize, target: Entity) {
-        if idx >= self.hand.len() { return; }
+        if idx >= self.cards.hand_size() { return; }
         
-        let card = &self.hand[idx];
+        let hand = self.cards.get_hand();
+        let card = &hand[idx];
         if !self.player.spend_energy(card.get_cost()) { return; }
         
         let card_effects = card.get_effects().clone();
-        self.hand.remove(idx);
-        
-        for effect in card_effects {
-            self.eval_effect_with_target(&BaseEffect::from_effect(effect, Entity::Player, target));
+        if let Some(played_card) = self.cards.play_card_from_hand(idx) {
+            for effect in card_effects {
+                self.eval_effect_with_target(&BaseEffect::from_effect(effect, Entity::Player, target));
+            }
         }
     }
     
@@ -281,8 +267,8 @@ mod tests {
         assert_eq!(battle.player.get_energy(), 3);
         assert!(!battle.enemies.is_empty());
         
-        println!("{:?}", battle.deck);
-        println!("{:?}", battle.hand);
+        println!("{:?}", battle.cards.get_deck());
+        println!("{:?}", battle.cards.get_hand());
     }
 
     #[test]
@@ -316,7 +302,7 @@ mod tests {
         let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
         
         // Find a Strike card in the hand
-        let strike_idx = battle.hand.iter().position(|card| card.get_name() == "Strike");
+        let strike_idx = battle.cards.get_hand().iter().position(|card| card.get_name() == "Strike");
         
         if let Some(idx) = strike_idx {
             // Play the Strike card targeting enemy 0
@@ -456,13 +442,13 @@ mod tests {
         assert_eq!(battle.player.get_block(), 0); // Block reset
         
         // Player plays a Defend card (should give 5 block)
-        let defend_idx = battle.hand.iter().position(|card| card.get_name() == "Defend");
+        let defend_idx = battle.cards.get_hand().iter().position(|card| card.get_name() == "Defend");
         if let Some(idx) = defend_idx {
-            let hand_size_before = battle.hand.len();
+            let hand_size_before = battle.cards.hand_size();
             battle.play_card(idx, Entity::Player);
             
             // Check card was played
-            assert_eq!(battle.hand.len(), hand_size_before - 1);
+            assert_eq!(battle.cards.hand_size(), hand_size_before - 1);
             // Check energy was spent (Defend costs 1)
             assert_eq!(battle.player.get_energy(), 2);
             // Check block was gained (Defend gives 5 block)
@@ -470,7 +456,7 @@ mod tests {
         }
         
         // Player plays a Strike card targeting enemy
-        let strike_idx = battle.hand.iter().position(|card| card.get_name() == "Strike");
+        let strike_idx = battle.cards.get_hand().iter().position(|card| card.get_name() == "Strike");
         if let Some(idx) = strike_idx {
             let enemy_hp_before = battle.enemies[0].battle_info.get_hp();
             battle.play_card(idx, Entity::Enemy(0));

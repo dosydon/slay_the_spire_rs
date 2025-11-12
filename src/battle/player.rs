@@ -1,4 +1,4 @@
-use crate::battle::character_battle_info::CharacterBattleInfo;
+use super::character_battle_info::CharacterBattleInfo;
 
 #[derive(Debug)]
 pub struct Player {

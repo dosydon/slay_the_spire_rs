@@ -37,17 +37,12 @@ impl Deck {
         self.cards.shuffle(rng);
     }
 
-    pub fn initialize_game(&self) -> (Deck, Vec<Card>) {
-        let mut deck = self.clone();
-        let mut hand = Vec::new();
-
-        // Take the first 5 cards as the initial hand (deterministic order)
-        for _ in 0..5 {
-            if let Some(card) = deck.draw_card() {
-                hand.push(card);
-            }
-        }
-
-        (deck, hand)
+    
+    pub fn size(&self) -> usize {
+        self.cards.len()
+    }
+    
+    pub fn is_empty(&self) -> bool {
+        self.cards.is_empty()
     }
 }
