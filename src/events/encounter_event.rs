@@ -3,6 +3,7 @@ use crate::enemies::EnemyEnum;
 
 pub enum EncounterEvent {
     TwoLouses,
+    JawWorm
 }
 
 impl EncounterEvent {
@@ -30,6 +31,55 @@ impl EncounterEvent {
                 };
                 
                 vec![louse1, louse2]
+            }
+            EncounterEvent::JawWorm => {
+                let jaw_worm = crate::enemies::jaw_worm::JawWorm::instantiate(rng, global_info);
+                vec![EnemyEnum::JawWorm(jaw_worm)]
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::game::global_info::GlobalInfo;
+
+    #[test]
+    fn test_jaw_worm_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        
+        let encounter = EncounterEvent::JawWorm;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+        
+        assert_eq!(enemies.len(), 1);
+        
+        match &enemies[0] {
+            EnemyEnum::JawWorm(_) => {
+                // Success - we got a JawWorm
+            }
+            _ => panic!("Expected JawWorm enemy"),
+        }
+    }
+
+    #[test]
+    fn test_two_louses_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        
+        let encounter = EncounterEvent::TwoLouses;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+        
+        assert_eq!(enemies.len(), 2);
+        
+        // Both should be louses (either red or green)
+        for enemy in &enemies {
+            match enemy {
+                EnemyEnum::RedLouse(_) | EnemyEnum::GreenLouse(_) => {
+                    // Success - we got a louse
+                }
+                _ => panic!("Expected RedLouse or GreenLouse enemy"),
             }
         }
     }
