@@ -1,3 +1,3 @@
-pub mod battle_event;
+pub mod encounter_event;
 
-pub use battle_event::BattleEvent;
+pub use encounter_event::EncounterEvent;

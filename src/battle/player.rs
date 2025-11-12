@@ -6,9 +6,9 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(hp: u32, energy: u32) -> Self {
+    pub fn new(current_hp: u32, max_hp: u32, energy: u32) -> Self {
         Player {
-            battle_info: CharacterBattleInfo::new(hp, energy),
+            battle_info: CharacterBattleInfo::new(current_hp, max_hp, energy),
         }
     }
 

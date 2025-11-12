@@ -5,9 +5,11 @@ pub mod events;
 pub mod listeners;
 pub mod player;
 pub mod deck_hand_pile;
+pub mod enemy_in_battle;
 
-use crate::{enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum}, game::{card::Card, deck::Deck, effect::BaseEffect, enemy::{EnemyInGame, EnemyTrait}, global_info::GlobalInfo}};
-use self::{action::Action, target::Entity, events::{BattleEvent, EventListener}, player::Player, deck_hand_pile::DeckHandPile};
+use crate::{enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum}, game::{card::Card, deck::Deck, effect::BaseEffect, enemy::EnemyTrait, global_info::GlobalInfo}};
+use self::{action::Action, target::Entity, events::{BattleEvent, EventListener}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
+use rand::Rng;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BattleError {
@@ -27,22 +29,18 @@ pub enum BattleResult {
 
 pub struct Battle {
     player: Player,
-    enemies: Vec<EnemyInGame>,
+    enemies: Vec<EnemyInBattle>,
     cards: DeckHandPile,
     event_listeners: Vec<Box<dyn EventListener>>,
     global_info: GlobalInfo,
 }
 
 impl Battle {
-    pub fn new(deck: Deck, global_info: GlobalInfo, rng: &mut impl rand::Rng) -> Self {
+    pub fn new(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, rng: &mut impl rand::Rng) -> Self {
         let cards = DeckHandPile::new(deck);
         let mut battle = Battle {
-            player: Player::new(80, 3),
-            enemies: vec![{
-                let red_louse = RedLouse::instantiate(rng, &global_info);
-                let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-                EnemyInGame::new(EnemyEnum::RedLouse(red_louse), hp)
-            }],
+            player: Player::new(initial_hp, max_hp, 3),
+            enemies,
             cards,
             event_listeners: Vec::new(),
             global_info,
@@ -51,6 +49,11 @@ impl Battle {
         // Initialize event listeners for enemies
         battle.initialize_enemy_listeners(&global_info, rng);
         battle
+    }
+    
+    /// Get the final HP after battle for syncing back to Game
+    pub fn get_final_player_hp(&self) -> u32 {
+        self.player.battle_info.get_hp()
     }
     
     /// Initialize event listeners for enemies based on their type
@@ -63,6 +66,14 @@ impl Battle {
                     // Red Louse gets a curl up listener with randomly generated block amount
                     let curl_up = CurlUpListener::new(Entity::Enemy(i), global_info.ascention, rng);
                     self.event_listeners.push(Box::new(curl_up));
+                }
+                EnemyEnum::GreenLouse(_) => {
+                    // Green Louse also gets a curl up listener with randomly generated block amount
+                    let curl_up = CurlUpListener::new(Entity::Enemy(i), global_info.ascention, rng);
+                    self.event_listeners.push(Box::new(curl_up));
+                }
+                EnemyEnum::JawWorm(_) => {
+                    // Jaw Worm has no special listeners
                 }
             }
         }
@@ -96,7 +107,7 @@ impl Battle {
         self.player.start_turn();
     }
     
-    pub fn get_enemies(&self) -> &Vec<EnemyInGame> {
+    pub fn get_enemies(&self) -> &Vec<EnemyInBattle> {
         &self.enemies
     }
     
@@ -202,6 +213,17 @@ impl Battle {
                     Entity::Enemy(idx) => {
                         if *idx < self.enemies.len() {
                             self.enemies[*idx].battle_info.apply_vulnerable(*duration);
+                        }
+                    },
+                    Entity::None => {} // No target
+                }
+            },
+            BaseEffect::ApplyWeak { target, duration } => {
+                match target {
+                    Entity::Player => self.player.battle_info.apply_weak(*duration),
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            self.enemies[*idx].battle_info.apply_weak(*duration);
                         }
                     },
                     Entity::None => {} // No target
@@ -321,7 +343,10 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let battle = Battle::new(deck, global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         assert_eq!(battle.player.battle_info.get_hp(), 80);
         assert_eq!(battle.player.get_block(), 0);
         assert_eq!(battle.player.get_energy(), 3);
@@ -336,7 +361,10 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
         let damage_effect = BaseEffect::AttackToTarget {
@@ -356,7 +384,10 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         let initial_energy = battle.player.get_energy();
         let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
@@ -383,7 +414,10 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Apply vulnerable to enemy
         let vulnerable_effect = BaseEffect::ApplyVulnerable { target: Entity::Enemy(0), duration: 2 };
@@ -414,7 +448,10 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Give enemy some block
         battle.enemies[0].battle_info.gain_block(5);
@@ -441,7 +478,10 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         let initial_hp = battle.player.battle_info.get_hp();
         
@@ -463,7 +503,10 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Give player some strength
         battle.player.battle_info.gain_strength(3);
@@ -488,7 +531,10 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Record initial state
         let initial_player_hp = battle.player.battle_info.get_hp();
@@ -567,7 +613,10 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Initially enemy should have 0 block
         assert_eq!(battle.enemies[0].battle_info.get_block(), 0);
@@ -604,21 +653,30 @@ mod tests {
         
         // Test normal ascension (0-6): should give 3-7 block
         let normal_global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut normal_battle = Battle::new(deck.clone(), normal_global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &normal_global_info);
+        let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+        let mut normal_battle = Battle::new(deck.clone(), normal_global_info, 80, 80, enemies, &mut rng);
         normal_battle.apply_damage(Entity::Enemy(0), 6);
         let normal_block = normal_battle.enemies[0].battle_info.get_block();
         assert!(normal_block >= 3 && normal_block <= 7);
         
         // Test mid ascension (7-16): should give 4-8 block
         let mid_global_info = GlobalInfo { ascention: 10, current_floor: 1 };
-        let mut mid_battle = Battle::new(deck.clone(), mid_global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &mid_global_info);
+        let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+        let mut mid_battle = Battle::new(deck.clone(), mid_global_info, 80, 80, enemies, &mut rng);
         mid_battle.apply_damage(Entity::Enemy(0), 6);
         let mid_block = mid_battle.enemies[0].battle_info.get_block();
         assert!(mid_block >= 4 && mid_block <= 8);
         
         // Test high ascension (17+): should give 9-12 block
         let high_global_info = GlobalInfo { ascention: 17, current_floor: 1 };
-        let mut high_battle = Battle::new(deck, high_global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &high_global_info);
+        let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+        let mut high_battle = Battle::new(deck, high_global_info, 80, 80, enemies, &mut rng);
         high_battle.apply_damage(Entity::Enemy(0), 6);
         let high_block = high_battle.enemies[0].battle_info.get_block();
         assert!(high_block >= 9 && high_block <= 12);

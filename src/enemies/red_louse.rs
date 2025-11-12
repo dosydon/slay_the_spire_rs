@@ -1,4 +1,5 @@
 use crate::{enemies::{enemy_enum::EnemyEnum, red_louse}, game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use rand::Rng;
 
 #[derive(Clone)]
 pub struct RedLouse {
@@ -402,7 +403,10 @@ mod tests {
         let deck = Deck::new(deck_cards);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, global_info, &mut rng);
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
+        let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::enemy_enum::EnemyEnum::RedLouse(red_louse), hp)];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         println!("=== FIXED HAND BATTLE TEST ===");
         println!("Initial hand:");
