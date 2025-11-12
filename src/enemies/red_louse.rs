@@ -1,7 +1,7 @@
 use crate::{enemies::{enemy_enum::EnemyEnum, red_louse}, game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 
+#[derive(Clone)]
 pub struct RedLouse {
-    curl_up_used: bool,
     last_moves: Vec<RedLouseMove>,
     base_damage: u32,
     hp: u32,
@@ -16,7 +16,6 @@ pub enum RedLouseMove {
 impl RedLouse {
     pub fn new(base_damage: u32, hp: u32) -> Self {
         RedLouse { 
-            curl_up_used: false,
             last_moves: Vec::new(),
             base_damage,
             hp,
@@ -30,9 +29,6 @@ impl RedLouse {
         base_damage_roll + ascension_bonus
     }
 
-    pub fn use_curl_up(&mut self) {
-        self.curl_up_used = true;
-    }
 
     fn get_valid_moves(&self) -> Vec<RedLouseMove> {
         let mut valid_moves = Vec::new();
@@ -70,6 +66,14 @@ impl RedLouse {
         last_two.iter().all(|&m| std::mem::discriminant(&m) == std::mem::discriminant(&move_type))
     }
 
+    fn record_move(&mut self, move_type: RedLouseMove) {
+        self.last_moves.push(move_type);
+        // Keep only the last 3 moves to prevent unbounded growth
+        if self.last_moves.len() > 3 {
+            self.last_moves.remove(0);
+        }
+    }
+
     pub fn get_move_effects(&self, move_type: RedLouseMove) -> Vec<Effect> {
         match move_type {
             RedLouseMove::Attack => {
@@ -82,6 +86,19 @@ impl RedLouse {
                 vec![Effect::GainStrength(3)]
             }
         }
+    }
+
+    /// Choose effects directly, sampling a move and recording it
+    /// This combines move selection, effect generation, and move tracking into one step
+    pub fn choose_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Vec<Effect> {
+        let move_distribution = self.choose_next_move(global_info);
+        let selected_move = move_distribution.sample_owned(rng);
+        
+        // Record the move for consecutive move tracking
+        self.record_move(selected_move);
+        
+        // Generate and return the effects for this move
+        self.get_move_effects(selected_move)
     }
 }
 
@@ -129,17 +146,7 @@ mod tests {
     #[test]
     fn test_red_louse_creation() {
         let louse = RedLouse::new(6, 12);
-        assert!(!louse.curl_up_used);
         assert!(louse.last_moves.is_empty());
-    }
-
-    #[test]
-    fn test_curl_up_usage() {
-        let mut louse = RedLouse::new(6, 12);
-        assert!(!louse.curl_up_used);
-        
-        louse.use_curl_up();
-        assert!(louse.curl_up_used);
     }
 
     #[test]
@@ -307,5 +314,191 @@ mod tests {
         assert!(grow_ratio > 0.15 && grow_ratio < 0.35, "Grow ratio {:.2} should be around 0.25", grow_ratio);
         
         println!("Attack: {:.1}%, Grow: {:.1}%", attack_ratio * 100.0, grow_ratio * 100.0);
+    }
+
+    #[test]
+    fn test_choose_effects_records_moves() {
+        let mut louse = RedLouse::new(6, 12);
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        
+        assert!(louse.last_moves.is_empty());
+        
+        // Choose effects should record the selected move
+        let effects = louse.choose_effects(&global_info, &mut rng);
+        
+        // Should have recorded one move
+        assert_eq!(louse.last_moves.len(), 1);
+        
+        // Effects should match the recorded move
+        let recorded_move = louse.last_moves[0];
+        let expected_effects = louse.get_move_effects(recorded_move);
+        assert_eq!(effects, expected_effects);
+    }
+
+    #[test]
+    fn test_choose_effects_respects_consecutive_rule() {
+        let mut louse = RedLouse::new(6, 12);
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        
+        // Force two consecutive attacks by manipulating the last_moves
+        louse.last_moves = vec![RedLouseMove::Attack, RedLouseMove::Attack];
+        
+        // Choose effects - should not get three attacks in a row
+        let effects = louse.choose_effects(&global_info, &mut rng);
+        
+        // Should have chosen Grow (since Attack would violate consecutive rule)
+        assert_eq!(effects, vec![Effect::GainStrength(3)]);
+        assert_eq!(louse.last_moves.last().unwrap(), &RedLouseMove::Grow);
+    }
+
+    #[test]
+    fn test_choose_effects_attack() {
+        let mut louse = RedLouse::new(8, 12);
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        
+        // Force the louse to choose attack by making grow invalid
+        louse.last_moves = vec![RedLouseMove::Grow, RedLouseMove::Grow];
+        
+        let effects = louse.choose_effects(&global_info, &mut rng);
+        
+        // Should have chosen Attack
+        assert_eq!(effects, vec![Effect::AttackToTarget { amount: 8, num_attacks: 1 }]);
+        assert_eq!(louse.last_moves.last().unwrap(), &RedLouseMove::Attack);
+    }
+
+    #[test] 
+    fn test_choose_effects_grow() {
+        let mut louse = RedLouse::new(6, 12);
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        
+        // Force the louse to choose grow by making attack invalid
+        louse.last_moves = vec![RedLouseMove::Attack, RedLouseMove::Attack];
+        
+        let effects = louse.choose_effects(&global_info, &mut rng);
+        
+        // Should have chosen Grow
+        assert_eq!(effects, vec![Effect::GainStrength(3)]);
+        assert_eq!(louse.last_moves.last().unwrap(), &RedLouseMove::Grow);
+    }
+
+    #[test]
+    fn test_red_louse_two_turn_battle_fixed_hand() {
+        use crate::{battle::Battle, battle::action::Action, battle::target::Entity, game::deck::Deck};
+        use crate::cards::ironclad::{strike::strike, defend::defend, bash::bash};
+        
+        // Create a deck with specific card order for initial hand
+        // Since draw_card() takes from index 0, we put desired hand cards at the beginning
+        let mut deck_cards = vec![
+            // These will be the initial hand (first 5 cards, drawn in order)
+            strike(), strike(), strike(), defend(), defend(),
+            // Remaining cards in deck
+            strike(), strike(), bash(), defend(), defend(),
+        ];
+        
+        let deck = Deck::new(deck_cards);
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let mut battle = Battle::new(deck, &global_info, &mut rng);
+        
+        println!("=== FIXED HAND BATTLE TEST ===");
+        println!("Initial hand:");
+        for (i, card) in battle.get_hand().iter().enumerate() {
+            println!("  {}: {} (cost: {})", i, card.get_name(), card.get_cost());
+        }
+        
+        // Verify we have the expected hand (first 5 cards from deck: Strike, Strike, Strike, Strike, Defend)
+        let hand = battle.get_hand();
+        assert!(hand.len() >= 3);
+        assert_eq!(hand[0].get_name(), "Strike");
+        assert_eq!(hand[1].get_name(), "Strike"); 
+        assert_eq!(hand[2].get_name(), "Strike");
+        
+        let initial_player_hp = battle.get_player().battle_info.get_hp();
+        let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
+        
+        println!("Initial state - Player HP: {}, Enemy HP: {}, Player Energy: {}", 
+            initial_player_hp, initial_enemy_hp, battle.get_player().get_energy());
+        
+        // === TURN 1: PLAYER ===
+        println!("\n--- Turn 1: Player ---");
+        
+        // Play Strike (card index 0, targeting enemy)
+        println!("Playing Strike targeting enemy");
+        let action = Action::PlayCard(0, Entity::Enemy(0));
+        battle.eval_action(action);
+        println!("After Strike - Enemy HP: {}, Player Energy: {}", 
+            battle.get_enemies()[0].battle_info.get_hp(), battle.get_player().get_energy());
+        
+        // Play first Defend (at index 3, targeting self)
+        println!("Playing first Defend");
+        let action = Action::PlayCard(3, Entity::Player);
+        battle.eval_action(action);
+        println!("After first Defend - Player Block: {}, Player Energy: {}", 
+            battle.get_player().get_block(), battle.get_player().get_energy());
+        
+        // Play second Defend (now at index 2 after first was removed, targeting self)
+        println!("Playing second Defend");
+        let action = Action::PlayCard(2, Entity::Player);
+        battle.eval_action(action);
+        println!("After second Defend - Player Block: {}, Player Energy: {}", 
+            battle.get_player().get_block(), battle.get_player().get_energy());
+        
+        let enemy_hp_after_turn1 = battle.get_enemies()[0].battle_info.get_hp();
+        let player_damage_dealt = initial_enemy_hp - enemy_hp_after_turn1;
+        
+        println!("Turn 1 complete - Damage dealt to enemy: {}, Player block: {}", 
+            player_damage_dealt, battle.get_player().get_block());
+        
+        // Verify expected outcomes for turn 1
+        assert_eq!(player_damage_dealt, 6, "Strike should deal 6 damage");
+        assert_eq!(battle.get_player().get_block(), 10, "Two Defends should give 10 block total");
+        assert_eq!(battle.get_player().get_energy(), 0, "Should have spent all 3 energy");
+        
+        // === TURN 1: ENEMY ===
+        println!("\n--- Turn 1: Enemy ---");
+        
+        battle.enemy_turn(&mut rng, &global_info);
+        
+        // End of turn 1 - refresh
+        battle.refresh_all();
+        battle.start_player_turn();
+        
+        println!("End of Turn 1 - Player HP: {}, Enemy HP: {}, Enemy Strength: {}", 
+            battle.get_player().battle_info.get_hp(), 
+            battle.get_enemies()[0].battle_info.get_hp(),
+            battle.get_enemies()[0].battle_info.get_strength());
+        
+        // === TURN 2: PLAYER ===
+        println!("\n--- Turn 2: Player ---");
+        
+        // Play one Strike (at index 0)
+        let cards_in_hand = battle.get_hand().len();
+        println!("Cards in hand: {}", cards_in_hand);
+        
+        println!("Playing Strike (cost: 1)");
+        let action = Action::PlayCard(0, Entity::Enemy(0));
+        battle.eval_action(action);
+        println!("Turn 2 Player: 1 Strike played");
+        
+        // === TURN 2: ENEMY ===
+        println!("\n--- Turn 2: Enemy ---");
+        let player_hp_before_enemy2 = battle.get_player().battle_info.get_hp();
+        let enemy_strength_before2 = battle.get_enemies()[0].battle_info.get_strength();
+        
+        battle.enemy_turn(&mut rng, &global_info);
+        
+        // Verify battle mechanics worked as expected
+        assert!(battle.get_player().is_alive(), "Player should still be alive after 2 turns");
+        
+        // Verify damage was dealt during the battle
+        let total_damage = (initial_player_hp - battle.get_player().battle_info.get_hp()) +
+                          (initial_enemy_hp - battle.get_enemies()[0].battle_info.get_hp());
+        assert!(total_damage > 0, "Some damage should have been dealt during the battle");
+        
+        println!("Fixed hand battle test completed successfully!");
     }
 }

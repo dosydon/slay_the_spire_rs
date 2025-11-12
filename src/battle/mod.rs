@@ -1,51 +1,11 @@
 pub mod action;
 pub mod character_battle_info;
 pub mod target;
+pub mod events;
+pub mod listeners;
 
-use crate::{enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum}, game::{card::Card, deck::Deck, effect::BaseEffect, enemy::{EnemyInGame, EnemyTrait}, global_info::GlobalInfo}};
-use self::{action::Action, character_battle_info::CharacterBattleInfo, target::Entity};
-
-#[derive(Debug)]
-pub struct Player {
-    pub battle_info: CharacterBattleInfo,
-}
-
-impl Player {
-    pub fn new(hp: u32, energy: u32) -> Self {
-        Player {
-            battle_info: CharacterBattleInfo::new(hp, energy),
-        }
-    }
-
-    pub fn spend_energy(&mut self, amount: u32) -> bool {
-        self.battle_info.spend_energy(amount)
-    }
-
-    pub fn get_energy(&self) -> u32 {
-        self.battle_info.get_energy()
-    }
-
-    pub fn get_block(&self) -> u32 {
-        self.battle_info.get_block()
-    }
-
-    pub fn apply_vulnerable(&mut self, turns: u32) {
-        self.battle_info.apply_vulnerable(turns);
-    }
-
-    pub fn is_vulnerable(&self) -> bool {
-        self.battle_info.is_vulnerable()
-    }
-    pub fn start_turn(&mut self) {
-        self.battle_info.refresh();
-        // Player gets 3 energy at start of turn
-        self.battle_info.energy = 3;
-    }
-
-    pub fn is_alive(&self) -> bool {
-        self.battle_info.is_alive()
-    }
-}
+use crate::{enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum}, game::{card::Card, deck::Deck, effect::BaseEffect, enemy::{EnemyInGame, EnemyTrait}, global_info::GlobalInfo, player::Player}};
+use self::{action::Action, target::Entity, events::{BattleEvent, EventListener}};
 
 pub enum Phase {
     MainPhase,
@@ -64,12 +24,13 @@ pub struct Battle {
     hand: Vec<Card>,
     deck: Deck,
     phase: Phase,
+    event_listeners: Vec<Box<dyn EventListener>>,
 }
 
 impl Battle {
     pub fn new(deck: Deck, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Self {
-        let (deck, hand) = deck.initialize_game(rng);
-        Battle {
+        let (deck, hand) = deck.initialize_game();
+        let mut battle = Battle {
             player: Player::new(80, 3),
             enemies: vec![{
                 let red_louse = RedLouse::instantiate(rng, global_info);
@@ -79,11 +40,55 @@ impl Battle {
             hand: hand,
             deck,
             phase: Phase::MainPhase,
+            event_listeners: Vec::new(),
+        };
+        
+        // Initialize event listeners for enemies
+        battle.initialize_enemy_listeners(global_info, rng);
+        battle
+    }
+    
+    /// Initialize event listeners for enemies based on their type
+    fn initialize_enemy_listeners(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) {
+        use crate::battle::listeners::CurlUpListener;
+        
+        for (i, enemy) in self.enemies.iter().enumerate() {
+            match &enemy.enemy {
+                EnemyEnum::RedLouse(_) => {
+                    // Red Louse gets a curl up listener with randomly generated block amount
+                    let curl_up = CurlUpListener::new(Entity::Enemy(i), global_info.ascention, rng);
+                    self.event_listeners.push(Box::new(curl_up));
+                }
+            }
+        }
+    }
+    
+    /// Emit a battle event to all listeners
+    pub fn emit_event(&mut self, event: BattleEvent) {
+        let mut effects_to_apply = Vec::new();
+        
+        for listener in &mut self.event_listeners {
+            if listener.is_active() {
+                let triggered_effects = listener.on_event(&event);
+                for effect in triggered_effects {
+                    let base_effect = BaseEffect::from_effect(effect, listener.get_owner(), listener.get_owner());
+                    effects_to_apply.push(base_effect);
+                }
+            }
+        }
+        
+        // Apply all triggered effects
+        for effect in effects_to_apply {
+            self.eval_effect_with_target(&effect);
         }
     }
     
     pub fn get_player(&self) -> &Player {
         &self.player
+    }
+    
+    pub fn start_player_turn(&mut self) {
+        self.player.start_turn();
     }
     
     pub fn get_enemies(&self) -> &Vec<EnemyInGame> {
@@ -192,7 +197,7 @@ impl Battle {
 
     /// Apply damage to an entity (player or enemy)
     pub fn apply_damage(&mut self, target: Entity, damage: u32) -> u32 {
-        match target {
+        let actual_damage = match target {
             Entity::Player => self.player.battle_info.take_damage(damage),
             Entity::Enemy(idx) => {
                 if idx < self.enemies.len() {
@@ -202,7 +207,19 @@ impl Battle {
                 }
             }
             Entity::None => 0, // No target, no damage dealt
+        };
+        
+        // Emit damage taken event if actual damage was dealt
+        if actual_damage > 0 {
+            let damage_event = BattleEvent::DamageTaken {
+                target,
+                amount: actual_damage,
+                source: Entity::None, // TODO: Track damage source
+            };
+            self.emit_event(damage_event);
         }
+        
+        actual_damage
     }
 
     /// Apply block to an entity (player or enemy) 
@@ -231,17 +248,13 @@ impl Battle {
         
         for (i, enemy) in self.enemies.iter_mut().enumerate() {
             let source = Entity::Enemy(i);
-            match &enemy.enemy {
-                EnemyEnum::RedLouse(red_louse) => {
-                    use crate::game::enemy::EnemyTrait;
-                    let move_distribution = red_louse.choose_next_move(_global_info);
-                    let mv = move_distribution.sample_owned(rng);
-                    let effects = red_louse.get_move_effects(mv);
-                    for effect in effects {
-                        let base_effect = BaseEffect::from_effect(effect, source, Entity::Player);
-                        all_effects.push(base_effect);
-                    }
-                }
+            
+            // Use the new choose_effects method that handles everything in one step
+            let effects = enemy.enemy.choose_effects(_global_info, rng);
+            
+            for effect in effects {
+                let base_effect = BaseEffect::from_effect(effect, source, Entity::Player);
+                all_effects.push(base_effect);
             }
         }
         
@@ -370,8 +383,10 @@ mod tests {
         battle.eval_effect_with_target(&damage_effect);
         
         // 8 damage - 5 block = 3 actual damage
+        // But taking damage triggers Curl Up, giving enemy 3-7 more block (ascension 0)
         assert_eq!(battle.enemies[0].battle_info.get_hp(), initial_hp - 3);
-        assert_eq!(battle.enemies[0].battle_info.get_block(), 0);
+        let curl_up_block = battle.enemies[0].battle_info.get_block();
+        assert!(curl_up_block >= 3 && curl_up_block <= 7); // Curl Up activated with random amount
     }
 
     #[test]
@@ -498,6 +513,68 @@ mod tests {
         println!("Turn complete - Player HP: {}/{}, Block: {}, Energy: {} | Enemy HP: {}, Strength: {}",
                 battle.player.battle_info.get_hp(), initial_player_hp, battle.player.get_block(), battle.player.get_energy(),
                 battle.enemies[0].battle_info.get_hp(), battle.enemies[0].battle_info.get_strength());
+    }
+
+    #[test]
+    fn test_red_louse_curl_up_event_system() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let mut battle = Battle::new(deck, &global_info, &mut rng);
+        
+        // Initially enemy should have 0 block
+        assert_eq!(battle.enemies[0].battle_info.get_block(), 0);
+        
+        // Deal damage to the enemy to trigger curl up
+        let initial_hp = battle.enemies[0].battle_info.get_hp();
+        let damage_dealt = battle.apply_damage(Entity::Enemy(0), 6);
+        
+        // Check that damage was dealt and curl up was triggered (enemy gained block)
+        assert_eq!(damage_dealt, 6);
+        assert_eq!(battle.enemies[0].battle_info.get_hp(), initial_hp - 6);
+        
+        // Curl up gives 3-7 block for ascension 0
+        let curl_up_block = battle.enemies[0].battle_info.get_block();
+        assert!(curl_up_block >= 3 && curl_up_block <= 7);
+        
+        // Deal damage again - curl up should not trigger a second time
+        let hp_before_second_damage = battle.enemies[0].battle_info.get_hp();
+        let second_damage = battle.apply_damage(Entity::Enemy(0), 4);
+        
+        // Calculate expected outcome based on curl up block amount
+        let expected_damage = if curl_up_block >= 4 { 0 } else { 4 - curl_up_block };
+        let expected_remaining_block = if curl_up_block >= 4 { curl_up_block - 4 } else { 0 };
+        
+        assert_eq!(second_damage, expected_damage);
+        assert_eq!(battle.enemies[0].battle_info.get_hp(), hp_before_second_damage - expected_damage);
+        assert_eq!(battle.enemies[0].battle_info.get_block(), expected_remaining_block);
+    }
+
+    #[test]
+    fn test_curl_up_ascension_scaling() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        
+        // Test normal ascension (0-6): should give 3-7 block
+        let normal_global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let mut normal_battle = Battle::new(deck.clone(), &normal_global_info, &mut rng);
+        normal_battle.apply_damage(Entity::Enemy(0), 6);
+        let normal_block = normal_battle.enemies[0].battle_info.get_block();
+        assert!(normal_block >= 3 && normal_block <= 7);
+        
+        // Test mid ascension (7-16): should give 4-8 block
+        let mid_global_info = GlobalInfo { ascention: 10, current_floor: 1 };
+        let mut mid_battle = Battle::new(deck.clone(), &mid_global_info, &mut rng);
+        mid_battle.apply_damage(Entity::Enemy(0), 6);
+        let mid_block = mid_battle.enemies[0].battle_info.get_block();
+        assert!(mid_block >= 4 && mid_block <= 8);
+        
+        // Test high ascension (17+): should give 9-12 block
+        let high_global_info = GlobalInfo { ascention: 17, current_floor: 1 };
+        let mut high_battle = Battle::new(deck, &high_global_info, &mut rng);
+        high_battle.apply_damage(Entity::Enemy(0), 6);
+        let high_block = high_battle.enemies[0].battle_info.get_block();
+        assert!(high_block >= 9 && high_block <= 12);
     }
 
 }
