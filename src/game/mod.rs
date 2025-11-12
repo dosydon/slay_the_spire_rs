@@ -3,4 +3,8 @@ pub mod effect;
 pub mod enemy;
 pub mod deck;
 pub mod card_type;
+pub mod card_enum;
 pub mod global_info;
+pub mod game;
+pub mod action;
+pub mod map;

@@ -1,15 +1,15 @@
-use crate::game::{card::Card, card_type::CardType, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
 
 pub fn strike() -> Card {
-    Card::new("Strike".to_string(), 1, CardType::Attack, vec![
+    Card::new(CardEnum::Strike, 1, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 6, num_attacks: 1 }
-    ])
+    ], false)
 }
 
 pub fn strike_upgraded() -> Card {
-    Card::new("Strike+".to_string(), 1, CardType::Attack, vec![
+    Card::new(CardEnum::Strike, 1, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 9, num_attacks: 1 }
-    ])
+    ], true)
 }
 
 #[cfg(test)]

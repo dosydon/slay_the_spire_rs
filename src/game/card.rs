@@ -1,26 +1,37 @@
 use crate::game::card_type::CardType;
+use crate::game::card_enum::CardEnum;
 use crate::game::effect::Effect;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Card {
-    name: String,
+    card_enum: CardEnum,
     cost: u32,
     card_type: CardType,
     effects: Vec<Effect>,
+    upgraded: bool,
 }
 
 impl Card {
-    pub fn new(name: String, cost: u32, card_type: CardType, effects: Vec<Effect>) -> Self {
+    pub fn new(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool) -> Self {
         Card {
-            name,
+            card_enum,
             cost,
             card_type,
-            effects
+            effects,
+            upgraded,
         }
     }
 
-    pub fn get_name(&self) -> &str {
-        &self.name
+    pub fn get_name(&self) -> String {
+        if self.upgraded {
+            self.card_enum.upgraded_name()
+        } else {
+            self.card_enum.name().to_string()
+        }
+    }
+    
+    pub fn get_card_enum(&self) -> CardEnum {
+        self.card_enum
     }
 
     pub fn get_cost(&self) -> u32 {
@@ -42,34 +53,21 @@ impl Card {
     /// Upgrades this card to its improved version
     /// Returns a new Card instance with upgraded properties
     pub fn upgrade(self) -> Card {
-        match self.name.as_str() {
-            "Strike" => {
-                Card::new("Strike+".to_string(), self.cost, self.card_type, vec![
-                    Effect::AttackToTarget { amount: 9, num_attacks: 1 } // +3 damage
-                ])
-            }
-            "Defend" => {
-                Card::new("Defend+".to_string(), self.cost, self.card_type, vec![
-                    Effect::GainDefense(8) // +3 block
-                ])
-            }
-            "Bash" => {
-                Card::new("Bash+".to_string(), self.cost, self.card_type, vec![
-                    Effect::AttackToTarget { amount: 10, num_attacks: 1 }, // +2 damage
-                    Effect::ApplyVulnerable(3) // +1 vulnerable duration
-                ])
-            }
-            _ => {
-                // For unknown cards, just add "+" to the name
-                // In a real implementation, you might want to handle this differently
-                Card::new(format!("{}+", self.name), self.cost, self.card_type, self.effects)
-            }
+        if self.upgraded {
+            return self; // Already upgraded
+        }
+        
+        // Delegate to individual card upgrade functions
+        match self.card_enum {
+            CardEnum::Strike => crate::cards::ironclad::strike::strike_upgraded(),
+            CardEnum::Defend => crate::cards::ironclad::defend::defend_upgraded(),
+            CardEnum::Bash => crate::cards::ironclad::bash::bash_upgraded(),
         }
     }
     
     /// Checks if this card is already upgraded
     pub fn is_upgraded(&self) -> bool {
-        self.name.ends_with('+')
+        self.upgraded
     }
 }
 
@@ -79,7 +77,7 @@ mod tests {
 
     #[test]
     fn test_card_creation() {
-        let card = Card::new("Strike".to_string(), 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1 }]);
+        let card = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1 }], false);
         assert_eq!(card.get_name(), "Strike");
         assert_eq!(card.get_cost(), 1);
         assert_eq!(matches!(card.get_card_type(), CardType::Attack), true);
@@ -87,7 +85,7 @@ mod tests {
 
     #[test]
     fn test_strike_upgrade() {
-        let strike = Card::new("Strike".to_string(), 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1 }]);
+        let strike = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1 }], false);
         let upgraded = strike.upgrade();
         
         assert_eq!(upgraded.get_name(), "Strike+");
@@ -107,8 +105,8 @@ mod tests {
 
     #[test]
     fn test_is_upgraded() {
-        let basic = Card::new("Strike".to_string(), 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1 }]);
-        let upgraded = Card::new("Strike+".to_string(), 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 9, num_attacks: 1 }]);
+        let basic = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1 }], false);
+        let upgraded = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 9, num_attacks: 1 }], true);
         
         assert!(!basic.is_upgraded());
         assert!(upgraded.is_upgraded());

@@ -9,10 +9,20 @@ pub mod deck_hand_pile;
 use crate::{enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum}, game::{card::Card, deck::Deck, effect::BaseEffect, enemy::{EnemyInGame, EnemyTrait}, global_info::GlobalInfo}};
 use self::{action::Action, target::Entity, events::{BattleEvent, EventListener}, player::Player, deck_hand_pile::DeckHandPile};
 
-pub enum GameError {
+#[derive(Debug, Clone, PartialEq)]
+pub enum BattleError {
     InvalidAction,
     NotEnoughEnergy,
     CardNotInHand,
+    InvalidTarget,
+    GameAlreadyOver,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum BattleResult {
+    Continued,
+    Won,
+    Lost,
 }
 
 pub struct Battle {
@@ -20,24 +30,26 @@ pub struct Battle {
     enemies: Vec<EnemyInGame>,
     cards: DeckHandPile,
     event_listeners: Vec<Box<dyn EventListener>>,
+    global_info: GlobalInfo,
 }
 
 impl Battle {
-    pub fn new(deck: Deck, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Self {
+    pub fn new(deck: Deck, global_info: GlobalInfo, rng: &mut impl rand::Rng) -> Self {
         let cards = DeckHandPile::new(deck);
         let mut battle = Battle {
             player: Player::new(80, 3),
             enemies: vec![{
-                let red_louse = RedLouse::instantiate(rng, global_info);
+                let red_louse = RedLouse::instantiate(rng, &global_info);
                 let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
                 EnemyInGame::new(EnemyEnum::RedLouse(red_louse), hp)
             }],
             cards,
             event_listeners: Vec::new(),
+            global_info,
         };
         
         // Initialize event listeners for enemies
-        battle.initialize_enemy_listeners(global_info, rng);
+        battle.initialize_enemy_listeners(&global_info, rng);
         battle
     }
     
@@ -105,17 +117,45 @@ impl Battle {
         }
     }
     
-    pub fn eval_action(&mut self, action: Action) {
+    pub fn eval_action(&mut self, action: Action, rng: &mut impl rand::Rng) -> Result<BattleResult, BattleError> {
+        if self.is_battle_over() {
+            return Err(BattleError::GameAlreadyOver);
+        }
+
         match action {
             Action::PlayCard(idx, target) => {
-                if idx < self.cards.hand_size() && self.is_valid_target(&target) {
-                    self.play_card(idx, target);
+                if idx >= self.cards.hand_size() {
+                    return Err(BattleError::CardNotInHand);
                 }
+                
+                if !self.is_valid_target(&target) {
+                    return Err(BattleError::InvalidTarget);
+                }
+                
+                let hand = self.cards.get_hand();
+                let card = &hand[idx];
+                if !self.player.spend_energy(card.get_cost()) {
+                    return Err(BattleError::NotEnoughEnergy);
+                }
+                
+                // Restore energy since we're checking but not actually spending yet
+                self.player.battle_info.gain_energy(card.get_cost());
+                
+                self.play_card(idx, target);
             }
             Action::EndTurn => {
-                // End turn functionality will be handled externally 
-                // or through a separate game loop manager
+                let global_info = self.global_info;
+                self.end_turn(rng, &global_info);
             }
+        }
+        
+        // Check if battle is over after the action
+        if !self.player.is_alive() {
+            Ok(BattleResult::Lost)
+        } else if self.enemies.iter().all(|e| !e.battle_info.is_alive()) {
+            Ok(BattleResult::Won)
+        } else {
+            Ok(BattleResult::Continued)
         }
     }
 
@@ -228,6 +268,26 @@ impl Battle {
             enemy.battle_info.refresh();
         }
     }
+    
+    /// Ends the player turn and starts a new turn sequence
+    pub fn end_turn(&mut self, rng: &mut impl rand::Rng, global_info: &GlobalInfo) {
+        // 1. Discard all remaining cards in hand
+        self.cards.discard_entire_hand();
+        
+        // 2. Execute enemy turn
+        self.enemy_turn(rng, global_info);
+        
+        // 3. Refresh all characters after enemy turn (reset block, decrement status effects)
+        self.refresh_all();
+        
+        // 4. Start new player turn
+        self.start_player_turn();
+        
+        // 5. Draw new hand (typically 5 cards)
+        for _ in 0..5 {
+            self.cards.draw_card();
+        }
+    }
 
     pub fn enemy_turn(&mut self, rng: &mut impl rand::Rng, _global_info: &GlobalInfo) {
         let mut all_effects = Vec::new();
@@ -261,7 +321,7 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let battle = Battle::new(deck, &global_info, &mut rng);
+        let battle = Battle::new(deck, global_info, &mut rng);
         assert_eq!(battle.player.battle_info.get_hp(), 80);
         assert_eq!(battle.player.get_block(), 0);
         assert_eq!(battle.player.get_energy(), 3);
@@ -276,7 +336,7 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, &global_info, &mut rng);
+        let mut battle = Battle::new(deck, global_info, &mut rng);
         
         let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
         let damage_effect = BaseEffect::AttackToTarget {
@@ -296,7 +356,7 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, &global_info, &mut rng);
+        let mut battle = Battle::new(deck, global_info, &mut rng);
         
         let initial_energy = battle.player.get_energy();
         let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
@@ -307,7 +367,8 @@ mod tests {
         if let Some(idx) = strike_idx {
             // Play the Strike card targeting enemy 0
             let action = Action::PlayCard(idx, Entity::Enemy(0));
-            battle.eval_action(action);
+            let result = battle.eval_action(action, &mut rng);
+            assert!(matches!(result, Ok(BattleResult::Continued)));
             
             // Check that energy was spent and enemy took damage
             assert!(battle.player.get_energy() < initial_energy);
@@ -322,7 +383,7 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, &global_info, &mut rng);
+        let mut battle = Battle::new(deck, global_info, &mut rng);
         
         // Apply vulnerable to enemy
         let vulnerable_effect = BaseEffect::ApplyVulnerable { target: Entity::Enemy(0), duration: 2 };
@@ -353,7 +414,7 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, &global_info, &mut rng);
+        let mut battle = Battle::new(deck, global_info, &mut rng);
         
         // Give enemy some block
         battle.enemies[0].battle_info.gain_block(5);
@@ -380,7 +441,7 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, &global_info, &mut rng);
+        let mut battle = Battle::new(deck, global_info, &mut rng);
         
         let initial_hp = battle.player.battle_info.get_hp();
         
@@ -402,7 +463,7 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, &global_info, &mut rng);
+        let mut battle = Battle::new(deck, global_info, &mut rng);
         
         // Give player some strength
         battle.player.battle_info.gain_strength(3);
@@ -427,7 +488,7 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, &global_info, &mut rng);
+        let mut battle = Battle::new(deck, global_info, &mut rng);
         
         // Record initial state
         let initial_player_hp = battle.player.battle_info.get_hp();
@@ -506,7 +567,7 @@ mod tests {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, &global_info, &mut rng);
+        let mut battle = Battle::new(deck, global_info, &mut rng);
         
         // Initially enemy should have 0 block
         assert_eq!(battle.enemies[0].battle_info.get_block(), 0);
@@ -543,21 +604,21 @@ mod tests {
         
         // Test normal ascension (0-6): should give 3-7 block
         let normal_global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut normal_battle = Battle::new(deck.clone(), &normal_global_info, &mut rng);
+        let mut normal_battle = Battle::new(deck.clone(), normal_global_info, &mut rng);
         normal_battle.apply_damage(Entity::Enemy(0), 6);
         let normal_block = normal_battle.enemies[0].battle_info.get_block();
         assert!(normal_block >= 3 && normal_block <= 7);
         
         // Test mid ascension (7-16): should give 4-8 block
         let mid_global_info = GlobalInfo { ascention: 10, current_floor: 1 };
-        let mut mid_battle = Battle::new(deck.clone(), &mid_global_info, &mut rng);
+        let mut mid_battle = Battle::new(deck.clone(), mid_global_info, &mut rng);
         mid_battle.apply_damage(Entity::Enemy(0), 6);
         let mid_block = mid_battle.enemies[0].battle_info.get_block();
         assert!(mid_block >= 4 && mid_block <= 8);
         
         // Test high ascension (17+): should give 9-12 block
         let high_global_info = GlobalInfo { ascention: 17, current_floor: 1 };
-        let mut high_battle = Battle::new(deck, &high_global_info, &mut rng);
+        let mut high_battle = Battle::new(deck, high_global_info, &mut rng);
         high_battle.apply_damage(Entity::Enemy(0), 6);
         let high_block = high_battle.enemies[0].battle_info.get_block();
         assert!(high_block >= 9 && high_block <= 12);

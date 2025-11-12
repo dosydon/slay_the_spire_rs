@@ -387,7 +387,7 @@ mod tests {
 
     #[test]
     fn test_red_louse_two_turn_battle_fixed_hand() {
-        use crate::{battle::Battle, battle::action::Action, battle::target::Entity, game::deck::Deck};
+        use crate::{battle::Battle, battle::action::Action, battle::target::Entity, game::deck::Deck, battle::BattleResult};
         use crate::cards::ironclad::{strike::strike, defend::defend, bash::bash};
         
         // Create a deck with specific card order for initial hand
@@ -402,7 +402,7 @@ mod tests {
         let deck = Deck::new(deck_cards);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let mut battle = Battle::new(deck, &global_info, &mut rng);
+        let mut battle = Battle::new(deck, global_info, &mut rng);
         
         println!("=== FIXED HAND BATTLE TEST ===");
         println!("Initial hand:");
@@ -426,37 +426,55 @@ mod tests {
         // === TURN 1: PLAYER ===
         println!("\n--- Turn 1: Player ---");
         
-        // Play Strike (card index 0, targeting enemy)
-        println!("Playing Strike targeting enemy");
+        // Play first Strike (card index 0, targeting enemy)
+        println!("Playing first Strike targeting enemy");
         let action = Action::PlayCard(0, Entity::Enemy(0));
-        battle.eval_action(action);
-        println!("After Strike - Enemy HP: {}, Player Energy: {}", 
+        let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
+        assert_eq!(result, BattleResult::Continued);
+        println!("After first Strike - Enemy HP: {}, Player Energy: {}", 
             battle.get_enemies()[0].battle_info.get_hp(), battle.get_player().get_energy());
         
-        // Play first Defend (at index 3, targeting self)
-        println!("Playing first Defend");
-        let action = Action::PlayCard(3, Entity::Player);
-        battle.eval_action(action);
-        println!("After first Defend - Player Block: {}, Player Energy: {}", 
-            battle.get_player().get_block(), battle.get_player().get_energy());
+        let enemy_hp_after_first_strike = battle.get_enemies()[0].battle_info.get_hp();
+        let enemy_block_after_first_strike = battle.get_enemies()[0].battle_info.get_block();
+        println!("Enemy block after first Strike: {} (Curl Up should have activated)", enemy_block_after_first_strike);
         
-        // Play second Defend (now at index 2 after first was removed, targeting self)
-        println!("Playing second Defend");
-        let action = Action::PlayCard(2, Entity::Player);
-        battle.eval_action(action);
-        println!("After second Defend - Player Block: {}, Player Energy: {}", 
+        // Play second Strike (now at index 0 since first was removed, targeting enemy) 
+        println!("Playing second Strike targeting enemy");
+        let action = Action::PlayCard(0, Entity::Enemy(0));
+        let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
+        assert_eq!(result, BattleResult::Continued);
+        println!("After second Strike - Enemy HP: {}, Player Energy: {}", 
+            battle.get_enemies()[0].battle_info.get_hp(), battle.get_player().get_energy());
+        
+        // Play one Defend to use remaining energy (now at index 1, targeting self)
+        println!("Playing one Defend");
+        let action = Action::PlayCard(1, Entity::Player);
+        let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
+        assert_eq!(result, BattleResult::Continued);
+        println!("After Defend - Player Block: {}, Player Energy: {}", 
             battle.get_player().get_block(), battle.get_player().get_energy());
         
         let enemy_hp_after_turn1 = battle.get_enemies()[0].battle_info.get_hp();
         let player_damage_dealt = initial_enemy_hp - enemy_hp_after_turn1;
+        let curl_up_block = battle.get_enemies()[0].battle_info.get_block();
         
-        println!("Turn 1 complete - Damage dealt to enemy: {}, Player block: {}", 
-            player_damage_dealt, battle.get_player().get_block());
+        println!("Turn 1 complete - Total damage dealt to enemy: {}, Player block: {}, Enemy block (Curl Up): {}", 
+            player_damage_dealt, battle.get_player().get_block(), curl_up_block);
         
         // Verify expected outcomes for turn 1
-        assert_eq!(player_damage_dealt, 6, "Strike should deal 6 damage");
-        assert_eq!(battle.get_player().get_block(), 10, "Two Defends should give 10 block total");
+        // First strike: 6 damage, triggers Curl Up for 3-7 block
+        // Second strike: 6 damage attempted, but some blocked by Curl Up
+        // Note: curl_up_block is 0 here because block gets reset at end of turn, 
+        // but we can calculate from the damage dealt
+        let expected_damage_first_strike = 6;
+        let actual_curl_up_block = enemy_block_after_first_strike; // We captured this earlier
+        let expected_damage_second_strike = if actual_curl_up_block >= 6 { 0 } else { 6 - actual_curl_up_block };
+        let expected_total_damage = expected_damage_first_strike + expected_damage_second_strike;
+        
+        assert_eq!(player_damage_dealt, expected_total_damage, "Two Strikes with Curl Up blocking");
+        assert_eq!(battle.get_player().get_block(), 5, "One Defend should give 5 block");
         assert_eq!(battle.get_player().get_energy(), 0, "Should have spent all 3 energy");
+        assert!(actual_curl_up_block >= 3 && actual_curl_up_block <= 7, "Curl Up should give 3-7 block for ascension 0");
         
         // === TURN 1: ENEMY ===
         println!("\n--- Turn 1: Enemy ---");
@@ -481,14 +499,12 @@ mod tests {
         
         println!("Playing Strike (cost: 1)");
         let action = Action::PlayCard(0, Entity::Enemy(0));
-        battle.eval_action(action);
-        println!("Turn 2 Player: 1 Strike played");
+        let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
+        // Enemy might die from this strike, so it could be Won or Continued
+        assert!(matches!(result, BattleResult::Won | BattleResult::Continued));
+        println!("Turn 2 Player: 1 Strike played, result: {:?}", result);
         
         // === TURN 2: ENEMY ===
-        println!("\n--- Turn 2: Enemy ---");
-        let player_hp_before_enemy2 = battle.get_player().battle_info.get_hp();
-        let enemy_strength_before2 = battle.get_enemies()[0].battle_info.get_strength();
-        
         battle.enemy_turn(&mut rng, &global_info);
         
         // Verify battle mechanics worked as expected
