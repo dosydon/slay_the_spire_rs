@@ -82,19 +82,17 @@ impl GreenLouse {
         }
     }
 
-    /// Choose a move and return both the move and its effects
-    /// This combines move selection, effect generation, and move tracking into one step
-    pub fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (GreenLouseMove, Vec<Effect>) {
-        let move_distribution = self.choose_next_move(global_info);
-        let selected_move = move_distribution.sample_owned(rng);
+
+    fn choose_next_move(&self, _global_info: &GlobalInfo) -> CategoricalDistribution<GreenLouseMove> {
+        let possible_moves = self.get_valid_moves();
+        let weights = self.get_move_weights(&possible_moves);
         
-        // Record the move for consecutive move tracking
-        self.record_move(selected_move);
-        
-        // Generate the effects for this move
-        let effects = self.get_move_effects(selected_move);
-        
-        (selected_move, effects)
+        let outcomes_and_weights: Vec<(GreenLouseMove, f64)> = possible_moves
+            .into_iter()
+            .zip(weights)
+            .collect();
+
+        CategoricalDistribution::new(outcomes_and_weights)
     }
 
 }
@@ -112,24 +110,25 @@ impl EnemyTrait for GreenLouse {
         green_louse
     }
 
-    fn choose_next_move(&self, _global_info: &GlobalInfo) -> CategoricalDistribution<Self::MoveType> {
-        let possible_moves = self.get_valid_moves();
-        let weights = self.get_move_weights(&possible_moves);
-        
-        let outcomes_and_weights: Vec<(GreenLouseMove, f64)> = possible_moves
-            .into_iter()
-            .zip(weights)
-            .collect();
-
-        CategoricalDistribution::new(outcomes_and_weights)
-    }
-
     fn get_name() -> String {
         "Green Louse".to_string()
     }
 
     fn get_hp(&self) -> u32 {
         self.hp
+    }
+
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (GreenLouseMove, Vec<Effect>) {
+        let move_distribution = self.choose_next_move(global_info);
+        let selected_move = move_distribution.sample_owned(rng);
+        
+        // Record the move for consecutive move tracking
+        self.record_move(selected_move);
+        
+        // Generate the effects for this move
+        let effects = self.get_move_effects(selected_move);
+        
+        (selected_move, effects)
     }
 }
 

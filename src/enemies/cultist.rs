@@ -76,18 +76,17 @@ impl Cultist {
         }
     }
 
-    /// Choose a move and return both the move and its effects
-    pub fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (CultistMove, Vec<Effect>) {
-        let move_distribution = self.choose_next_move(global_info);
-        let selected_move = move_distribution.sample_owned(rng);
+
+    fn choose_next_move(&self, _global_info: &GlobalInfo) -> CategoricalDistribution<CultistMove> {
+        let valid_moves = self.get_valid_moves();
         
-        // Record the move for move tracking
-        self.record_move(selected_move);
+        // Cultist has deterministic behavior - no randomness needed
+        let outcomes_and_weights: Vec<(CultistMove, f64)> = valid_moves
+            .into_iter()
+            .map(|move_type| (move_type, 1.0))
+            .collect();
         
-        // Generate the effects for this move
-        let effects = self.get_move_effects(selected_move);
-        
-        (selected_move, effects)
+        CategoricalDistribution::new(outcomes_and_weights)
     }
 
 }
@@ -103,25 +102,25 @@ impl EnemyTrait for Cultist {
         Cultist::new(hp, ritual_amount)
     }
 
-
-    fn choose_next_move(&self, _global_info: &GlobalInfo) -> CategoricalDistribution<Self::MoveType> {
-        let valid_moves = self.get_valid_moves();
-        
-        // Cultist has deterministic behavior - no randomness needed
-        let outcomes_and_weights: Vec<(CultistMove, f64)> = valid_moves
-            .into_iter()
-            .map(|move_type| (move_type, 1.0))
-            .collect();
-        
-        CategoricalDistribution::new(outcomes_and_weights)
-    }
-
     fn get_name() -> String {
         "Cultist".to_string()
     }
 
     fn get_hp(&self) -> u32 {
         self.hp
+    }
+
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (CultistMove, Vec<Effect>) {
+        let move_distribution = self.choose_next_move(global_info);
+        let selected_move = move_distribution.sample_owned(rng);
+        
+        // Record the move for move tracking
+        self.record_move(selected_move);
+        
+        // Generate the effects for this move
+        let effects = self.get_move_effects(selected_move);
+        
+        (selected_move, effects)
     }
 }
 

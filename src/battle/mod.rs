@@ -7,7 +7,7 @@ pub mod player;
 pub mod deck_hand_pile;
 pub mod enemy_in_battle;
 
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::GreenLouseMove, jaw_worm::JawWormMove, enemy_enum::{EnemyEnum, EnemyAction}}, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, enemy::EnemyTrait, global_info::GlobalInfo}};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::GreenLouseMove, jaw_worm::JawWormMove, enemy_enum::{EnemyEnum, EnemyMove}}, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, enemy::EnemyTrait, global_info::GlobalInfo}};
 use self::{action::Action, target::Entity, events::{BattleEvent, EventListener}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
 use rand::Rng;
 
@@ -34,8 +34,8 @@ pub struct Battle {
     cards: DeckHandPile,
     event_listeners: Vec<Box<dyn EventListener>>,
     global_info: GlobalInfo,
-    /// Stores the next action and effects for each enemy (index corresponds to enemies Vec)
-    enemy_actions: Vec<Option<(EnemyAction, Vec<Effect>)>>,
+    /// Stores the next move and effects for each enemy (index corresponds to enemies Vec)
+    enemy_actions: Vec<Option<(EnemyMove, Vec<Effect>)>>,
 }
 
 impl Battle {
@@ -142,19 +142,24 @@ impl Battle {
     /// Sample and store the next action and effects for all enemies
     pub(crate) fn sample_enemy_actions(&mut self, rng: &mut impl rand::Rng) {
         for (i, enemy) in self.enemies.iter_mut().enumerate() {
-            let (enemy_action, effects) = enemy.enemy.sample_move_and_effects(&self.global_info, rng);
-            self.enemy_actions[i] = Some((enemy_action, effects));
+            let (enemy_move, effects) = enemy.enemy.sample_move_and_effects(&self.global_info, rng);
+            self.enemy_actions[i] = Some((enemy_move, effects));
         }
     }
     
-    /// Get the stored action for a specific enemy
-    pub fn get_enemy_action(&self, enemy_index: usize) -> Option<&EnemyAction> {
-        self.enemy_actions.get(enemy_index).and_then(|pair| pair.as_ref().map(|(action, _)| action))
+    /// Get the stored move for a specific enemy
+    pub fn get_enemy_move(&self, enemy_index: usize) -> Option<&EnemyMove> {
+        self.enemy_actions.get(enemy_index).and_then(|pair| pair.as_ref().map(|(enemy_move, _)| enemy_move))
     }
     
-    /// Get all stored enemy actions
-    pub(in crate::battle) fn get_all_enemy_actions(&self) -> Vec<Option<&EnemyAction>> {
-        self.enemy_actions.iter().map(|pair| pair.as_ref().map(|(action, _)| action)).collect()
+    /// Get the stored move and effects for a specific enemy
+    pub fn get_enemy_move_and_effects(&self, enemy_index: usize) -> Option<(&EnemyMove, &Vec<Effect>)> {
+        self.enemy_actions.get(enemy_index).and_then(|pair| pair.as_ref().map(|(enemy_move, effects)| (enemy_move, effects)))
+    }
+    
+    /// Get all stored enemy moves
+    pub(in crate::battle) fn get_all_enemy_moves(&self) -> Vec<Option<&EnemyMove>> {
+        self.enemy_actions.iter().map(|pair| pair.as_ref().map(|(enemy_move, _)| enemy_move)).collect()
     }
     
     /// List all available actions the player can take in the current battle state

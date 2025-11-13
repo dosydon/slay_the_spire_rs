@@ -122,22 +122,6 @@ impl JawWorm {
         }
     }
 
-    /// Choose a move and return both the move and its effects
-    /// This combines move selection, effect generation, and move tracking into one step
-    pub fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (JawWormMove, Vec<Effect>) {
-        let move_distribution = self.choose_next_move(global_info);
-        let selected_move = move_distribution.sample_owned(rng);
-        
-        println!("JawWorm selected move: {:?}", selected_move);
-        
-        // Record the move for move tracking
-        self.record_move(selected_move);
-        
-        // Generate the effects for this move
-        let effects = self.get_move_effects(selected_move, global_info);
-        
-        (selected_move, effects)
-    }
 
 
     /// Apply initial Bellow effects for Act 3 (called during instantiation)
@@ -150,6 +134,29 @@ impl JawWorm {
         } else {
             Vec::new()
         }
+    }
+
+    fn choose_next_move(&self, _global_info: &GlobalInfo) -> CategoricalDistribution<JawWormMove> {
+        let (chomp_prob, bellow_prob, thrash_prob) = self.get_move_probabilities();
+        
+        let mut outcomes_and_weights = Vec::new();
+        
+        if chomp_prob > 0.0 {
+            outcomes_and_weights.push((JawWormMove::Chomp, chomp_prob));
+        }
+        if bellow_prob > 0.0 {
+            outcomes_and_weights.push((JawWormMove::Bellow, bellow_prob));
+        }
+        if thrash_prob > 0.0 {
+            outcomes_and_weights.push((JawWormMove::Thrash, thrash_prob));
+        }
+        
+        // Ensure we have at least one valid move
+        if outcomes_and_weights.is_empty() {
+            outcomes_and_weights.push((JawWormMove::Chomp, 1.0));
+        }
+        
+        CategoricalDistribution::new(outcomes_and_weights)
     }
 }
 
@@ -170,31 +177,27 @@ impl EnemyTrait for JawWorm {
         JawWorm::new(base_hp, is_act3)
     }
 
-    
-    fn choose_next_move(&self, _global_info: &GlobalInfo) -> CategoricalDistribution<Self::MoveType> {
-        let (chomp_prob, bellow_prob, thrash_prob) = self.get_move_probabilities();
-        
-        let mut outcomes_and_weights = Vec::new();
-        
-        if chomp_prob > 0.0 {
-            outcomes_and_weights.push((JawWormMove::Chomp, chomp_prob));
-        }
-        if bellow_prob > 0.0 {
-            outcomes_and_weights.push((JawWormMove::Bellow, bellow_prob));
-        }
-        if thrash_prob > 0.0 {
-            outcomes_and_weights.push((JawWormMove::Thrash, thrash_prob));
-        }
-
-        CategoricalDistribution::new(outcomes_and_weights)
-    }
-
     fn get_name() -> String {
         "Jaw Worm".to_string()
     }
 
     fn get_hp(&self) -> u32 {
         self.hp
+    }
+
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (JawWormMove, Vec<Effect>) {
+        let move_distribution = self.choose_next_move(global_info);
+        let selected_move = move_distribution.sample_owned(rng);
+        
+        println!("JawWorm selected move: {:?}", selected_move);
+        
+        // Record the move for move tracking
+        self.record_move(selected_move);
+        
+        // Generate the effects for this move
+        let effects = self.get_move_effects(selected_move, global_info);
+        
+        (selected_move, effects)
     }
 }
 
@@ -493,9 +496,9 @@ mod tests {
         let initial_player_hp = battle.get_player().battle_info.get_hp();
         // Note: sample_enemy_actions is already called by Battle::new -> start_turn
         
-        // Debug: Check what action was sampled
-        if let Some(action) = battle.get_enemy_action(0) {
-            println!("Enemy action: {:?}", action);
+        // Debug: Check what move was sampled
+        if let Some(enemy_move) = battle.get_enemy_move(0) {
+            println!("Enemy move: {:?}", enemy_move);
         }
         
         battle.enemy_turn(&mut rng, &global_info);

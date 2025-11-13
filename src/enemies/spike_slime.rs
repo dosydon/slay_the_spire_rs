@@ -43,15 +43,11 @@ impl SpikeSlimeS {
         }
     }
 
-    /// Choose a move and return both the move and its effects
-    pub fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (SpikeSlimeSMove, Vec<Effect>) {
-        let move_distribution = self.choose_next_move(global_info);
-        let selected_move = move_distribution.sample_owned(rng);
-        
-        // Generate the effects for this move
-        let effects = self.get_move_effects(selected_move);
-        
-        (selected_move, effects)
+
+    fn choose_next_move(&self, _global_info: &GlobalInfo) -> CategoricalDistribution<SpikeSlimeSMove> {
+        // Spike Slime only has one move - Tackle
+        let outcomes_and_weights = vec![(SpikeSlimeSMove::Tackle, 1.0)];
+        CategoricalDistribution::new(outcomes_and_weights)
     }
 
 }
@@ -67,19 +63,22 @@ impl EnemyTrait for SpikeSlimeS {
         SpikeSlimeS::new(hp, base_damage)
     }
 
-
-    fn choose_next_move(&self, _global_info: &GlobalInfo) -> CategoricalDistribution<Self::MoveType> {
-        // Spike Slime only has one move - Tackle
-        let outcomes_and_weights = vec![(SpikeSlimeSMove::Tackle, 1.0)];
-        CategoricalDistribution::new(outcomes_and_weights)
-    }
-
     fn get_name() -> String {
         "Spike Slime (S)".to_string()
     }
 
     fn get_hp(&self) -> u32 {
         self.hp
+    }
+
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (SpikeSlimeSMove, Vec<Effect>) {
+        let move_distribution = self.choose_next_move(global_info);
+        let selected_move = move_distribution.sample_owned(rng);
+        
+        // Generate the effects for this move
+        let effects = self.get_move_effects(selected_move);
+        
+        (selected_move, effects)
     }
 }
 
