@@ -8,7 +8,7 @@ pub struct CurlUpListener {
 }
 
 impl CurlUpListener {
-    pub fn new(owner: Entity, ascension_level: u32, rng: &mut impl rand::Rng) -> Self {
+    pub(in crate::battle) fn new(owner: Entity, ascension_level: u32, rng: &mut impl rand::Rng) -> Self {
         let block_amount = match ascension_level {
             a if a >= 17 => rng.random_range(9..=12), // A17+ gives 9-12 block
             a if a >= 7 => rng.random_range(4..=8),   // A7-16 gives 4-8 block  

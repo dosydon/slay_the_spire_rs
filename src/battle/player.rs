@@ -12,7 +12,7 @@ impl Player {
         }
     }
 
-    pub fn spend_energy(&mut self, amount: u32) -> bool {
+    pub(in crate::battle) fn spend_energy(&mut self, amount: u32) -> bool {
         self.battle_info.spend_energy(amount)
     }
 
@@ -24,15 +24,15 @@ impl Player {
         self.battle_info.get_block()
     }
 
-    pub fn apply_vulnerable(&mut self, turns: u32) {
+    pub(in crate::battle) fn apply_vulnerable(&mut self, turns: u32) {
         self.battle_info.apply_vulnerable(turns);
     }
 
-    pub fn is_vulnerable(&self) -> bool {
+    pub(in crate::battle) fn is_vulnerable(&self) -> bool {
         self.battle_info.is_vulnerable()
     }
     
-    pub fn start_turn(&mut self) {
+    pub(in crate::battle) fn start_turn(&mut self) {
         self.battle_info.refresh();
         // Player gets 3 energy at start of turn
         self.battle_info.energy = 3;

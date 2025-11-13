@@ -66,7 +66,7 @@ impl Battle {
     }
     
     /// Initialize event listeners for enemies based on their type
-    fn initialize_enemy_listeners(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) {
+    pub(in crate::battle) fn initialize_enemy_listeners(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) {
         use crate::battle::listeners::CurlUpListener;
         
         for (i, enemy) in self.enemies.iter().enumerate() {
@@ -87,12 +87,15 @@ impl Battle {
                 EnemyEnum::Cultist(_) => {
                     // Cultist has no special listeners
                 }
+                EnemyEnum::SpikeSlimeS(_) => {
+                    // Spike Slime has no special listeners
+                }
             }
         }
     }
     
     /// Emit a battle event to all listeners
-    pub fn emit_event(&mut self, event: BattleEvent) {
+    pub(in crate::battle) fn emit_event(&mut self, event: BattleEvent) {
         let mut effects_to_apply = Vec::new();
         
         for listener in &mut self.event_listeners {
@@ -116,7 +119,7 @@ impl Battle {
     }
     
     /// Full turn start including card draw with deck reshuffling
-    pub fn start_turn(&mut self, rng: &mut impl rand::Rng) {
+    pub(crate) fn start_turn(&mut self, rng: &mut impl rand::Rng) {
         self.refresh_all();
         self.player.start_turn();
         
@@ -137,7 +140,7 @@ impl Battle {
     }
     
     /// Sample and store the next action and effects for all enemies
-    pub fn sample_enemy_actions(&mut self, rng: &mut impl rand::Rng) {
+    pub(crate) fn sample_enemy_actions(&mut self, rng: &mut impl rand::Rng) {
         for (i, enemy) in self.enemies.iter_mut().enumerate() {
             let (enemy_action, effects) = enemy.enemy.sample_move_and_effects(&self.global_info, rng);
             self.enemy_actions[i] = Some((enemy_action, effects));
@@ -150,7 +153,7 @@ impl Battle {
     }
     
     /// Get all stored enemy actions
-    pub fn get_all_enemy_actions(&self) -> Vec<Option<&EnemyAction>> {
+    pub(in crate::battle) fn get_all_enemy_actions(&self) -> Vec<Option<&EnemyAction>> {
         self.enemy_actions.iter().map(|pair| pair.as_ref().map(|(action, _)| action)).collect()
     }
     
@@ -185,7 +188,7 @@ impl Battle {
     }
     
     /// Get valid targets for a specific card based on its effects
-    fn get_valid_targets_for_card(&self, card: &Card) -> Vec<Entity> {
+    pub(in crate::battle) fn get_valid_targets_for_card(&self, card: &Card) -> Vec<Entity> {
         let mut valid_targets = Vec::new();
         
         // Check if any effect targets enemies
@@ -239,7 +242,7 @@ impl Battle {
         !self.player.is_alive() || self.enemies.iter().all(|e| !e.battle_info.is_alive())
     }
     
-    pub fn is_valid_target(&self, target: &Entity) -> bool {
+    pub(in crate::battle) fn is_valid_target(&self, target: &Entity) -> bool {
         match target {
             Entity::Enemy(idx) => *idx < self.enemies.len(),
             Entity::Player => true,  // Player is always a valid target
@@ -293,7 +296,7 @@ impl Battle {
         }
     }
 
-    pub fn play_card(&mut self, idx: usize, target: Entity) {
+    pub(in crate::battle) fn play_card(&mut self, idx: usize, target: Entity) {
         if idx >= self.cards.hand_size() { return; }
         
         let hand = self.cards.get_hand();
@@ -308,7 +311,7 @@ impl Battle {
         }
     }
     
-    pub fn eval_effect_with_target(&mut self, effect: &BaseEffect) {
+    pub(in crate::battle) fn eval_effect_with_target(&mut self, effect: &BaseEffect) {
         match effect {
             BaseEffect::AttackToTarget { source, target, amount, num_attacks } => {
                 for _ in 0..*num_attacks {
@@ -378,7 +381,7 @@ impl Battle {
     }
 
     /// Apply damage to an entity (player or enemy)
-    pub fn apply_damage(&mut self, target: Entity, damage: u32) -> u32 {
+    pub(in crate::battle) fn apply_damage(&mut self, target: Entity, damage: u32) -> u32 {
         let actual_damage = match target {
             Entity::Player => self.player.battle_info.take_damage(damage),
             Entity::Enemy(idx) => {
@@ -405,7 +408,7 @@ impl Battle {
     }
 
     /// Apply block to an entity (player or enemy) 
-    pub fn apply_block(&mut self, target: Entity, amount: u32) {
+    pub(in crate::battle) fn apply_block(&mut self, target: Entity, amount: u32) {
         match target {
             Entity::Player => self.player.battle_info.gain_block(amount),
             Entity::Enemy(idx) => {
@@ -418,7 +421,7 @@ impl Battle {
     }
 
     /// Refresh both player and all enemies (reset blocks, decrement status effects)
-    pub fn refresh_all(&mut self) {
+    pub(crate) fn refresh_all(&mut self) {
         self.player.battle_info.refresh();
         for enemy in &mut self.enemies {
             enemy.battle_info.refresh();
@@ -426,7 +429,7 @@ impl Battle {
     }
     
     /// Ends the player turn and starts a new turn sequence
-    pub fn end_turn(&mut self, rng: &mut impl rand::Rng, global_info: &GlobalInfo) {
+    pub(in crate::battle) fn end_turn(&mut self, rng: &mut impl rand::Rng, global_info: &GlobalInfo) {
         // 1. Apply end-of-turn effects
         self.player.battle_info.at_end_of_turn();
         for enemy in &mut self.enemies {
@@ -437,7 +440,7 @@ impl Battle {
         self.cards.discard_entire_hand();
     }
 
-    pub fn enemy_turn(&mut self, _rng: &mut impl rand::Rng, _global_info: &GlobalInfo) {
+    pub(crate) fn enemy_turn(&mut self, _rng: &mut impl rand::Rng, _global_info: &GlobalInfo) {
         let mut all_effects = Vec::new();
         
         for i in 0..self.enemies.len() {

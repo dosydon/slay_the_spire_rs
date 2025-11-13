@@ -65,7 +65,12 @@ impl EncounterEvent {
                 let cultist = crate::enemies::cultist::Cultist::instantiate(rng, global_info);
                 vec![EnemyEnum::Cultist(cultist)]
             }
-            _ => panic!("EncounterEvent::instantiate not implemented for this encounter"),
+            EncounterEvent::SmallSlimes => {
+                // For now, just create 2 Spike Slime (S)
+                let slime1 = crate::enemies::spike_slime::SpikeSlimeS::instantiate(rng, global_info);
+                let slime2 = crate::enemies::spike_slime::SpikeSlimeS::instantiate(rng, global_info);
+                vec![EnemyEnum::SpikeSlimeS(slime1), EnemyEnum::SpikeSlimeS(slime2)]
+            }
         }
     }
 }

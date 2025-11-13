@@ -128,6 +128,8 @@ impl JawWorm {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
         
+        println!("JawWorm selected move: {:?}", selected_move);
+        
         // Record the move for move tracking
         self.record_move(selected_move);
         
@@ -487,6 +489,9 @@ mod tests {
         
         // Create a Jaw Worm enemy
         let jaw_worm = JawWorm::instantiate(&mut rng, &global_info);
+        println!("JawWorm is_act3: {}, last_move: {:?}", jaw_worm.is_act3, jaw_worm.last_move);
+        let (chomp_prob, bellow_prob, thrash_prob) = jaw_worm.get_move_probabilities();
+        println!("Move probabilities: Chomp={}, Bellow={}, Thrash={}", chomp_prob, bellow_prob, thrash_prob);
         let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::EnemyEnum::JawWorm(jaw_worm))];
         
         // Create battle with Jaw Worm
@@ -502,10 +507,23 @@ mod tests {
         
         // Simulate enemy turn - Jaw Worm should use Chomp first in Act 1
         let initial_player_hp = battle.get_player().battle_info.get_hp();
+        battle.sample_enemy_actions(&mut rng);
+        
+        // Debug: Check what action was sampled
+        if let Some(action) = battle.get_enemy_action(0) {
+            println!("Enemy action: {:?}", action);
+        }
+        
         battle.enemy_turn(&mut rng, &global_info);
+        
+        let final_player_hp = battle.get_player().battle_info.get_hp();
+        let actual_damage = initial_player_hp - final_player_hp;
         
         // Player should take damage from Chomp (11 damage)
         let expected_damage = JawWorm::calculate_chomp_damage(&global_info);
+        println!("Expected damage: {}, Actual damage: {}, Player HP: {} -> {}", 
+                expected_damage, actual_damage, initial_player_hp, final_player_hp);
+        
         assert_eq!(battle.get_player().battle_info.get_hp(), initial_player_hp - expected_damage);
         
         println!("Jaw Worm battle integration test passed!");
@@ -534,6 +552,7 @@ mod tests {
         
         // Simulate enemy turn 
         let initial_player_hp = battle.get_player().battle_info.get_hp();
+        battle.sample_enemy_actions(&mut rng);
         battle.enemy_turn(&mut rng, &global_info);
         
         // In Act 3, first move probabilities are different, so we just verify
@@ -568,6 +587,7 @@ mod tests {
             let player_hp_before = battle.get_player().battle_info.get_hp();
             let enemy_strength_before = battle.get_enemies()[0].battle_info.get_strength();
             
+            battle.sample_enemy_actions(&mut rng);
             battle.enemy_turn(&mut rng, &global_info);
             
             let player_hp_after = battle.get_player().battle_info.get_hp();

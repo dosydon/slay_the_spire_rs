@@ -495,6 +495,7 @@ mod tests {
         // === TURN 1: ENEMY ===
         println!("\n--- Turn 1: Enemy ---");
         
+        battle.sample_enemy_actions(&mut rng);
         battle.enemy_turn(&mut rng, &global_info);
         
         // End of turn 1 - refresh
@@ -521,6 +522,7 @@ mod tests {
         println!("Turn 2 Player: 1 Strike played, result: {:?}", result);
         
         // === TURN 2: ENEMY ===
+        battle.sample_enemy_actions(&mut rng);
         battle.enemy_turn(&mut rng, &global_info);
         
         // Verify battle mechanics worked as expected

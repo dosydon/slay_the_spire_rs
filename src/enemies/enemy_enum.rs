@@ -1,10 +1,11 @@
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}, utils::CategoricalDistribution};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime::{SpikeSlimeS, SpikeSlimeSMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}, utils::CategoricalDistribution};
 
 pub enum EnemyEnum {
     RedLouse(RedLouse),
     GreenLouse(GreenLouse),
     JawWorm(JawWorm),
     Cultist(Cultist),
+    SpikeSlimeS(SpikeSlimeS),
 }
 
 /// Represents an enemy's intended action with actual values
@@ -64,6 +65,7 @@ pub enum EnemyMoveType {
     GreenLouse(GreenLouseMove),
     JawWorm(JawWormMove),
     Cultist(CultistMove),
+    SpikeSlimeS(SpikeSlimeSMove),
 }
 
 impl EnemyEnum {
@@ -89,6 +91,11 @@ impl EnemyEnum {
             EnemyEnum::Cultist(cultist) => {
                 let (selected_move, effects) = cultist.choose_move_and_effects(global_info, rng);
                 let action = Self::create_enemy_action(EnemyMoveType::Cultist(selected_move), &effects);
+                (action, effects)
+            }
+            EnemyEnum::SpikeSlimeS(spike_slime) => {
+                let (selected_move, effects) = spike_slime.choose_move_and_effects(global_info, rng);
+                let action = Self::create_enemy_action(EnemyMoveType::SpikeSlimeS(selected_move), &effects);
                 (action, effects)
             }
         }
@@ -149,6 +156,7 @@ impl EnemyEnum {
             EnemyEnum::GreenLouse(green_louse) => green_louse.get_hp(),
             EnemyEnum::JawWorm(jaw_worm) => jaw_worm.get_hp(),
             EnemyEnum::Cultist(cultist) => cultist.get_hp(),
+            EnemyEnum::SpikeSlimeS(spike_slime) => spike_slime.get_hp(),
         }
     }
 }

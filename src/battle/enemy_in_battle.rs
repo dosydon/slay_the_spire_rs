@@ -15,7 +15,7 @@ impl EnemyInBattle {
     }
 
     /// Delegate damage to character (keeping this for the i32 -> u32 conversion)
-    pub fn take_damage(&mut self, damage: i32) -> u32 {
+    pub(in crate::battle) fn take_damage(&mut self, damage: i32) -> u32 {
         if damage <= 0 {
             return 0;
         }

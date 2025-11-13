@@ -105,7 +105,7 @@ impl CharacterBattleInfo {
     }
 
     /// End of turn - apply end-of-turn effects
-    pub fn at_end_of_turn(&mut self) {
+    pub(in crate::battle) fn at_end_of_turn(&mut self) {
         // Apply ritual effect (gain strength equal to ritual stacks)
         self.apply_ritual_effect();
     }
@@ -166,7 +166,7 @@ impl CharacterBattleInfo {
     }
 
     /// Calculate damage output with strength bonus and weak penalty
-    pub fn calculate_damage(&self, base_damage: u32) -> u32 {
+    pub(crate) fn calculate_damage(&self, base_damage: u32) -> u32 {
         let damage_with_strength = base_damage + self.strength;
         
         // Apply weak penalty (25% less damage)
@@ -202,7 +202,7 @@ impl CharacterBattleInfo {
     }
 
     /// Apply ritual effect (gain strength equal to ritual stacks)
-    pub fn apply_ritual_effect(&mut self) {
+    pub(in crate::battle) fn apply_ritual_effect(&mut self) {
         if self.ritual > 0 {
             self.gain_strength(self.ritual);
         }

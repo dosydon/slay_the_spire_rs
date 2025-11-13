@@ -32,7 +32,7 @@ impl DeckHandPile {
     }
     
     /// Draw n cards into hand, returns the number of cards actually drawn
-    pub fn draw_n(&mut self, n: usize) -> usize {
+    pub(in crate::battle) fn draw_n(&mut self, n: usize) -> usize {
         let mut cards_drawn = 0;
         for _ in 0..n {
             if self.draw_card().is_some() {
@@ -44,7 +44,7 @@ impl DeckHandPile {
         cards_drawn
     }
     
-    pub fn discard_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
+    pub(in crate::battle) fn discard_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
         if hand_index < self.hand.len() {
             let card = self.hand.remove(hand_index);
             self.discard_pile.push(card.clone());
@@ -54,14 +54,14 @@ impl DeckHandPile {
         }
     }
     
-    pub fn discard_entire_hand(&mut self) {
+    pub(in crate::battle) fn discard_entire_hand(&mut self) {
         while !self.hand.is_empty() {
             let card = self.hand.remove(0);
             self.discard_pile.push(card);
         }
     }
     
-    pub fn shuffle_discard_into_deck(&mut self) {
+    pub(in crate::battle) fn shuffle_discard_into_deck(&mut self) {
         // Move all cards from discard pile to deck
         while let Some(card) = self.discard_pile.pop() {
             self.deck.add_card(card);
@@ -72,20 +72,20 @@ impl DeckHandPile {
         self.deck.shuffle(&mut rng);
     }
     
-    pub fn add_card_to_hand(&mut self, card: Card) {
+    pub(in crate::battle) fn add_card_to_hand(&mut self, card: Card) {
         self.hand.push(card);
     }
     
-    pub fn add_card_to_deck(&mut self, card: Card) {
+    pub(in crate::battle) fn add_card_to_deck(&mut self, card: Card) {
         self.deck.add_card(card);
     }
     
-    pub fn add_card_to_discard(&mut self, card: Card) {
+    pub(in crate::battle) fn add_card_to_discard(&mut self, card: Card) {
         self.discard_pile.push(card);
     }
     
     // Play card from hand (removes from hand, adds to discard pile, returns the card)
-    pub fn play_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
+    pub(in crate::battle) fn play_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
         if hand_index < self.hand.len() {
             let card = self.hand.remove(hand_index);
             self.discard_pile.push(card.clone());
@@ -142,9 +142,9 @@ mod tests {
         let original_deck_size = deck.size();
         let deck_hand_pile = DeckHandPile::new(deck.clone());
         
-        // Initial hand should have 5 cards, deck should be empty, discard empty
-        assert_eq!(deck_hand_pile.hand_size(), 5);
-        assert_eq!(deck_hand_pile.deck_size(), 0);
+        // Initial hand should be empty, deck should have all cards, discard empty
+        assert_eq!(deck_hand_pile.hand_size(), 0);
+        assert_eq!(deck_hand_pile.deck_size(), original_deck_size);
         assert_eq!(deck_hand_pile.discard_pile_size(), 0);
         assert_eq!(deck_hand_pile.total_cards(), original_deck_size);
         
@@ -157,6 +157,9 @@ mod tests {
         let cards = vec![strike(), defend(), strike()];
         let deck = Deck::new(cards);
         let mut deck_hand_pile = DeckHandPile::new(deck);
+        
+        // Draw cards into hand first
+        deck_hand_pile.draw_n(3);
         
         // Discard a card from hand
         let discarded = deck_hand_pile.discard_card_from_hand(0);
@@ -189,6 +192,9 @@ mod tests {
         let deck = Deck::new(cards);
         let mut deck_hand_pile = DeckHandPile::new(deck);
         
+        // Draw cards into hand first
+        deck_hand_pile.draw_n(5);
+        
         deck_hand_pile.discard_entire_hand();
         assert_eq!(deck_hand_pile.hand_size(), 0);
         assert_eq!(deck_hand_pile.discard_pile_size(), 5);
@@ -200,7 +206,10 @@ mod tests {
         let deck = Deck::new(cards);
         let mut deck_hand_pile = DeckHandPile::new(deck);
         
-        // Initial state: deck is empty (all cards in hand), hand has 2 cards, discard empty
+        // Draw cards into hand first
+        deck_hand_pile.draw_n(2);
+        
+        // Initial state: deck is empty (all cards drawn), hand has 2 cards, discard empty
         assert_eq!(deck_hand_pile.deck_size(), 0);
         assert_eq!(deck_hand_pile.hand_size(), 2);
         assert_eq!(deck_hand_pile.discard_pile_size(), 0);
