@@ -32,9 +32,8 @@ impl Player {
         self.battle_info.is_vulnerable()
     }
     
-    pub(in crate::battle) fn start_turn(&mut self) {
-        self.battle_info.refresh();
-        // Player gets 3 energy at start of turn
+    pub fn at_start_of_turn(&mut self) {
+        self.battle_info.at_start_of_turn();
         self.battle_info.energy = 3;
     }
 

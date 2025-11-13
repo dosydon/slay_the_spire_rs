@@ -66,10 +66,15 @@ impl EncounterEvent {
                 vec![EnemyEnum::Cultist(cultist)]
             }
             EncounterEvent::SmallSlimes => {
-                // For now, just create 2 Spike Slime (S)
-                let slime1 = crate::enemies::spike_slime_s::SpikeSlimeS::instantiate(rng, global_info);
-                let slime2 = crate::enemies::spike_slime_s::SpikeSlimeS::instantiate(rng, global_info);
-                vec![EnemyEnum::SpikeSlimeS(slime1), EnemyEnum::SpikeSlimeS(slime2)]
+                if rng.random::<f64>() < 0.5 {
+                    let slime1 = crate::enemies::spike_slime_m::SpikeSlimeM::instantiate(rng, global_info);
+                    let slime2 = crate::enemies::acid_slime_s::AcidSlimeS::instantiate(rng, global_info);
+                    return vec![EnemyEnum::SpikeSlimeM(slime1), EnemyEnum::AcidSlimeS(slime2)];
+                } else {
+                    let slime1 = crate::enemies::acid_slime_m::AcidSlimeM::instantiate(rng, global_info);
+                    let slime2 = crate::enemies::spike_slime_s::SpikeSlimeS::instantiate(rng, global_info);
+                    return vec![EnemyEnum::AcidSlimeM(slime1), EnemyEnum::SpikeSlimeS(slime2)];
+                }
             }
         }
     }

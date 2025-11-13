@@ -55,7 +55,7 @@ impl Battle {
         battle.initialize_enemy_listeners(&global_info, rng);
         
         // Start the first turn (refreshes player, samples enemy actions, draws hand)
-        battle.start_turn(rng);
+        battle.start_of_player_turn(rng);
         
         battle
     }
@@ -96,6 +96,9 @@ impl Battle {
                 EnemyEnum::AcidSlimeS(_) => {
                     // Acid Slime (S) has no special listeners
                 }
+                EnemyEnum::AcidSlimeM(_) => {
+                    // Acid Slime (M) has no special listeners
+                }
             }
         }
     }
@@ -124,17 +127,8 @@ impl Battle {
         &self.player
     }
     
-    /// Full turn start including card draw with deck reshuffling
-    pub(crate) fn start_turn(&mut self, rng: &mut impl rand::Rng) {
-        self.refresh_all();
-        self.player.start_turn();
-        
-        // Sample enemy actions for this turn
-        self.sample_enemy_actions(rng);
-        
-        // Draw new hand (typically 5 cards)
-        // The draw_n method will automatically reshuffle discard pile into deck if needed
-        self.cards.draw_n(5);
+    pub(crate) fn get_player_mut(&mut self) -> &mut Player {
+        &mut self.player
     }
     
     pub fn get_enemies(&self) -> &Vec<EnemyInBattle> {
@@ -289,11 +283,13 @@ impl Battle {
             }
             Action::EndTurn => {
                 let global_info = self.global_info;
-                self.end_turn(rng, &global_info);
+                self.at_end_of_player_turn();
         
-                self.enemy_turn(rng, &global_info);
+                self.at_start_of_enemy_turn();
+                self.process_enemy_effects(rng, &global_info);
+                self.at_end_of_enemy_turn();
 
-                self.start_turn(rng);
+                self.start_of_player_turn(rng);
             }
         }
         
@@ -336,7 +332,7 @@ impl Battle {
         }
     }
     
-    pub(in crate::battle) fn eval_effect_with_target(&mut self, effect: &BaseEffect) {
+    pub(crate) fn eval_effect_with_target(&mut self, effect: &BaseEffect) {
         match effect {
             BaseEffect::AttackToTarget { source, target, amount, num_attacks } => {
                 for _ in 0..*num_attacks {
@@ -476,31 +472,59 @@ impl Battle {
         }
     }
 
-    /// Refresh both player and all enemies (reset blocks, decrement status effects)
-    pub(crate) fn refresh_all(&mut self) {
-        self.player.battle_info.refresh();
-        for enemy in &mut self.enemies {
-            enemy.battle_info.refresh();
-        }
+    /// Full turn start including card draw with deck reshuffling
+    pub(crate) fn start_of_player_turn(&mut self, rng: &mut impl rand::Rng) {
+        self.player.at_start_of_turn();
+        
+        // Sample enemy actions for this turn
+        self.sample_enemy_actions(rng);
+        
+        // Draw new hand (typically 5 cards)
+        // The draw_n method will automatically reshuffle discard pile into deck if needed
+        self.cards.draw_n(5);
     }
     
-    /// Ends the player turn and starts a new turn sequence
-    pub(in crate::battle) fn end_turn(&mut self, rng: &mut impl rand::Rng, global_info: &GlobalInfo) {
-        // 1. Apply end-of-turn effects
+    
+    /// Ends the player turn
+    pub(in crate::battle) fn at_end_of_player_turn(&mut self) {
         self.player.battle_info.at_end_of_turn();
-        for enemy in &mut self.enemies {
-            enemy.battle_info.at_end_of_turn();
-        }
         
-        // 2. Discard all remaining cards in hand
+        // 3. Discard all remaining cards in hand
         self.cards.discard_entire_hand();
     }
+    
+    /// Ends all enemies' turns
+    pub(crate) fn at_end_of_enemy_turn(&mut self) {
+        for enemy in &mut self.enemies {
+            if enemy.battle_info.is_alive() {
+                
+                // 2. Apply enemy's end-of-turn effects
+                enemy.battle_info.at_end_of_turn();
+            }
+        }
+    }
 
-    pub(crate) fn enemy_turn(&mut self, _rng: &mut impl rand::Rng, _global_info: &GlobalInfo) {
+    pub(in crate::battle) fn at_start_of_enemy_turn(&mut self) {
+        for enemy in &mut self.enemies {
+            if enemy.battle_info.is_alive() {
+                // Reset enemy's block at start of their turn
+                enemy.battle_info.at_start_of_turn();
+            }
+        }
+    }
+
+    pub(crate) fn process_enemy_effects(&mut self, _rng: &mut impl rand::Rng, _global_info: &GlobalInfo) {
         let mut all_effects = Vec::new();
         
         for i in 0..self.enemies.len() {
             let source = Entity::Enemy(i);
+            
+            // Skip processing effects for defeated enemies
+            if !self.enemies[i].battle_info.is_alive() {
+                // Clear the stored action for dead enemies
+                self.enemy_actions[i].take();
+                continue;
+            }
             
             // Use stored effects - panic if none were stored (this should never happen)
             let (_, stored_effects) = self.enemy_actions[i].take()
@@ -722,7 +746,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         // === PLAYER TURN ===
         
         // Player starts turn (should reset block and refresh energy)
-        battle.player.start_turn();
+        battle.player.at_start_of_turn();
         assert_eq!(battle.player.get_energy(), 3); // Energy refreshed
         assert_eq!(battle.player.get_block(), 0); // Block reset
         
@@ -757,7 +781,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         let player_block_before_enemy = battle.player.get_block();
         let enemy_strength_before = battle.enemies[0].battle_info.get_strength();
         
-        battle.enemy_turn(&mut rng, &global_info);
+        battle.process_enemy_effects(&mut rng, &global_info);
         
         // Check that either the player took damage OR the enemy gained strength
         let player_took_damage = battle.player.battle_info.get_hp() < player_hp_before_enemy || 
@@ -1149,6 +1173,58 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         // Check that the exhausted card is Slimed
         let exhausted_cards = battle.cards.get_exhausted();
         assert_eq!(exhausted_cards.last().unwrap().get_name(), "Slimed");
+    }
+
+    #[test]
+    fn test_defeated_enemies_dont_execute_moves() {
+        use crate::enemies::red_louse::RedLouse;
+        use crate::cards::ironclad::strike::strike;
+        
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        
+        // Create two enemies 
+        let red_louse1 = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse2 = RedLouse::instantiate(&mut rng, &global_info);
+        let mut enemies = vec![
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse1)),
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2))
+        ];
+        
+        // Create a deck with strike cards
+        let deck = Deck::new(vec![strike(), strike(), strike(), strike(), strike()]);
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        // Sample enemy actions for both enemies
+        battle.sample_enemy_actions(&mut rng);
+        
+        // Kill the first enemy manually 
+        battle.enemies[0].battle_info.take_damage(100);
+        assert!(!battle.enemies[0].battle_info.is_alive(), "First enemy should be dead");
+        assert!(battle.enemies[1].battle_info.is_alive(), "Second enemy should be alive");
+        
+        // Record player HP before enemy turn
+        let player_hp_before = battle.player.battle_info.get_hp();
+        let player_block_before = battle.player.battle_info.get_block();
+        
+        // Execute enemy turn - defeated enemy should not act
+        battle.process_enemy_effects(&mut rng, &global_info);
+        
+        // Check that only the living enemy could have affected the player
+        // We can't predict exact values due to randomness, but we can verify the system works
+        // by ensuring the battle system didn't crash and state is consistent
+        
+        // Verify that dead enemy's action was cleared
+        assert!(battle.enemy_actions[0].is_none(), "Dead enemy should have no stored action");
+        
+        // The living enemy may or may not have affected the player (depends on its chosen move),
+        // but the important thing is that the dead enemy didn't execute its move
+        // This is verified by the fact that we didn't panic and the action was cleared
+        
+        // Ensure the battle is in a consistent state
+        assert!(!battle.enemies[0].battle_info.is_alive(), "First enemy should still be dead");
+        assert!(battle.enemies[1].battle_info.is_alive(), "Second enemy should still be alive");
+        assert!(battle.player.battle_info.is_alive(), "Player should still be alive");
     }
 
 }

@@ -477,11 +477,11 @@ mod tests {
         println!("\n--- Turn 1: Enemy ---");
         
         battle.sample_enemy_actions(&mut rng);
-        battle.enemy_turn(&mut rng, &global_info);
+        battle.process_enemy_effects(&mut rng, &global_info);
+        battle.at_end_of_enemy_turn();
         
-        // End of turn 1 - refresh
-        battle.refresh_all();
-        battle.start_turn(&mut rng);
+        // End of turn 1 - start new player turn
+        battle.start_of_player_turn(&mut rng);
         
         println!("End of Turn 1 - Player HP: {}, Enemy HP: {}, Enemy Strength: {}", 
             battle.get_player().battle_info.get_hp(), 
@@ -504,7 +504,8 @@ mod tests {
         
         // === TURN 2: ENEMY ===
         battle.sample_enemy_actions(&mut rng);
-        battle.enemy_turn(&mut rng, &global_info);
+        battle.process_enemy_effects(&mut rng, &global_info);
+        battle.at_end_of_enemy_turn();
         
         // Verify battle mechanics worked as expected
         assert!(battle.get_player().is_alive(), "Player should still be alive after 2 turns");

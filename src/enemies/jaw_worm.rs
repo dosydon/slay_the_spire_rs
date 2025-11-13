@@ -501,7 +501,8 @@ mod tests {
             println!("Enemy move: {:?}", enemy_move);
         }
         
-        battle.enemy_turn(&mut rng, &global_info);
+        battle.process_enemy_effects(&mut rng, &global_info);
+        battle.at_end_of_enemy_turn();
         
         let final_player_hp = battle.get_player().battle_info.get_hp();
         let actual_damage = initial_player_hp - final_player_hp;
@@ -540,7 +541,8 @@ mod tests {
         // Simulate enemy turn 
         let initial_player_hp = battle.get_player().battle_info.get_hp();
         // Note: sample_enemy_actions is already called by Battle::new -> start_turn
-        battle.enemy_turn(&mut rng, &global_info);
+        battle.process_enemy_effects(&mut rng, &global_info);
+        battle.at_end_of_enemy_turn();
         
         // In Act 3, first move probabilities are different, so we just verify
         // that some action was taken (either damage or no damage if Bellow was used)
@@ -577,10 +579,10 @@ mod tests {
             // Only sample actions for turns after the first one
             // (First turn actions are already sampled by Battle::new -> start_turn)
             if turn > 0 {
-                battle.refresh_all();
-                battle.start_turn(&mut rng);
+                battle.start_of_player_turn(&mut rng);
             }
-            battle.enemy_turn(&mut rng, &global_info);
+            battle.process_enemy_effects(&mut rng, &global_info);
+        battle.at_end_of_enemy_turn();
             
             let player_hp_after = battle.get_player().battle_info.get_hp();
             let enemy_strength_after = battle.get_enemies()[0].battle_info.get_strength();

@@ -1,4 +1,4 @@
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
 
 pub enum EnemyEnum {
     RedLouse(RedLouse),
@@ -8,6 +8,7 @@ pub enum EnemyEnum {
     SpikeSlimeS(SpikeSlimeS),
     SpikeSlimeM(SpikeSlimeM),
     AcidSlimeS(AcidSlimeS),
+    AcidSlimeM(AcidSlimeM),
 }
 
 
@@ -21,6 +22,7 @@ pub enum EnemyMove {
     SpikeSlimeS(SpikeSlimeSMove),
     SpikeSlimeM(SpikeSlimeMMove),
     AcidSlimeS(AcidSlimeSMove),
+    AcidSlimeM(AcidSlimeMMove),
 }
 
 impl EnemyMove {
@@ -101,6 +103,10 @@ impl EnemyEnum {
                 let (selected_move, effects) = acid_slime.choose_move_and_effects(global_info, rng);
                 (EnemyMove::AcidSlimeS(selected_move), effects)
             }
+            EnemyEnum::AcidSlimeM(acid_slime) => {
+                let (selected_move, effects) = acid_slime.choose_move_and_effects(global_info, rng);
+                (EnemyMove::AcidSlimeM(selected_move), effects)
+            }
         }
     }
 
@@ -115,6 +121,7 @@ impl EnemyEnum {
             EnemyEnum::SpikeSlimeS(spike_slime) => spike_slime.get_hp(),
             EnemyEnum::SpikeSlimeM(spike_slime) => spike_slime.get_hp(),
             EnemyEnum::AcidSlimeS(acid_slime) => acid_slime.get_hp(),
+            EnemyEnum::AcidSlimeM(acid_slime) => acid_slime.get_hp(),
         }
     }
 }

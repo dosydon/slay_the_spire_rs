@@ -108,8 +108,15 @@ impl CharacterBattleInfo {
     }
 
     /// Start of turn - reset block and decrement status effects
-    pub fn refresh(&mut self) {
+    pub fn at_start_of_turn(&mut self) {
         self.block = 0;
+    }
+
+    /// End of turn - apply end-of-turn effects
+    pub(crate) fn at_end_of_turn(&mut self) {
+        // Apply ritual effect (gain strength equal to ritual stacks)
+        self.apply_ritual_effect();
+
         if self.vulnerable_turns > 0 {
             self.vulnerable_turns -= 1;
         }
@@ -119,12 +126,6 @@ impl CharacterBattleInfo {
         if self.frail_turns > 0 {
             self.frail_turns -= 1;
         }
-    }
-
-    /// End of turn - apply end-of-turn effects
-    pub(in crate::battle) fn at_end_of_turn(&mut self) {
-        // Apply ritual effect (gain strength equal to ritual stacks)
-        self.apply_ritual_effect();
     }
 
     /// Check if character is alive
@@ -308,12 +309,16 @@ mod tests {
         character.gain_block(10);
         character.apply_vulnerable(3);
         
-        character.refresh();
-        
+        // At start of turn - block is reset but status effects remain
+        character.at_start_of_turn();
         assert_eq!(character.block, 0);
+        assert_eq!(character.vulnerable_turns, 3); // Status effects don't change at start of turn
+        
+        // At end of turn - status effects decrement
+        character.at_end_of_turn();
         assert_eq!(character.vulnerable_turns, 2);
         
-        character.refresh();
+        character.at_end_of_turn();
         assert_eq!(character.vulnerable_turns, 1);
     }
 
@@ -396,13 +401,13 @@ mod tests {
         let mut character = CharacterBattleInfo::new(50, 50, 3);
         character.apply_frail(3);
         
-        character.refresh();
+        character.at_end_of_turn();
         assert_eq!(character.get_frail_turns(), 2);
         
-        character.refresh();
+        character.at_end_of_turn();
         assert_eq!(character.get_frail_turns(), 1);
         
-        character.refresh();
+        character.at_end_of_turn();
         assert_eq!(character.get_frail_turns(), 0);
         assert!(!character.is_frail());
     }
