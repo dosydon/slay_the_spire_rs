@@ -2,7 +2,8 @@ pub mod red_louse;
 pub mod green_louse;
 pub mod jaw_worm;
 pub mod cultist;
-pub mod spike_slime;
+pub mod spike_slime_s;
+pub mod spike_slime_m;
 pub mod enemy_enum;
 
 pub use enemy_enum::EnemyEnum;

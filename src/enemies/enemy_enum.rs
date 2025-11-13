@@ -1,4 +1,4 @@
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime::{SpikeSlimeS, SpikeSlimeSMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
 
 pub enum EnemyEnum {
     RedLouse(RedLouse),
@@ -6,6 +6,7 @@ pub enum EnemyEnum {
     JawWorm(JawWorm),
     Cultist(Cultist),
     SpikeSlimeS(SpikeSlimeS),
+    SpikeSlimeM(SpikeSlimeM),
 }
 
 
@@ -17,6 +18,7 @@ pub enum EnemyMove {
     JawWorm(JawWormMove),
     Cultist(CultistMove),
     SpikeSlimeS(SpikeSlimeSMove),
+    SpikeSlimeM(SpikeSlimeMMove),
 }
 
 impl EnemyMove {
@@ -43,6 +45,12 @@ impl EnemyMove {
                 }
                 Effect::ApplyVulnerable(duration) => {
                     parts.push(format!("🔻 Vulnerable {}", duration));
+                }
+                Effect::ApplyFrail(duration) => {
+                    parts.push(format!("🔻 Frail {}", duration));
+                }
+                Effect::AddSlimed(count) => {
+                    parts.push(format!("🐛 +{} Slimed", count));
                 }
             }
         }
@@ -80,6 +88,10 @@ impl EnemyEnum {
                 let (selected_move, effects) = spike_slime.choose_move_and_effects(global_info, rng);
                 (EnemyMove::SpikeSlimeS(selected_move), effects)
             }
+            EnemyEnum::SpikeSlimeM(spike_slime) => {
+                let (selected_move, effects) = spike_slime.choose_move_and_effects(global_info, rng);
+                (EnemyMove::SpikeSlimeM(selected_move), effects)
+            }
         }
     }
 
@@ -92,6 +104,7 @@ impl EnemyEnum {
             EnemyEnum::JawWorm(jaw_worm) => jaw_worm.get_hp(),
             EnemyEnum::Cultist(cultist) => cultist.get_hp(),
             EnemyEnum::SpikeSlimeS(spike_slime) => spike_slime.get_hp(),
+            EnemyEnum::SpikeSlimeM(spike_slime) => spike_slime.get_hp(),
         }
     }
 }

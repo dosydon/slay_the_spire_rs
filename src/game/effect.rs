@@ -10,8 +10,10 @@ pub enum Effect {
     GainDefense (u32),
     ApplyVulnerable (u32),
     ApplyWeak (u32),
+    ApplyFrail (u32),
     GainStrength (u32),
     GainRitual (u32),
+    AddSlimed (u32),
 }
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -34,6 +36,10 @@ pub enum BaseEffect {
         target: Entity,
         duration: u32,
     },
+    ApplyFrail {
+        target: Entity,
+        duration: u32,
+    },
     GainStrength {
         source: Entity,
         amount: u32,
@@ -41,6 +47,10 @@ pub enum BaseEffect {
     GainRitual {
         source: Entity,
         amount: u32,
+    },
+    AddSlimed {
+        target: Entity,
+        count: u32,
     },
 }
 
@@ -53,8 +63,10 @@ impl BaseEffect {
             Effect::GainDefense(amount) => BaseEffect::GainDefense { source, amount },
             Effect::ApplyVulnerable(duration) => BaseEffect::ApplyVulnerable { target, duration },
             Effect::ApplyWeak(duration) => BaseEffect::ApplyWeak { target, duration },
+            Effect::ApplyFrail(duration) => BaseEffect::ApplyFrail { target, duration },
             Effect::GainStrength(amount) => BaseEffect::GainStrength { source, amount },
             Effect::GainRitual(amount) => BaseEffect::GainRitual { source, amount },
+            Effect::AddSlimed(count) => BaseEffect::AddSlimed { target, count },
         }
     }
 }

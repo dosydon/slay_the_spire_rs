@@ -88,7 +88,10 @@ impl Battle {
                     // Cultist has no special listeners
                 }
                 EnemyEnum::SpikeSlimeS(_) => {
-                    // Spike Slime has no special listeners
+                    // Spike Slime (S) has no special listeners
+                }
+                EnemyEnum::SpikeSlimeM(_) => {
+                    // Spike Slime (M) has no special listeners
                 }
             }
         }
@@ -380,6 +383,33 @@ impl Battle {
                         }
                     },
                     Entity::None => {} // No source
+                }
+            },
+            BaseEffect::ApplyFrail { target, duration } => {
+                match target {
+                    Entity::Player => {
+                        // Apply frail to player (implement when CharacterBattleInfo supports it)
+                        println!("Player would be frailed for {} turns (not implemented)", duration);
+                    },
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            // Apply frail to enemy (implement when CharacterBattleInfo supports it) 
+                            println!("Enemy {} would be frailed for {} turns (not implemented)", idx, duration);
+                        }
+                    },
+                    Entity::None => {} // No target
+                }
+            },
+            BaseEffect::AddSlimed { target, count } => {
+                match target {
+                    Entity::Player => {
+                        // Add slimed cards to player's discard pile (implement when deck system supports it)
+                        println!("Player would receive {} Slimed cards (not implemented)", count);
+                    },
+                    Entity::Enemy(_) => {
+                        // Enemies don't receive slimed cards
+                    },
+                    Entity::None => {} // No target
                 }
             },
         }
