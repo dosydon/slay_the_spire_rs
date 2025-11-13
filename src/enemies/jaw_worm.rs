@@ -193,6 +193,10 @@ impl EnemyTrait for JawWorm {
     fn get_name() -> String {
         "Jaw Worm".to_string()
     }
+
+    fn get_hp(&self) -> u32 {
+        self.hp
+    }
 }
 
 #[cfg(test)]
@@ -475,8 +479,7 @@ mod tests {
         
         // Create a Jaw Worm enemy
         let jaw_worm = JawWorm::instantiate(&mut rng, &global_info);
-        let hp = rng.random_range(JawWorm::hp_lb()..=JawWorm::hp_ub());
-        let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::EnemyEnum::JawWorm(jaw_worm), hp)];
+        let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::EnemyEnum::JawWorm(jaw_worm))];
         
         // Create battle with Jaw Worm
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
@@ -510,8 +513,7 @@ mod tests {
         
         // Create a Jaw Worm enemy (Act 3)
         let jaw_worm = JawWorm::instantiate(&mut rng, &global_info);
-        let hp = rng.random_range(JawWorm::hp_lb()..=JawWorm::hp_ub());
-        let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::EnemyEnum::JawWorm(jaw_worm), hp)];
+        let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::EnemyEnum::JawWorm(jaw_worm))];
         
         // Create battle with Act 3 Jaw Worm
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
@@ -546,8 +548,7 @@ mod tests {
         
         // Create a Jaw Worm enemy
         let jaw_worm = JawWorm::instantiate(&mut rng, &global_info);
-        let hp = rng.random_range(JawWorm::hp_lb()..=JawWorm::hp_ub());
-        let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::EnemyEnum::JawWorm(jaw_worm), hp)];
+        let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::EnemyEnum::JawWorm(jaw_worm))];
         
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         

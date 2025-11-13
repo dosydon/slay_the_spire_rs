@@ -130,6 +130,10 @@ impl EnemyTrait for GreenLouse {
     fn get_name() -> String {
         "Green Louse".to_string()
     }
+
+    fn get_hp(&self) -> u32 {
+        self.hp
+    }
 }
 
 #[cfg(test)]

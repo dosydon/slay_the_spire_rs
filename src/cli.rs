@@ -1,0 +1,364 @@
+use std::io::{self, Write};
+use crate::battle::{Battle, BattleResult, BattleError, action::Action, target::Entity};
+use crate::cards::ironclad::starter_deck::starter_deck;
+use crate::enemies::enemy_enum::EnemyEnum;
+use crate::battle::enemy_in_battle::EnemyInBattle;
+use crate::game::global_info::GlobalInfo;
+use crate::events::encounter_event::EncounterEvent;
+use rand::Rng;
+
+pub struct BattleCli {
+    battle: Battle,
+    rng: rand::rngs::ThreadRng,
+}
+
+impl BattleCli {
+    /// Create a new battle CLI with a starter deck and selected encounter
+    pub fn new() -> Self {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let deck = starter_deck();
+        
+        // Let user choose an encounter
+        let encounter = Self::choose_encounter();
+        let enemy_enums = encounter.instantiate(&mut rng, &global_info);
+        let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
+        
+        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        BattleCli { battle, rng }
+    }
+    
+    /// Let the user choose which encounter to fight
+    fn choose_encounter() -> EncounterEvent {
+        println!("\n=== Choose Your Encounter ===");
+        println!("1. Two Louses (2 random louses)");
+        println!("2. Jaw Worm (single tough enemy)");
+        print!("Enter your choice (1-2): ");
+        io::stdout().flush().unwrap();
+        
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+        
+        match input.trim() {
+            "1" => EncounterEvent::TwoLouses,
+            "2" => EncounterEvent::JawWorm,
+            _ => {
+                println!("Invalid choice, defaulting to Two Louses");
+                EncounterEvent::TwoLouses
+            }
+        }
+    }
+    
+    /// Start the battle simulation
+    pub fn run(&mut self) {
+        println!("\n=== BATTLE START ===");
+        self.display_battle_state();
+        
+        while !self.battle.is_battle_over() {
+            match self.player_turn() {
+                Ok(BattleResult::Won) => {
+                    println!("\n🎉 VICTORY! You defeated all enemies!");
+                    break;
+                },
+                Ok(BattleResult::Lost) => {
+                    println!("\n💀 DEFEAT! You have been slain!");
+                    break;
+                },
+                Ok(BattleResult::Continued) => {
+                    // Battle continues
+                },
+                Err(e) => {
+                    println!("Error during battle: {:?}", e);
+                    break;
+                }
+            }
+        }
+        
+        println!("\n=== BATTLE END ===");
+        self.display_final_state();
+    }
+    
+    /// Handle a player turn
+    fn player_turn(&mut self) -> Result<BattleResult, BattleError> {
+        println!("\n--- Your Turn ---");
+        
+        loop {
+            self.display_available_actions();
+            
+            match self.get_player_action() {
+                Some(action) => {
+                    println!("Executing action: {:?}", action);
+                    match self.battle.eval_action(action, &mut self.rng) {
+                        Ok(result) => {
+                            self.display_battle_state();
+                            return Ok(result);
+                        },
+                        Err(e) => {
+                            println!("Invalid action: {:?}. Please try again.", e);
+                            continue;
+                        }
+                    }
+                },
+                None => {
+                    println!("Invalid input. Please try again.");
+                    continue;
+                }
+            }
+        }
+    }
+    
+    /// Display the current battle state
+    fn display_battle_state(&self) {
+        println!("\n{}", "=".repeat(60));
+        
+        // Player state
+        let player = self.battle.get_player();
+        println!("🧙 PLAYER: HP {}/{} | Block {} | Energy {}", 
+            player.battle_info.get_hp(),
+            player.battle_info.get_max_hp(),
+            player.get_block(),
+            player.get_energy()
+        );
+        
+        if player.battle_info.get_strength() != 0 {
+            println!("   💪 Strength: {}", player.battle_info.get_strength());
+        }
+        if player.battle_info.is_vulnerable() {
+            println!("   🔻 Vulnerable: {} turns", player.battle_info.get_vulnerable_turns());
+        }
+        if player.battle_info.is_weak() {
+            println!("   😵‍💫 Weak: {} turns", player.battle_info.get_weak_turns());
+        }
+        
+        println!();
+        
+        // Enemy state
+        for (i, enemy) in self.battle.get_enemies().iter().enumerate() {
+            let name = match &enemy.enemy {
+                EnemyEnum::RedLouse(_) => "Red Louse",
+                EnemyEnum::GreenLouse(_) => "Green Louse", 
+                EnemyEnum::JawWorm(_) => "Jaw Worm",
+            };
+            
+            if enemy.battle_info.is_alive() {
+                println!("👹 ENEMY {}: {} | HP {}/{} | Block {}", 
+                    i + 1,
+                    name,
+                    enemy.battle_info.get_hp(),
+                    enemy.battle_info.get_max_hp(),
+                    enemy.battle_info.get_block()
+                );
+                
+                if enemy.battle_info.get_strength() != 0 {
+                    println!("   💪 Strength: {}", enemy.battle_info.get_strength());
+                }
+                if enemy.battle_info.is_vulnerable() {
+                    println!("   🔻 Vulnerable: {} turns", enemy.battle_info.get_vulnerable_turns());
+                }
+                if enemy.battle_info.is_weak() {
+                    println!("   😵‍💫 Weak: {} turns", enemy.battle_info.get_weak_turns());
+                }
+            } else {
+                println!("💀 ENEMY {}: {} | DEFEATED", i + 1, name);
+            }
+        }
+        
+        println!();
+        
+        // Hand
+        println!("🃏 HAND:");
+        let hand = self.battle.get_hand();
+        for (i, card) in hand.iter().enumerate() {
+            println!("   {}. {} (Cost: {})", i + 1, card.get_name(), card.get_cost());
+        }
+        
+        println!("{}", "=".repeat(60));
+    }
+    
+    /// Display available actions
+    fn display_available_actions(&self) {
+        let actions = self.battle.list_available_actions();
+        println!("\n📋 Available Actions:");
+        
+        let mut action_index = 1;
+        
+        // Group actions by type for better display
+        let mut card_actions = Vec::new();
+        let mut end_turn_action = None;
+        
+        for action in &actions {
+            match action {
+                Action::PlayCard(card_idx, target) => {
+                    card_actions.push((*card_idx, *target));
+                },
+                Action::EndTurn => {
+                    end_turn_action = Some(action_index);
+                }
+            }
+        }
+        
+        // Display card actions grouped by card
+        let hand = self.battle.get_hand();
+        for (card_idx, card) in hand.iter().enumerate() {
+            let card_targets: Vec<_> = card_actions.iter()
+                .filter(|(idx, _)| *idx == card_idx)
+                .map(|(_, target)| *target)
+                .collect();
+            
+            if !card_targets.is_empty() {
+                println!("   {}. Play {} (Cost: {}) - Targets:", action_index, card.get_name(), card.get_cost());
+                for (target_idx, target) in card_targets.iter().enumerate() {
+                    match target {
+                        Entity::Player => println!("      {}a. Target yourself", action_index),
+                        Entity::Enemy(enemy_idx) => {
+                            let enemy_name = match &self.battle.get_enemies()[*enemy_idx].enemy {
+                                EnemyEnum::RedLouse(_) => "Red Louse",
+                                EnemyEnum::GreenLouse(_) => "Green Louse",
+                                EnemyEnum::JawWorm(_) => "Jaw Worm",
+                            };
+                            println!("      {}{}. Target {} {}", action_index, 
+                                char::from(b'a' + target_idx as u8), enemy_name, enemy_idx + 1);
+                        },
+                        Entity::None => {} // Should not happen in available actions
+                    }
+                }
+                action_index += 1;
+            }
+        }
+        
+        // Display end turn action
+        if let Some(_) = end_turn_action {
+            println!("   {}. End Turn", action_index);
+        }
+        
+        println!();
+    }
+    
+    /// Get player action input
+    fn get_player_action(&self) -> Option<Action> {
+        print!("Enter action (card number, action number, or 'end'): ");
+        io::stdout().flush().unwrap();
+        
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+        let input = input.trim().to_lowercase();
+        
+        // Handle empty input
+        if input.is_empty() {
+            return None;
+        }
+        
+        if input == "end" || input == "e" {
+            return Some(Action::EndTurn);
+        }
+        
+        // Calculate the EndTurn action number 
+        let actions = self.battle.list_available_actions();
+        let hand = self.battle.get_hand();
+        let mut action_number = 1;
+        
+        // Count card actions to find EndTurn number
+        for (card_idx, _) in hand.iter().enumerate() {
+            let has_card_actions = actions.iter().any(|action| 
+                matches!(action, Action::PlayCard(idx, _) if *idx == card_idx)
+            );
+            if has_card_actions {
+                action_number += 1;
+            }
+        }
+        
+        // Check if input matches EndTurn action number
+        if let Ok(num) = input.parse::<usize>() {
+            if num == action_number && actions.contains(&Action::EndTurn) {
+                return Some(Action::EndTurn);
+            }
+        }
+        
+        // Handle simple card number for single target cards
+        if let Ok(card_num) = input.parse::<usize>() {
+            if card_num == 0 { return None; }
+            let card_idx = card_num - 1;
+            
+            // Get the first available target for this card
+            let available_actions = self.battle.list_available_actions();
+            let card_actions: Vec<_> = available_actions.iter()
+                .filter_map(|action| match action {
+                    Action::PlayCard(idx, target) if *idx == card_idx => Some(*target),
+                    _ => None
+                })
+                .collect();
+            
+            if let Some(target) = card_actions.get(0) {
+                return Some(Action::PlayCard(card_idx, *target));
+            }
+        }
+        
+        // Parse card action (e.g., "1a", "2b", etc.)
+        if input.len() >= 2 {
+            let card_part = &input[..input.len()-1];
+            let target_part = input.chars().last()?;
+            
+            if let Ok(card_num) = card_part.parse::<usize>() {
+                if card_num == 0 { return None; }
+                let card_idx = card_num - 1;
+                
+                // Determine target from letter
+                let target = match target_part {
+                    'a' => {
+                        // Need to check what 'a' means for this card
+                        let available_actions = self.battle.list_available_actions();
+                        let card_actions: Vec<_> = available_actions.iter()
+                            .filter_map(|action| match action {
+                                Action::PlayCard(idx, target) if *idx == card_idx => Some(*target),
+                                _ => None
+                            })
+                            .collect();
+                        
+                        card_actions.get(0).copied()?
+                    },
+                    'b' => {
+                        // Second target option
+                        let available_actions = self.battle.list_available_actions();
+                        let card_actions: Vec<_> = available_actions.iter()
+                            .filter_map(|action| match action {
+                                Action::PlayCard(idx, target) if *idx == card_idx => Some(*target),
+                                _ => None
+                            })
+                            .collect();
+                        
+                        card_actions.get(1).copied()?
+                    },
+                    'c' => {
+                        // Third target option
+                        let available_actions = self.battle.list_available_actions();
+                        let card_actions: Vec<_> = available_actions.iter()
+                            .filter_map(|action| match action {
+                                Action::PlayCard(idx, target) if *idx == card_idx => Some(*target),
+                                _ => None
+                            })
+                            .collect();
+                        
+                        card_actions.get(2).copied()?
+                    },
+                    _ => return None,
+                };
+                
+                return Some(Action::PlayCard(card_idx, target));
+            }
+        }
+        
+        None
+    }
+    
+    /// Display final battle state
+    fn display_final_state(&self) {
+        self.display_battle_state();
+        
+        if self.battle.get_player().battle_info.get_hp() > 0 {
+            println!("🎉 Congratulations! You survived the battle!");
+        } else {
+            println!("💀 Better luck next time!");
+        }
+    }
+}

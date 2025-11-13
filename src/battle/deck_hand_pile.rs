@@ -81,10 +81,12 @@ impl DeckHandPile {
         self.discard_pile.push(card);
     }
     
-    // Play card from hand (removes from hand, returns the card)
+    // Play card from hand (removes from hand, adds to discard pile, returns the card)
     pub fn play_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
         if hand_index < self.hand.len() {
-            Some(self.hand.remove(hand_index))
+            let card = self.hand.remove(hand_index);
+            self.discard_pile.push(card.clone());
+            Some(card)
         } else {
             None
         }
@@ -171,8 +173,8 @@ mod tests {
         
         assert!(played_card.is_some());
         assert_eq!(deck_hand_pile.hand_size(), initial_hand_size - 1);
-        // Playing a card doesn't put it in discard pile automatically
-        assert_eq!(deck_hand_pile.discard_pile_size(), 0);
+        // Playing a card now puts it in discard pile automatically
+        assert_eq!(deck_hand_pile.discard_pile_size(), 1);
     }
     
     #[test]
@@ -184,5 +186,116 @@ mod tests {
         deck_hand_pile.discard_entire_hand();
         assert_eq!(deck_hand_pile.hand_size(), 0);
         assert_eq!(deck_hand_pile.discard_pile_size(), 5);
+    }
+    
+    #[test]
+    fn test_deck_reshuffling_when_empty() {
+        let cards = vec![strike(), defend()];
+        let deck = Deck::new(cards);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+        
+        // Initial state: deck is empty (all cards in hand), hand has 2 cards, discard empty
+        assert_eq!(deck_hand_pile.deck_size(), 0);
+        assert_eq!(deck_hand_pile.hand_size(), 2);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 0);
+        
+        // Discard all cards from hand
+        deck_hand_pile.discard_entire_hand();
+        assert_eq!(deck_hand_pile.deck_size(), 0);
+        assert_eq!(deck_hand_pile.hand_size(), 0);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 2);
+        
+        // Try to draw a card - should reshuffle discard into deck and then draw
+        let drawn_card = deck_hand_pile.draw_card();
+        assert!(drawn_card.is_some());
+        assert_eq!(deck_hand_pile.hand_size(), 1);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 0);
+        assert_eq!(deck_hand_pile.deck_size(), 1); // One card left in deck after drawing
+        
+        // Draw the second card
+        let second_card = deck_hand_pile.draw_card();
+        assert!(second_card.is_some());
+        assert_eq!(deck_hand_pile.hand_size(), 2);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 0);
+        assert_eq!(deck_hand_pile.deck_size(), 0); // Deck is empty again
+        
+        // Try to draw again - should return None (no cards left anywhere)
+        let third_card = deck_hand_pile.draw_card();
+        assert!(third_card.is_none());
+        assert_eq!(deck_hand_pile.hand_size(), 2); // Hand unchanged
+    }
+    
+    #[test]
+    fn test_simulate_multiple_turns_with_small_deck() {
+        // Test with exactly 10 cards to reproduce the issue
+        let cards = vec![
+            strike(), defend(), strike(), defend(), strike(),
+            defend(), strike(), defend(), strike(), defend()
+        ];
+        let deck = Deck::new(cards);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+        
+        // Initial state: 5 cards in hand, 5 in deck, 0 in discard
+        assert_eq!(deck_hand_pile.hand_size(), 5);
+        assert_eq!(deck_hand_pile.deck_size(), 5);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 0);
+        
+        // Turn 1: Discard hand, then draw new hand (5 cards)
+        deck_hand_pile.discard_entire_hand();
+        assert_eq!(deck_hand_pile.hand_size(), 0);
+        assert_eq!(deck_hand_pile.deck_size(), 5);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 5);
+        
+        // Draw 5 cards for new turn
+        let mut drawn_cards = 0;
+        for _ in 0..5 {
+            if deck_hand_pile.draw_card().is_some() {
+                drawn_cards += 1;
+            } else {
+                break;
+            }
+        }
+        assert_eq!(drawn_cards, 5, "Should draw 5 cards on turn 1");
+        assert_eq!(deck_hand_pile.hand_size(), 5);
+        assert_eq!(deck_hand_pile.deck_size(), 0); // Deck empty  
+        assert_eq!(deck_hand_pile.discard_pile_size(), 5); // Discard pile has the cards we discarded
+        
+        // Turn 2: Discard hand again, then draw new hand
+        deck_hand_pile.discard_entire_hand();
+        assert_eq!(deck_hand_pile.hand_size(), 0);
+        assert_eq!(deck_hand_pile.deck_size(), 0);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 10); // Now have 10 cards in discard (5 from each turn)
+        
+        drawn_cards = 0;
+        for _ in 0..5 {
+            if deck_hand_pile.draw_card().is_some() {
+                drawn_cards += 1;
+            } else {
+                break;
+            }
+        }
+        assert_eq!(drawn_cards, 5, "Should draw 5 cards on turn 2");
+        assert_eq!(deck_hand_pile.hand_size(), 5);
+        assert_eq!(deck_hand_pile.deck_size(), 5); // Remaining 5 cards after drawing 5 of the 10 reshuffled
+        assert_eq!(deck_hand_pile.discard_pile_size(), 0); // Discard was reshuffled into deck
+        
+        // Turn 3: This should work fine now
+        deck_hand_pile.discard_entire_hand();
+        assert_eq!(deck_hand_pile.hand_size(), 0);
+        assert_eq!(deck_hand_pile.deck_size(), 5); // Still 5 cards in deck from turn 2
+        assert_eq!(deck_hand_pile.discard_pile_size(), 5); // 5 cards just discarded
+        
+        drawn_cards = 0;
+        for _ in 0..5 {
+            if deck_hand_pile.draw_card().is_some() {
+                drawn_cards += 1;
+            } else {
+                break;
+            }
+        }
+        
+        
+        assert_eq!(drawn_cards, 5, "Should draw 5 cards on turn 3");
+        assert_eq!(deck_hand_pile.hand_size(), 5);
     }
 }

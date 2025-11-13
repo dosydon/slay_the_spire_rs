@@ -103,8 +103,19 @@ impl Battle {
         &self.player
     }
     
-    pub fn start_player_turn(&mut self) {
+    /// Full turn start including card draw with deck reshuffling
+    pub fn start_turn(&mut self) {
+        self.refresh_all();
         self.player.start_turn();
+        
+        // Draw new hand (typically 5 cards)
+        // The draw_card method will automatically reshuffle discard pile into deck if needed
+        for _ in 0..5 {
+            if self.cards.draw_card().is_none() {
+                // If we can't draw any more cards (deck + discard both empty), stop trying
+                break;
+            }
+        }
     }
     
     pub fn get_enemies(&self) -> &Vec<EnemyInBattle> {
@@ -115,6 +126,86 @@ impl Battle {
         self.cards.get_hand()
     }
     
+    /// List all available actions the player can take in the current battle state
+    pub fn list_available_actions(&self) -> Vec<Action> {
+        let mut available_actions = Vec::new();
+        
+        // Battle is over - no actions available
+        if self.is_battle_over() {
+            return available_actions;
+        }
+        
+        // Check each card in hand
+        let hand = self.cards.get_hand();
+        for (card_index, card) in hand.iter().enumerate() {
+            // Check if player has enough energy to play this card
+            if self.player.get_energy() >= card.get_cost() {
+                // Determine valid targets for this card based on its type and effects
+                let valid_targets = self.get_valid_targets_for_card(card);
+                
+                // Add PlayCard action for each valid target
+                for target in valid_targets {
+                    available_actions.push(Action::PlayCard(card_index, target));
+                }
+            }
+        }
+        
+        // EndTurn is always available when battle is not over
+        available_actions.push(Action::EndTurn);
+        
+        available_actions
+    }
+    
+    /// Get valid targets for a specific card based on its effects
+    fn get_valid_targets_for_card(&self, card: &Card) -> Vec<Entity> {
+        let mut valid_targets = Vec::new();
+        
+        // Check if any effect targets enemies
+        let targets_enemies = card.get_effects().iter().any(|effect| {
+            matches!(effect, 
+                crate::game::effect::Effect::AttackToTarget { .. } |
+                crate::game::effect::Effect::ApplyVulnerable { .. } |
+                crate::game::effect::Effect::ApplyWeak { .. }
+            )
+        });
+        
+        // Check if any effect targets self/player  
+        let targets_self = card.get_effects().iter().any(|effect| {
+            matches!(effect,
+                crate::game::effect::Effect::GainDefense(_) |
+                crate::game::effect::Effect::GainStrength(_)
+            )
+        });
+        
+        // Add valid enemy targets
+        if targets_enemies {
+            for (enemy_index, enemy) in self.enemies.iter().enumerate() {
+                if enemy.battle_info.is_alive() {
+                    valid_targets.push(Entity::Enemy(enemy_index));
+                }
+            }
+        }
+        
+        // Add player target
+        if targets_self {
+            valid_targets.push(Entity::Player);
+        }
+        
+        // If no specific targeting logic applies, default to allowing both enemy and player targets
+        // This handles cards with mixed effects or unknown effect types
+        if valid_targets.is_empty() {
+            // Add all alive enemies as potential targets
+            for (enemy_index, enemy) in self.enemies.iter().enumerate() {
+                if enemy.battle_info.is_alive() {
+                    valid_targets.push(Entity::Enemy(enemy_index));
+                }
+            }
+            // Also add player as target
+            valid_targets.push(Entity::Player);
+        }
+        
+        valid_targets
+    }
     
     pub fn is_battle_over(&self) -> bool {
         !self.player.is_alive() || self.enemies.iter().all(|e| !e.battle_info.is_alive())
@@ -157,6 +248,7 @@ impl Battle {
             Action::EndTurn => {
                 let global_info = self.global_info;
                 self.end_turn(rng, &global_info);
+                self.start_turn();
             }
         }
         
@@ -178,7 +270,7 @@ impl Battle {
         if !self.player.spend_energy(card.get_cost()) { return; }
         
         let card_effects = card.get_effects().clone();
-        if let Some(played_card) = self.cards.play_card_from_hand(idx) {
+        if let Some(_played_card) = self.cards.play_card_from_hand(idx) {
             for effect in card_effects {
                 self.eval_effect_with_target(&BaseEffect::from_effect(effect, Entity::Player, target));
             }
@@ -298,17 +390,6 @@ impl Battle {
         
         // 2. Execute enemy turn
         self.enemy_turn(rng, global_info);
-        
-        // 3. Refresh all characters after enemy turn (reset block, decrement status effects)
-        self.refresh_all();
-        
-        // 4. Start new player turn
-        self.start_player_turn();
-        
-        // 5. Draw new hand (typically 5 cards)
-        for _ in 0..5 {
-            self.cards.draw_card();
-        }
     }
 
     pub fn enemy_turn(&mut self, rng: &mut impl rand::Rng, _global_info: &GlobalInfo) {
@@ -344,8 +425,7 @@ mod tests {
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         assert_eq!(battle.player.battle_info.get_hp(), 80);
         assert_eq!(battle.player.get_block(), 0);
@@ -362,8 +442,7 @@ let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
@@ -385,8 +464,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         let initial_energy = battle.player.get_energy();
@@ -415,8 +493,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Apply vulnerable to enemy
@@ -449,8 +526,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Give enemy some block
@@ -479,8 +555,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         let initial_hp = battle.player.battle_info.get_hp();
@@ -504,8 +579,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Give player some strength
@@ -532,8 +606,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Record initial state
@@ -614,8 +687,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Initially enemy should have 0 block
@@ -654,8 +726,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         // Test normal ascension (0-6): should give 3-7 block
         let normal_global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &normal_global_info);
-        let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let mut normal_battle = Battle::new(deck.clone(), normal_global_info, 80, 80, enemies, &mut rng);
         normal_battle.apply_damage(Entity::Enemy(0), 6);
         let normal_block = normal_battle.enemies[0].battle_info.get_block();
@@ -664,8 +735,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         // Test mid ascension (7-16): should give 4-8 block
         let mid_global_info = GlobalInfo { ascention: 10, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &mid_global_info);
-        let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let mut mid_battle = Battle::new(deck.clone(), mid_global_info, 80, 80, enemies, &mut rng);
         mid_battle.apply_damage(Entity::Enemy(0), 6);
         let mid_block = mid_battle.enemies[0].battle_info.get_block();
@@ -674,12 +744,212 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         // Test high ascension (17+): should give 9-12 block
         let high_global_info = GlobalInfo { ascention: 17, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &high_global_info);
-        let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let mut high_battle = Battle::new(deck, high_global_info, 80, 80, enemies, &mut rng);
         high_battle.apply_damage(Entity::Enemy(0), 6);
         let high_block = high_battle.enemies[0].battle_info.get_block();
         assert!(high_block >= 9 && high_block <= 12);
+    }
+
+    #[test]
+    fn test_list_available_actions_basic() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        let available_actions = battle.list_available_actions();
+        
+        // Should have actions for playable cards + EndTurn
+        assert!(!available_actions.is_empty());
+        
+        // Should always have EndTurn available
+        assert!(available_actions.contains(&Action::EndTurn));
+        
+        // Check that we have PlayCard actions
+        let play_card_actions: Vec<_> = available_actions.iter()
+            .filter(|action| matches!(action, Action::PlayCard(_, _)))
+            .collect();
+        
+        assert!(!play_card_actions.is_empty(), "Should have at least some playable cards");
+        
+        // Verify all card actions are for cards with sufficient energy
+        let hand = battle.get_hand();
+        let player_energy = battle.get_player().get_energy();
+        
+        for action in &play_card_actions {
+            if let Action::PlayCard(card_idx, target) = action {
+                assert!(*card_idx < hand.len(), "Card index should be valid");
+                assert!(hand[*card_idx].get_cost() <= player_energy, "Should only suggest affordable cards");
+                assert!(battle.is_valid_target(target), "Target should be valid");
+            }
+        }
+        
+        println!("Available actions: {}", available_actions.len());
+        println!("Play card actions: {}", play_card_actions.len());
+    }
+    
+    #[test]
+    fn test_list_available_actions_no_energy() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        // Spend all energy
+        battle.player.battle_info.spend_energy(battle.player.get_energy());
+        assert_eq!(battle.player.get_energy(), 0);
+        
+        let available_actions = battle.list_available_actions();
+        
+        // Should only have EndTurn available (no energy for cards)
+        assert_eq!(available_actions.len(), 1);
+        assert_eq!(available_actions[0], Action::EndTurn);
+    }
+    
+    #[test]
+    fn test_list_available_actions_battle_over() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        // Kill all enemies to end battle
+        let enemy_hp = battle.enemies[0].battle_info.get_hp();
+        battle.enemies[0].battle_info.take_damage(enemy_hp);
+        
+        assert!(battle.is_battle_over());
+        
+        let available_actions = battle.list_available_actions();
+        
+        // Should have no available actions when battle is over
+        assert!(available_actions.is_empty());
+    }
+    
+    #[test]
+    fn test_get_valid_targets_for_card() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        let hand = battle.get_hand();
+        
+        // Test targeting for different card types
+        for card in hand {
+            let targets = battle.get_valid_targets_for_card(card);
+            assert!(!targets.is_empty(), "Every card should have at least one valid target");
+            
+            // Verify all returned targets are actually valid
+            for target in &targets {
+                assert!(battle.is_valid_target(target), "All returned targets should be valid");
+            }
+            
+            println!("Card '{}' can target: {:?}", card.get_name(), targets);
+        }
+    }
+    
+    #[test]
+    fn test_list_available_actions_with_dead_enemies() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        
+        // Create battle with two enemies
+        let red_louse1 = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse2 = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse1)),
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2))
+        ];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        // Kill the first enemy
+        let first_enemy_hp = battle.enemies[0].battle_info.get_hp();
+        battle.enemies[0].battle_info.take_damage(first_enemy_hp);
+        assert!(!battle.enemies[0].battle_info.is_alive());
+        assert!(battle.enemies[1].battle_info.is_alive());
+        
+        let available_actions = battle.list_available_actions();
+        
+        // Should still have actions available (second enemy is alive)
+        assert!(!available_actions.is_empty());
+        assert!(available_actions.contains(&Action::EndTurn));
+        
+        // Check that PlayCard actions only target living enemies
+        let play_card_actions: Vec<_> = available_actions.iter()
+            .filter_map(|action| match action {
+                Action::PlayCard(idx, Entity::Enemy(enemy_idx)) => Some((*idx, *enemy_idx)),
+                _ => None,
+            })
+            .collect();
+        
+        // All enemy-targeting actions should target the living enemy (index 1)
+        for (_, enemy_idx) in play_card_actions {
+            assert_eq!(enemy_idx, 1, "Should only target living enemy at index 1");
+        }
+    }
+    
+    #[test]
+    fn test_list_available_actions_specific_cards() {
+        use crate::cards::ironclad::{strike::strike, defend::defend, bash::bash};
+        
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        
+        // Create a deck with specific cards for testing
+        let deck = Deck::new(vec![strike(), defend(), bash()]);
+        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        let available_actions = battle.list_available_actions();
+        
+        // Strike should target enemies
+        let strike_actions = available_actions.iter()
+            .filter(|action| {
+                if let Action::PlayCard(0, target) = action {
+                    matches!(target, Entity::Enemy(_))
+                } else {
+                    false
+                }
+            })
+            .count();
+        assert!(strike_actions > 0, "Strike should be able to target enemies");
+        
+        // Defend should target player 
+        let defend_actions = available_actions.iter()
+            .filter(|action| {
+                if let Action::PlayCard(1, target) = action {
+                    matches!(target, Entity::Player)
+                } else {
+                    false
+                }
+            })
+            .count();
+        assert!(defend_actions > 0, "Defend should be able to target player");
+        
+        // Bash should target enemies (has attack + apply vulnerable effects)
+        let bash_actions = available_actions.iter()
+            .filter(|action| {
+                if let Action::PlayCard(2, target) = action {
+                    matches!(target, Entity::Enemy(_))
+                } else {
+                    false
+                }
+            })
+            .count();
+        assert!(bash_actions > 0, "Bash should be able to target enemies");
+        
+        println!("Available actions for specific cards test: {}", available_actions.len());
     }
 
 }

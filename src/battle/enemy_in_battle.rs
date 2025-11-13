@@ -6,7 +6,8 @@ pub struct EnemyInBattle {
 }
 
 impl EnemyInBattle {
-    pub fn new(enemy: EnemyEnum, hp: u32) -> Self {
+    pub fn new(enemy: EnemyEnum) -> Self {
+        let hp = enemy.get_hp();
         EnemyInBattle {
             enemy,
             battle_info: CharacterBattleInfo::new_enemy(hp),

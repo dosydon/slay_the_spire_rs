@@ -1,6 +1,5 @@
-use crate::game::{global_info::GlobalInfo, action::{GameAction, PathChoice}, deck::Deck, map::{Map, MapError}, enemy::EnemyTrait};
+use crate::game::{global_info::GlobalInfo, action::{GameAction, PathChoice}, deck::Deck, map::{Map, MapError}};
 use crate::battle::{Battle, BattleResult, BattleError, enemy_in_battle::EnemyInBattle};
-use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
 
 /// The overall state of the game
 #[derive(Debug, PartialEq)]
@@ -126,10 +125,9 @@ impl Game {
                         crate::game::map::NodeType::Combat | 
                         crate::game::map::NodeType::Elite |
                         crate::game::map::NodeType::Boss => {
-                            // TODO: Replace with proper enemy creation logic
-                            let red_louse = RedLouse::instantiate(rng, &self.global_info);
-                            let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-                            let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse), hp)];
+                            let event = crate::events::encounter_event::sample_encounter_event(&self.global_info, rng);
+                            let enemy_enums = event.instantiate(rng, &self.global_info);
+                            let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
                             
                             // Start a battle
                             let battle = Battle::new(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);

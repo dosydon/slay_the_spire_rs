@@ -4,3 +4,4 @@ pub mod enemies;
 pub mod events;
 pub mod utils;
 pub mod battle;
+pub mod cli;

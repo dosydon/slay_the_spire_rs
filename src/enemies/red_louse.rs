@@ -138,6 +138,10 @@ impl EnemyTrait for RedLouse {
     fn get_name() -> String {
         "Louse".to_string()
     }
+
+    fn get_hp(&self) -> u32 {
+        self.hp
+    }
 }
 
 #[cfg(test)]
@@ -404,8 +408,7 @@ mod tests {
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-        let hp = rng.random_range(RedLouse::hp_lb()..=RedLouse::hp_ub());
-        let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::enemy_enum::EnemyEnum::RedLouse(red_louse), hp)];
+        let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::enemy_enum::EnemyEnum::RedLouse(red_louse))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         println!("=== FIXED HAND BATTLE TEST ===");
@@ -487,7 +490,7 @@ mod tests {
         
         // End of turn 1 - refresh
         battle.refresh_all();
-        battle.start_player_turn();
+        battle.start_turn();
         
         println!("End of Turn 1 - Player HP: {}, Enemy HP: {}, Enemy Strength: {}", 
             battle.get_player().battle_info.get_hp(), 

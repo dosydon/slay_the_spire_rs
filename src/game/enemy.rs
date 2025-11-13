@@ -7,4 +7,5 @@ pub trait EnemyTrait {
     fn hp_ub() -> u32;
     fn choose_next_move(&self, global_info: &GlobalInfo) -> CategoricalDistribution<Self::MoveType>;
     fn get_name() -> String;
+    fn get_hp(&self) -> u32;
 }

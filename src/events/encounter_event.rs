@@ -1,12 +1,37 @@
 use crate::game::enemy::EnemyTrait;
+use crate::game::global_info::GlobalInfo;
 use crate::enemies::EnemyEnum;
+use crate::utils::CategoricalDistribution;
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum EncounterEvent {
     TwoLouses,
-    JawWorm
+    JawWorm,
+    Cultist,
+    SmallSlimes,
+}
+
+pub fn sample_encounter_event(global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> EncounterEvent {
+    // For simplicity, we only implement Act 1 first three encounters sampling here
+    act1_first_three_encounters().sample_owned(rng)
+}
+
+fn act1_first_three_encounters() -> CategoricalDistribution<EncounterEvent> {
+    CategoricalDistribution::new(vec![
+        (EncounterEvent::TwoLouses, 0.25),
+        (EncounterEvent::JawWorm, 0.25),
+        (EncounterEvent::Cultist, 0.25),
+        (EncounterEvent::SmallSlimes, 0.25),
+    ])
 }
 
 impl EncounterEvent {
+    /// Get a random encounter event from the Act 1 first three encounters pool
+    pub fn get_act1_first_three_encounter(rng: &mut impl rand::Rng) -> EncounterEvent {
+        let distribution = act1_first_three_encounters();
+        distribution.sample_owned(rng)
+    }
+
     pub fn instantiate(&self, rng: &mut impl rand::Rng, global_info: &crate::game::global_info::GlobalInfo) -> Vec<EnemyEnum> {
         match self {
             EncounterEvent::TwoLouses => {
@@ -36,6 +61,7 @@ impl EncounterEvent {
                 let jaw_worm = crate::enemies::jaw_worm::JawWorm::instantiate(rng, global_info);
                 vec![EnemyEnum::JawWorm(jaw_worm)]
             }
+            _ => panic!("EncounterEvent::instantiate not implemented for this encounter"),
         }
     }
 }
