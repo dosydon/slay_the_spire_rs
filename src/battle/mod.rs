@@ -6,6 +6,10 @@ pub mod listeners;
 pub mod player;
 pub mod deck_hand_pile;
 pub mod enemy_in_battle;
+mod turn_flow;
+mod action_handler;
+mod eval_effect;
+mod enemy_manager;
 
 use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::GreenLouseMove, jaw_worm::JawWormMove, enemy_enum::{EnemyEnum, EnemyMove}}, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, enemy::EnemyTrait, global_info::GlobalInfo}};
 use self::{action::Action, target::Entity, events::{BattleEvent, EventListener}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
@@ -65,63 +69,7 @@ impl Battle {
         self.player.battle_info.get_hp()
     }
     
-    /// Initialize event listeners for enemies based on their type
-    pub(in crate::battle) fn initialize_enemy_listeners(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) {
-        use crate::battle::listeners::CurlUpListener;
-        
-        for (i, enemy) in self.enemies.iter().enumerate() {
-            match &enemy.enemy {
-                EnemyEnum::RedLouse(_) => {
-                    // Red Louse gets a curl up listener with randomly generated block amount
-                    let curl_up = CurlUpListener::new(Entity::Enemy(i), global_info.ascention, rng);
-                    self.event_listeners.push(Box::new(curl_up));
-                }
-                EnemyEnum::GreenLouse(_) => {
-                    // Green Louse also gets a curl up listener with randomly generated block amount
-                    let curl_up = CurlUpListener::new(Entity::Enemy(i), global_info.ascention, rng);
-                    self.event_listeners.push(Box::new(curl_up));
-                }
-                EnemyEnum::JawWorm(_) => {
-                    // Jaw Worm has no special listeners
-                }
-                EnemyEnum::Cultist(_) => {
-                    // Cultist has no special listeners
-                }
-                EnemyEnum::SpikeSlimeS(_) => {
-                    // Spike Slime (S) has no special listeners
-                }
-                EnemyEnum::SpikeSlimeM(_) => {
-                    // Spike Slime (M) has no special listeners
-                }
-                EnemyEnum::AcidSlimeS(_) => {
-                    // Acid Slime (S) has no special listeners
-                }
-                EnemyEnum::AcidSlimeM(_) => {
-                    // Acid Slime (M) has no special listeners
-                }
-            }
-        }
-    }
     
-    /// Emit a battle event to all listeners
-    pub(in crate::battle) fn emit_event(&mut self, event: BattleEvent) {
-        let mut effects_to_apply = Vec::new();
-        
-        for listener in &mut self.event_listeners {
-            if listener.is_active() {
-                let triggered_effects = listener.on_event(&event);
-                for effect in triggered_effects {
-                    let base_effect = BaseEffect::from_effect(effect, listener.get_owner(), listener.get_owner());
-                    effects_to_apply.push(base_effect);
-                }
-            }
-        }
-        
-        // Apply all triggered effects
-        for effect in effects_to_apply {
-            self.eval_effect_with_target(&effect);
-        }
-    }
     
     pub fn get_player(&self) -> &Player {
         &self.player
@@ -139,408 +87,17 @@ impl Battle {
         self.cards.get_hand()
     }
     
-    /// Sample and store the next action and effects for all enemies
-    pub(crate) fn sample_enemy_actions(&mut self, rng: &mut impl rand::Rng) {
-        for (i, enemy) in self.enemies.iter_mut().enumerate() {
-            let (enemy_move, effects) = enemy.enemy.sample_move_and_effects(&self.global_info, rng);
-            self.enemy_actions[i] = Some((enemy_move, effects));
-        }
-    }
     
-    /// Get the stored move for a specific enemy
-    pub fn get_enemy_move(&self, enemy_index: usize) -> Option<&EnemyMove> {
-        self.enemy_actions.get(enemy_index).and_then(|pair| pair.as_ref().map(|(enemy_move, _)| enemy_move))
-    }
     
-    /// Get the stored move and effects for a specific enemy
-    pub fn get_enemy_move_and_effects(&self, enemy_index: usize) -> Option<(&EnemyMove, &Vec<Effect>)> {
-        self.enemy_actions.get(enemy_index).and_then(|pair| pair.as_ref().map(|(enemy_move, effects)| (enemy_move, effects)))
-    }
     
-    /// Get all stored enemy moves
-    pub(in crate::battle) fn get_all_enemy_moves(&self) -> Vec<Option<&EnemyMove>> {
-        self.enemy_actions.iter().map(|pair| pair.as_ref().map(|(enemy_move, _)| enemy_move)).collect()
-    }
-    
-    /// List all available actions the player can take in the current battle state
-    pub fn list_available_actions(&self) -> Vec<Action> {
-        let mut available_actions = Vec::new();
-        
-        // Battle is over - no actions available
-        if self.is_battle_over() {
-            return available_actions;
-        }
-        
-        // Check each card in hand
-        let hand = self.cards.get_hand();
-        for (card_index, card) in hand.iter().enumerate() {
-            // Check if player has enough energy to play this card
-            if self.player.get_energy() >= card.get_cost() {
-                // Determine valid targets for this card based on its type and effects
-                let valid_targets = self.get_valid_targets_for_card(card);
-                
-                // Add PlayCard action for each valid target
-                for target in valid_targets {
-                    available_actions.push(Action::PlayCard(card_index, target));
-                }
-            }
-        }
-        
-        // EndTurn is always available when battle is not over
-        available_actions.push(Action::EndTurn);
-        
-        available_actions
-    }
-    
-    /// Get valid targets for a specific card based on its effects
-    pub(in crate::battle) fn get_valid_targets_for_card(&self, card: &Card) -> Vec<Entity> {
-        let mut valid_targets = Vec::new();
-        
-        // Check if any effect targets enemies
-        let targets_enemies = card.get_effects().iter().any(|effect| {
-            matches!(effect, 
-                crate::game::effect::Effect::AttackToTarget { .. } |
-                crate::game::effect::Effect::ApplyVulnerable { .. } |
-                crate::game::effect::Effect::ApplyWeak { .. }
-            )
-        });
-        
-        // Check if any effect targets self/player  
-        let targets_self = card.get_effects().iter().any(|effect| {
-            matches!(effect,
-                crate::game::effect::Effect::GainDefense(_) |
-                crate::game::effect::Effect::GainStrength(_)
-            )
-        });
-        
-        // Add valid enemy targets
-        if targets_enemies {
-            for (enemy_index, enemy) in self.enemies.iter().enumerate() {
-                if enemy.battle_info.is_alive() {
-                    valid_targets.push(Entity::Enemy(enemy_index));
-                }
-            }
-        }
-        
-        // Add player target
-        if targets_self {
-            valid_targets.push(Entity::Player);
-        }
-        
-        // If no specific targeting logic applies, default to allowing both enemy and player targets
-        // This handles cards with mixed effects or unknown effect types
-        if valid_targets.is_empty() {
-            // Add all alive enemies as potential targets
-            for (enemy_index, enemy) in self.enemies.iter().enumerate() {
-                if enemy.battle_info.is_alive() {
-                    valid_targets.push(Entity::Enemy(enemy_index));
-                }
-            }
-            // Also add player as target
-            valid_targets.push(Entity::Player);
-        }
-        
-        valid_targets
-    }
     
     pub fn is_battle_over(&self) -> bool {
         !self.player.is_alive() || self.enemies.iter().all(|e| !e.battle_info.is_alive())
     }
     
-    pub(in crate::battle) fn is_valid_target(&self, target: &Entity) -> bool {
-        match target {
-            Entity::Enemy(idx) => *idx < self.enemies.len(),
-            Entity::Player => true,  // Player is always a valid target
-            Entity::None => false,   // None is not a valid target
-        }
-    }
     
-    pub fn eval_action(&mut self, action: Action, rng: &mut impl rand::Rng) -> Result<BattleResult, BattleError> {
-        if self.is_battle_over() {
-            return Err(BattleError::GameAlreadyOver);
-        }
 
-        match action {
-            Action::PlayCard(idx, target) => {
-                if idx >= self.cards.hand_size() {
-                    return Err(BattleError::CardNotInHand);
-                }
-                
-                if !self.is_valid_target(&target) {
-                    return Err(BattleError::InvalidTarget);
-                }
-                
-                let hand = self.cards.get_hand();
-                let card = &hand[idx];
-                if !self.player.spend_energy(card.get_cost()) {
-                    return Err(BattleError::NotEnoughEnergy);
-                }
-                
-                // Restore energy since we're checking but not actually spending yet
-                self.player.battle_info.gain_energy(card.get_cost());
-                
-                self.play_card(idx, target);
-            }
-            Action::EndTurn => {
-                let global_info = self.global_info;
-                self.at_end_of_player_turn();
-        
-                self.at_start_of_enemy_turn();
-                self.process_enemy_effects(rng, &global_info);
-                self.at_end_of_enemy_turn();
-
-                self.start_of_player_turn(rng);
-            }
-        }
-        
-        // Check if battle is over after the action
-        if !self.player.is_alive() {
-            Ok(BattleResult::Lost)
-        } else if self.enemies.iter().all(|e| !e.battle_info.is_alive()) {
-            Ok(BattleResult::Won)
-        } else {
-            Ok(BattleResult::Continued)
-        }
-    }
-
-    pub(in crate::battle) fn play_card(&mut self, idx: usize, target: Entity) {
-        if idx >= self.cards.hand_size() { return; }
-        
-        let hand = self.cards.get_hand();
-        let card = &hand[idx];
-        if !self.player.spend_energy(card.get_cost()) { return; }
-        
-        let card_effects = card.get_effects().clone();
-        let has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust);
-        
-        // Remove card from hand - exhaust it if it has Exhaust effect
-        if has_exhaust {
-            if let Some(_played_card) = self.cards.exhaust_card_from_hand(idx) {
-                // Execute non-exhaust effects
-                for effect in card_effects {
-                    if effect != crate::game::effect::Effect::Exhaust {
-                        self.eval_effect_with_target(&BaseEffect::from_effect(effect, Entity::Player, target));
-                    }
-                }
-            }
-        } else {
-            if let Some(_played_card) = self.cards.play_card_from_hand(idx) {
-                for effect in card_effects {
-                    self.eval_effect_with_target(&BaseEffect::from_effect(effect, Entity::Player, target));
-                }
-            }
-        }
-    }
     
-    pub(crate) fn eval_effect_with_target(&mut self, effect: &BaseEffect) {
-        match effect {
-            BaseEffect::AttackToTarget { source, target, amount, num_attacks } => {
-                for _ in 0..*num_attacks {
-                    let damage = match source {
-                        Entity::Player => self.player.battle_info.calculate_damage(*amount),
-                        Entity::Enemy(idx) => {
-                            if *idx < self.enemies.len() {
-                                self.enemies[*idx].battle_info.calculate_damage(*amount)
-                            } else {
-                                *amount // Fallback to base damage if enemy not found
-                            }
-                        },
-                        Entity::None => *amount, // Use base damage
-                    };
-                    self.apply_damage(*target, damage);
-                }
-            },
-            BaseEffect::GainDefense { source, amount } => {
-                // Defense effects apply to the source entity
-                self.apply_block(*source, *amount);
-            },
-            BaseEffect::ApplyVulnerable { target, duration } => {
-                match target {
-                    Entity::Player => self.player.battle_info.apply_vulnerable(*duration),
-                    Entity::Enemy(idx) => {
-                        if *idx < self.enemies.len() {
-                            self.enemies[*idx].battle_info.apply_vulnerable(*duration);
-                        }
-                    },
-                    Entity::None => {} // No target
-                }
-            },
-            BaseEffect::ApplyWeak { target, duration } => {
-                match target {
-                    Entity::Player => self.player.battle_info.apply_weak(*duration),
-                    Entity::Enemy(idx) => {
-                        if *idx < self.enemies.len() {
-                            self.enemies[*idx].battle_info.apply_weak(*duration);
-                        }
-                    },
-                    Entity::None => {} // No target
-                }
-            },
-            BaseEffect::GainStrength { source, amount } => {
-                match source {
-                    Entity::Player => self.player.battle_info.gain_strength(*amount),
-                    Entity::Enemy(idx) => {
-                        if *idx < self.enemies.len() {
-                            self.enemies[*idx].battle_info.gain_strength(*amount);
-                        }
-                    },
-                    Entity::None => {} // No source
-                }
-            },
-            BaseEffect::GainRitual { source, amount } => {
-                match source {
-                    Entity::Player => self.player.battle_info.gain_ritual(*amount),
-                    Entity::Enemy(idx) => {
-                        if *idx < self.enemies.len() {
-                            self.enemies[*idx].battle_info.gain_ritual(*amount);
-                        }
-                    },
-                    Entity::None => {} // No source
-                }
-            },
-            BaseEffect::ApplyFrail { target, duration } => {
-                match target {
-                    Entity::Player => {
-                        self.player.battle_info.apply_frail(*duration);
-                    },
-                    Entity::Enemy(idx) => {
-                        if *idx < self.enemies.len() {
-                            self.enemies[*idx].battle_info.apply_frail(*duration);
-                        }
-                    },
-                    Entity::None => {} // No target
-                }
-            },
-            BaseEffect::AddSlimed { target, count } => {
-                match target {
-                    Entity::Player => {
-                        for _ in 0..*count {
-                            let slimed_card = crate::cards::status::slimed::slimed();
-                            self.cards.add_card_to_discard(slimed_card);
-                        }
-                    },
-                    Entity::Enemy(_) => {
-                        // Enemies don't receive slimed cards
-                    },
-                    Entity::None => {} // No target
-                }
-            },
-            BaseEffect::Exhaust { source: _ } => {
-                // Exhaust effect is handled during card playing, not as a post-effect
-                // This is here for completeness but should not be reached in normal gameplay
-            },
-        }
-    }
-
-    /// Apply damage to an entity (player or enemy)
-    pub(in crate::battle) fn apply_damage(&mut self, target: Entity, damage: u32) -> u32 {
-        let actual_damage = match target {
-            Entity::Player => self.player.battle_info.take_damage(damage),
-            Entity::Enemy(idx) => {
-                if idx < self.enemies.len() {
-                    self.enemies[idx].battle_info.take_damage(damage)
-                } else {
-                    0 // Invalid enemy index, no damage dealt
-                }
-            }
-            Entity::None => 0, // No target, no damage dealt
-        };
-        
-        // Emit damage taken event if actual damage was dealt
-        if actual_damage > 0 {
-            let damage_event = BattleEvent::DamageTaken {
-                target,
-                amount: actual_damage,
-                source: Entity::None, // TODO: Track damage source
-            };
-            self.emit_event(damage_event);
-        }
-        
-        actual_damage
-    }
-
-    /// Apply block to an entity (player or enemy) 
-    pub(in crate::battle) fn apply_block(&mut self, target: Entity, amount: u32) {
-        match target {
-            Entity::Player => self.player.battle_info.gain_block(amount),
-            Entity::Enemy(idx) => {
-                if idx < self.enemies.len() {
-                    self.enemies[idx].battle_info.gain_block(amount);
-                }
-            }
-            Entity::None => {} // No target, no block gained
-        }
-    }
-
-    /// Full turn start including card draw with deck reshuffling
-    pub(crate) fn start_of_player_turn(&mut self, rng: &mut impl rand::Rng) {
-        self.player.at_start_of_turn();
-        
-        // Sample enemy actions for this turn
-        self.sample_enemy_actions(rng);
-        
-        // Draw new hand (typically 5 cards)
-        // The draw_n method will automatically reshuffle discard pile into deck if needed
-        self.cards.draw_n(5);
-    }
-    
-    
-    /// Ends the player turn
-    pub(in crate::battle) fn at_end_of_player_turn(&mut self) {
-        self.player.battle_info.at_end_of_turn();
-        
-        // 3. Discard all remaining cards in hand
-        self.cards.discard_entire_hand();
-    }
-    
-    /// Ends all enemies' turns
-    pub(crate) fn at_end_of_enemy_turn(&mut self) {
-        for enemy in &mut self.enemies {
-            if enemy.battle_info.is_alive() {
-                
-                // 2. Apply enemy's end-of-turn effects
-                enemy.battle_info.at_end_of_turn();
-            }
-        }
-    }
-
-    pub(in crate::battle) fn at_start_of_enemy_turn(&mut self) {
-        for enemy in &mut self.enemies {
-            if enemy.battle_info.is_alive() {
-                // Reset enemy's block at start of their turn
-                enemy.battle_info.at_start_of_turn();
-            }
-        }
-    }
-
-    pub(crate) fn process_enemy_effects(&mut self, _rng: &mut impl rand::Rng, _global_info: &GlobalInfo) {
-        let mut all_effects = Vec::new();
-        
-        for i in 0..self.enemies.len() {
-            let source = Entity::Enemy(i);
-            
-            // Skip processing effects for defeated enemies
-            if !self.enemies[i].battle_info.is_alive() {
-                // Clear the stored action for dead enemies
-                self.enemy_actions[i].take();
-                continue;
-            }
-            
-            // Use stored effects - panic if none were stored (this should never happen)
-            let (_, stored_effects) = self.enemy_actions[i].take()
-                .expect("No enemy action stored - actions should be sampled at start of turn");
-            
-            for effect in stored_effects {
-                let base_effect = BaseEffect::from_effect(effect, source, Entity::Player);
-                all_effects.push(base_effect);
-            }
-        }
-        
-        // Apply all collected effects
-        for effect in all_effects {
-            self.eval_effect_with_target(&effect);
-        }
-    }
 }
 
 #[cfg(test)]
@@ -566,7 +123,7 @@ let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
     }
 
     #[test]
-    fn test_eval_effect_with_target() {
+    fn test_eval_base_effect() {
         let deck = starter_deck();
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
@@ -582,7 +139,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
             num_attacks: 1,
         };
         
-        battle.eval_effect_with_target(&damage_effect);
+        battle.eval_base_effect(&damage_effect);
         
         assert_eq!(battle.enemies[0].battle_info.get_hp(), initial_enemy_hp - 10);
     }
@@ -627,7 +184,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Apply vulnerable to enemy
         let vulnerable_effect = BaseEffect::ApplyVulnerable { target: Entity::Enemy(0), duration: 2 };
-        battle.eval_effect_with_target(&vulnerable_effect);
+        battle.eval_base_effect(&vulnerable_effect);
         
         // Check that enemy is vulnerable
         assert!(battle.enemies[0].battle_info.is_vulnerable());
@@ -642,7 +199,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
             amount: 10,
             num_attacks: 1,
         };
-        battle.eval_effect_with_target(&damage_effect);
+        battle.eval_base_effect(&damage_effect);
         
         // 10 damage * 1.5 = 15 damage should be dealt (but capped by enemy's HP)
         let expected_damage = 15u32.min(initial_hp);
@@ -669,7 +226,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
             amount: 8,
             num_attacks: 1,
         };
-        battle.eval_effect_with_target(&damage_effect);
+        battle.eval_base_effect(&damage_effect);
         
         // 8 damage - 5 block = 3 actual damage
         // But taking damage triggers Curl Up, giving enemy 3-7 more block (ascension 0)
@@ -696,7 +253,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
             amount: 10,
             num_attacks: 1,
         };
-        battle.eval_effect_with_target(&damage_effect);
+        battle.eval_base_effect(&damage_effect);
         
         // Player should take 10 damage
         assert_eq!(battle.player.battle_info.get_hp(), initial_hp - 10);
@@ -722,7 +279,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
             amount: 6,
             num_attacks: 1,
         };
-        battle.eval_effect_with_target(&attack_effect);
+        battle.eval_base_effect(&attack_effect);
         
         // 6 base damage + 3 strength = 9 total damage
         let expected_damage = 9u32.min(initial_enemy_hp);
@@ -1100,7 +657,7 @@ let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
             target: Entity::Player, 
             count: 2 
         };
-        battle.eval_effect_with_target(&add_slimed_effect);
+        battle.eval_base_effect(&add_slimed_effect);
         
         // Should have 2 more cards in discard pile
         assert_eq!(battle.cards.discard_pile_size(), initial_discard_size + 2);

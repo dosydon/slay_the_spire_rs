@@ -337,7 +337,7 @@ mod tests {
             duration: 2,
         };
         
-        battle.eval_effect_with_target(&weak_effect);
+        battle.eval_base_effect(&weak_effect);
         
         // Verify player now has Weak status for 2 turns
         assert!(battle.get_player().battle_info.is_weak());
@@ -371,7 +371,7 @@ mod tests {
             target: Entity::Player,
             duration: 2,
         };
-        battle.eval_effect_with_target(&weak_effect);
+        battle.eval_base_effect(&weak_effect);
         
         // Verify Weak is applied
         assert!(battle.get_player().battle_info.is_weak());
