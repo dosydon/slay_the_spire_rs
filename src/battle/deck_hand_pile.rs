@@ -5,6 +5,7 @@ pub struct DeckHandPile {
     deck: Deck,
     hand: Vec<Card>,
     discard_pile: Vec<Card>,
+    exhausted: Vec<Card>,
 }
 
 impl DeckHandPile {
@@ -13,6 +14,7 @@ impl DeckHandPile {
             deck,
             hand: Vec::new(),
             discard_pile: Vec::new(),
+            exhausted: Vec::new(),
         }
     }
     
@@ -84,6 +86,20 @@ impl DeckHandPile {
         self.discard_pile.push(card);
     }
     
+    pub(in crate::battle) fn exhaust_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
+        if hand_index < self.hand.len() {
+            let card = self.hand.remove(hand_index);
+            self.exhausted.push(card.clone());
+            Some(card)
+        } else {
+            None
+        }
+    }
+    
+    pub(in crate::battle) fn exhaust_card(&mut self, card: Card) {
+        self.exhausted.push(card);
+    }
+    
     // Play card from hand (removes from hand, adds to discard pile, returns the card)
     pub(in crate::battle) fn play_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
         if hand_index < self.hand.len() {
@@ -108,6 +124,10 @@ impl DeckHandPile {
         &self.discard_pile
     }
     
+    pub fn get_exhausted(&self) -> &Vec<Card> {
+        &self.exhausted
+    }
+    
     pub fn hand_size(&self) -> usize {
         self.hand.len()
     }
@@ -120,7 +140,15 @@ impl DeckHandPile {
         self.discard_pile.len()
     }
     
+    pub fn exhausted_size(&self) -> usize {
+        self.exhausted.len()
+    }
+    
     pub fn total_cards(&self) -> usize {
+        self.hand.len() + self.deck.size() + self.discard_pile.len() + self.exhausted.len()
+    }
+    
+    pub fn cards_in_play(&self) -> usize {
         self.hand.len() + self.deck.size() + self.discard_pile.len()
     }
     
@@ -294,5 +322,72 @@ mod tests {
         
         assert_eq!(drawn_cards, 5, "Should draw 5 cards on turn 3");
         assert_eq!(deck_hand_pile.hand_size(), 5);
+    }
+
+    #[test]
+    fn test_exhaust_card_from_hand() {
+        let deck = Deck::new(vec![strike(), defend(), strike()]);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+        deck_hand_pile.draw_n(3);
+        
+        assert_eq!(deck_hand_pile.hand_size(), 3);
+        assert_eq!(deck_hand_pile.exhausted_size(), 0);
+        
+        // Exhaust the first card
+        let exhausted_card = deck_hand_pile.exhaust_card_from_hand(0);
+        assert!(exhausted_card.is_some());
+        assert_eq!(deck_hand_pile.hand_size(), 2);
+        assert_eq!(deck_hand_pile.exhausted_size(), 1);
+        
+        // Exhaust an invalid index should return None
+        let invalid_exhaust = deck_hand_pile.exhaust_card_from_hand(5);
+        assert!(invalid_exhaust.is_none());
+        assert_eq!(deck_hand_pile.hand_size(), 2);
+        assert_eq!(deck_hand_pile.exhausted_size(), 1);
+    }
+
+    #[test] 
+    fn test_exhaust_card_directly() {
+        let deck = Deck::new(vec![strike()]);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+        
+        assert_eq!(deck_hand_pile.exhausted_size(), 0);
+        
+        let card_to_exhaust = defend();
+        deck_hand_pile.exhaust_card(card_to_exhaust);
+        
+        assert_eq!(deck_hand_pile.exhausted_size(), 1);
+        assert_eq!(deck_hand_pile.get_exhausted()[0].get_name(), "Defend");
+    }
+
+    #[test]
+    fn test_total_cards_with_exhausted() {
+        let deck = Deck::new(vec![strike(), defend(), strike(), defend(), strike()]);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+        
+        // Initial total should be 5
+        assert_eq!(deck_hand_pile.total_cards(), 5);
+        assert_eq!(deck_hand_pile.cards_in_play(), 5);
+        
+        // Draw 2 cards
+        deck_hand_pile.draw_n(2);
+        assert_eq!(deck_hand_pile.total_cards(), 5); // Still 5 total
+        assert_eq!(deck_hand_pile.cards_in_play(), 5); // Still 5 in play
+        
+        // Exhaust one card from hand
+        deck_hand_pile.exhaust_card_from_hand(0);
+        assert_eq!(deck_hand_pile.total_cards(), 5); // Still 5 total
+        assert_eq!(deck_hand_pile.cards_in_play(), 4); // Now only 4 in play
+        
+        // Discard one card
+        deck_hand_pile.discard_card_from_hand(0);
+        assert_eq!(deck_hand_pile.total_cards(), 5); // Still 5 total
+        assert_eq!(deck_hand_pile.cards_in_play(), 4); // Still 4 in play
+        
+        // Check counts
+        assert_eq!(deck_hand_pile.hand_size(), 0);
+        assert_eq!(deck_hand_pile.deck_size(), 3);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 1);
+        assert_eq!(deck_hand_pile.exhausted_size(), 1);
     }
 }

@@ -6,6 +6,8 @@ pub enum CardEnum {
     Strike,
     Defend,
     Bash,
+    // Status Cards
+    Slimed,
     // Add more cards as needed
 }
 
@@ -16,6 +18,7 @@ impl CardEnum {
             CardEnum::Strike => "Strike",
             CardEnum::Defend => "Defend", 
             CardEnum::Bash => "Bash",
+            CardEnum::Slimed => "Slimed",
         }
     }
     

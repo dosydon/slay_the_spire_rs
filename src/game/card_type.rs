@@ -3,4 +3,5 @@ pub enum CardType {
     Attack,
     Skill,
     Power,
+    Status,
 }

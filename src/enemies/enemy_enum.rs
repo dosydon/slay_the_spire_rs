@@ -52,6 +52,9 @@ impl EnemyMove {
                 Effect::AddSlimed(count) => {
                     parts.push(format!("🐛 +{} Slimed", count));
                 }
+                Effect::Exhaust => {
+                    parts.push("💨 Exhaust".to_string());
+                }
             }
         }
         

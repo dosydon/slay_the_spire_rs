@@ -7,6 +7,7 @@ pub struct CharacterBattleInfo {
     pub vulnerable_turns: u32,
     pub strength: u32,
     pub weak_turns: u32,
+    pub frail_turns: u32,
     pub ritual: u32,
     // Additional status effects can be added here
 }
@@ -21,6 +22,7 @@ impl CharacterBattleInfo {
             vulnerable_turns: 0,
             strength: 0,
             weak_turns: 0,
+            frail_turns: 0,
             ritual: 0,
         }
     }
@@ -34,6 +36,7 @@ impl CharacterBattleInfo {
             vulnerable_turns: 0,
             strength: 0,
             weak_turns: 0,
+            frail_turns: 0,
             ritual: 0,
         }
     }
@@ -65,7 +68,13 @@ impl CharacterBattleInfo {
 
     /// Gain block (defense)
     pub fn gain_block(&mut self, amount: u32) {
-        self.block += amount;
+        let actual_amount = if self.frail_turns > 0 {
+            // Frail reduces block gain by 25%
+            (amount as f32 * 0.75) as u32
+        } else {
+            amount
+        };
+        self.block += actual_amount;
     }
 
     /// Gain energy
@@ -93,6 +102,11 @@ impl CharacterBattleInfo {
         self.weak_turns += turns;
     }
 
+    /// Apply frail status (additive)
+    pub fn apply_frail(&mut self, turns: u32) {
+        self.frail_turns += turns;
+    }
+
     /// Start of turn - reset block and decrement status effects
     pub fn refresh(&mut self) {
         self.block = 0;
@@ -101,6 +115,9 @@ impl CharacterBattleInfo {
         }
         if self.weak_turns > 0 {
             self.weak_turns -= 1;
+        }
+        if self.frail_turns > 0 {
+            self.frail_turns -= 1;
         }
     }
 
@@ -153,6 +170,16 @@ impl CharacterBattleInfo {
     /// Get weak turns remaining
     pub fn get_weak_turns(&self) -> u32 {
         self.weak_turns
+    }
+
+    /// Check if frail
+    pub fn is_frail(&self) -> bool {
+        self.frail_turns > 0
+    }
+
+    /// Get frail turns remaining
+    pub fn get_frail_turns(&self) -> u32 {
+        self.frail_turns
     }
 
     /// Gain strength
@@ -335,5 +362,56 @@ mod tests {
         character.gain_strength(2);
         assert_eq!(character.get_strength(), 5);
         assert_eq!(character.calculate_damage(8), 13);
+    }
+
+    #[test]
+    fn test_frail_mechanics() {
+        let mut character = CharacterBattleInfo::new(50, 50, 3);
+        assert!(!character.is_frail());
+        assert_eq!(character.get_frail_turns(), 0);
+        
+        character.apply_frail(2);
+        assert!(character.is_frail());
+        assert_eq!(character.get_frail_turns(), 2);
+    }
+
+    #[test]
+    fn test_frail_reduces_block() {
+        let mut character = CharacterBattleInfo::new(50, 50, 3);
+        character.apply_frail(1);
+        
+        // Normal block gain would be 10, but frail reduces by 25%
+        character.gain_block(10);
+        assert_eq!(character.get_block(), 7); // 10 * 0.75 = 7.5, rounded down to 7
+        
+        // Block gain without frail
+        character.frail_turns = 0;
+        character.block = 0;
+        character.gain_block(10);
+        assert_eq!(character.get_block(), 10);
+    }
+
+    #[test]
+    fn test_refresh_decrements_frail() {
+        let mut character = CharacterBattleInfo::new(50, 50, 3);
+        character.apply_frail(3);
+        
+        character.refresh();
+        assert_eq!(character.get_frail_turns(), 2);
+        
+        character.refresh();
+        assert_eq!(character.get_frail_turns(), 1);
+        
+        character.refresh();
+        assert_eq!(character.get_frail_turns(), 0);
+        assert!(!character.is_frail());
+    }
+
+    #[test]
+    fn test_frail_accumulates() {
+        let mut character = CharacterBattleInfo::new(50, 50, 3);
+        character.apply_frail(1);
+        character.apply_frail(2);
+        assert_eq!(character.get_frail_turns(), 3);
     }
 }

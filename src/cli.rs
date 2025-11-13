@@ -132,6 +132,9 @@ impl BattleCli {
         if player.battle_info.is_weak() {
             println!("   😵‍💫 Weak: {} turns", player.battle_info.get_weak_turns());
         }
+        if player.battle_info.is_frail() {
+            println!("   🔻 Frail: {} turns", player.battle_info.get_frail_turns());
+        }
         
         println!();
         
@@ -168,6 +171,9 @@ impl BattleCli {
                 }
                 if enemy.battle_info.is_weak() {
                     println!("   😵‍💫 Weak: {} turns", enemy.battle_info.get_weak_turns());
+                }
+                if enemy.battle_info.is_frail() {
+                    println!("   🔻 Frail: {} turns", enemy.battle_info.get_frail_turns());
                 }
             } else {
                 println!("💀 ENEMY {}: {} | DEFEATED", i + 1, name);

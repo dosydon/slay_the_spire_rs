@@ -14,6 +14,7 @@ pub enum Effect {
     GainStrength (u32),
     GainRitual (u32),
     AddSlimed (u32),
+    Exhaust,
 }
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -52,6 +53,9 @@ pub enum BaseEffect {
         target: Entity,
         count: u32,
     },
+    Exhaust {
+        source: Entity,
+    },
 }
 
 impl BaseEffect {
@@ -67,6 +71,7 @@ impl BaseEffect {
             Effect::GainStrength(amount) => BaseEffect::GainStrength { source, amount },
             Effect::GainRitual(amount) => BaseEffect::GainRitual { source, amount },
             Effect::AddSlimed(count) => BaseEffect::AddSlimed { target, count },
+            Effect::Exhaust => BaseEffect::Exhaust { source },
         }
     }
 }
