@@ -93,6 +93,9 @@ impl Battle {
                 EnemyEnum::SpikeSlimeM(_) => {
                     // Spike Slime (M) has no special listeners
                 }
+                EnemyEnum::AcidSlimeS(_) => {
+                    // Acid Slime (S) has no special listeners
+                }
             }
         }
     }

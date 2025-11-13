@@ -147,6 +147,7 @@ impl BattleCli {
                 EnemyEnum::Cultist(_) => "Cultist",
                 EnemyEnum::SpikeSlimeS(_) => "Spike Slime (S)",
                 EnemyEnum::SpikeSlimeM(_) => "Spike Slime (M)",
+                EnemyEnum::AcidSlimeS(_) => "Acid Slime (S)",
             };
             
             if enemy.battle_info.is_alive() {
@@ -235,6 +236,7 @@ impl BattleCli {
                                 EnemyEnum::Cultist(_) => "Cultist",
                                 EnemyEnum::SpikeSlimeS(_) => "Spike Slime (S)",
                                 EnemyEnum::SpikeSlimeM(_) => "Spike Slime (M)",
+                                EnemyEnum::AcidSlimeS(_) => "Acid Slime (S)",
                             };
                             println!("      {}{}. Target {} {}", action_index, 
                                 char::from(b'a' + target_idx as u8), enemy_name, enemy_idx + 1);

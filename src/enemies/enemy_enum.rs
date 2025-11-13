@@ -1,4 +1,4 @@
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
 
 pub enum EnemyEnum {
     RedLouse(RedLouse),
@@ -7,6 +7,7 @@ pub enum EnemyEnum {
     Cultist(Cultist),
     SpikeSlimeS(SpikeSlimeS),
     SpikeSlimeM(SpikeSlimeM),
+    AcidSlimeS(AcidSlimeS),
 }
 
 
@@ -19,6 +20,7 @@ pub enum EnemyMove {
     Cultist(CultistMove),
     SpikeSlimeS(SpikeSlimeSMove),
     SpikeSlimeM(SpikeSlimeMMove),
+    AcidSlimeS(AcidSlimeSMove),
 }
 
 impl EnemyMove {
@@ -95,6 +97,10 @@ impl EnemyEnum {
                 let (selected_move, effects) = spike_slime.choose_move_and_effects(global_info, rng);
                 (EnemyMove::SpikeSlimeM(selected_move), effects)
             }
+            EnemyEnum::AcidSlimeS(acid_slime) => {
+                let (selected_move, effects) = acid_slime.choose_move_and_effects(global_info, rng);
+                (EnemyMove::AcidSlimeS(selected_move), effects)
+            }
         }
     }
 
@@ -108,6 +114,7 @@ impl EnemyEnum {
             EnemyEnum::Cultist(cultist) => cultist.get_hp(),
             EnemyEnum::SpikeSlimeS(spike_slime) => spike_slime.get_hp(),
             EnemyEnum::SpikeSlimeM(spike_slime) => spike_slime.get_hp(),
+            EnemyEnum::AcidSlimeS(acid_slime) => acid_slime.get_hp(),
         }
     }
 }
