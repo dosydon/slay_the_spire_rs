@@ -7,7 +7,7 @@ pub mod player;
 pub mod deck_hand_pile;
 pub mod enemy_in_battle;
 
-use crate::{enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum}, game::{card::Card, deck::Deck, effect::BaseEffect, enemy::EnemyTrait, global_info::GlobalInfo}};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::GreenLouseMove, jaw_worm::JawWormMove, enemy_enum::{EnemyEnum, EnemyAction}}, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, enemy::EnemyTrait, global_info::GlobalInfo}};
 use self::{action::Action, target::Entity, events::{BattleEvent, EventListener}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
 use rand::Rng;
 
@@ -27,27 +27,36 @@ pub enum BattleResult {
     Lost,
 }
 
+
 pub struct Battle {
     player: Player,
     enemies: Vec<EnemyInBattle>,
     cards: DeckHandPile,
     event_listeners: Vec<Box<dyn EventListener>>,
     global_info: GlobalInfo,
+    /// Stores the next action and effects for each enemy (index corresponds to enemies Vec)
+    enemy_actions: Vec<Option<(EnemyAction, Vec<Effect>)>>,
 }
 
 impl Battle {
     pub fn new(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, rng: &mut impl rand::Rng) -> Self {
         let cards = DeckHandPile::new(deck);
+        let enemy_count = enemies.len();
         let mut battle = Battle {
             player: Player::new(initial_hp, max_hp, 3),
             enemies,
             cards,
             event_listeners: Vec::new(),
             global_info,
+            enemy_actions: vec![None; enemy_count],
         };
         
         // Initialize event listeners for enemies
         battle.initialize_enemy_listeners(&global_info, rng);
+        
+        // Start the first turn (refreshes player, samples enemy actions, draws hand)
+        battle.start_turn(rng);
+        
         battle
     }
     
@@ -104,18 +113,16 @@ impl Battle {
     }
     
     /// Full turn start including card draw with deck reshuffling
-    pub fn start_turn(&mut self) {
+    pub fn start_turn(&mut self, rng: &mut impl rand::Rng) {
         self.refresh_all();
         self.player.start_turn();
         
+        // Sample enemy actions for this turn
+        self.sample_enemy_actions(rng);
+        
         // Draw new hand (typically 5 cards)
-        // The draw_card method will automatically reshuffle discard pile into deck if needed
-        for _ in 0..5 {
-            if self.cards.draw_card().is_none() {
-                // If we can't draw any more cards (deck + discard both empty), stop trying
-                break;
-            }
-        }
+        // The draw_n method will automatically reshuffle discard pile into deck if needed
+        self.cards.draw_n(5);
     }
     
     pub fn get_enemies(&self) -> &Vec<EnemyInBattle> {
@@ -124,6 +131,24 @@ impl Battle {
     
     pub fn get_hand(&self) -> &Vec<Card> {
         self.cards.get_hand()
+    }
+    
+    /// Sample and store the next action and effects for all enemies
+    pub fn sample_enemy_actions(&mut self, rng: &mut impl rand::Rng) {
+        for (i, enemy) in self.enemies.iter_mut().enumerate() {
+            let (enemy_action, effects) = enemy.enemy.sample_move_and_effects(&self.global_info, rng);
+            self.enemy_actions[i] = Some((enemy_action, effects));
+        }
+    }
+    
+    /// Get the stored action for a specific enemy
+    pub fn get_enemy_action(&self, enemy_index: usize) -> Option<&EnemyAction> {
+        self.enemy_actions.get(enemy_index).and_then(|pair| pair.as_ref().map(|(action, _)| action))
+    }
+    
+    /// Get all stored enemy actions
+    pub fn get_all_enemy_actions(&self) -> Vec<Option<&EnemyAction>> {
+        self.enemy_actions.iter().map(|pair| pair.as_ref().map(|(action, _)| action)).collect()
     }
     
     /// List all available actions the player can take in the current battle state
@@ -248,7 +273,10 @@ impl Battle {
             Action::EndTurn => {
                 let global_info = self.global_info;
                 self.end_turn(rng, &global_info);
-                self.start_turn();
+        
+                self.enemy_turn(rng, &global_info);
+
+                self.start_turn(rng);
             }
         }
         
@@ -387,21 +415,19 @@ impl Battle {
     pub fn end_turn(&mut self, rng: &mut impl rand::Rng, global_info: &GlobalInfo) {
         // 1. Discard all remaining cards in hand
         self.cards.discard_entire_hand();
-        
-        // 2. Execute enemy turn
-        self.enemy_turn(rng, global_info);
     }
 
-    pub fn enemy_turn(&mut self, rng: &mut impl rand::Rng, _global_info: &GlobalInfo) {
+    pub fn enemy_turn(&mut self, _rng: &mut impl rand::Rng, _global_info: &GlobalInfo) {
         let mut all_effects = Vec::new();
         
-        for (i, enemy) in self.enemies.iter_mut().enumerate() {
+        for i in 0..self.enemies.len() {
             let source = Entity::Enemy(i);
             
-            // Use the new choose_effects method that handles everything in one step
-            let effects = enemy.enemy.choose_effects(_global_info, rng);
+            // Use stored effects - panic if none were stored (this should never happen)
+            let (_, stored_effects) = self.enemy_actions[i].take()
+                .expect("No enemy action stored - actions should be sampled at start of turn");
             
-            for effect in effects {
+            for effect in stored_effects {
                 let base_effect = BaseEffect::from_effect(effect, source, Entity::Player);
                 all_effects.push(base_effect);
             }

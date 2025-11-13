@@ -150,6 +150,11 @@ impl BattleCli {
                     enemy.battle_info.get_block()
                 );
                 
+                // Display intended action if available
+                if let Some(action) = self.battle.get_enemy_action(i) {
+                    println!("   📋 Next: {}", action.get_display_string());
+                }
+                
                 if enemy.battle_info.get_strength() != 0 {
                     println!("   💪 Strength: {}", enemy.battle_info.get_strength());
                 }

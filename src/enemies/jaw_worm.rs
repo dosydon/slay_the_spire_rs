@@ -122,16 +122,24 @@ impl JawWorm {
         }
     }
 
-    /// Choose effects directly, sampling a move and recording it
-    pub fn choose_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Vec<Effect> {
+    /// Choose a move and return both the move and its effects
+    /// This combines move selection, effect generation, and move tracking into one step
+    pub fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (JawWormMove, Vec<Effect>) {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
         
         // Record the move for move tracking
         self.record_move(selected_move);
         
-        // Generate and return the effects for this move
-        self.get_move_effects(selected_move, global_info)
+        // Generate the effects for this move
+        let effects = self.get_move_effects(selected_move, global_info);
+        
+        (selected_move, effects)
+    }
+
+    pub fn choose_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Vec<Effect> {
+        let (_move, effects) = self.choose_move_and_effects(global_info, rng);
+        effects
     }
 
     /// Apply initial Bellow effects for Act 3 (called during instantiation)

@@ -8,20 +8,10 @@ pub struct DeckHandPile {
 }
 
 impl DeckHandPile {
-    pub fn new(initial_deck: Deck) -> Self {
-        let mut deck = initial_deck.clone();
-        let mut hand = Vec::new();
-        
-        // Take the first 5 cards as the initial hand (same logic as initialize_game)
-        for _ in 0..5 {
-            if let Some(card) = deck.draw_card() {
-                hand.push(card);
-            }
-        }
-        
+    pub fn new(deck: Deck) -> Self {
         DeckHandPile {
             deck,
-            hand,
+            hand: Vec::new(),
             discard_pile: Vec::new(),
         }
     }
@@ -39,6 +29,19 @@ impl DeckHandPile {
         } else {
             None
         }
+    }
+    
+    /// Draw n cards into hand, returns the number of cards actually drawn
+    pub fn draw_n(&mut self, n: usize) -> usize {
+        let mut cards_drawn = 0;
+        for _ in 0..n {
+            if self.draw_card().is_some() {
+                cards_drawn += 1;
+            } else {
+                break;
+            }
+        }
+        cards_drawn
     }
     
     pub fn discard_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
@@ -168,6 +171,9 @@ mod tests {
         let deck = Deck::new(cards);
         let mut deck_hand_pile = DeckHandPile::new(deck);
         
+        // Draw some cards into hand first
+        deck_hand_pile.draw_n(2);
+        
         let initial_hand_size = deck_hand_pile.hand_size();
         let played_card = deck_hand_pile.play_card_from_hand(0);
         
@@ -235,6 +241,9 @@ mod tests {
         let deck = Deck::new(cards);
         let mut deck_hand_pile = DeckHandPile::new(deck);
         
+        // Draw initial hand of 5 cards
+        deck_hand_pile.draw_n(5);
+        
         // Initial state: 5 cards in hand, 5 in deck, 0 in discard
         assert_eq!(deck_hand_pile.hand_size(), 5);
         assert_eq!(deck_hand_pile.deck_size(), 5);
@@ -247,14 +256,7 @@ mod tests {
         assert_eq!(deck_hand_pile.discard_pile_size(), 5);
         
         // Draw 5 cards for new turn
-        let mut drawn_cards = 0;
-        for _ in 0..5 {
-            if deck_hand_pile.draw_card().is_some() {
-                drawn_cards += 1;
-            } else {
-                break;
-            }
-        }
+        let drawn_cards = deck_hand_pile.draw_n(5);
         assert_eq!(drawn_cards, 5, "Should draw 5 cards on turn 1");
         assert_eq!(deck_hand_pile.hand_size(), 5);
         assert_eq!(deck_hand_pile.deck_size(), 0); // Deck empty  
@@ -266,14 +268,7 @@ mod tests {
         assert_eq!(deck_hand_pile.deck_size(), 0);
         assert_eq!(deck_hand_pile.discard_pile_size(), 10); // Now have 10 cards in discard (5 from each turn)
         
-        drawn_cards = 0;
-        for _ in 0..5 {
-            if deck_hand_pile.draw_card().is_some() {
-                drawn_cards += 1;
-            } else {
-                break;
-            }
-        }
+        let drawn_cards = deck_hand_pile.draw_n(5);
         assert_eq!(drawn_cards, 5, "Should draw 5 cards on turn 2");
         assert_eq!(deck_hand_pile.hand_size(), 5);
         assert_eq!(deck_hand_pile.deck_size(), 5); // Remaining 5 cards after drawing 5 of the 10 reshuffled
@@ -285,14 +280,7 @@ mod tests {
         assert_eq!(deck_hand_pile.deck_size(), 5); // Still 5 cards in deck from turn 2
         assert_eq!(deck_hand_pile.discard_pile_size(), 5); // 5 cards just discarded
         
-        drawn_cards = 0;
-        for _ in 0..5 {
-            if deck_hand_pile.draw_card().is_some() {
-                drawn_cards += 1;
-            } else {
-                break;
-            }
-        }
+        let drawn_cards = deck_hand_pile.draw_n(5);
         
         
         assert_eq!(drawn_cards, 5, "Should draw 5 cards on turn 3");

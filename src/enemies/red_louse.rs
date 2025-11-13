@@ -67,7 +67,7 @@ impl RedLouse {
         last_two.iter().all(|&m| std::mem::discriminant(&m) == std::mem::discriminant(&move_type))
     }
 
-    fn record_move(&mut self, move_type: RedLouseMove) {
+    pub fn record_move(&mut self, move_type: RedLouseMove) {
         self.last_moves.push(move_type);
         // Keep only the last 3 moves to prevent unbounded growth
         if self.last_moves.len() > 3 {
@@ -89,17 +89,26 @@ impl RedLouse {
         }
     }
 
-    /// Choose effects directly, sampling a move and recording it
+    /// Choose a move and return both the move and its effects
     /// This combines move selection, effect generation, and move tracking into one step
-    pub fn choose_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Vec<Effect> {
+    pub fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (RedLouseMove, Vec<Effect>) {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
         
         // Record the move for consecutive move tracking
         self.record_move(selected_move);
         
-        // Generate and return the effects for this move
-        self.get_move_effects(selected_move)
+        // Generate the effects for this move
+        let effects = self.get_move_effects(selected_move);
+        
+        (selected_move, effects)
+    }
+
+    /// Choose effects directly, sampling a move and recording it
+    /// This combines move selection, effect generation, and move tracking into one step
+    pub fn choose_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Vec<Effect> {
+        let (_move, effects) = self.choose_move_and_effects(global_info, rng);
+        effects
     }
 }
 
@@ -490,7 +499,7 @@ mod tests {
         
         // End of turn 1 - refresh
         battle.refresh_all();
-        battle.start_turn();
+        battle.start_turn(&mut rng);
         
         println!("End of Turn 1 - Player HP: {}, Enemy HP: {}, Enemy Strength: {}", 
             battle.get_player().battle_info.get_hp(), 
