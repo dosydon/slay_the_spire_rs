@@ -34,7 +34,8 @@ impl BattleCli {
         println!("\n=== Choose Your Encounter ===");
         println!("1. Two Louses (2 random louses)");
         println!("2. Jaw Worm (single tough enemy)");
-        print!("Enter your choice (1-2): ");
+        println!("3. Cultist (ritual caster)");
+        print!("Enter your choice (1-3): ");
         io::stdout().flush().unwrap();
         
         let mut input = String::new();
@@ -43,6 +44,7 @@ impl BattleCli {
         match input.trim() {
             "1" => EncounterEvent::TwoLouses,
             "2" => EncounterEvent::JawWorm,
+            "3" => EncounterEvent::Cultist,
             _ => {
                 println!("Invalid choice, defaulting to Two Louses");
                 EncounterEvent::TwoLouses
@@ -139,6 +141,7 @@ impl BattleCli {
                 EnemyEnum::RedLouse(_) => "Red Louse",
                 EnemyEnum::GreenLouse(_) => "Green Louse", 
                 EnemyEnum::JawWorm(_) => "Jaw Worm",
+                EnemyEnum::Cultist(_) => "Cultist",
             };
             
             if enemy.battle_info.is_alive() {
@@ -221,6 +224,7 @@ impl BattleCli {
                                 EnemyEnum::RedLouse(_) => "Red Louse",
                                 EnemyEnum::GreenLouse(_) => "Green Louse",
                                 EnemyEnum::JawWorm(_) => "Jaw Worm",
+                                EnemyEnum::Cultist(_) => "Cultist",
                             };
                             println!("      {}{}. Target {} {}", action_index, 
                                 char::from(b'a' + target_idx as u8), enemy_name, enemy_idx + 1);

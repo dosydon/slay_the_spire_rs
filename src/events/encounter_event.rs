@@ -61,6 +61,10 @@ impl EncounterEvent {
                 let jaw_worm = crate::enemies::jaw_worm::JawWorm::instantiate(rng, global_info);
                 vec![EnemyEnum::JawWorm(jaw_worm)]
             }
+            EncounterEvent::Cultist => {
+                let cultist = crate::enemies::cultist::Cultist::instantiate(rng, global_info);
+                vec![EnemyEnum::Cultist(cultist)]
+            }
             _ => panic!("EncounterEvent::instantiate not implemented for this encounter"),
         }
     }

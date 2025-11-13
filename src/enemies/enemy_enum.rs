@@ -1,9 +1,10 @@
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}, utils::CategoricalDistribution};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}, utils::CategoricalDistribution};
 
 pub enum EnemyEnum {
     RedLouse(RedLouse),
     GreenLouse(GreenLouse),
     JawWorm(JawWorm),
+    Cultist(Cultist),
 }
 
 /// Represents an enemy's intended action with actual values
@@ -17,6 +18,8 @@ pub struct EnemyAction {
     pub block: Option<u32>,
     /// Strength gain (if applicable)
     pub strength: Option<u32>,
+    /// Buff applications (ritual, etc.)
+    pub buffs: Vec<String>,
     /// Debuff applications (weak, vulnerable, etc.)
     pub debuffs: Vec<String>,
 }
@@ -38,6 +41,10 @@ impl EnemyAction {
             parts.push(format!("💪 +{}", strength));
         }
         
+        for buff in &self.buffs {
+            parts.push(format!("✨ {}", buff));
+        }
+        
         for debuff in &self.debuffs {
             parts.push(format!("🔻 {}", debuff));
         }
@@ -56,6 +63,7 @@ pub enum EnemyMoveType {
     RedLouse(RedLouseMove),
     GreenLouse(GreenLouseMove),
     JawWorm(JawWormMove),
+    Cultist(CultistMove),
 }
 
 impl EnemyEnum {
@@ -78,6 +86,11 @@ impl EnemyEnum {
                 let action = Self::create_enemy_action(EnemyMoveType::JawWorm(selected_move), &effects);
                 (action, effects)
             }
+            EnemyEnum::Cultist(cultist) => {
+                let (selected_move, effects) = cultist.choose_move_and_effects(global_info, rng);
+                let action = Self::create_enemy_action(EnemyMoveType::Cultist(selected_move), &effects);
+                (action, effects)
+            }
         }
     }
     
@@ -86,6 +99,7 @@ impl EnemyEnum {
         let mut damage = None;
         let mut block = None;
         let mut strength = None;
+        let mut buffs = Vec::new();
         let mut debuffs = Vec::new();
         
         for effect in effects {
@@ -98,6 +112,9 @@ impl EnemyEnum {
                 }
                 Effect::GainStrength(amount) => {
                     strength = Some(*amount);
+                }
+                Effect::GainRitual(amount) => {
+                    buffs.push(format!("Ritual {}", amount));
                 }
                 Effect::ApplyWeak(duration) => {
                     debuffs.push(format!("Weak {}", duration));
@@ -113,6 +130,7 @@ impl EnemyEnum {
             damage,
             block,
             strength,
+            buffs,
             debuffs,
         }
     }
@@ -130,6 +148,7 @@ impl EnemyEnum {
             EnemyEnum::RedLouse(red_louse) => red_louse.get_hp(),
             EnemyEnum::GreenLouse(green_louse) => green_louse.get_hp(),
             EnemyEnum::JawWorm(jaw_worm) => jaw_worm.get_hp(),
+            EnemyEnum::Cultist(cultist) => cultist.get_hp(),
         }
     }
 }

@@ -84,6 +84,9 @@ impl Battle {
                 EnemyEnum::JawWorm(_) => {
                     // Jaw Worm has no special listeners
                 }
+                EnemyEnum::Cultist(_) => {
+                    // Cultist has no special listeners
+                }
             }
         }
     }
@@ -360,6 +363,17 @@ impl Battle {
                     Entity::None => {} // No source
                 }
             },
+            BaseEffect::GainRitual { source, amount } => {
+                match source {
+                    Entity::Player => self.player.battle_info.gain_ritual(*amount),
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            self.enemies[*idx].battle_info.gain_ritual(*amount);
+                        }
+                    },
+                    Entity::None => {} // No source
+                }
+            },
         }
     }
 
@@ -413,7 +427,13 @@ impl Battle {
     
     /// Ends the player turn and starts a new turn sequence
     pub fn end_turn(&mut self, rng: &mut impl rand::Rng, global_info: &GlobalInfo) {
-        // 1. Discard all remaining cards in hand
+        // 1. Apply end-of-turn effects
+        self.player.battle_info.at_end_of_turn();
+        for enemy in &mut self.enemies {
+            enemy.battle_info.at_end_of_turn();
+        }
+        
+        // 2. Discard all remaining cards in hand
         self.cards.discard_entire_hand();
     }
 

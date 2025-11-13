@@ -7,6 +7,7 @@ pub struct CharacterBattleInfo {
     pub vulnerable_turns: u32,
     pub strength: u32,
     pub weak_turns: u32,
+    pub ritual: u32,
     // Additional status effects can be added here
 }
 
@@ -20,6 +21,7 @@ impl CharacterBattleInfo {
             vulnerable_turns: 0,
             strength: 0,
             weak_turns: 0,
+            ritual: 0,
         }
     }
 
@@ -32,6 +34,7 @@ impl CharacterBattleInfo {
             vulnerable_turns: 0,
             strength: 0,
             weak_turns: 0,
+            ritual: 0,
         }
     }
 
@@ -99,6 +102,12 @@ impl CharacterBattleInfo {
         if self.weak_turns > 0 {
             self.weak_turns -= 1;
         }
+    }
+
+    /// End of turn - apply end-of-turn effects
+    pub fn at_end_of_turn(&mut self) {
+        // Apply ritual effect (gain strength equal to ritual stacks)
+        self.apply_ritual_effect();
     }
 
     /// Check if character is alive
@@ -181,6 +190,23 @@ impl CharacterBattleInfo {
             self.current_hp = self.max_hp;
         }
     }
+
+    /// Gain ritual stacks
+    pub fn gain_ritual(&mut self, amount: u32) {
+        self.ritual += amount;
+    }
+
+    /// Get ritual stacks
+    pub fn get_ritual(&self) -> u32 {
+        self.ritual
+    }
+
+    /// Apply ritual effect (gain strength equal to ritual stacks)
+    pub fn apply_ritual_effect(&mut self) {
+        if self.ritual > 0 {
+            self.gain_strength(self.ritual);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -196,6 +222,7 @@ mod tests {
         assert_eq!(character.block, 0);
         assert_eq!(character.vulnerable_turns, 0);
         assert_eq!(character.strength, 0);
+        assert_eq!(character.ritual, 0);
     }
 
     #[test]
@@ -286,6 +313,7 @@ mod tests {
         assert_eq!(character.block, 0);
         assert_eq!(character.vulnerable_turns, 0);
         assert_eq!(character.strength, 0);
+        assert_eq!(character.ritual, 0);
     }
 
     #[test]
