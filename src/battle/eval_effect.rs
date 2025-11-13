@@ -144,3 +144,180 @@ impl Battle {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::cards::ironclad::starter_deck::starter_deck;
+    use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
+    use crate::game::{global_info::GlobalInfo, card_type::CardType, enemy::EnemyTrait};
+
+    #[test]
+    fn test_eval_base_effect() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
+        let damage_effect = BaseEffect::AttackToTarget {
+            source: Entity::Player,
+            target: Entity::Enemy(0),
+            amount: 10,
+            num_attacks: 1,
+        };
+        
+        battle.eval_base_effect(&damage_effect);
+        
+        assert_eq!(battle.enemies[0].battle_info.get_hp(), initial_enemy_hp - 10);
+    }
+
+    #[test]
+    fn test_vulnerable_effect_integration() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        // Apply vulnerable to enemy
+        let vulnerable_effect = BaseEffect::ApplyVulnerable { target: Entity::Enemy(0), duration: 2 };
+        battle.eval_base_effect(&vulnerable_effect);
+        
+        // Check that enemy is vulnerable
+        assert!(battle.enemies[0].battle_info.is_vulnerable());
+        assert_eq!(battle.enemies[0].battle_info.get_vulnerable_turns(), 2);
+        
+        // Apply damage - should be increased by 50%
+        let initial_hp = battle.enemies[0].battle_info.get_hp();
+        
+        let damage_effect = BaseEffect::AttackToTarget {
+            source: Entity::Player,
+            target: Entity::Enemy(0),
+            amount: 10,
+            num_attacks: 1,
+        };
+        battle.eval_base_effect(&damage_effect);
+        
+        // 10 damage * 1.5 = 15 damage should be dealt (but capped by enemy's HP)
+        let expected_damage = 15u32.min(initial_hp);
+        assert_eq!(battle.enemies[0].battle_info.get_hp(), initial_hp - expected_damage);
+    }
+
+    #[test]
+    fn test_character_block_integration() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        // Give enemy some block
+        battle.enemies[0].battle_info.gain_block(5);
+        assert_eq!(battle.enemies[0].battle_info.get_block(), 5);
+        
+        let initial_hp = battle.enemies[0].battle_info.get_hp();
+        let damage_effect = BaseEffect::AttackToTarget {
+            source: Entity::Player,
+            target: Entity::Enemy(0),
+            amount: 8,
+            num_attacks: 1,
+        };
+        battle.eval_base_effect(&damage_effect);
+        
+        // 8 damage - 5 block = 3 actual damage
+        // But taking damage triggers Curl Up, giving enemy 3-7 more block (ascension 0)
+        assert_eq!(battle.enemies[0].battle_info.get_hp(), initial_hp - 3);
+        let curl_up_block = battle.enemies[0].battle_info.get_block();
+        assert!(curl_up_block >= 3 && curl_up_block <= 7); // Curl Up activated with random amount
+    }
+
+    #[test]
+    fn test_damage_to_player() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        let initial_hp = battle.player.battle_info.get_hp();
+        
+        // Create an effect that damages the player
+        let damage_effect = BaseEffect::AttackToTarget {
+            source: Entity::Enemy(0),
+            target: Entity::Player,
+            amount: 10,
+            num_attacks: 1,
+        };
+        battle.eval_base_effect(&damage_effect);
+        
+        // Player should take 10 damage
+        assert_eq!(battle.player.battle_info.get_hp(), initial_hp - 10);
+    }
+
+    #[test]
+    fn test_attack_with_strength() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        // Give player some strength
+        battle.player.battle_info.gain_strength(3);
+        assert_eq!(battle.player.battle_info.get_strength(), 3);
+        
+        let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
+        let attack_effect = BaseEffect::AttackToTarget {
+            source: Entity::Player,
+            target: Entity::Enemy(0),
+            amount: 6,
+            num_attacks: 1,
+        };
+        battle.eval_base_effect(&attack_effect);
+        
+        // 6 base damage + 3 strength = 9 total damage
+        let expected_damage = 9u32.min(initial_enemy_hp);
+        assert_eq!(battle.enemies[0].battle_info.get_hp(), initial_enemy_hp - expected_damage);
+    }
+
+    #[test]
+    fn test_add_slimed_effect() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        let initial_discard_size = battle.cards.discard_pile_size();
+        let initial_total_cards = battle.cards.total_cards();
+        
+        // Apply AddSlimed effect to add 2 Slimed cards
+        let add_slimed_effect = BaseEffect::AddSlimed { 
+            target: Entity::Player, 
+            count: 2 
+        };
+        battle.eval_base_effect(&add_slimed_effect);
+        
+        // Should have 2 more cards in discard pile
+        assert_eq!(battle.cards.discard_pile_size(), initial_discard_size + 2);
+        assert_eq!(battle.cards.total_cards(), initial_total_cards + 2);
+        
+        // Check that the added cards are Slimed
+        let discard_pile = battle.cards.get_discard_pile();
+        let last_two_cards = &discard_pile[discard_pile.len()-2..];
+        for card in last_two_cards {
+            assert_eq!(card.get_name(), "Slimed");
+            assert_eq!(card.get_cost(), 1);
+            assert_eq!(card.get_card_type(), &CardType::Status);
+        }
+    }
+}
