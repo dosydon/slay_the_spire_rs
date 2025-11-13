@@ -97,12 +97,6 @@ impl GreenLouse {
         (selected_move, effects)
     }
 
-    /// Choose effects directly, sampling a move and recording it
-    /// This combines move selection, effect generation, and move tracking into one step
-    pub fn choose_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Vec<Effect> {
-        let (_move, effects) = self.choose_move_and_effects(global_info, rng);
-        effects
-    }
 }
 
 impl EnemyTrait for GreenLouse {
@@ -112,18 +106,12 @@ impl EnemyTrait for GreenLouse {
         // Calculate base damage using ascension scaling
         let base_damage = Self::calculate_base_damage(global_info, rng);
         // Create the enemy instance
-        let hp = Self::hp_lb() + rng.random_range(0..=Self::hp_ub() - Self::hp_lb());
+        let hp = 11 + rng.random_range(0..=6); // 11-17 HP range
         let green_louse = GreenLouse::new(base_damage, hp);
 
         green_louse
     }
 
-    fn hp_lb() -> u32 {
-        11
-    }
-    fn hp_ub() -> u32 {
-        17
-    }
     fn choose_next_move(&self, _global_info: &GlobalInfo) -> CategoricalDistribution<Self::MoveType> {
         let possible_moves = self.get_valid_moves();
         let weights = self.get_move_weights(&possible_moves);
@@ -157,15 +145,10 @@ mod tests {
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let green_louse = GreenLouse::instantiate(&mut rng, &global_info);
-        assert!(green_louse.hp >= GreenLouse::hp_lb() && green_louse.hp <= GreenLouse::hp_ub());
+        assert!(green_louse.hp >= 11 && green_louse.hp <= 17);
         assert!(green_louse.base_damage >= 3 && green_louse.base_damage <= 4);
     }
 
-    #[test]
-    fn test_hp_bounds() {
-        assert_eq!(GreenLouse::hp_lb(), 11);
-        assert_eq!(GreenLouse::hp_ub(), 17);
-    }
 
     #[test]
     fn test_name() {
@@ -247,7 +230,7 @@ mod tests {
     }
 
     #[test]
-    fn test_choose_effects_attack() {
+    fn test_choose_move_and_effects_attack() {
         let mut green_louse = GreenLouse::new(4, 15);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
@@ -257,7 +240,7 @@ mod tests {
         green_louse.record_move(GreenLouseMove::Weaken);
         green_louse.record_move(GreenLouseMove::Weaken);
         
-        let effects = green_louse.choose_effects(&global_info, &mut rng);
+        let (_move, effects) = green_louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should be forced to attack
         assert_eq!(effects.len(), 1);
@@ -271,13 +254,13 @@ mod tests {
     }
 
     #[test]
-    fn test_choose_effects_records_moves() {
+    fn test_choose_move_and_effects_records_moves() {
         let mut green_louse = GreenLouse::new(4, 15);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         
         let initial_move_count = green_louse.last_moves.len();
-        let _effects = green_louse.choose_effects(&global_info, &mut rng);
+        let (_move, _effects) = green_louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have recorded one more move
         assert_eq!(green_louse.last_moves.len(), initial_move_count + 1);
@@ -291,8 +274,8 @@ mod tests {
         // Test multiple instantiations to ensure HP is in valid range
         for _ in 0..10 {
             let green_louse = GreenLouse::instantiate(&mut rng, &global_info);
-            assert!(green_louse.hp >= GreenLouse::hp_lb());
-            assert!(green_louse.hp <= GreenLouse::hp_ub());
+            assert!(green_louse.hp >= 11);
+            assert!(green_louse.hp <= 17);
         }
     }
 

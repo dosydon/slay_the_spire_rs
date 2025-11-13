@@ -90,11 +90,6 @@ impl Cultist {
         (selected_move, effects)
     }
 
-    /// Choose effects directly, sampling a move and recording it
-    pub fn choose_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Vec<Effect> {
-        let (_move, effects) = self.choose_move_and_effects(global_info, rng);
-        effects
-    }
 }
 
 impl EnemyTrait for Cultist {
@@ -108,13 +103,6 @@ impl EnemyTrait for Cultist {
         Cultist::new(hp, ritual_amount)
     }
 
-    fn hp_lb() -> u32 {
-        48
-    }
-
-    fn hp_ub() -> u32 {
-        54
-    }
 
     fn choose_next_move(&self, _global_info: &GlobalInfo) -> CategoricalDistribution<Self::MoveType> {
         let valid_moves = self.get_valid_moves();

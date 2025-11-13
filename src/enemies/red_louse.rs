@@ -104,12 +104,6 @@ impl RedLouse {
         (selected_move, effects)
     }
 
-    /// Choose effects directly, sampling a move and recording it
-    /// This combines move selection, effect generation, and move tracking into one step
-    pub fn choose_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Vec<Effect> {
-        let (_move, effects) = self.choose_move_and_effects(global_info, rng);
-        effects
-    }
 }
 
 impl EnemyTrait for RedLouse {
@@ -119,18 +113,12 @@ impl EnemyTrait for RedLouse {
         // Calculate base damage using ascension scaling
         let base_damage = Self::calculate_base_damage(global_info, rng);
         // Create the enemy instance
-        let hp = Self::hp_lb() + rng.random_range(0..=Self::hp_ub() - Self::hp_lb());
+        let hp = 10 + rng.random_range(0..=5); // 10-15 HP range
         let red_louse = RedLouse::new(base_damage, hp);
 
         red_louse
     }
 
-    fn hp_lb() -> u32 {
-        10
-    }
-    fn hp_ub() -> u32 {
-        15
-    }
     fn choose_next_move(&self, global_info: &GlobalInfo) -> CategoricalDistribution<Self::MoveType> {
         let possible_moves = self.get_valid_moves();
         let weights = self.get_move_weights(&possible_moves);
@@ -163,12 +151,6 @@ mod tests {
         assert!(louse.last_moves.is_empty());
     }
 
-    #[test]
-    fn test_hp_bounds() {
-        assert_eq!(RedLouse::hp_lb(), 10);
-        assert_eq!(RedLouse::hp_ub(), 15);
-        assert!(RedLouse::hp_lb() <= RedLouse::hp_ub());
-    }
 
     #[test]
     fn test_name() {
@@ -199,8 +181,8 @@ mod tests {
         let enemy = RedLouse::instantiate(&mut rng, &global_info);
         
         assert_eq!(RedLouse::get_name(), "Louse");
-        assert!(enemy.hp >= RedLouse::hp_lb());
-        assert!(enemy.hp <= RedLouse::hp_ub());
+        assert!(enemy.hp >= 10);
+        assert!(enemy.hp <= 15);
     }
 
     #[test]
@@ -218,8 +200,8 @@ mod tests {
         }
         
         for hp in hp_values {
-            assert!(hp >= RedLouse::hp_lb());
-            assert!(hp <= RedLouse::hp_ub());
+            assert!(hp >= 10);
+            assert!(hp <= 15);
         }
     }
 
@@ -331,15 +313,15 @@ mod tests {
     }
 
     #[test]
-    fn test_choose_effects_records_moves() {
+    fn test_choose_move_and_effects_records_moves() {
         let mut louse = RedLouse::new(6, 12);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         
         assert!(louse.last_moves.is_empty());
         
-        // Choose effects should record the selected move
-        let effects = louse.choose_effects(&global_info, &mut rng);
+        // Choose move and effects should record the selected move
+        let (_move, effects) = louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have recorded one move
         assert_eq!(louse.last_moves.len(), 1);
@@ -351,7 +333,7 @@ mod tests {
     }
 
     #[test]
-    fn test_choose_effects_respects_consecutive_rule() {
+    fn test_choose_move_and_effects_respects_consecutive_rule() {
         let mut louse = RedLouse::new(6, 12);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
@@ -360,7 +342,7 @@ mod tests {
         louse.last_moves = vec![RedLouseMove::Attack, RedLouseMove::Attack];
         
         // Choose effects - should not get three attacks in a row
-        let effects = louse.choose_effects(&global_info, &mut rng);
+        let (_move, effects) = louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have chosen Grow (since Attack would violate consecutive rule)
         assert_eq!(effects, vec![Effect::GainStrength(3)]);
@@ -368,7 +350,7 @@ mod tests {
     }
 
     #[test]
-    fn test_choose_effects_attack() {
+    fn test_choose_move_and_effects_attack() {
         let mut louse = RedLouse::new(8, 12);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
@@ -376,7 +358,7 @@ mod tests {
         // Force the louse to choose attack by making grow invalid
         louse.last_moves = vec![RedLouseMove::Grow, RedLouseMove::Grow];
         
-        let effects = louse.choose_effects(&global_info, &mut rng);
+        let (_move, effects) = louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have chosen Attack
         assert_eq!(effects, vec![Effect::AttackToTarget { amount: 8, num_attacks: 1 }]);
@@ -384,7 +366,7 @@ mod tests {
     }
 
     #[test] 
-    fn test_choose_effects_grow() {
+    fn test_choose_move_and_effects_grow() {
         let mut louse = RedLouse::new(6, 12);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
@@ -392,7 +374,7 @@ mod tests {
         // Force the louse to choose grow by making attack invalid
         louse.last_moves = vec![RedLouseMove::Attack, RedLouseMove::Attack];
         
-        let effects = louse.choose_effects(&global_info, &mut rng);
+        let (_move, effects) = louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have chosen Grow
         assert_eq!(effects, vec![Effect::GainStrength(3)]);

@@ -139,10 +139,6 @@ impl JawWorm {
         (selected_move, effects)
     }
 
-    pub fn choose_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Vec<Effect> {
-        let (_move, effects) = self.choose_move_and_effects(global_info, rng);
-        effects
-    }
 
     /// Apply initial Bellow effects for Act 3 (called during instantiation)
     pub fn apply_initial_bellow_effects(&self, global_info: &GlobalInfo) -> Vec<Effect> {
@@ -174,13 +170,6 @@ impl EnemyTrait for JawWorm {
         JawWorm::new(base_hp, is_act3)
     }
 
-    fn hp_lb() -> u32 {
-        40
-    }
-    
-    fn hp_ub() -> u32 {
-        46  // Maximum possible HP (with ascension)
-    }
     
     fn choose_next_move(&self, _global_info: &GlobalInfo) -> CategoricalDistribution<Self::MoveType> {
         let (chomp_prob, bellow_prob, thrash_prob) = self.get_move_probabilities();
@@ -220,7 +209,7 @@ mod tests {
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let jaw_worm = JawWorm::instantiate(&mut rng, &global_info);
-        assert!(jaw_worm.hp >= JawWorm::hp_lb() && jaw_worm.hp <= 44); // Act 1 HP range
+        assert!(jaw_worm.hp >= 40 && jaw_worm.hp <= 44); // Act 1 HP range
         assert!(!jaw_worm.is_act3);
     }
 
@@ -229,15 +218,10 @@ mod tests {
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 51 }; // Act 3
         let jaw_worm = JawWorm::instantiate(&mut rng, &global_info);
-        assert!(jaw_worm.hp >= JawWorm::hp_lb() && jaw_worm.hp <= 44); // Act 3 HP range
+        assert!(jaw_worm.hp >= 40 && jaw_worm.hp <= 44); // Act 3 HP range
         assert!(jaw_worm.is_act3);
     }
 
-    #[test]
-    fn test_hp_bounds() {
-        assert_eq!(JawWorm::hp_lb(), 40);
-        assert_eq!(JawWorm::hp_ub(), 46);
-    }
 
     #[test]
     fn test_name() {
@@ -431,13 +415,13 @@ mod tests {
     }
 
     #[test]
-    fn test_choose_effects_records_moves() {
+    fn test_choose_move_and_effects_records_moves() {
         let mut jaw_worm = JawWorm::new(42, false);
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         
         assert!(jaw_worm.last_move.is_none());
-        let _effects = jaw_worm.choose_effects(&global_info, &mut rng);
+        let (_move, _effects) = jaw_worm.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have recorded a move
         assert!(jaw_worm.last_move.is_some());
@@ -507,7 +491,7 @@ mod tests {
         
         // Simulate enemy turn - Jaw Worm should use Chomp first in Act 1
         let initial_player_hp = battle.get_player().battle_info.get_hp();
-        battle.sample_enemy_actions(&mut rng);
+        // Note: sample_enemy_actions is already called by Battle::new -> start_turn
         
         // Debug: Check what action was sampled
         if let Some(action) = battle.get_enemy_action(0) {
@@ -552,7 +536,7 @@ mod tests {
         
         // Simulate enemy turn 
         let initial_player_hp = battle.get_player().battle_info.get_hp();
-        battle.sample_enemy_actions(&mut rng);
+        // Note: sample_enemy_actions is already called by Battle::new -> start_turn
         battle.enemy_turn(&mut rng, &global_info);
         
         // In Act 3, first move probabilities are different, so we just verify
@@ -587,7 +571,12 @@ mod tests {
             let player_hp_before = battle.get_player().battle_info.get_hp();
             let enemy_strength_before = battle.get_enemies()[0].battle_info.get_strength();
             
-            battle.sample_enemy_actions(&mut rng);
+            // Only sample actions for turns after the first one
+            // (First turn actions are already sampled by Battle::new -> start_turn)
+            if turn > 0 {
+                battle.refresh_all();
+                battle.start_turn(&mut rng);
+            }
             battle.enemy_turn(&mut rng, &global_info);
             
             let player_hp_after = battle.get_player().battle_info.get_hp();

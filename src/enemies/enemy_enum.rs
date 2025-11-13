@@ -142,12 +142,6 @@ impl EnemyEnum {
         }
     }
 
-    /// Choose and sample effects directly (kept for backward compatibility)
-    /// This combines move selection, effect generation, and move tracking into one step
-    pub fn choose_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> Vec<Effect> {
-        let (_move, effects) = self.sample_move_and_effects(global_info, rng);
-        effects
-    }
 
     /// Get the HP of the enemy
     pub fn get_hp(&self) -> u32 {
