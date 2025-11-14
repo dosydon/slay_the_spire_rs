@@ -64,6 +64,7 @@ impl Card {
             CardEnum::Bash => crate::cards::ironclad::bash::bash_upgraded(),
             CardEnum::Cleave => crate::cards::ironclad::cleave::cleave_upgraded(),
             CardEnum::Flex => crate::cards::ironclad::flex::flex_upgraded(),
+            CardEnum::IronWave => crate::cards::ironclad::iron_wave::iron_wave_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
         }
     }

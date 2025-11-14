@@ -4,3 +4,17 @@ pub mod starter_deck;
 pub mod bash;
 pub mod cleave;
 pub mod flex;
+pub mod iron_wave;
+
+pub use strike::strike;
+pub use strike::strike_upgraded;
+pub use defend::defend;
+pub use defend::defend_upgraded;
+pub use bash::bash;
+pub use bash::bash_upgraded;
+pub use cleave::cleave;
+pub use cleave::cleave_upgraded;
+pub use flex::flex;
+pub use flex::flex_upgraded;
+pub use iron_wave::iron_wave;
+pub use iron_wave::iron_wave_upgraded;

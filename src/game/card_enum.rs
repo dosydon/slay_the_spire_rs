@@ -8,6 +8,7 @@ pub enum CardEnum {
     Bash,
     Cleave,
     Flex,
+    IronWave,
     // Status Cards
     Slimed,
     // Add more cards as needed
@@ -22,6 +23,7 @@ impl CardEnum {
             CardEnum::Bash => "Bash",
             CardEnum::Cleave => "Cleave",
             CardEnum::Flex => "Flex",
+            CardEnum::IronWave => "IronWave",
             CardEnum::Slimed => "Slimed",
         }
     }
