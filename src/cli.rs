@@ -36,7 +36,8 @@ impl BattleCli {
         println!("2. Jaw Worm (single tough enemy)");
         println!("3. Cultist (ritual caster)");
         println!("4. Small Slimes (mixed slime encounter)");
-        print!("Enter your choice (1-4): ");
+        println!("5. Gremlin Nob (elite with enrage)");
+        print!("Enter your choice (1-5): ");
         io::stdout().flush().unwrap();
         
         let mut input = String::new();
@@ -47,6 +48,7 @@ impl BattleCli {
             "2" => EncounterEvent::JawWorm,
             "3" => EncounterEvent::Cultist,
             "4" => EncounterEvent::SmallSlimes,
+            "5" => EncounterEvent::GremlinNob,
             _ => {
                 println!("Invalid choice, defaulting to Two Louses");
                 EncounterEvent::TwoLouses
@@ -151,6 +153,7 @@ impl BattleCli {
                 EnemyEnum::SpikeSlimeM(_) => "Spike Slime (M)",
                 EnemyEnum::AcidSlimeS(_) => "Acid Slime (S)",
                 EnemyEnum::AcidSlimeM(_) => "Acid Slime (M)",
+                EnemyEnum::GremlinNob(_) => "Gremlin Nob",
             };
             
             if enemy.battle_info.is_alive() {
@@ -241,6 +244,7 @@ impl BattleCli {
                                 EnemyEnum::SpikeSlimeM(_) => "Spike Slime (M)",
                                 EnemyEnum::AcidSlimeS(_) => "Acid Slime (S)",
                                 EnemyEnum::AcidSlimeM(_) => "Acid Slime (M)",
+                                EnemyEnum::GremlinNob(_) => "Gremlin Nob",
                             };
                             println!("      {}{}. Target {} {}", action_index, 
                                 char::from(b'a' + target_idx as u8), enemy_name, enemy_idx + 1);

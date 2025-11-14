@@ -101,6 +101,13 @@ impl Battle {
                 // Exhaust effect is handled during card playing, not as a post-effect
                 // This is here for completeness but should not be reached in normal gameplay
             },
+            BaseEffect::ActivateEnrage { source, amount } => {
+                // Add EnrageListener for the specified enemy
+                if let Entity::Enemy(enemy_idx) = source {
+                    let enrage_listener = crate::battle::listeners::EnrageListener::new(*source, *amount);
+                    self.add_listener(Box::new(enrage_listener));
+                }
+            },
         }
     }
 

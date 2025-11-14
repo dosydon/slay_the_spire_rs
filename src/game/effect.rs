@@ -15,6 +15,7 @@ pub enum Effect {
     GainRitual (u32),
     AddSlimed (u32),
     Exhaust,
+    ActivateEnrage (u32), // Activates Enrage listener for this enemy
 }
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -56,6 +57,10 @@ pub enum BaseEffect {
     Exhaust {
         source: Entity,
     },
+    ActivateEnrage {
+        source: Entity,
+        amount: u32,
+    },
 }
 
 impl BaseEffect {
@@ -72,6 +77,7 @@ impl BaseEffect {
             Effect::GainRitual(amount) => BaseEffect::GainRitual { source, amount },
             Effect::AddSlimed(count) => BaseEffect::AddSlimed { target, count },
             Effect::Exhaust => BaseEffect::Exhaust { source },
+            Effect::ActivateEnrage(amount) => BaseEffect::ActivateEnrage { source, amount },
         }
     }
 }

@@ -9,6 +9,7 @@ pub enum EncounterEvent {
     JawWorm,
     Cultist,
     SmallSlimes,
+    GremlinNob,
 }
 
 pub fn sample_encounter_event(global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> EncounterEvent {
@@ -75,6 +76,10 @@ impl EncounterEvent {
                     let slime2 = crate::enemies::spike_slime_s::SpikeSlimeS::instantiate(rng, global_info);
                     return vec![EnemyEnum::AcidSlimeM(slime1), EnemyEnum::SpikeSlimeS(slime2)];
                 }
+            }
+            EncounterEvent::GremlinNob => {
+                let gremlin_nob = crate::enemies::gremlin_nob::GremlinNob::instantiate(rng, global_info);
+                vec![EnemyEnum::GremlinNob(gremlin_nob)]
             }
         }
     }

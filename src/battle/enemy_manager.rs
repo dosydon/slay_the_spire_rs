@@ -1,7 +1,8 @@
 use super::Battle;
 use crate::enemies::enemy_enum::{EnemyEnum, EnemyMove};
 use crate::game::{effect::Effect, global_info::GlobalInfo};
-use crate::battle::{target::Entity, listeners::CurlUpListener, events::{BattleEvent, EventListener}};
+use crate::battle::{target::Entity, listeners::{CurlUpListener, EnrageListener}, events::{BattleEvent, EventListener}};
+use crate::enemies::gremlin_nob::GremlinNob;
 use crate::game::effect::BaseEffect;
 
 impl Battle {
@@ -37,12 +38,21 @@ impl Battle {
                 EnemyEnum::AcidSlimeM(_) => {
                     // Acid Slime (M) has no special listeners
                 }
+                EnemyEnum::GremlinNob(_) => {
+                    // Gremlin Nob gets an enrage listener only AFTER it uses its first move (Bellow)
+                    // This will be added dynamically when the first move is executed
+                }
             }
         }
     }
     
+    /// Add a listener to the battle (used for dynamic listener addition)
+    pub(crate) fn add_listener(&mut self, listener: Box<dyn EventListener>) {
+        self.event_listeners.push(listener);
+    }
+    
     /// Emit a battle event to all listeners
-    pub(in crate::battle) fn emit_event(&mut self, event: BattleEvent) {
+    pub(crate) fn emit_event(&mut self, event: BattleEvent) {
         let mut effects_to_apply = Vec::new();
         
         for listener in &mut self.event_listeners {

@@ -1,6 +1,6 @@
 use super::Battle;
-use crate::battle::{action::Action, target::Entity, BattleResult, BattleError};
-use crate::game::{effect::{BaseEffect, Effect}, card::Card};
+use crate::battle::{action::Action, target::Entity, BattleResult, BattleError, events::BattleEvent};
+use crate::game::{effect::{BaseEffect, Effect}, card::Card, card_type::CardType};
 
 impl Battle {
     /// Evaluate a player action and return the battle result
@@ -62,6 +62,15 @@ impl Battle {
         
         let card_effects = card.get_effects().clone();
         let has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust);
+        let is_skill_card = card.get_card_type() == &CardType::Skill;
+        
+        // Emit SkillCardPlayed event if this is a Skill card
+        if is_skill_card {
+            let skill_event = BattleEvent::SkillCardPlayed {
+                source: Entity::Player,
+            };
+            self.emit_event(skill_event);
+        }
         
         // Remove card from hand - exhaust it if it has Exhaust effect
         if has_exhaust {

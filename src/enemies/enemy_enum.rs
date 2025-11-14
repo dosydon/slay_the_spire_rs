@@ -1,4 +1,4 @@
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, gremlin_nob::{GremlinNob, GremlinNobMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
 
 pub enum EnemyEnum {
     RedLouse(RedLouse),
@@ -9,6 +9,7 @@ pub enum EnemyEnum {
     SpikeSlimeM(SpikeSlimeM),
     AcidSlimeS(AcidSlimeS),
     AcidSlimeM(AcidSlimeM),
+    GremlinNob(GremlinNob),
 }
 
 
@@ -23,6 +24,7 @@ pub enum EnemyMove {
     SpikeSlimeM(SpikeSlimeMMove),
     AcidSlimeS(AcidSlimeSMove),
     AcidSlimeM(AcidSlimeMMove),
+    GremlinNob(GremlinNobMove),
 }
 
 impl EnemyMove {
@@ -58,6 +60,9 @@ impl EnemyMove {
                 }
                 Effect::Exhaust => {
                     parts.push("💨 Exhaust".to_string());
+                }
+                Effect::ActivateEnrage(_) => {
+                    parts.push("😤 Enrage".to_string());
                 }
             }
         }
@@ -107,6 +112,10 @@ impl EnemyEnum {
                 let (selected_move, effects) = acid_slime.choose_move_and_effects(global_info, rng);
                 (EnemyMove::AcidSlimeM(selected_move), effects)
             }
+            EnemyEnum::GremlinNob(gremlin_nob) => {
+                let (selected_move, effects) = gremlin_nob.choose_move_and_effects(global_info, rng);
+                (EnemyMove::GremlinNob(selected_move), effects)
+            }
         }
     }
 
@@ -122,6 +131,7 @@ impl EnemyEnum {
             EnemyEnum::SpikeSlimeM(spike_slime) => spike_slime.get_hp(),
             EnemyEnum::AcidSlimeS(acid_slime) => acid_slime.get_hp(),
             EnemyEnum::AcidSlimeM(acid_slime) => acid_slime.get_hp(),
+            EnemyEnum::GremlinNob(gremlin_nob) => gremlin_nob.get_hp(),
         }
     }
 }
