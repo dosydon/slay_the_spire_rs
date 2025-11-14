@@ -12,6 +12,17 @@ impl Battle {
                     self.apply_damage(*target, incoming_damage);
                 }
             },
+            BaseEffect::AttackAllEnemies { source, amount, num_attacks } => {
+                for _ in 0..*num_attacks {
+                    for enemy_idx in 0..self.enemies.len() {
+                        if self.enemies[enemy_idx].battle_info.is_alive() {
+                            let target = Entity::Enemy(enemy_idx);
+                            let incoming_damage = self.calculate_incoming_damage(*source, target, *amount);
+                            self.apply_damage(target, incoming_damage);
+                        }
+                    }
+                }
+            },
             BaseEffect::GainDefense { source, amount } => {
                 // Defense effects apply to the source entity
                 self.apply_block(*source, *amount);
@@ -93,7 +104,7 @@ impl Battle {
             },
             BaseEffect::ActivateEnrage { source, amount } => {
                 // Add EnrageListener for the specified enemy
-                if let Entity::Enemy(enemy_idx) = source {
+                if let Entity::Enemy(_enemy_idx) = source {
                     let enrage_listener = crate::battle::listeners::EnrageListener::new(*source, *amount);
                     self.add_listener(Box::new(enrage_listener));
                 }
@@ -170,6 +181,81 @@ mod tests {
         battle.eval_base_effect(&damage_effect);
         
         assert_eq!(battle.enemies[0].battle_info.get_hp(), initial_enemy_hp - 10);
+    }
+
+    #[test]
+    fn test_attack_all_enemies_effect() {
+        use crate::cards::ironclad::cleave::cleave;
+        use crate::battle::action::Action;
+        
+        let mut deck_cards = vec![cleave()];
+        for _ in 0..4 {
+            deck_cards.push(crate::cards::ironclad::strike::strike());
+        }
+        let deck = crate::game::deck::Deck::new(deck_cards);
+        
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        
+        // Create battle with multiple enemies
+        let red_louse1 = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse2 = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse1)),
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2))
+        ];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        // Draw hand
+        battle.cards.draw_n(5);
+        
+        let initial_enemy1_hp = battle.enemies[0].battle_info.get_hp();
+        let initial_enemy2_hp = battle.enemies[1].battle_info.get_hp();
+        
+        // Find Cleave card in hand
+        let hand = battle.cards.get_hand();
+        let cleave_idx = hand.iter().position(|card| card.get_name() == "Cleave");
+        assert!(cleave_idx.is_some(), "Cleave card should be in hand");
+        
+        // Play Cleave targeting Entity::None (hits all enemies)
+        let action = Action::PlayCard(cleave_idx.unwrap(), Entity::None);
+        let result = battle.eval_action(action, &mut rng);
+        assert!(matches!(result, Ok(_)));
+        
+        // Both enemies should take 8 damage
+        assert_eq!(battle.enemies[0].battle_info.get_hp(), initial_enemy1_hp - 8);
+        assert_eq!(battle.enemies[1].battle_info.get_hp(), initial_enemy2_hp - 8);
+    }
+
+    #[test]
+    fn test_attack_all_enemies_base_effect() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        
+        // Create battle with multiple enemies
+        let red_louse1 = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse2 = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse1)),
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2))
+        ];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        
+        let initial_enemy1_hp = battle.enemies[0].battle_info.get_hp();
+        let initial_enemy2_hp = battle.enemies[1].battle_info.get_hp();
+        
+        let attack_all_effect = BaseEffect::AttackAllEnemies {
+            source: Entity::Player,
+            amount: 8,
+            num_attacks: 1,
+        };
+        
+        battle.eval_base_effect(&attack_all_effect);
+        
+        // Both enemies should take 8 damage
+        assert_eq!(battle.enemies[0].battle_info.get_hp(), initial_enemy1_hp - 8);
+        assert_eq!(battle.enemies[1].battle_info.get_hp(), initial_enemy2_hp - 8);
     }
 
     #[test]

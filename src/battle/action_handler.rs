@@ -125,8 +125,13 @@ impl Battle {
     pub(in crate::battle) fn get_valid_targets_for_card(&self, card: &Card) -> Vec<Entity> {
         let mut valid_targets = Vec::new();
         
-        // Check if any effect targets enemies
-        let targets_enemies = card.get_effects().iter().any(|effect| {
+        // Check if any effect attacks all enemies (doesn't need specific targeting)
+        let attacks_all_enemies = card.get_effects().iter().any(|effect| {
+            matches!(effect, Effect::AttackAllEnemies { .. })
+        });
+        
+        // Check if any effect targets specific enemies
+        let targets_specific_enemies = card.get_effects().iter().any(|effect| {
             matches!(effect, 
                 Effect::AttackToTarget { .. } |
                 Effect::ApplyVulnerable { .. } |
@@ -142,8 +147,13 @@ impl Battle {
             )
         });
         
-        // Add valid enemy targets
-        if targets_enemies {
+        // AttackAllEnemies cards use Entity::None as target (no specific targeting needed)
+        if attacks_all_enemies {
+            valid_targets.push(Entity::None);
+        }
+        
+        // Add valid enemy targets for specific targeting
+        if targets_specific_enemies {
             for (enemy_index, enemy) in self.enemies.iter().enumerate() {
                 if enemy.battle_info.is_alive() {
                     valid_targets.push(Entity::Enemy(enemy_index));
@@ -177,7 +187,7 @@ impl Battle {
         match target {
             Entity::Enemy(idx) => *idx < self.enemies.len(),
             Entity::Player => true,  // Player is always a valid target
-            Entity::None => false,   // None is not a valid target
+            Entity::None => true,    // None is valid for AttackAllEnemies cards
         }
     }
 }

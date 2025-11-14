@@ -411,6 +411,19 @@ impl BattleCli {
                         parts.push(format!("🗡️ {}", amount));
                     }
                 }
+                crate::game::effect::Effect::AttackAllEnemies { amount, .. } => {
+                    let calculated_damage = self.battle.calculate_incoming_damage(
+                        Entity::Enemy(enemy_index), 
+                        Entity::Player, 
+                        *amount
+                    );
+                    
+                    if calculated_damage != *amount {
+                        parts.push(format!("🗡️ {} (all) → {}", amount, calculated_damage));
+                    } else {
+                        parts.push(format!("🗡️ {} (all)", amount));
+                    }
+                }
                 crate::game::effect::Effect::GainDefense(amount) => {
                     parts.push(format!("🛡️ {}", amount));
                 }

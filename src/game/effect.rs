@@ -7,6 +7,10 @@ pub enum Effect {
         amount: u32,
         num_attacks: u32,
     },
+    AttackAllEnemies {
+        amount: u32,
+        num_attacks: u32,
+    },
     GainDefense (u32),
     ApplyVulnerable (u32),
     ApplyWeak (u32),
@@ -23,6 +27,11 @@ pub enum BaseEffect {
     AttackToTarget {
         source: Entity,
         target: Entity,
+        amount: u32,
+        num_attacks: u32,
+    },
+    AttackAllEnemies {
+        source: Entity,
         amount: u32,
         num_attacks: u32,
     },
@@ -68,6 +77,9 @@ impl BaseEffect {
         match effect {
             Effect::AttackToTarget { amount, num_attacks } => {
                 BaseEffect::AttackToTarget { source, target, amount, num_attacks }
+            }
+            Effect::AttackAllEnemies { amount, num_attacks } => {
+                BaseEffect::AttackAllEnemies { source, amount, num_attacks }
             }
             Effect::GainDefense(amount) => BaseEffect::GainDefense { source, amount },
             Effect::ApplyVulnerable(duration) => BaseEffect::ApplyVulnerable { target, duration },
