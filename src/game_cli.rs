@@ -1,9 +1,9 @@
 use std::io::{self, Write};
 use crate::game::{
-    game::{Game, GameState, GameResult, GameError}, 
-    action::{GameAction, PathChoice},
+    game::{Game, GameState, GameResult, GameError},
+    action::GameAction,
     global_info::GlobalInfo,
-    map::{Map, MapNode, NodeType},
+    map::{Map, MapNode, NodeType, test_map_large},
 };
 use crate::cards::ironclad::starter_deck::starter_deck;
 use crate::battle_cli::BattleCli;
@@ -20,54 +20,118 @@ impl GameCli {
         let global_info = GlobalInfo { ascention: 20, current_floor: 1 };
         let deck = starter_deck();
         
-        // Create a simple test map for now
-        let (map, start_node) = Self::create_simple_map();
+        // Use the large test map
+        let map = test_map_large();
+        let start_node = (0, 0); // Start position based on test_map_large 0-indexing
         
         let game = Game::new(deck, global_info, map, start_node, 80, 80);
         
         GameCli { game, rng }
     }
     
-    /// Create a simple linear map for testing
-    fn create_simple_map() -> (Map, u32) {
+    /// Create a simple test map that matches the classic Slay the Spire Act 1 structure
+    fn create_simple_map() -> (Map, (u32, u32)) {
         let mut map = Map::new();
-        
+
         // Floor 0: Start
-        let start_node = MapNode::new(0, 0, 0, NodeType::Start);
+        let start_node = MapNode::new(0, 0, NodeType::Start);
         map.add_node(start_node);
-        
-        // Floor 1: Combat encounters
-        let combat1 = MapNode::new(1, 1, 0, NodeType::Combat);
-        let combat2 = MapNode::new(2, 1, 1, NodeType::Combat);
-        let combat3 = MapNode::new(3, 1, 2, NodeType::Combat);
+
+        // Floor 1: Combat encounters - 3 paths
+        let combat1 = MapNode::new(1, 0, NodeType::Combat);
+        let combat2 = MapNode::new(1, 1, NodeType::Combat);
+        let combat3 = MapNode::new(1, 2, NodeType::Combat);
         map.add_node(combat1);
         map.add_node(combat2);
         map.add_node(combat3);
-        
-        // Floor 2: Elite or Rest
-        let elite = MapNode::new(4, 2, 0, NodeType::Elite);
-        let rest = MapNode::new(5, 2, 1, NodeType::RestSite);
+
+        // Floor 2: Elite (left path) and Rest Site (right path)
+        let elite = MapNode::new(2, 0, NodeType::Elite);
+        let rest = MapNode::new(2, 1, NodeType::RestSite);
         map.add_node(elite);
         map.add_node(rest);
-        
+
         // Floor 3: Boss
-        let boss = MapNode::new(6, 3, 0, NodeType::Boss);
+        let boss = MapNode::new(3, 0, NodeType::Boss);
         map.add_node(boss);
-        
-        // Connect nodes
-        map.add_edge(0, 1).unwrap(); // Start -> Combat 1
-        map.add_edge(0, 2).unwrap(); // Start -> Combat 2
-        map.add_edge(0, 3).unwrap(); // Start -> Combat 3
-        
-        map.add_edge(1, 4).unwrap(); // Combat 1 -> Elite
-        map.add_edge(2, 4).unwrap(); // Combat 2 -> Elite
-        map.add_edge(2, 5).unwrap(); // Combat 2 -> Rest
-        map.add_edge(3, 5).unwrap(); // Combat 3 -> Rest
-        
-        map.add_edge(4, 6).unwrap(); // Elite -> Boss
-        map.add_edge(5, 6).unwrap(); // Rest -> Boss
-        
-        (map, 0) // Return map and start node ID
+
+        // Connect nodes following the map structure from the image
+        // Start -> 3 Combat paths
+        map.add_edge((0, 0), (1, 0)).unwrap(); // Start -> Combat 1 (left)
+        map.add_edge((0, 0), (1, 1)).unwrap(); // Start -> Combat 2 (middle)
+        map.add_edge((0, 0), (1, 2)).unwrap(); // Start -> Combat 3 (right)
+
+        // Combat paths converge to Elite and Rest
+        map.add_edge((1, 0), (2, 0)).unwrap(); // Combat 1 -> Elite (left paths converge)
+        map.add_edge((1, 1), (2, 0)).unwrap(); // Combat 2 -> Elite (middle path can go elite)
+        map.add_edge((1, 1), (2, 1)).unwrap(); // Combat 2 -> Rest (middle path can go rest)
+        map.add_edge((1, 2), (2, 1)).unwrap(); // Combat 3 -> Rest (right paths converge)
+
+        // Both Elite and Rest lead to Boss
+        map.add_edge((2, 0), (3, 0)).unwrap(); // Elite -> Boss
+        map.add_edge((2, 1), (3, 0)).unwrap(); // Rest -> Boss
+
+        (map, (0, 0)) // Return map and start node position
+    }
+
+    /// Create a more comprehensive test map for various scenarios
+    pub fn create_test_map() -> (Map, (u32, u32)) {
+        let mut map = Map::new();
+
+        // Floor 0: Start
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        map.add_node(start_node);
+
+        // Floor 1: Multiple path choices
+        let combat1 = MapNode::new(1, 0, NodeType::Combat);
+        let combat2 = MapNode::new(1, 1, NodeType::Combat);
+        let combat3 = MapNode::new(1, 2, NodeType::Combat);
+        map.add_node(combat1);
+        map.add_node(combat2);
+        map.add_node(combat3);
+
+        // Floor 2: Different node types
+        let elite = MapNode::new(2, 0, NodeType::Elite);
+        let rest = MapNode::new(2, 1, NodeType::RestSite);
+        let shop = MapNode::new(2, 2, NodeType::Shop);
+        map.add_node(elite);
+        map.add_node(rest);
+        map.add_node(shop);
+
+        // Floor 3: More choices
+        let combat4 = MapNode::new(3, 0, NodeType::Combat);
+        let treasure = MapNode::new(3, 1, NodeType::Treasure);
+        map.add_node(combat4);
+        map.add_node(treasure);
+
+        // Floor 4: Final Boss
+        let boss = MapNode::new(4, 0, NodeType::Boss);
+        map.add_node(boss);
+
+        // Create interesting path connections
+        // Start to Floor 1
+        map.add_edge((0, 0), (1, 0)).unwrap();
+        map.add_edge((0, 0), (1, 1)).unwrap();
+        map.add_edge((0, 0), (1, 2)).unwrap();
+
+        // Floor 1 to Floor 2
+        map.add_edge((1, 0), (2, 0)).unwrap(); // Combat 1 -> Elite
+        map.add_edge((1, 1), (2, 0)).unwrap(); // Combat 2 -> Elite
+        map.add_edge((1, 1), (2, 1)).unwrap(); // Combat 2 -> Rest
+        map.add_edge((1, 2), (2, 1)).unwrap(); // Combat 3 -> Rest
+        map.add_edge((1, 2), (2, 2)).unwrap(); // Combat 3 -> Shop
+
+        // Floor 2 to Floor 3
+        map.add_edge((2, 0), (3, 0)).unwrap(); // Elite -> Combat 4
+        map.add_edge((2, 1), (3, 0)).unwrap(); // Rest -> Combat 4
+        map.add_edge((2, 1), (3, 1)).unwrap(); // Rest -> Treasure
+        map.add_edge((2, 2), (3, 1)).unwrap(); // Shop -> Treasure
+
+        // Floor 3 to Boss
+        map.add_edge((3, 0), (4, 0)).unwrap(); // Combat 4 -> Boss
+        map.add_edge((3, 1), (4, 0)).unwrap(); // Treasure -> Boss
+
+        (map, (0, 0)) // Return map and start node position
     }
     
     /// Start the game loop
@@ -114,18 +178,22 @@ impl GameCli {
     fn handle_map_phase(&mut self) -> Result<(), GameError> {
         let current_node_info = self.game.get_current_node()
             .map(|node| (self.format_node_type(&node.node_type), node.floor));
-        let neighbors = self.game.get_map().get_neighbors(self.game.current_node_id);
-        
+        let neighbors = self.game.get_map().get_neighbors(self.game.current_node_position);
+
         if neighbors.is_empty() {
             println!("\n🎉 VICTORY! You've reached the end of your journey!");
             return Ok(());
         }
-        
+
         println!("\n--- Map Navigation ---");
+
+        // Display visual map
+        self.display_visual_map();
+
         if let Some((location_name, floor)) = current_node_info {
-            println!("Current location: {} (Floor {})", location_name, floor);
+            println!("\nCurrent location: {} (Floor {})", location_name, floor);
         }
-        
+
         println!("\nAvailable paths:");
         let mut paths = Vec::new();
         for &neighbor_id in &neighbors {
@@ -134,7 +202,7 @@ impl GameCli {
             }
         }
         paths.sort_by_key(|(pos, _, _)| *pos);
-        
+
         for (i, (_, floor, node_type)) in paths.iter().enumerate() {
             let direction = match i {
                 0 => "Left",
@@ -152,17 +220,17 @@ impl GameCli {
             io::stdin().read_line(&mut input).unwrap();
             let input = input.trim().to_lowercase();
             
-            let choice = match input.as_str() {
-                "1" | "left" | "l" => PathChoice::Left,
-                "2" | "middle" | "m" => PathChoice::Middle,
-                "3" | "right" | "r" => PathChoice::Right,
+            let path_index = match input.as_str() {
+                "1" | "left" | "l" => 0,
+                "2" | "middle" | "m" => 1,
+                "3" | "right" | "r" => 2,
                 _ => {
                     println!("Invalid choice. Please try again.");
                     continue;
                 }
             };
-            
-            match self.game.eval_action(GameAction::ChoosePath(choice), &mut self.rng) {
+
+            match self.game.eval_action(GameAction::ChoosePath(path_index), &mut self.rng) {
                 Ok(GameResult::Continue) => break,
                 Ok(GameResult::Victory) => {
                     println!("\n🎉 VICTORY! You've completed the spire!");
@@ -323,6 +391,208 @@ impl GameCli {
             NodeType::Shop => "🏪 Shop".to_string(),
             NodeType::Event => "❓ Event".to_string(),
             NodeType::Treasure => "💰 Treasure".to_string(),
+        }
+    }
+
+    /// Display a visual representation of the map
+    fn display_visual_map(&self) {
+        let map = self.game.get_map();
+        let current_node_position = self.game.current_node_position;
+
+        // Get all nodes and organize them by floor
+        let mut nodes_by_floor: std::collections::HashMap<u32, Vec<_>> = std::collections::HashMap::new();
+        let mut max_floor = 0;
+        let mut max_position = 0;
+
+        // Collect all nodes and find dimensions
+        for node in map.get_all_nodes() {
+            nodes_by_floor.entry(node.floor).or_insert_with(Vec::new).push(node);
+            max_floor = max_floor.max(node.floor);
+            max_position = max_position.max(node.position);
+        }
+
+        // Build the visual map
+        println!("\n┌─────────────────────────────────────────────────┐");
+        println!("│                    MAP                        │");
+        println!("└─────────────────────────────────────────────────┘");
+        println!();
+
+        for floor in (0..=max_floor).rev() {
+            if let Some(nodes_on_floor) = nodes_by_floor.get(&floor) {
+                // Sort nodes by position
+                let mut sorted_nodes = nodes_on_floor.clone();
+                sorted_nodes.sort_by_key(|n| n.position);
+
+                // Display nodes on this floor
+                self.display_floor_nodes(&sorted_nodes, current_node_position);
+
+                // Display connections to next floor (except for the top floor)
+                if floor < max_floor {
+                    self.display_floor_connections(&sorted_nodes, map, floor);
+                }
+            }
+        }
+
+        println!("\nLegend: 🟢 Current  🟤 Visited  ⭕ Unavailable");
+    }
+
+    /// Display nodes on a single floor
+    fn display_floor_nodes(&self, nodes: &[&crate::game::map::MapNode], current_node_position: (u32, u32)) {
+        // Find the maximum position to determine the width of the floor
+        let max_position = nodes.iter().map(|n| n.position).max().unwrap_or(0);
+
+        // Create a map from position to node for easy lookup
+        let position_map: std::collections::HashMap<u32, _> = nodes.iter()
+            .map(|node| (node.position, node))
+            .collect();
+
+        // Calculate total width needed (8 characters per position + spacing)
+        let total_width = ((max_position + 1) * 8) as usize;
+
+        // Build the three lines of the floor
+        let mut line1 = String::with_capacity(total_width);
+        let mut line2 = String::with_capacity(total_width);
+        let mut line3 = String::with_capacity(total_width);
+
+        for pos in 0..=max_position {
+            // Add spacing for this position
+            if pos > 0 {
+                line1.push_str("        ");
+                line2.push_str("        ");
+                line3.push_str("        ");
+            }
+
+            if let Some(node) = position_map.get(&pos) {
+                let (icon, is_current) = if node.id() == current_node_position {
+                    (self.get_node_icon(&node.node_type, true), true)
+                } else {
+                    (self.get_node_icon(&node.node_type, false), false)
+                };
+
+                // Just show the icon, no box
+                line1.push_str("   ");
+                line2.push_str(&format!(" {} ", icon));
+                line3.push_str("   ");
+            } else {
+                // Empty space for positions without nodes
+                line1.push_str("     ");
+                line2.push_str("     ");
+                line3.push_str("     ");
+            }
+        }
+
+        println!("{}", line1);
+        println!("{}", line2);
+        println!("{}", line3);
+    }
+
+    /// Display connections between floors using proper horizontal lines between positions
+    fn display_floor_connections(&self, current_floor_nodes: &[&crate::game::map::MapNode], map: &crate::game::map::Map, current_floor: u32) {
+        // Find the maximum position to determine the width
+        let max_position = current_floor_nodes.iter().map(|n| n.position).max().unwrap_or(0);
+
+        // Get all connections from current floor to next floor
+        let mut connections: Vec<(u32, u32)> = Vec::new();
+        for node in current_floor_nodes {
+            let neighbors = map.get_neighbors(node.id());
+            for &neighbor_id in &neighbors {
+                if let Some(neighbor) = map.get_node(neighbor_id) {
+                    if neighbor.floor == current_floor + 1 {
+                        connections.push((node.position, neighbor.position));
+                    }
+                }
+            }
+        }
+
+        if connections.is_empty() {
+            return;
+        }
+
+        // Create 3 lines: vertical, horizontal, vertical
+        for line_idx in 0..3 {
+            let mut line = String::new();
+
+            for pos in 0..=max_position {
+                if pos > 0 {
+                    line.push_str("        ");
+                }
+
+                match line_idx {
+                    0 | 2 => {
+                        // Top and bottom - vertical lines for any position with connections
+                        if connections.iter().any(|(from, to)| *from == pos || *to == pos) {
+                            line.push_str("   |    ");
+                        } else {
+                            line.push_str("        ");
+                        }
+                    },
+                    1 => {
+                        // Middle - draw the horizontal lines
+                        // Check if this position connects to any other position
+                        let connected_positions: Vec<u32> = connections.iter()
+                            .filter(|(from, to)| *from == pos || *to == pos)
+                            .map(|(from, to)| if *from == pos { *to } else { *from })
+                            .collect();
+
+                        if connected_positions.is_empty() {
+                            line.push_str("        ");
+                        } else {
+                            // Build the horizontal line segment
+                            let mut segment = String::new();
+
+                            // Start with a vertical line
+                            segment.push_str("|");
+
+                            // Add horizontal line to the right if needed
+                            if connected_positions.iter().any(|&p| p > pos) {
+                                segment.push_str("------");
+                            }
+
+                            // Add horizontal line to the left if needed
+                            if connected_positions.iter().any(|&p| p < pos) {
+                                // This would need a more complex approach to show left connections
+                                // For now, just show right connections
+                            }
+
+                            // Ensure 8 character width
+                            while segment.len() < 8 {
+                                segment.push(' ');
+                            }
+
+                            line.push_str(&segment[..8]);
+                        }
+                    },
+                    _ => {
+                        line.push_str("        ");
+                    }
+                }
+            }
+
+            if !line.trim().is_empty() {
+                println!("{}", line);
+            }
+        }
+
+        // Add spacing before next floor
+        println!();
+    }
+
+    
+    /// Get icon for node type
+    fn get_node_icon(&self, node_type: &crate::game::map::NodeType, is_current: bool) -> &'static str {
+        if is_current {
+            return "🟢";
+        }
+
+        match node_type {
+            crate::game::map::NodeType::Start => "🏠",
+            crate::game::map::NodeType::Combat => "⚔️",
+            crate::game::map::NodeType::Elite => "👹",
+            crate::game::map::NodeType::Boss => "🐉",
+            crate::game::map::NodeType::RestSite => "🔥",
+            crate::game::map::NodeType::Shop => "🏪",
+            crate::game::map::NodeType::Event => "❓",
+            crate::game::map::NodeType::Treasure => "💰",
         }
     }
 }

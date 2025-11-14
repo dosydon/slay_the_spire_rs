@@ -1,4 +1,4 @@
-use crate::game::{global_info::GlobalInfo, action::{GameAction, PathChoice}, deck::Deck, map::{Map, MapError}, card_reward::CardRewardPool};
+use crate::game::{global_info::GlobalInfo, action::GameAction, deck::Deck, map::{Map, MapError}, card_reward::CardRewardPool};
 use crate::battle::{Battle, BattleResult, BattleError, enemy_in_battle::EnemyInBattle};
 
 /// The overall state of the game
@@ -46,7 +46,7 @@ pub struct Game {
     pub deck: Deck,
     pub battle: Option<Battle>,
     pub map: Map,
-    pub current_node_id: u32,
+    pub current_node_position: (u32, u32),
     pub player_hp: u32,
     pub player_max_hp: u32,
     /// Available card reward options when in CardRewardSelection state
@@ -55,14 +55,14 @@ pub struct Game {
 
 impl Game {
     /// Create a new game with starting deck, global info, and map
-    pub fn new(starting_deck: Deck, global_info: GlobalInfo, map: Map, start_node_id: u32, starting_hp: u32, max_hp: u32) -> Self {
+    pub fn new(starting_deck: Deck, global_info: GlobalInfo, map: Map, start_node_position: (u32, u32), starting_hp: u32, max_hp: u32) -> Self {
         Game {
             global_info,
             state: GameState::OnMap,
             deck: starting_deck,
             battle: None,
             map,
-            current_node_id: start_node_id,
+            current_node_position: start_node_position,
             player_hp: starting_hp,
             player_max_hp: max_hp,
             card_reward_options: Vec::new(),
@@ -113,7 +113,7 @@ impl Game {
                 }
                 
                 // Get accessible nodes from current position
-                let accessible_nodes = self.map.get_neighbors(self.current_node_id);
+                let accessible_nodes = self.map.get_neighbors(self.current_node_position);
                 if accessible_nodes.is_empty() {
                     return Err(GameError::InvalidState); // No paths available
                 }
@@ -122,7 +122,7 @@ impl Game {
                 let chosen_node_id = self.choose_node_from_path(&accessible_nodes, path_choice)?;
                 
                 // Move to the chosen node
-                self.current_node_id = chosen_node_id;
+                self.current_node_position = chosen_node_id;
                 self.global_info.current_floor = self.get_current_node()
                     .map(|node| node.floor)
                     .unwrap_or(self.global_info.current_floor);
@@ -214,7 +214,7 @@ impl Game {
     
     /// Get the current map node
     pub fn get_current_node(&self) -> Option<&crate::game::map::MapNode> {
-        self.map.get_node(self.current_node_id)
+        self.map.get_node(self.current_node_position)
     }
     
     /// Get the map
@@ -268,33 +268,24 @@ impl Game {
         &self.card_reward_options
     }
 
-    /// Choose a node from available options based on path choice
-    fn choose_node_from_path(&self, accessible_nodes: &[u32], path_choice: PathChoice) -> Result<u32, GameError> {
+    /// Choose a node from available options based on path choice (0-based index)
+    fn choose_node_from_path(&self, accessible_nodes: &[(u32, u32)], path_choice: usize) -> Result<(u32, u32), GameError> {
         if accessible_nodes.is_empty() {
             return Err(GameError::InvalidState);
         }
-        
+
         // Get nodes and sort by position for consistent left/middle/right mapping
-        let mut nodes_with_positions: Vec<(u32, u32)> = accessible_nodes.iter()
+        let mut nodes_with_positions: Vec<((u32, u32), u32)> = accessible_nodes.iter()
             .filter_map(|&node_id| {
                 self.map.get_node(node_id).map(|node| (node_id, node.position))
             })
             .collect();
-        
+
         nodes_with_positions.sort_by_key(|&(_, position)| position);
-        
-        let chosen_index = match path_choice {
-            PathChoice::Left => 0,
-            PathChoice::Middle => {
-                if nodes_with_positions.len() >= 2 {
-                    nodes_with_positions.len() / 2
-                } else {
-                    0
-                }
-            },
-            PathChoice::Right => nodes_with_positions.len() - 1,
-        };
-        
+
+        // Convert path choice to index with bounds checking
+        let chosen_index = path_choice.min(nodes_with_positions.len() - 1);
+
         Ok(nodes_with_positions[chosen_index].0)
     }
 }
@@ -306,36 +297,36 @@ mod tests {
     use crate::game::map::{Map, MapNode, NodeType};
 
     /// Create a simple test map: Start -> Combat -> Boss
-    fn create_test_map() -> (Map, u32) {
+    fn create_test_map() -> (Map, (u32, u32)) {
         let mut map = Map::new();
-        
+
         // Create nodes
-        let start_node = MapNode::new(0, 0, 0, NodeType::Start);
-        let combat_node = MapNode::new(1, 1, 0, NodeType::Combat);
-        let boss_node = MapNode::new(2, 2, 0, NodeType::Boss);
-        
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        let combat_node = MapNode::new(1, 0, NodeType::Combat);
+        let boss_node = MapNode::new(2, 0, NodeType::Boss);
+
         map.add_node(start_node);
         map.add_node(combat_node);
         map.add_node(boss_node);
-        
+
         // Create edges
-        map.add_edge(0, 1).unwrap();
-        map.add_edge(1, 2).unwrap();
-        
-        (map, 0) // Return map and start node id
+        map.add_edge((0, 0), (1, 0)).unwrap();
+        map.add_edge((1, 0), (2, 0)).unwrap();
+
+        (map, (0, 0)) // Return map and start node position
     }
 
     #[test]
     fn test_game_creation() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let (map, start_node_position) = create_test_map();
+        let game = Game::new(deck, global_info, map, start_node_position, 80, 80);
         
         assert_eq!(game.get_state(), &GameState::OnMap);
         assert!(!game.is_game_over());
         assert!(game.get_battle().is_none());
-        assert_eq!(game.current_node_id, 0);
+        assert_eq!(game.current_node_position, (0, 0));
         assert_eq!(game.get_player_hp(), 80);
         assert_eq!(game.get_player_max_hp(), 80);
     }
@@ -344,31 +335,31 @@ mod tests {
     fn test_choose_path_action() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
         let mut rng = rand::rng();
         
         // Choose a path to start a battle
-        let result = game.eval_action(GameAction::ChoosePath(PathChoice::Middle), &mut rng);
+        let result = game.eval_action(GameAction::ChoosePath(1), &mut rng);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), GameResult::Continue);
         
         // Game should now be in battle (moved to combat node)
         assert!(matches!(game.get_state(), GameState::InBattle));
         assert!(game.get_battle().is_some());
-        assert_eq!(game.current_node_id, 1); // Moved to combat node
+        assert_eq!(game.current_node_position, (1, 0)); // Moved to combat node
     }
 
     #[test]
     fn test_battle_action_delegation() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
         let mut rng = rand::rng();
         
         // Start a battle first
-        game.eval_action(GameAction::ChoosePath(PathChoice::Middle), &mut rng).unwrap();
+        game.eval_action(GameAction::ChoosePath(1), &mut rng).unwrap();
         
         // Try to end turn (battle action)
         let battle_action = GameAction::Battle(Action::EndTurn);
@@ -382,8 +373,8 @@ mod tests {
     fn test_invalid_state_actions() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
         let mut rng = rand::rng();
         
         // Try battle action without starting battle
@@ -399,8 +390,8 @@ mod tests {
     fn test_hp_syncing_between_game_and_battle() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, start_node_id, 70, 80);
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 70, 80);
         let mut rng = rand::rng();
         
         // Verify initial state
@@ -408,7 +399,7 @@ mod tests {
         assert_eq!(game.get_player_max_hp(), 80);
         
         // Start a battle
-        game.eval_action(GameAction::ChoosePath(PathChoice::Middle), &mut rng).unwrap();
+        game.eval_action(GameAction::ChoosePath(1), &mut rng).unwrap();
         assert!(game.get_battle().is_some());
         
         // Verify battle player has correct HP
@@ -439,8 +430,8 @@ mod tests {
     fn test_max_hp_management() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
         
         // Test max HP increase
         game.increase_max_hp(10);
@@ -466,16 +457,16 @@ mod tests {
         
         // Create a simple map with an elite encounter
         let mut map = Map::new();
-        let start_node = MapNode::new(0, 0, 0, NodeType::Start);
-        let elite_node = MapNode::new(1, 1, 0, NodeType::Elite);
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        let elite_node = MapNode::new(1, 0, NodeType::Elite);
         map.add_node(start_node);
         map.add_node(elite_node);
-        map.add_edge(0, 1).unwrap();
-        
-        let mut game = Game::new(deck, global_info, map, 0, 80, 80);
+        map.add_edge((0, 0), (1, 0)).unwrap();
+
+        let mut game = Game::new(deck, global_info, map, (0, 0), 80, 80);
         
         // Move to elite node
-        let result = game.eval_action(GameAction::ChoosePath(PathChoice::Middle), &mut rng);
+        let result = game.eval_action(GameAction::ChoosePath(1), &mut rng);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), GameResult::Continue);
         
@@ -502,8 +493,8 @@ mod tests {
     fn test_card_reward_selection_state() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
         let mut rng = rand::rng();
 
         // Initially should not be in card reward selection
@@ -528,8 +519,8 @@ mod tests {
     fn test_select_card_reward_valid_action() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
         let mut rng = rand::rng();
 
         // Start card reward selection
@@ -556,8 +547,8 @@ mod tests {
     fn test_select_card_reward_invalid_state() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
         let mut rng = rand::rng();
 
         // Try to select card reward without being in CardRewardSelection state
@@ -570,8 +561,8 @@ mod tests {
     fn test_select_card_reward_invalid_index() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
         let mut rng = rand::rng();
 
         // Start card reward selection
@@ -592,8 +583,8 @@ mod tests {
     fn test_card_reward_selection_different_options() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
         let mut rng = rand::rng();
 
         // Generate card rewards multiple times
@@ -613,8 +604,8 @@ mod tests {
     fn test_card_reward_selection_no_duplicates() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_id) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
         let mut rng = rand::rng();
 
         // Start card reward selection

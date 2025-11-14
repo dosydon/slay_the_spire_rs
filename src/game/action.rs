@@ -9,21 +9,13 @@ pub enum GameAction {
     /// Only valid when in battle
     Battle(BattleAction),
 
-    /// Choose a path on the map (left, middle, right)
+    /// Choose a path on the map (0-based index)
     /// Determines what type of encounter comes next
-    ChoosePath(PathChoice),
+    ChoosePath(usize),
 
     /// Select a card reward (0, 1, or 2)
     /// Only valid when in CardRewardSelection state
     SelectCardReward(usize),
-}
-
-/// Possible path choices on the map
-#[derive(Debug, Clone, PartialEq)]
-pub enum PathChoice {
-    Left,
-    Middle, 
-    Right,
 }
 
 /// Result of ending a run
