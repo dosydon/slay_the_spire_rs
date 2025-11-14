@@ -6,6 +6,8 @@ pub mod cleave;
 pub mod flex;
 pub mod iron_wave;
 pub mod pommel_strike;
+pub mod shrug_it_off;
+pub mod twin_strike;
 
 pub use strike::strike;
 pub use strike::strike_upgraded;
@@ -21,3 +23,7 @@ pub use iron_wave::iron_wave;
 pub use iron_wave::iron_wave_upgraded;
 pub use pommel_strike::pommel_strike;
 pub use pommel_strike::pommel_strike_upgraded;
+pub use shrug_it_off::shrug_it_off;
+pub use shrug_it_off::shrug_it_off_upgraded;
+pub use twin_strike::twin_strike;
+pub use twin_strike::twin_strike_upgraded;

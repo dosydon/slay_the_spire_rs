@@ -66,6 +66,8 @@ impl Card {
             CardEnum::Flex => crate::cards::ironclad::flex::flex_upgraded(),
             CardEnum::IronWave => crate::cards::ironclad::iron_wave::iron_wave_upgraded(),
             CardEnum::PommelStrike => crate::cards::ironclad::pommel_strike::pommel_strike_upgraded(),
+            CardEnum::ShrugItOff => crate::cards::ironclad::shrug_it_off::shrug_it_off_upgraded(),
+            CardEnum::TwinStrike => crate::cards::ironclad::twin_strike::twin_strike_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
         }
     }
