@@ -163,8 +163,10 @@ mod tests {
         assert!(matches!(result, Ok(_)));
         
         // Both enemies should take 8 + 3 = 11 damage due to strength
-        assert_eq!(battle.get_enemies()[0].battle_info.get_hp(), initial_enemy1_hp - 11);
-        assert_eq!(battle.get_enemies()[1].battle_info.get_hp(), initial_enemy2_hp - 11);
+        let expected_enemy1_hp = initial_enemy1_hp.saturating_sub(11);
+        let expected_enemy2_hp = initial_enemy2_hp.saturating_sub(11);
+        assert_eq!(battle.get_enemies()[0].battle_info.get_hp(), expected_enemy1_hp);
+        assert_eq!(battle.get_enemies()[1].battle_info.get_hp(), expected_enemy2_hp);
     }
 
     #[test]
