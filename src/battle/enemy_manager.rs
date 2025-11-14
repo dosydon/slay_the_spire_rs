@@ -45,31 +45,6 @@ impl Battle {
             }
         }
     }
-    
-    /// Add a listener to the battle (used for dynamic listener addition)
-    pub(crate) fn add_listener(&mut self, listener: Box<dyn EventListener>) {
-        self.event_listeners.push(listener);
-    }
-    
-    /// Emit a battle event to all listeners
-    pub(crate) fn emit_event(&mut self, event: BattleEvent) {
-        let mut effects_to_apply = Vec::new();
-        
-        for listener in &mut self.event_listeners {
-            if listener.is_active() {
-                let triggered_effects = listener.on_event(&event);
-                for effect in triggered_effects {
-                    let base_effect = BaseEffect::from_effect(effect, listener.get_owner(), listener.get_owner());
-                    effects_to_apply.push(base_effect);
-                }
-            }
-        }
-        
-        // Apply all triggered effects
-        for effect in effects_to_apply {
-            self.eval_base_effect(&effect);
-        }
-    }
 
     /// Sample and store the next action and effects for all enemies
     pub(crate) fn sample_enemy_actions(&mut self, rng: &mut impl rand::Rng) {

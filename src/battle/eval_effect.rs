@@ -60,6 +60,25 @@ impl Battle {
                     Entity::None => {} // No source
                 }
             },
+            BaseEffect::LoseStrength { source, amount } => {
+                match source {
+                    Entity::Player => {
+                        // Reduce player strength, but not below 0
+                        let current_strength = self.player.battle_info.get_strength();
+                        let actual_loss = std::cmp::min(*amount, current_strength);
+                        self.player.battle_info.strength = current_strength - actual_loss;
+                    },
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            // Reduce enemy strength, but not below 0
+                            let current_strength = self.enemies[*idx].battle_info.get_strength();
+                            let actual_loss = std::cmp::min(*amount, current_strength);
+                            self.enemies[*idx].battle_info.strength = current_strength - actual_loss;
+                        }
+                    },
+                    Entity::None => {} // No source
+                }
+            },
             BaseEffect::GainRitual { source, amount } => {
                 match source {
                     Entity::Player => self.player.battle_info.gain_ritual(*amount),
@@ -101,6 +120,11 @@ impl Battle {
             BaseEffect::Exhaust { source: _ } => {
                 // Exhaust effect is handled during card playing, not as a post-effect
                 // This is here for completeness but should not be reached in normal gameplay
+            },
+            BaseEffect::LoseStrengthAtEndOfTurn { source, amount } => {
+                // Create a LoseStrengthListener to handle strength loss at end of turn
+                let lose_listener = crate::battle::listeners::LoseStrengthListener::new(*source, *amount);
+                self.add_listener(Box::new(lose_listener));
             },
             BaseEffect::ActivateEnrage { source, amount } => {
                 // Add EnrageListener for the specified enemy

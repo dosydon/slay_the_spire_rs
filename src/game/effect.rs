@@ -16,6 +16,8 @@ pub enum Effect {
     ApplyWeak (u32),
     ApplyFrail (u32),
     GainStrength (u32),
+    LoseStrength (u32), // Direct strength loss
+    LoseStrengthAtEndOfTurn (u32),
     GainRitual (u32),
     AddSlimed (u32),
     Exhaust,
@@ -55,6 +57,14 @@ pub enum BaseEffect {
         source: Entity,
         amount: u32,
     },
+    LoseStrength {
+        source: Entity,
+        amount: u32,
+    },
+    LoseStrengthAtEndOfTurn {
+        source: Entity,
+        amount: u32,
+    },
     GainRitual {
         source: Entity,
         amount: u32,
@@ -86,6 +96,8 @@ impl BaseEffect {
             Effect::ApplyWeak(duration) => BaseEffect::ApplyWeak { target, duration },
             Effect::ApplyFrail(duration) => BaseEffect::ApplyFrail { target, duration },
             Effect::GainStrength(amount) => BaseEffect::GainStrength { source, amount },
+            Effect::LoseStrength(amount) => BaseEffect::LoseStrength { source, amount },
+            Effect::LoseStrengthAtEndOfTurn(amount) => BaseEffect::LoseStrengthAtEndOfTurn { source, amount },
             Effect::GainRitual(amount) => BaseEffect::GainRitual { source, amount },
             Effect::AddSlimed(count) => BaseEffect::AddSlimed { target, count },
             Effect::Exhaust => BaseEffect::Exhaust { source },

@@ -7,6 +7,7 @@ pub enum CardEnum {
     Defend,
     Bash,
     Cleave,
+    Flex,
     // Status Cards
     Slimed,
     // Add more cards as needed
@@ -17,9 +18,10 @@ impl CardEnum {
     pub fn name(&self) -> &'static str {
         match self {
             CardEnum::Strike => "Strike",
-            CardEnum::Defend => "Defend", 
+            CardEnum::Defend => "Defend",
             CardEnum::Bash => "Bash",
             CardEnum::Cleave => "Cleave",
+            CardEnum::Flex => "Flex",
             CardEnum::Slimed => "Slimed",
         }
     }

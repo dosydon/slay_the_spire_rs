@@ -430,6 +430,12 @@ impl BattleCli {
                 crate::game::effect::Effect::GainStrength(amount) => {
                     parts.push(format!("💪 +{}", amount));
                 }
+                crate::game::effect::Effect::LoseStrength(amount) => {
+                    parts.push(format!("💪 -{}", amount));
+                }
+                crate::game::effect::Effect::LoseStrengthAtEndOfTurn(amount) => {
+                    parts.push(format!("⏰ -{} Strength (end turn)", amount));
+                }
                 crate::game::effect::Effect::GainRitual(amount) => {
                     parts.push(format!("✨ Ritual {}", amount));
                 }

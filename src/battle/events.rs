@@ -2,13 +2,16 @@ use crate::{battle::target::Entity, game::effect::Effect};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BattleEvent {
-    DamageTaken { 
-        target: Entity, 
-        amount: u32, 
-        source: Entity 
+    DamageTaken {
+        target: Entity,
+        amount: u32,
+        source: Entity
     },
     SkillCardPlayed {
         source: Entity,
+    },
+    EndOfTurn {
+        entity: Entity,
     },
 }
 

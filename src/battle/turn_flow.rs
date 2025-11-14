@@ -18,7 +18,13 @@ impl Battle {
     /// Ends the player turn
     pub(in crate::battle) fn at_end_of_player_turn(&mut self) {
         self.player.battle_info.at_end_of_turn();
-        
+
+        // Emit end-of-turn event for player
+        let end_turn_event = super::events::BattleEvent::EndOfTurn {
+            entity: super::target::Entity::Player,
+        };
+        self.emit_event(end_turn_event);
+
         // Discard all remaining cards in hand
         self.cards.discard_entire_hand();
     }
@@ -35,11 +41,26 @@ impl Battle {
     
     /// Ends all enemies' turns
     pub(crate) fn at_end_of_enemy_turn(&mut self) {
-        for enemy in &mut self.enemies {
-            if enemy.battle_info.is_alive() {
-                // Apply enemy's end-of-turn effects
-                enemy.battle_info.at_end_of_turn();
+        // First, collect indices of alive enemies
+        let alive_enemy_indices: Vec<usize> = self.enemies.iter_mut()
+            .enumerate()
+            .filter(|(_, enemy)| enemy.battle_info.is_alive())
+            .map(|(i, _)| i)
+            .collect();
+
+        // Apply end-of-turn effects to alive enemies
+        for i in alive_enemy_indices.iter() {
+            if *i < self.enemies.len() {
+                self.enemies[*i].battle_info.at_end_of_turn();
             }
+        }
+
+        // Then emit end-of-turn events for each alive enemy
+        for i in alive_enemy_indices {
+            let end_turn_event = super::events::BattleEvent::EndOfTurn {
+                entity: super::target::Entity::Enemy(i),
+            };
+            self.emit_event(end_turn_event);
         }
     }
 
