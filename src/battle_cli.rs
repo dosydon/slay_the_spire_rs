@@ -451,6 +451,9 @@ impl BattleCli {
                 crate::game::effect::Effect::AddSlimed(count) => {
                     parts.push(format!("🐛 +{} Slimed", count));
                 }
+                crate::game::effect::Effect::DrawCard(count) => {
+                    parts.push(format!("🎴 Draw {}", count));
+                }
                 crate::game::effect::Effect::Exhaust => {
                     parts.push("💨 Exhaust".to_string());
                 }

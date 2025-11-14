@@ -133,6 +133,10 @@ impl Battle {
                     self.add_listener(Box::new(enrage_listener));
                 }
             },
+            BaseEffect::DrawCard { source: _, count } => {
+                // Draw cards for the player
+                self.cards.draw_n(*count as usize);
+            },
         }
     }
 

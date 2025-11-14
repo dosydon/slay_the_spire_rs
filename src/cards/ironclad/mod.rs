@@ -5,6 +5,7 @@ pub mod bash;
 pub mod cleave;
 pub mod flex;
 pub mod iron_wave;
+pub mod pommel_strike;
 
 pub use strike::strike;
 pub use strike::strike_upgraded;
@@ -18,3 +19,5 @@ pub use flex::flex;
 pub use flex::flex_upgraded;
 pub use iron_wave::iron_wave;
 pub use iron_wave::iron_wave_upgraded;
+pub use pommel_strike::pommel_strike;
+pub use pommel_strike::pommel_strike_upgraded;

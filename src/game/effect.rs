@@ -20,6 +20,7 @@ pub enum Effect {
     LoseStrengthAtEndOfTurn (u32),
     GainRitual (u32),
     AddSlimed (u32),
+    DrawCard (u32),
     Exhaust,
     ActivateEnrage (u32), // Activates Enrage listener for this enemy
 }
@@ -73,6 +74,10 @@ pub enum BaseEffect {
         target: Entity,
         count: u32,
     },
+    DrawCard {
+        source: Entity,
+        count: u32,
+    },
     Exhaust {
         source: Entity,
     },
@@ -100,6 +105,7 @@ impl BaseEffect {
             Effect::LoseStrengthAtEndOfTurn(amount) => BaseEffect::LoseStrengthAtEndOfTurn { source, amount },
             Effect::GainRitual(amount) => BaseEffect::GainRitual { source, amount },
             Effect::AddSlimed(count) => BaseEffect::AddSlimed { target, count },
+            Effect::DrawCard(count) => BaseEffect::DrawCard { source, count },
             Effect::Exhaust => BaseEffect::Exhaust { source },
             Effect::ActivateEnrage(amount) => BaseEffect::ActivateEnrage { source, amount },
         }

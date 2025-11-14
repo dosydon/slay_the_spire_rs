@@ -9,6 +9,7 @@ pub enum CardEnum {
     Cleave,
     Flex,
     IronWave,
+    PommelStrike,
     // Status Cards
     Slimed,
     // Add more cards as needed
@@ -24,6 +25,7 @@ impl CardEnum {
             CardEnum::Cleave => "Cleave",
             CardEnum::Flex => "Flex",
             CardEnum::IronWave => "IronWave",
+            CardEnum::PommelStrike => "PommelStrike",
             CardEnum::Slimed => "Slimed",
         }
     }
