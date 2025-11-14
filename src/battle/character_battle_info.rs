@@ -41,22 +41,15 @@ impl CharacterBattleInfo {
         }
     }
 
-    /// Take damage, accounting for block and vulnerable status
-    pub fn take_damage(&mut self, base_damage: u32) -> u32 {
-        let mut damage = base_damage;
-        
-        // Apply vulnerable multiplier (50% more damage)
-        if self.vulnerable_turns > 0 {
-            damage = (damage as f32 * 1.5) as u32;
-        }
-        
+    /// Take damage, accounting for block (vulnerable should be calculated by Battle)
+    pub fn take_damage(&mut self, incoming_damage: u32) -> u32 {
         // Apply block reduction
-        let damage_after_block = if damage > self.block {
-            let remaining_damage = damage - self.block;
+        let damage_after_block = if incoming_damage > self.block {
+            let remaining_damage = incoming_damage - self.block;
             self.block = 0;
             remaining_damage
         } else {
-            self.block -= damage;
+            self.block -= incoming_damage;
             0
         };
         
@@ -204,6 +197,16 @@ impl CharacterBattleInfo {
             damage_with_strength
         }
     }
+    
+    /// Calculate incoming damage with vulnerable multiplier (before block)
+    pub fn calculate_incoming_damage(&self, base_damage: u32) -> u32 {
+        // Apply vulnerable multiplier (50% more damage)
+        if self.vulnerable_turns > 0 {
+            (base_damage as f32 * 1.5) as u32
+        } else {
+            base_damage
+        }
+    }
 
     /// Heal HP (up to max)
     pub fn heal(&mut self, amount: u32) {
@@ -286,7 +289,8 @@ mod tests {
     fn test_vulnerable_increases_damage() {
         let mut character = CharacterBattleInfo::new(50, 50, 3);
         character.apply_vulnerable(2);
-        let damage_dealt = character.take_damage(10);
+        let incoming_damage = character.calculate_incoming_damage(10);
+        let damage_dealt = character.take_damage(incoming_damage);
         assert_eq!(damage_dealt, 15); // 10 * 1.5 = 15
         assert_eq!(character.current_hp, 35);
     }
@@ -296,7 +300,8 @@ mod tests {
         let mut character = CharacterBattleInfo::new(50, 50, 3);
         character.gain_block(5);
         character.apply_vulnerable(1);
-        let damage_dealt = character.take_damage(10);
+        let incoming_damage = character.calculate_incoming_damage(10);
+        let damage_dealt = character.take_damage(incoming_damage);
         // 10 * 1.5 = 15 damage, 5 blocked, 10 actual damage
         assert_eq!(damage_dealt, 10);
         assert_eq!(character.current_hp, 40);

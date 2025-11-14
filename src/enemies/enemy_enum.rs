@@ -27,54 +27,6 @@ pub enum EnemyMove {
     GremlinNob(GremlinNobMove),
 }
 
-impl EnemyMove {
-    /// Get a display string for this move based on its effects
-    pub fn get_display_string(&self, effects: &[Effect]) -> String {
-        let mut parts = Vec::new();
-        
-        for effect in effects {
-            match effect {
-                Effect::AttackToTarget { amount, .. } => {
-                    parts.push(format!("🗡️ {}", amount));
-                }
-                Effect::GainDefense(amount) => {
-                    parts.push(format!("🛡️ {}", amount));
-                }
-                Effect::GainStrength(amount) => {
-                    parts.push(format!("💪 +{}", amount));
-                }
-                Effect::GainRitual(amount) => {
-                    parts.push(format!("✨ Ritual {}", amount));
-                }
-                Effect::ApplyWeak(duration) => {
-                    parts.push(format!("🔻 Weak {}", duration));
-                }
-                Effect::ApplyVulnerable(duration) => {
-                    parts.push(format!("🔻 Vulnerable {}", duration));
-                }
-                Effect::ApplyFrail(duration) => {
-                    parts.push(format!("🔻 Frail {}", duration));
-                }
-                Effect::AddSlimed(count) => {
-                    parts.push(format!("🐛 +{} Slimed", count));
-                }
-                Effect::Exhaust => {
-                    parts.push("💨 Exhaust".to_string());
-                }
-                Effect::ActivateEnrage(_) => {
-                    parts.push("😤 Enrage".to_string());
-                }
-            }
-        }
-        
-        if parts.is_empty() {
-            "Unknown Action".to_string()
-        } else {
-            parts.join(" ")
-        }
-    }
-}
-
 
 impl EnemyEnum {
     /// Sample a move and return both the move type and its effects

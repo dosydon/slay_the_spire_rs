@@ -95,6 +95,35 @@ impl Battle {
         !self.player.is_alive() || self.enemies.iter().all(|e| !e.battle_info.is_alive())
     }
     
+    /// Calculate incoming damage with all modifiers (strength, weak, vulnerable)
+    pub fn calculate_incoming_damage(&self, attacker: Entity, target: Entity, base_damage: u32) -> u32 {
+        // Step 1: Calculate damage with attacker's modifiers (strength, weak)
+        let modified_damage = match attacker {
+            Entity::Player => self.player.battle_info.calculate_damage(base_damage),
+            Entity::Enemy(idx) => {
+                if idx < self.enemies.len() {
+                    self.enemies[idx].battle_info.calculate_damage(base_damage)
+                } else {
+                    base_damage
+                }
+            }
+            Entity::None => base_damage,
+        };
+        
+        // Step 2: Apply target's vulnerable multiplier
+        match target {
+            Entity::Player => self.player.battle_info.calculate_incoming_damage(modified_damage),
+            Entity::Enemy(idx) => {
+                if idx < self.enemies.len() {
+                    self.enemies[idx].battle_info.calculate_incoming_damage(modified_damage)
+                } else {
+                    modified_damage
+                }
+            }
+            Entity::None => modified_damage,
+        }
+    }
+    
     
 
     

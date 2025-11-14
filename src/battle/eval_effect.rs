@@ -8,18 +8,8 @@ impl Battle {
         match effect {
             BaseEffect::AttackToTarget { source, target, amount, num_attacks } => {
                 for _ in 0..*num_attacks {
-                    let damage = match source {
-                        Entity::Player => self.player.battle_info.calculate_damage(*amount),
-                        Entity::Enemy(idx) => {
-                            if *idx < self.enemies.len() {
-                                self.enemies[*idx].battle_info.calculate_damage(*amount)
-                            } else {
-                                *amount // Fallback to base damage if enemy not found
-                            }
-                        },
-                        Entity::None => *amount, // Use base damage
-                    };
-                    self.apply_damage(*target, damage);
+                    let incoming_damage = self.calculate_incoming_damage(*source, *target, *amount);
+                    self.apply_damage(*target, incoming_damage);
                 }
             },
             BaseEffect::GainDefense { source, amount } => {
@@ -112,12 +102,12 @@ impl Battle {
     }
 
     /// Apply damage to an entity (player or enemy)
-    pub(in crate::battle) fn apply_damage(&mut self, target: Entity, damage: u32) -> u32 {
+    pub(in crate::battle) fn apply_damage(&mut self, target: Entity, incoming_damage: u32) -> u32 {
         let actual_damage = match target {
-            Entity::Player => self.player.battle_info.take_damage(damage),
+            Entity::Player => self.player.battle_info.take_damage(incoming_damage),
             Entity::Enemy(idx) => {
                 if idx < self.enemies.len() {
-                    self.enemies[idx].battle_info.take_damage(damage)
+                    self.enemies[idx].battle_info.take_damage(incoming_damage)
                 } else {
                     0 // Invalid enemy index, no damage dealt
                 }

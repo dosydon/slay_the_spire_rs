@@ -16,7 +16,7 @@ impl BattleCli {
     /// Create a new battle CLI with a starter deck and selected encounter
     pub fn new() -> Self {
         let mut rng = rand::rng();
-        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let global_info = GlobalInfo { ascention: 20, current_floor: 1 };
         let deck = starter_deck();
         
         // Let user choose an encounter
@@ -167,7 +167,8 @@ impl BattleCli {
                 
                 // Display intended action if available
                 if let Some((enemy_move, effects)) = self.battle.get_enemy_move_and_effects(i) {
-                    println!("   📋 Next: {}", enemy_move.get_display_string(effects));
+                    let display_string = self.get_move_display_string(i, effects);
+                    println!("   📋 Next: {}", display_string);
                 }
                 
                 if enemy.battle_info.get_strength() != 0 {
@@ -388,6 +389,64 @@ impl BattleCli {
             println!("🎉 Congratulations! You survived the battle!");
         } else {
             println!("💀 Better luck next time!");
+        }
+    }
+    
+    /// Get display string for enemy move with calculated damage values
+    fn get_move_display_string(&self, enemy_index: usize, effects: &[crate::game::effect::Effect]) -> String {
+        use crate::battle::target::Entity;
+        
+        let mut parts = Vec::new();
+        
+        for effect in effects {
+            match effect {
+                crate::game::effect::Effect::AttackToTarget { amount, .. } => {
+                    let calculated_damage = self.battle.calculate_incoming_damage(
+                        Entity::Enemy(enemy_index), 
+                        Entity::Player, 
+                        *amount
+                    );
+                    
+                    if calculated_damage != *amount {
+                        parts.push(format!("🗡️ {} → {}", amount, calculated_damage));
+                    } else {
+                        parts.push(format!("🗡️ {}", amount));
+                    }
+                }
+                crate::game::effect::Effect::GainDefense(amount) => {
+                    parts.push(format!("🛡️ {}", amount));
+                }
+                crate::game::effect::Effect::GainStrength(amount) => {
+                    parts.push(format!("💪 +{}", amount));
+                }
+                crate::game::effect::Effect::GainRitual(amount) => {
+                    parts.push(format!("✨ Ritual {}", amount));
+                }
+                crate::game::effect::Effect::ApplyWeak(duration) => {
+                    parts.push(format!("🔻 Weak {}", duration));
+                }
+                crate::game::effect::Effect::ApplyVulnerable(duration) => {
+                    parts.push(format!("🔻 Vulnerable {}", duration));
+                }
+                crate::game::effect::Effect::ApplyFrail(duration) => {
+                    parts.push(format!("🔻 Frail {}", duration));
+                }
+                crate::game::effect::Effect::AddSlimed(count) => {
+                    parts.push(format!("🐛 +{} Slimed", count));
+                }
+                crate::game::effect::Effect::Exhaust => {
+                    parts.push("💨 Exhaust".to_string());
+                }
+                crate::game::effect::Effect::ActivateEnrage(_) => {
+                    parts.push("😤 Enrage".to_string());
+                }
+            }
+        }
+        
+        if parts.is_empty() {
+            "Unknown Action".to_string()
+        } else {
+            parts.join(" ")
         }
     }
 }
