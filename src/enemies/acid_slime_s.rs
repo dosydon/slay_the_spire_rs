@@ -1,6 +1,6 @@
 use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AcidSlimeS {
     hp: u32,
     next_move_is_lick: bool,

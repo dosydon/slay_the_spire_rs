@@ -1,6 +1,6 @@
 use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AcidSlimeM {
     last_moves: Vec<AcidSlimeMMove>,
     hp: u32,

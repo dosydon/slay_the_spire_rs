@@ -6,3 +6,11 @@ edition = "2024"
 
 [dependencies]
 rand = "0.9.1"
+
+[[bin]]
+name = "game"
+path = "src/bin/game.rs"
+
+[[bin]]
+name = "battle"
+path = "src/bin/battle.rs"

@@ -1,7 +1,7 @@
 use crate::{enemies::{enemy_enum::EnemyEnum, green_louse}, game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 use rand::Rng;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GreenLouse {
     last_moves: Vec<GreenLouseMove>,
     base_damage: u32,

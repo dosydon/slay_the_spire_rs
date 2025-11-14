@@ -1,6 +1,6 @@
 use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Cultist {
     base_damage: u32,
     hp: u32,

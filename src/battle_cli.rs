@@ -5,11 +5,9 @@ use crate::enemies::enemy_enum::EnemyEnum;
 use crate::battle::enemy_in_battle::EnemyInBattle;
 use crate::game::global_info::GlobalInfo;
 use crate::events::encounter_event::EncounterEvent;
-use rand::Rng;
 
 pub struct BattleCli {
-    battle: Battle,
-    rng: rand::rngs::ThreadRng,
+    pub(crate) battle: Battle,
 }
 
 impl BattleCli {
@@ -26,7 +24,7 @@ impl BattleCli {
         
         let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
-        BattleCli { battle, rng }
+        BattleCli { battle }
     }
     
     /// Let the user choose which encounter to fight
@@ -57,12 +55,12 @@ impl BattleCli {
     }
     
     /// Start the battle simulation
-    pub fn run(&mut self) {
+    pub fn run(&mut self, rng: &mut impl rand::Rng) {
         println!("\n=== BATTLE START ===");
         self.display_battle_state();
         
         while !self.battle.is_battle_over() {
-            match self.player_turn() {
+            match self.player_turn(rng) {
                 Ok(BattleResult::Won) => {
                     println!("\n🎉 VICTORY! You defeated all enemies!");
                     break;
@@ -86,7 +84,7 @@ impl BattleCli {
     }
     
     /// Handle a player turn
-    fn player_turn(&mut self) -> Result<BattleResult, BattleError> {
+    fn player_turn(&mut self, rng: &mut impl rand::Rng) -> Result<BattleResult, BattleError> {
         println!("\n--- Your Turn ---");
         
         loop {
@@ -95,7 +93,7 @@ impl BattleCli {
             match self.get_player_action() {
                 Some(action) => {
                     println!("Executing action: {:?}", action);
-                    match self.battle.eval_action(action, &mut self.rng) {
+                    match self.battle.eval_action(action, rng) {
                         Ok(result) => {
                             self.display_battle_state();
                             return Ok(result);

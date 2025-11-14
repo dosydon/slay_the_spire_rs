@@ -122,9 +122,29 @@ impl Game {
                 // Check what type of encounter this is
                 if let Some(node) = self.get_current_node() {
                     match node.node_type {
-                        crate::game::map::NodeType::Combat | 
-                        crate::game::map::NodeType::Elite |
+                        crate::game::map::NodeType::Combat => {
+                            let event = crate::events::encounter_event::sample_encounter_event(&self.global_info, rng);
+                            let enemy_enums = event.instantiate(rng, &self.global_info);
+                            let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
+                            
+                            // Start a battle
+                            let battle = Battle::new(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
+                            self.battle = Some(battle);
+                            self.state = GameState::InBattle;
+                        },
+                        crate::game::map::NodeType::Elite => {
+                            // Elite encounters - spawn GremlinNob
+                            let event = crate::events::encounter_event::EncounterEvent::GremlinNob;
+                            let enemy_enums = event.instantiate(rng, &self.global_info);
+                            let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
+                            
+                            // Start a battle
+                            let battle = Battle::new(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
+                            self.battle = Some(battle);
+                            self.state = GameState::InBattle;
+                        },
                         crate::game::map::NodeType::Boss => {
+                            // Boss encounters - for now use regular encounters (TODO: implement boss)
                             let event = crate::events::encounter_event::sample_encounter_event(&self.global_info, rng);
                             let enemy_enums = event.instantiate(rng, &self.global_info);
                             let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
@@ -394,5 +414,45 @@ mod tests {
         // Test healing
         game.heal_player(100); // Try to overheal
         assert_eq!(game.get_player_hp(), 95); // Should cap at max
+    }
+
+    #[test]
+    fn test_elite_encounter_spawns_gremlin_nob() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let mut rng = rand::rng();
+        
+        // Create a simple map with an elite encounter
+        let mut map = Map::new();
+        let start_node = MapNode::new(0, 0, 0, NodeType::Start);
+        let elite_node = MapNode::new(1, 1, 0, NodeType::Elite);
+        map.add_node(start_node);
+        map.add_node(elite_node);
+        map.add_edge(0, 1).unwrap();
+        
+        let mut game = Game::new(deck, global_info, map, 0, 80, 80);
+        
+        // Move to elite node
+        let result = game.eval_action(GameAction::ChoosePath(PathChoice::Middle), &mut rng);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), GameResult::Continue);
+        
+        // Should now be in battle with GremlinNob
+        assert_eq!(game.get_state(), &GameState::InBattle);
+        
+        if let Some(battle) = game.get_battle() {
+            let enemies = battle.get_enemies();
+            assert_eq!(enemies.len(), 1);
+            
+            // Check that we have a GremlinNob
+            match &enemies[0].enemy {
+                crate::enemies::enemy_enum::EnemyEnum::GremlinNob(_) => {
+                    // Success - we got a GremlinNob
+                }
+                _ => panic!("Expected GremlinNob enemy, got {:?}", enemies[0].enemy),
+            }
+        } else {
+            panic!("Expected battle to be active");
+        }
     }
 }

@@ -1,5 +1,6 @@
 use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, gremlin_nob::{GremlinNob, GremlinNobMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
 
+#[derive(Debug)]
 pub enum EnemyEnum {
     RedLouse(RedLouse),
     GreenLouse(GreenLouse),

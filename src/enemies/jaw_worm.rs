@@ -1,7 +1,7 @@
 use crate::{enemies::{enemy_enum::EnemyEnum, jaw_worm}, game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 use rand::Rng;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct JawWorm {
     last_move: Option<JawWormMove>,
     consecutive_thrash_count: u32,
