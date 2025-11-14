@@ -55,16 +55,25 @@ impl Battle {
             global_info,
             enemy_actions: vec![None; enemy_count],
         };
-        
+
         // Initialize event listeners for enemies
         battle.initialize_enemy_listeners(&global_info, rng);
-        
+
         // Start the first turn (refreshes player, samples enemy actions, draws hand)
         battle.start_of_player_turn(rng);
-        
+
         battle
     }
-    
+
+    /// Create a new battle with deck shuffling
+    pub fn new_with_shuffle(mut deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, rng: &mut impl rand::Rng) -> Self {
+        // Shuffle the deck first
+        deck.shuffle(rng);
+
+        // Then call the original constructor
+        Self::new(deck, global_info, initial_hp, max_hp, enemies, rng)
+    }
+
     /// Get the final HP after battle for syncing back to Game
     pub fn get_final_player_hp(&self) -> u32 {
         self.player.battle_info.get_hp()

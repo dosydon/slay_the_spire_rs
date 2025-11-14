@@ -136,7 +136,7 @@ impl Game {
                             let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
                             
                             // Start a battle
-                            let battle = Battle::new(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
+                            let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
                             self.battle = Some(battle);
                             self.state = GameState::InBattle;
                         },
@@ -147,7 +147,7 @@ impl Game {
                             let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
                             
                             // Start a battle
-                            let battle = Battle::new(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
+                            let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
                             self.battle = Some(battle);
                             self.state = GameState::InBattle;
                         },
@@ -158,7 +158,7 @@ impl Game {
                             let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
                             
                             // Start a battle
-                            let battle = Battle::new(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
+                            let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
                             self.battle = Some(battle);
                             self.state = GameState::InBattle;
                         },

@@ -22,7 +22,7 @@ impl BattleCli {
         let enemy_enums = encounter.instantiate(&mut rng, &global_info);
         let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
         
-        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let battle = Battle::new_with_shuffle(deck, global_info, 80, 80, enemies, &mut rng);
         
         BattleCli { battle }
     }
