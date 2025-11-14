@@ -8,10 +8,14 @@ pub enum GameAction {
     /// Execute a battle action (PlayCard, EndTurn, etc.)
     /// Only valid when in battle
     Battle(BattleAction),
-    
+
     /// Choose a path on the map (left, middle, right)
     /// Determines what type of encounter comes next
     ChoosePath(PathChoice),
+
+    /// Select a card reward (0, 1, or 2)
+    /// Only valid when in CardRewardSelection state
+    SelectCardReward(usize),
 }
 
 /// Possible path choices on the map

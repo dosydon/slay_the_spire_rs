@@ -1,4 +1,4 @@
-use crate::game::{global_info::GlobalInfo, action::{GameAction, PathChoice}, deck::Deck, map::{Map, MapError}};
+use crate::game::{global_info::GlobalInfo, action::{GameAction, PathChoice}, deck::Deck, map::{Map, MapError}, card_reward::CardRewardPool};
 use crate::battle::{Battle, BattleResult, BattleError, enemy_in_battle::EnemyInBattle};
 
 /// The overall state of the game
@@ -8,6 +8,8 @@ pub enum GameState {
     InBattle,
     /// Player is on the map choosing their next path
     OnMap,
+    /// Player is selecting a card reward from 3 options
+    CardRewardSelection,
 }
 
 /// Errors that can occur during game actions
@@ -47,6 +49,8 @@ pub struct Game {
     pub current_node_id: u32,
     pub player_hp: u32,
     pub player_max_hp: u32,
+    /// Available card reward options when in CardRewardSelection state
+    pub card_reward_options: Vec<crate::game::card::Card>,
 }
 
 impl Game {
@@ -61,6 +65,7 @@ impl Game {
             current_node_id: start_node_id,
             player_hp: starting_hp,
             player_max_hp: max_hp,
+            card_reward_options: Vec::new(),
         }
     }
     
@@ -78,8 +83,11 @@ impl Game {
                                 self.set_player_hp(battle.get_final_player_hp());
                             }
                             self.battle = None;
-                            self.state = GameState::OnMap;
                             self.global_info.current_floor += 1;
+
+                            // Start card reward selection after victory
+                            self.start_card_reward_selection(rng);
+
                             Ok(GameResult::Continue)
                         },
                         Ok(BattleResult::Lost) => {
@@ -160,7 +168,29 @@ impl Game {
                         }
                     }
                 }
-                
+  
+                Ok(GameResult::Continue)
+            },
+
+            GameAction::SelectCardReward(card_index) => {
+                // Only valid when in CardRewardSelection state
+                if !matches!(self.state, GameState::CardRewardSelection) {
+                    return Err(GameError::InvalidState);
+                }
+
+                // Validate card index
+                if card_index >= self.card_reward_options.len() {
+                    return Err(GameError::InvalidCardIndex);
+                }
+
+                // Add selected card to deck
+                let selected_card = self.card_reward_options.remove(card_index);
+                self.deck.add_card(selected_card);
+
+                // Clear remaining options and return to map
+                self.card_reward_options.clear();
+                self.state = GameState::OnMap;
+
                 Ok(GameResult::Continue)
             },
         }
@@ -224,6 +254,18 @@ impl Game {
     /// Check if player is alive
     pub fn is_player_alive(&self) -> bool {
         self.player_hp > 0
+    }
+
+    /// Start card reward selection - generates 3 random card options
+    pub fn start_card_reward_selection(&mut self, rng: &mut impl rand::Rng) {
+        let card_pool = CardRewardPool::new();
+        self.card_reward_options = card_pool.generate_reward_options(rng);
+        self.state = GameState::CardRewardSelection;
+    }
+
+    /// Get the current card reward options (only valid in CardRewardSelection state)
+    pub fn get_card_reward_options(&self) -> &[crate::game::card::Card] {
+        &self.card_reward_options
     }
 
     /// Choose a node from available options based on path choice
@@ -453,6 +495,138 @@ mod tests {
             }
         } else {
             panic!("Expected battle to be active");
+        }
+    }
+
+    #[test]
+    fn test_card_reward_selection_state() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_id) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let mut rng = rand::rng();
+
+        // Initially should not be in card reward selection
+        assert!(!matches!(game.get_state(), GameState::CardRewardSelection));
+        assert!(game.get_card_reward_options().is_empty());
+
+        // Start card reward selection
+        game.start_card_reward_selection(&mut rng);
+
+        // Should now be in card reward selection state
+        assert!(matches!(game.get_state(), GameState::CardRewardSelection));
+        assert_eq!(game.get_card_reward_options().len(), 3);
+
+        // Verify all reward options are valid cards
+        for card in game.get_card_reward_options() {
+            assert!(card.get_cost() <= 3); // Reasonable cost check
+            assert!(!card.get_name().is_empty()); // Should have a name
+        }
+    }
+
+    #[test]
+    fn test_select_card_reward_valid_action() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_id) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let mut rng = rand::rng();
+
+        // Start card reward selection
+        game.start_card_reward_selection(&mut rng);
+        let initial_deck_size = game.deck.size();
+        let reward_options = game.get_card_reward_options().to_vec();
+
+        // Select first card reward
+        let result = game.eval_action(GameAction::SelectCardReward(0), &mut rng);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), GameResult::Continue);
+
+        // Should return to map state
+        assert!(matches!(game.get_state(), GameState::OnMap));
+
+        // Card should be added to deck
+        assert_eq!(game.deck.size(), initial_deck_size + 1);
+
+        // Reward options should be cleared
+        assert!(game.get_card_reward_options().is_empty());
+    }
+
+    #[test]
+    fn test_select_card_reward_invalid_state() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_id) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let mut rng = rand::rng();
+
+        // Try to select card reward without being in CardRewardSelection state
+        let result = game.eval_action(GameAction::SelectCardReward(0), &mut rng);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), GameError::InvalidState);
+    }
+
+    #[test]
+    fn test_select_card_reward_invalid_index() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_id) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let mut rng = rand::rng();
+
+        // Start card reward selection
+        game.start_card_reward_selection(&mut rng);
+
+        // Try to select card with invalid index
+        let result = game.eval_action(GameAction::SelectCardReward(5), &mut rng);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), GameError::InvalidCardIndex);
+
+        // Try to select card with index equal to length
+        let result = game.eval_action(GameAction::SelectCardReward(3), &mut rng);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), GameError::InvalidCardIndex);
+    }
+
+    #[test]
+    fn test_card_reward_selection_different_options() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_id) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let mut rng = rand::rng();
+
+        // Generate card rewards multiple times
+        game.start_card_reward_selection(&mut rng);
+        let first_options = game.get_card_reward_options().to_vec();
+        game.state = GameState::OnMap; // Reset state
+
+        game.start_card_reward_selection(&mut rng);
+        let second_options = game.get_card_reward_options().to_vec();
+
+        // Should have different options (most likely due to randomness)
+        // Note: This test might occasionally fail due to randomness, but it's very unlikely
+        assert_ne!(first_options, second_options, "Card rewards should be randomized");
+    }
+
+    #[test]
+    fn test_card_reward_selection_no_duplicates() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_id) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_id, 80, 80);
+        let mut rng = rand::rng();
+
+        // Start card reward selection
+        game.start_card_reward_selection(&mut rng);
+        let reward_options = game.get_card_reward_options();
+
+        // Check for duplicates in a single reward set
+        let mut card_names = Vec::new();
+        for card in reward_options {
+            let name = card.get_name();
+            assert!(!card_names.contains(&name), "Found duplicate card: {}", name);
+            card_names.push(name);
         }
     }
 }

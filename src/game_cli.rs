@@ -90,6 +90,12 @@ impl GameCli {
                         break;
                     }
                 },
+                GameState::CardRewardSelection => {
+                    if let Err(e) = self.handle_card_reward_selection() {
+                        println!("Error during card reward selection: {:?}", e);
+                        break;
+                    }
+                },
             }
             
             // Check if game ended
@@ -192,11 +198,13 @@ impl GameCli {
             
             // Update game state
             self.game.set_player_hp(player_hp);
-            self.game.state = GameState::OnMap;
-            
+
             if battle_won {
                 println!("\n🎊 Battle Won! Moving forward...");
                 self.game.global_info.current_floor += 1;
+
+                // Trigger card reward selection through the Game's proper method
+                self.game.start_card_reward_selection(&mut self.rng);
             } else if player_hp == 0 {
                 println!("\n💀 Battle Lost! Game Over.");
                 return Ok(());
@@ -207,7 +215,87 @@ impl GameCli {
         
         Ok(())
     }
-    
+
+    /// Handle card reward selection phase
+    fn handle_card_reward_selection(&mut self) -> Result<(), GameError> {
+        println!("\n--- Card Reward Selection ---");
+        println!("Choose one of the following cards to add to your deck:");
+
+        let reward_options = self.game.get_card_reward_options().to_vec();
+        if reward_options.is_empty() {
+            println!("No card rewards available. This shouldn't happen - returning to map...");
+            // Return error instead of directly setting state
+            return Err(GameError::InvalidState);
+        }
+
+        // Display card options
+        for (i, card) in reward_options.iter().enumerate() {
+            println!("\n[{}] {} - Cost: {}", i + 1, card.get_name(), card.get_cost());
+            println!("    Type: {:?}", card.get_card_type());
+
+            // Show card effects in a simplified way
+            for effect in card.get_effects() {
+                match effect {
+                    crate::game::effect::Effect::AttackToTarget { amount, num_attacks } => {
+                        if *num_attacks == 1 {
+                            println!("    - Deal {} damage", amount);
+                        } else {
+                            println!("    - Deal {} damage {} times", amount, num_attacks);
+                        }
+                    },
+                    crate::game::effect::Effect::GainDefense(amount) => {
+                        println!("    - Gain {} Block", amount);
+                    },
+                    crate::game::effect::Effect::DrawCard(count) => {
+                        println!("    - Draw {} card(s)", count);
+                    },
+                    _ => {
+                        println!("    - {:?}", effect);
+                    }
+                }
+            }
+        }
+
+        loop {
+            print!("Choose your card (1-{}): ", reward_options.len());
+            io::stdout().flush().unwrap();
+
+            let mut input = String::new();
+            io::stdin().read_line(&mut input).unwrap();
+            let input = input.trim();
+
+            match input.parse::<usize>() {
+                Ok(choice) if choice >= 1 && choice <= reward_options.len() => {
+                    let card_index = choice - 1;
+                    match self.game.eval_action(GameAction::SelectCardReward(card_index), &mut self.rng) {
+                        Ok(GameResult::Continue) => {
+                            println!("\n✅ Card added to your deck!");
+                            break;
+                        },
+                        Ok(GameResult::Victory) => {
+                            println!("\n🎉 VICTORY! You've completed the spire!");
+                            return Ok(());
+                        },
+                        Ok(GameResult::Defeat) => {
+                            println!("\n💀 DEFEAT! Your journey ends here.");
+                            return Ok(());
+                        },
+                        Err(e) => {
+                            println!("Invalid choice: {:?}. Please try again.", e);
+                            continue;
+                        }
+                    }
+                },
+                _ => {
+                    println!("Invalid choice. Please enter a number between 1 and {}.", reward_options.len());
+                    continue;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     /// Display current game state
     fn display_game_state(&self) {
         println!("\n{}", "=".repeat(60));
