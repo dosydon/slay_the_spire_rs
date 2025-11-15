@@ -508,7 +508,7 @@ mod tests {
     fn test_burning_blood_relic_heals_at_end_of_combat() {
         use crate::cards::ironclad::strike::strike;
         use crate::game::{game::Game, game_event::GameEvent, map::{Map, MapNode, NodeType}};
-        use crate::relics::create_burning_blood_relic;
+        use crate::relics::Relic;
 
         // Create a deck with high-damage cards to defeat enemy quickly
         let deck = Deck::new(vec![strike(), strike(), strike(), strike(), strike()]);
@@ -523,7 +523,9 @@ mod tests {
 
         // Create game with Burning Blood relic
         let mut game = Game::new(deck, global_info, map, start_node_position, 50, 80);
-        game.add_game_event_listener(create_burning_blood_relic());
+        if let Some(relic) = Relic::BurningBlood.to_game_event_listener() {
+            game.add_game_event_listener(relic);
+        }
 
         // Create a weak enemy that will die in one hit
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
@@ -557,7 +559,7 @@ mod tests {
     #[test]
     fn test_anchor_relic_starts_combat_with_10_block() {
         use crate::cards::ironclad::strike::strike;
-        use crate::relics::create_anchor_relic;
+        use crate::relics::Relic;
         use crate::battle::events::BattleEvent;
 
         // Create a deck for the battle
@@ -570,7 +572,7 @@ mod tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 
         // Create battle with Anchor relic listener
-        let relics = vec![create_anchor_relic()];
+        let relics = vec![Relic::Anchor];
         let mut battle = Battle::new_with_relics(deck, global_info, 50, 80, enemies, relics, &mut rng);
 
         // Check that player now has 10 block from Anchor relic (CombatStart already emitted)
@@ -579,5 +581,31 @@ mod tests {
         // Verify the anchor relic is now inactive (used once per combat)
         // Since we can't directly check listeners, we verify the effect was applied
         assert!(battle.player.battle_info.get_block() > 0);
+    }
+
+    #[test]
+    fn test_blood_vial_relic_heals_2_hp_at_combat_start() {
+        use crate::cards::ironclad::strike::strike;
+        use crate::game::deck::Deck;
+        use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::relics::Relic;
+
+        let deck = Deck::new(vec![strike()]);
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Blood Vial relic listener
+        let relics = vec![Relic::BloodVial];
+        let mut battle = Battle::new_with_relics(deck, global_info, 48, 80, enemies, relics, &mut rng);
+
+        // Check that player now has 50 HP (48 + 2 from Blood Vial)
+        assert_eq!(battle.get_player().battle_info.get_hp(), 50);
+
+        // Verify the blood vial relic is now inactive (used once per combat)
+        // Since we can't directly check listeners, we verify the effect was applied
+        assert!(battle.player.battle_info.get_hp() > 48);
     }
 }

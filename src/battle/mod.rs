@@ -50,14 +50,20 @@ impl Battle {
     }
 
     /// Create a new battle with optional relics
-    pub fn new_with_relics(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, relics: Vec<Box<dyn EventListener>>, rng: &mut impl rand::Rng) -> Self {
+    pub fn new_with_relics(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, relics: Vec<crate::relics::Relic>, rng: &mut impl rand::Rng) -> Self {
         let cards = DeckHandPile::new(deck);
         let enemy_count = enemies.len();
+
+        // Convert relics to event listeners
+        let event_listeners: Vec<_> = relics.into_iter()
+            .filter_map(|relic| relic.to_battle_event_listener())
+            .collect();
+
         let mut battle = Battle {
             player: Player::new(initial_hp, max_hp, 3),
             enemies,
             cards,
-            event_listeners: relics,
+            event_listeners,
             global_info,
             enemy_actions: vec![None; enemy_count],
             relics: Vec::new(),
@@ -81,7 +87,7 @@ impl Battle {
     }
 
     /// Create a new battle with deck shuffling and relics
-    pub fn new_with_shuffle_and_relics(mut deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, relics: Vec<Box<dyn EventListener>>, rng: &mut impl rand::Rng) -> Self {
+    pub fn new_with_shuffle_and_relics(mut deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, relics: Vec<crate::relics::Relic>, rng: &mut impl rand::Rng) -> Self {
         // Shuffle the deck first
         deck.shuffle(rng);
 
