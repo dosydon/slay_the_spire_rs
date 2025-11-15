@@ -93,7 +93,7 @@ mod tests {
         // Deal damage to the enemy to trigger curl up
         let initial_hp = battle.enemies[0].battle_info.get_hp();
         let damage_dealt = battle.apply_damage(Entity::Enemy(0), 6);
-        
+
         // Check that damage was dealt and curl up was triggered (enemy gained block)
         assert_eq!(damage_dealt, 6);
         assert_eq!(battle.enemies[0].battle_info.get_hp(), initial_hp - 6);
@@ -105,7 +105,7 @@ mod tests {
         // Deal damage again - curl up should not trigger a second time
         let hp_before_second_damage = battle.enemies[0].battle_info.get_hp();
         let second_damage = battle.apply_damage(Entity::Enemy(0), 4);
-        
+
         // Calculate expected outcome based on curl up block amount
         let expected_damage = if curl_up_block >= 4 { 0 } else { 4 - curl_up_block };
         let expected_remaining_block = if curl_up_block >= 4 { curl_up_block - 4 } else { 0 };

@@ -45,6 +45,8 @@ pub struct Battle {
     relics: Vec<Relic>,
     /// Stores all powers played during the current battle
     powers: Vec<crate::game::card::Card>,
+    /// Queue of effects to be processed
+    effect_queue: Vec<BaseEffect>,
 }
 
 impl Battle {
@@ -71,6 +73,7 @@ impl Battle {
             enemy_actions: vec![None; enemy_count],
             relics: Vec::new(),
             powers: Vec::new(),
+            effect_queue: Vec::new(),
         };
 
         // Initialize event listeners for enemies

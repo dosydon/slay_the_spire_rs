@@ -10,6 +10,7 @@ pub struct Card {
     effects: Vec<Effect>,
     upgraded: bool,
     playable: bool,
+    ethereal: bool,
 }
 
 impl Card {
@@ -21,6 +22,19 @@ impl Card {
             effects,
             upgraded,
             playable,
+            ethereal: false,
+        }
+    }
+
+    pub fn new_with_ethereal(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, playable: bool, ethereal: bool) -> Self {
+        Card {
+            card_enum,
+            cost,
+            card_type,
+            effects,
+            upgraded,
+            playable,
+            ethereal,
         }
     }
 
@@ -64,6 +78,7 @@ impl Card {
             CardEnum::Strike => crate::cards::ironclad::strike::strike_upgraded(),
             CardEnum::Defend => crate::cards::ironclad::defend::defend_upgraded(),
             CardEnum::Bash => crate::cards::ironclad::bash::bash_upgraded(),
+            CardEnum::Carnage => crate::cards::ironclad::carnage::carnage_upgraded(),
             CardEnum::Cleave => crate::cards::ironclad::cleave::cleave_upgraded(),
             CardEnum::Embrace => crate::cards::ironclad::embrace::embrace_upgraded(),
             CardEnum::Flex => crate::cards::ironclad::flex::flex_upgraded(),
@@ -90,6 +105,11 @@ impl Card {
     /// Checks if this card is playable
     pub fn is_playable(&self) -> bool {
         self.playable
+    }
+
+    /// Checks if this card is ethereal (exhausts at end of turn if not played)
+    pub fn is_ethereal(&self) -> bool {
+        self.ethereal
     }
 }
 

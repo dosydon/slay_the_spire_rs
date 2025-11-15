@@ -22,9 +22,9 @@ impl Battle {
         }
 
         let card_effects = card.get_effects().clone();
-        let has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust);
         let is_skill_card = card.get_card_type() == &CardType::Skill;
         let is_power_card = card.get_card_type() == &CardType::Power;
+        let has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust);
 
         // Emit SkillCardPlayed event if this is a Skill card
         if is_skill_card {
@@ -35,51 +35,51 @@ impl Battle {
         }
 
         // Handle different card types
-        if has_exhaust {
-            // Exhaust cards are removed from play entirely
-            if let Some(_played_card) = self.cards.exhaust_card_from_hand(idx) {
-                // Execute non-exhaust effects
-                for effect in card_effects {
-                    if effect != crate::game::effect::Effect::Exhaust {
-                        self.eval_base_effect(&BaseEffect::from_effect(effect, Entity::Player, target));
-                    }
-                }
-
-                // Emit CardExhausted event
-                let exhaust_event = BattleEvent::CardExhausted {
-                    source: Entity::Player,
-                };
-                self.emit_event(exhaust_event);
-
-                Ok(())
-            } else {
-                Err(BattleError::CardNotInHand)
-            }
-        } else if is_power_card {
+        let result = if is_power_card {
             // Power cards are removed from hand but NOT added to discard pile (they stay in play)
             if let Some(played_card) = self.cards.remove_card_from_hand(idx) {
                 // Add to powers collection
                 self.powers.push(played_card.clone());
 
-                // Execute effects
+                // Queue all effects
                 for effect in card_effects {
-                    self.eval_base_effect(&BaseEffect::from_effect(effect, Entity::Player, target));
+                    self.queue_effect(BaseEffect::from_effect(effect, Entity::Player, target));
                 }
                 Ok(())
             } else {
                 Err(BattleError::CardNotInHand)
             }
+        } else if has_exhaust {
+            // Cards with Exhaust stay in hand until the Exhaust effect is processed
+            // Queue all effects, with special handling for Exhaust to include the hand index
+            for effect in card_effects {
+                if effect == crate::game::effect::Effect::Exhaust {
+                    // Create Exhaust effect with hand index
+                    self.queue_effect(BaseEffect::Exhaust {
+                        hand_index: idx,
+                    });
+                } else {
+                    self.queue_effect(BaseEffect::from_effect(effect, Entity::Player, target));
+                }
+            }
+            Ok(())
         } else {
-            // Regular cards (Attack, Skill) go to discard pile normally
+            // Regular cards (Attack, Skill, Status without Exhaust) go to discard pile
             if let Some(_played_card) = self.cards.play_card_from_hand(idx) {
+                // Queue all effects
                 for effect in card_effects {
-                    self.eval_base_effect(&BaseEffect::from_effect(effect, Entity::Player, target));
+                    self.queue_effect(BaseEffect::from_effect(effect, Entity::Player, target));
                 }
                 Ok(())
             } else {
                 Err(BattleError::CardNotInHand)
             }
-        }
+        };
+
+        // Process all queued effects
+        self.process_effect_queue();
+
+        result
     }
 }
 

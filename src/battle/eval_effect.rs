@@ -125,9 +125,15 @@ impl Battle {
                     Entity::None => {} // No target
                 }
             },
-            BaseEffect::Exhaust { source: _ } => {
-                // Exhaust effect is handled during card playing, not as a post-effect
-                // This is here for completeness but should not be reached in normal gameplay
+            BaseEffect::Exhaust { hand_index } => {
+                // Remove card from hand and add to exhausted pile
+                if let Some(_card) = self.cards.exhaust_card_from_hand(*hand_index) {
+                    // Emit CardExhausted event
+                    let exhaust_event = BattleEvent::CardExhausted {
+                        source: Entity::Player,
+                    };
+                    self.emit_event(exhaust_event);
+                }
             },
             BaseEffect::LoseStrengthAtEndOfTurn { source, amount } => {
                 // Create a LoseStrengthListener to handle strength loss at end of turn
@@ -470,6 +476,24 @@ mod tests {
             assert_eq!(card.get_name(), "Slimed");
             assert_eq!(card.get_cost(), 1);
             assert_eq!(card.get_card_type(), &CardType::Status);
+        }
+    }
+}
+
+impl Battle {
+    /// Queue an effect to be processed later
+    pub(crate) fn queue_effect(&mut self, effect: BaseEffect) {
+        self.effect_queue.push(effect);
+    }
+
+    /// Process all effects in the effect queue
+    pub(crate) fn process_effect_queue(&mut self) {
+        while !self.effect_queue.is_empty() {
+            // Take the first effect from the queue
+            let effect = self.effect_queue.remove(0);
+
+            // Process it (this might add more effects to the queue)
+            self.eval_base_effect(&effect);
         }
     }
 }

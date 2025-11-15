@@ -14,26 +14,26 @@ impl Battle {
                 if idx >= self.cards.hand_size() {
                     return Err(BattleError::CardNotInHand);
                 }
-                
+
                 if !self.is_valid_target(&target) {
                     return Err(BattleError::InvalidTarget);
                 }
-                
+
                 let hand = self.cards.get_hand();
                 let card = &hand[idx];
                 if !self.player.spend_energy(card.get_cost()) {
                     return Err(BattleError::NotEnoughEnergy);
                 }
-                
+
                 // Restore energy since we're checking but not actually spending yet
                 self.player.battle_info.gain_energy(card.get_cost());
-                
+
                 self.play_card(idx, target)?;
             }
             Action::EndTurn => {
                 let global_info = self.global_info;
                 self.at_end_of_player_turn();
-        
+
                 self.at_start_of_enemy_turn();
                 self.process_enemy_effects(rng, &global_info);
                 self.at_end_of_enemy_turn();

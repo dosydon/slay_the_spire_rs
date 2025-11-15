@@ -28,9 +28,12 @@ impl Battle {
         // Remove inactive listeners
         self.event_listeners.retain(|listener| listener.is_active());
 
-        // Process all new effects
+        // Queue all new effects instead of processing immediately
         for effect in new_effects {
-            self.eval_base_effect(&effect);
+            self.queue_effect(effect);
         }
+
+        // Process the effect queue immediately
+        self.process_effect_queue();
     }
 }

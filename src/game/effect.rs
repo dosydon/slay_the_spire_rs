@@ -93,7 +93,7 @@ pub enum BaseEffect {
         count: u32,
     },
     Exhaust {
-        source: Entity,
+        hand_index: usize,
     },
     ActivateEnrage {
         source: Entity,
@@ -129,7 +129,7 @@ impl BaseEffect {
             Effect::AddSlimed(count) => BaseEffect::AddSlimed { target, count },
             Effect::AddCardToDrawPile(card) => BaseEffect::AddCardToDrawPile { source, card },
             Effect::DrawCard(count) => BaseEffect::DrawCard { source, count },
-            Effect::Exhaust => BaseEffect::Exhaust { source },
+            Effect::Exhaust => BaseEffect::Exhaust { hand_index: 0 }, // hand_index should be set manually when queuing
             Effect::ActivateEnrage(amount) => BaseEffect::ActivateEnrage { source, amount },
             Effect::ActivateEmbrace => BaseEffect::ActivateEmbrace { source },
             Effect::Heal(amount) => BaseEffect::Heal { target, amount },

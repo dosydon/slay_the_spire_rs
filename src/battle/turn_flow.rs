@@ -37,6 +37,26 @@ impl Battle {
         };
         self.emit_event(end_turn_event);
 
+        // Exhaust all ethereal cards from hand (before discarding)
+        let mut i = 0;
+        while i < self.cards.hand_size() {
+            let hand = self.cards.get_hand();
+            if hand[i].is_ethereal() {
+                // Exhaust this card
+                self.cards.exhaust_card_from_hand(i);
+
+                // Emit CardExhausted event
+                let exhaust_event = super::events::BattleEvent::CardExhausted {
+                    source: super::target::Entity::Player,
+                };
+                self.emit_event(exhaust_event);
+
+                // Don't increment i since we removed a card
+            } else {
+                i += 1;
+            }
+        }
+
         // Discard all remaining cards in hand
         self.cards.discard_entire_hand();
     }
@@ -244,5 +264,90 @@ mod tests {
         assert!(!battle.enemies[0].battle_info.is_alive(), "First enemy should still be dead");
         assert!(battle.enemies[1].battle_info.is_alive(), "Second enemy should still be alive");
         assert!(battle.player.battle_info.is_alive(), "Player should still be alive");
+    }
+
+    #[test]
+    fn test_ethereal_cards_exhausted_at_end_of_turn() {
+        use crate::cards::ironclad::{carnage::carnage, strike::strike, defend::defend};
+
+        // Create a deck with Carnage (ethereal) and non-ethereal cards
+        let deck = Deck::new(vec![carnage(), strike(), defend(), carnage(), strike()]);
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Draw the hand
+        battle.cards.draw_n(5);
+
+        // Count ethereal and non-ethereal cards in hand
+        let hand = battle.cards.get_hand();
+        let ethereal_count = hand.iter().filter(|c| c.is_ethereal()).count();
+        let non_ethereal_count = hand.len() - ethereal_count;
+
+        let initial_hand_size = battle.cards.hand_size();
+        let initial_discard_size = battle.cards.discard_pile_size();
+        let initial_exhausted_size = battle.cards.exhausted_size();
+
+        // End the player turn (should exhaust ethereal cards and discard the rest)
+        battle.at_end_of_player_turn();
+
+        // Verify the effects:
+        // 1. Hand should be empty
+        assert_eq!(battle.cards.hand_size(), 0);
+        // 2. Ethereal cards should be in exhausted pile
+        assert_eq!(battle.cards.exhausted_size(), initial_exhausted_size + ethereal_count);
+        // 3. Non-ethereal cards should be in discard pile
+        assert_eq!(battle.cards.discard_pile_size(), initial_discard_size + non_ethereal_count);
+
+        // Check that all exhausted cards are ethereal (Carnage)
+        let exhausted_cards = battle.cards.get_exhausted();
+        for i in initial_exhausted_size..exhausted_cards.len() {
+            assert!(exhausted_cards[i].is_ethereal(), "All newly exhausted cards should be ethereal");
+        }
+    }
+
+    #[test]
+    fn test_played_ethereal_card_not_double_exhausted() {
+        use crate::cards::ironclad::{carnage::carnage, strike::strike};
+
+        // Create a deck with Carnage (ethereal) and Strike
+        let deck = Deck::new(vec![carnage(), strike(), strike(), strike(), strike()]);
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Draw the hand
+        battle.cards.draw_n(5);
+
+        // Find and play Carnage if it's in hand
+        let carnage_idx = battle.cards.get_hand().iter().position(|card| card.get_name() == "Carnage");
+
+        if let Some(idx) = carnage_idx {
+            let initial_exhausted = battle.cards.exhausted_size();
+
+            // Play Carnage (it should go to discard, not exhaust, since it was played)
+            let _ = battle.play_card(idx, Entity::Enemy(0));
+
+            // Carnage should be in discard after being played
+            assert_eq!(battle.cards.discard_pile_size(), 1);
+            assert_eq!(battle.cards.exhausted_size(), initial_exhausted);
+
+            // Count remaining ethereal cards in hand
+            let hand = battle.cards.get_hand();
+            let ethereal_in_hand = hand.iter().filter(|c| c.is_ethereal()).count();
+
+            // End turn - should only exhaust ethereal cards still in hand
+            battle.at_end_of_player_turn();
+
+            // The played Carnage should still be in discard (total discard = 1 played + remaining non-ethereal)
+            // And only ethereal cards that weren't played should be exhausted
+            let hand_size_before_end = battle.cards.hand_size();
+            assert_eq!(battle.cards.hand_size(), 0);
+            assert_eq!(battle.cards.exhausted_size(), initial_exhausted + ethereal_in_hand);
+        }
     }
 }

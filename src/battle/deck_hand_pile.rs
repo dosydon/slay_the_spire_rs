@@ -99,7 +99,7 @@ impl DeckHandPile {
     pub(in crate::battle) fn exhaust_card(&mut self, card: Card) {
         self.exhausted.push(card);
     }
-    
+
     // Play card from hand (removes from hand, adds to discard pile, returns the card)
     pub(in crate::battle) fn play_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
         if hand_index < self.hand.len() {
