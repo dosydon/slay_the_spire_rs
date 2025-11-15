@@ -13,6 +13,9 @@ pub enum BattleEvent {
     EndOfTurn {
         entity: Entity,
     },
+    CombatVictory {
+        player: Entity,
+    },
 }
 
 pub trait EventListener {

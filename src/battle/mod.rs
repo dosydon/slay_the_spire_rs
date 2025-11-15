@@ -12,9 +12,8 @@ mod eval_effect;
 mod enemy_manager;
 mod listener_manager;
 
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::GreenLouseMove, jaw_worm::JawWormMove, enemy_enum::{EnemyEnum, EnemyMove}}, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, enemy::EnemyTrait, global_info::GlobalInfo}};
-use self::{action::Action, target::Entity, events::{BattleEvent, EventListener}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
-use rand::Rng;
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::GreenLouseMove, jaw_worm::JawWormMove, enemy_enum::{EnemyEnum, EnemyMove}}, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, enemy::EnemyTrait, global_info::GlobalInfo}, relics::Relic};
+use self::{target::Entity, events::EventListener, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BattleError {
@@ -42,6 +41,7 @@ pub struct Battle {
     global_info: GlobalInfo,
     /// Stores the next move and effects for each enemy (index corresponds to enemies Vec)
     enemy_actions: Vec<Option<(EnemyMove, Vec<Effect>)>>,
+    relics: Vec<Relic>,
 }
 
 impl Battle {
@@ -55,6 +55,7 @@ impl Battle {
             event_listeners: Vec::new(),
             global_info,
             enemy_actions: vec![None; enemy_count],
+            relics: Vec::new(),
         };
 
         // Initialize event listeners for enemies
@@ -75,11 +76,19 @@ impl Battle {
         Self::new(deck, global_info, initial_hp, max_hp, enemies, rng)
     }
 
+    pub fn set_relics(self, relics: Vec<Relic>) -> Self {
+        Battle {
+            relics,
+            ..self
+        }
+    }
+
     /// Get the final HP after battle for syncing back to Game
     pub fn get_final_player_hp(&self) -> u32 {
         self.player.battle_info.get_hp()
     }
-    
+
+        
     
     
     pub fn get_player(&self) -> &Player {

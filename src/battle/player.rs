@@ -1,14 +1,24 @@
 use super::character_battle_info::CharacterBattleInfo;
+use crate::relics::Relic;
 
 #[derive(Debug)]
 pub struct Player {
     pub battle_info: CharacterBattleInfo,
+    pub relics: Vec<Relic>,
 }
 
 impl Player {
     pub fn new(current_hp: u32, max_hp: u32, energy: u32) -> Self {
         Player {
             battle_info: CharacterBattleInfo::new(current_hp, max_hp, energy),
+            relics: Vec::new(),
+        }
+    }
+
+    pub fn with_relics(current_hp: u32, max_hp: u32, energy: u32, relics: Vec<Relic>) -> Self {
+        Player {
+            battle_info: CharacterBattleInfo::new(current_hp, max_hp, energy),
+            relics,
         }
     }
 

@@ -466,6 +466,9 @@ impl BattleCli {
                 crate::game::effect::Effect::ActivateEnrage(_) => {
                     parts.push("😤 Enrage".to_string());
                 }
+                crate::game::effect::Effect::Heal(amount) => {
+                    parts.push(format!("💚 Heal {}", amount));
+                }
             }
         }
         

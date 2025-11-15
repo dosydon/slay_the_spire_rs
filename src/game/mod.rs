@@ -9,3 +9,4 @@ pub mod game;
 pub mod action;
 pub mod map;
 pub mod card_reward;
+pub mod game_event;

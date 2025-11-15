@@ -503,4 +503,54 @@ mod tests {
         let exhausted_cards = battle.cards.get_exhausted();
         assert_eq!(exhausted_cards.last().unwrap().get_name(), "Slimed");
     }
+
+    #[test]
+    fn test_burning_blood_relic_heals_at_end_of_combat() {
+        use crate::cards::ironclad::strike::strike;
+        use crate::game::{game::Game, game_event::GameEvent, map::{Map, MapNode, NodeType}};
+        use crate::relics::create_burning_blood_relic;
+
+        // Create a deck with high-damage cards to defeat enemy quickly
+        let deck = Deck::new(vec![strike(), strike(), strike(), strike(), strike()]);
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        // Create a simple test map
+        let mut map = Map::new();
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        map.add_node(start_node);
+        let start_node_position = (0, 0);
+
+        // Create game with Burning Blood relic
+        let mut game = Game::new(deck, global_info, map, start_node_position, 50, 80);
+        game.add_game_event_listener(create_burning_blood_relic());
+
+        // Create a weak enemy that will die in one hit
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let mut enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        enemies[0].battle_info.current_hp = 1; // Reduce enemy HP for testing
+
+        // Create battle and start it
+        let battle_deck = crate::cards::ironclad::starter_deck::starter_deck();
+        let mut battle = Battle::new(battle_deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Record initial HP
+        let initial_hp = battle.player.battle_info.get_hp();
+
+        // Defeat the enemy by dealing damage
+        battle.enemies[0].battle_info.take_damage(100);
+
+        // Battle should be won
+        assert!(battle.is_battle_over());
+        assert!(battle.player.is_alive());
+        assert!(!battle.enemies[0].battle_info.is_alive());
+
+        // Simulate what would happen in Game when battle is won
+        game.player_hp = battle.get_final_player_hp();
+        game.emit_game_event(GameEvent::CombatVictory);
+
+        // Player should have healed 6 HP from Burning Blood
+        let final_hp = game.player_hp;
+        assert_eq!(final_hp, initial_hp + 6);
+    }
 }

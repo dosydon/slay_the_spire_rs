@@ -27,6 +27,7 @@ pub enum Effect {
     DrawCard (u32),
     Exhaust,
     ActivateEnrage (u32), // Activates Enrage listener for this enemy
+    Heal (u32),
 }
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -97,6 +98,10 @@ pub enum BaseEffect {
         source: Entity,
         amount: u32,
     },
+    Heal {
+        target: Entity,
+        amount: u32,
+    },
 }
 
 impl BaseEffect {
@@ -122,6 +127,7 @@ impl BaseEffect {
             Effect::DrawCard(count) => BaseEffect::DrawCard { source, count },
             Effect::Exhaust => BaseEffect::Exhaust { source },
             Effect::ActivateEnrage(amount) => BaseEffect::ActivateEnrage { source, amount },
+            Effect::Heal(amount) => BaseEffect::Heal { target, amount },
         }
     }
 }

@@ -154,6 +154,18 @@ impl Battle {
                 // Draw cards for the player
                 self.cards.draw_n(*count as usize);
             },
+            BaseEffect::Heal { target, amount } => {
+                // Heal the target entity
+                match target {
+                    Entity::Player => self.player.battle_info.heal(*amount),
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            self.enemies[*idx].battle_info.heal(*amount);
+                        }
+                    },
+                    Entity::None => {} // No target, no healing
+                }
+            },
         }
     }
 

@@ -131,6 +131,16 @@ impl CharacterBattleInfo {
         self.current_hp
     }
 
+    /// Get current HP (alias for get_hp for compatibility)
+    pub fn get_current_hp(&self) -> u32 {
+        self.current_hp
+    }
+
+    /// Set current HP (for relic effects, may exceed max HP temporarily)
+    pub fn set_current_hp(&mut self, hp: u32) {
+        self.current_hp = hp;
+    }
+
     /// Get max HP
     pub fn get_max_hp(&self) -> u32 {
         self.max_hp

@@ -1,4 +1,4 @@
-use crate::game::{global_info::GlobalInfo, action::GameAction, deck::Deck, map::{Map, MapError}, card_reward::CardRewardPool};
+use crate::game::{global_info::GlobalInfo, action::GameAction, deck::Deck, map::{Map, MapError}, card_reward::CardRewardPool, game_event::{GameEvent, GameEventListener}};
 use crate::battle::{Battle, BattleResult, BattleError, enemy_in_battle::EnemyInBattle};
 
 /// The overall state of the game
@@ -49,8 +49,9 @@ pub struct Game {
     pub current_node_position: (u32, u32),
     pub player_hp: u32,
     pub player_max_hp: u32,
-    /// Available card reward options when in CardRewardSelection state
     pub card_reward_options: Vec<crate::game::card::Card>,
+    relics: Vec<crate::relics::Relic>,
+    game_event_listeners: Vec<Box<dyn GameEventListener>>,
 }
 
 impl Game {
@@ -66,9 +67,45 @@ impl Game {
             player_hp: starting_hp,
             player_max_hp: max_hp,
             card_reward_options: Vec::new(),
+            relics: Vec::new(),
+            game_event_listeners: Vec::new(),
         }
     }
-    
+
+    /// Add a game event listener to the game
+    pub fn add_game_event_listener(&mut self, listener: Box<dyn GameEventListener>) {
+        self.game_event_listeners.push(listener);
+    }
+
+    /// Emit a game event to all active listeners and apply their effects
+    pub fn emit_game_event(&mut self, event: GameEvent) {
+        let mut new_effects = Vec::new();
+
+        // Process all active listeners
+        for listener in &mut self.game_event_listeners {
+            if listener.is_active() {
+                let effects = listener.on_game_event(&event);
+                for effect in effects {
+                    new_effects.push(effect);
+                }
+            }
+        }
+
+        // Remove inactive listeners
+        self.game_event_listeners.retain(|listener| listener.is_active());
+
+        // Apply healing effects directly to player HP
+        for effect in new_effects {
+            match effect {
+                crate::game::effect::Effect::Heal(amount) => {
+                    self.player_hp = (self.player_hp + amount).min(self.player_max_hp);
+                }
+                // Handle other effects as needed
+                _ => {}
+            }
+        }
+    }
+
     /// Evaluate a game action and update game state accordingly
     pub fn eval_action(&mut self, action: GameAction, rng: &mut impl rand::Rng) -> Result<GameResult, GameError> {
         match action {
@@ -84,6 +121,9 @@ impl Game {
                             }
                             self.battle = None;
                             self.global_info.current_floor += 1;
+
+                            // Emit combat victory event for relic effects
+                            self.emit_game_event(GameEvent::CombatVictory);
 
                             // Start card reward selection after victory
                             self.start_card_reward_selection(rng);
