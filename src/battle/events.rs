@@ -10,6 +10,9 @@ pub enum BattleEvent {
     SkillCardPlayed {
         source: Entity,
     },
+    CardExhausted {
+        source: Entity,
+    },
     EndOfTurn {
         entity: Entity,
     },

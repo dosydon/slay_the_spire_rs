@@ -141,6 +141,13 @@ impl Battle {
                     self.add_listener(Box::new(enrage_listener));
                 }
             },
+            BaseEffect::ActivateEmbrace { source } => {
+                // Add EmbraceListener for the player
+                if let Entity::Player = source {
+                    let embrace_listener = crate::cards::ironclad::embrace::EmbraceListener::new(*source);
+                    self.add_listener(Box::new(embrace_listener));
+                }
+            },
             BaseEffect::AddCardToDrawPile { source: _, card } => {
                 // Add a specific card to the draw pile
                 let card = match card {

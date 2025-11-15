@@ -44,6 +44,13 @@ impl Battle {
                         self.eval_base_effect(&BaseEffect::from_effect(effect, Entity::Player, target));
                     }
                 }
+
+                // Emit CardExhausted event
+                let exhaust_event = BattleEvent::CardExhausted {
+                    source: Entity::Player,
+                };
+                self.emit_event(exhaust_event);
+
                 Ok(())
             } else {
                 Err(BattleError::CardNotInHand)

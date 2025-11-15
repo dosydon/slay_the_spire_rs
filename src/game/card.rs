@@ -65,6 +65,7 @@ impl Card {
             CardEnum::Defend => crate::cards::ironclad::defend::defend_upgraded(),
             CardEnum::Bash => crate::cards::ironclad::bash::bash_upgraded(),
             CardEnum::Cleave => crate::cards::ironclad::cleave::cleave_upgraded(),
+            CardEnum::Embrace => crate::cards::ironclad::embrace::embrace_upgraded(),
             CardEnum::Flex => crate::cards::ironclad::flex::flex_upgraded(),
             CardEnum::Inflame => crate::cards::ironclad::inflame::inflame_upgraded(),
             CardEnum::IronWave => crate::cards::ironclad::iron_wave::iron_wave_upgraded(),

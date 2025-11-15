@@ -64,6 +64,7 @@ impl CardRewardPool {
             CardEnum::Bash => crate::cards::ironclad::bash::bash(),
             CardEnum::Cleave => crate::cards::ironclad::cleave::cleave(),
             CardEnum::Clothesline => crate::cards::ironclad::clothesline::clothesline(),
+            CardEnum::Embrace => crate::cards::ironclad::embrace::embrace(),
             CardEnum::Flex => crate::cards::ironclad::flex::flex(),
             CardEnum::Inflame => crate::cards::ironclad::inflame::inflame(),
             CardEnum::HeavyBlade => crate::cards::ironclad::heavy_blade::heavy_blade(),
