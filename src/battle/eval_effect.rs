@@ -179,6 +179,61 @@ impl Battle {
                     Entity::None => {} // No target, no healing
                 }
             },
+            BaseEffect::GainPlatedArmor { source, amount } => {
+                // Add plated armor to the source entity
+                match source {
+                    Entity::Player => {
+                        // TODO: Implement plated armor system
+                        // For now, treat as regular block gain
+                        self.apply_block(*source, *amount);
+                    },
+                    Entity::Enemy(_) => {
+                        // Enemies typically don't get plated armor
+                    },
+                    Entity::None => {} // No source
+                }
+            },
+            BaseEffect::DoubleBlock { source } => {
+                // Double the current block of the source entity
+                match source {
+                    Entity::Player => {
+                        let current_block = self.player.get_block();
+                        let additional_block = current_block; // Add the same amount again
+                        self.apply_block(*source, additional_block);
+                    },
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            let current_block = self.enemies[*idx].battle_info.get_block();
+                            let additional_block = current_block;
+                            self.apply_block(*source, additional_block);
+                        }
+                    },
+                    Entity::None => {} // No source
+                }
+            },
+            BaseEffect::ActivateCombust { source, amount } => {
+                // Add CombustListener for the player
+                if let Entity::Player = source {
+                    let combust_listener = crate::cards::ironclad::combust::CombustListener::new(*source, *amount);
+                    self.add_listener(Box::new(combust_listener));
+                }
+            },
+            BaseEffect::ApplyDamageReduction { target, percentage } => {
+                // Apply damage reduction to the target entity
+                match target {
+                    Entity::Player => {
+                        // TODO: Implement damage reduction status effect system
+                        // For now, this effect has no implementation
+                    },
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            // TODO: Implement damage reduction status effect system
+                            // For now, this effect has no implementation
+                        }
+                    },
+                    Entity::None => {} // No target
+                }
+            },
         }
     }
 

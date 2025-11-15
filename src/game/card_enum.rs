@@ -20,6 +20,10 @@ pub enum CardEnum {
     PerfectedStrike,
     Thunderclap,
     WildStrike,
+    Combust,
+    Disarm,
+    FeelNoPain,
+    Entrench,
     // Status Cards
     Slimed,
     Wound,
@@ -47,6 +51,10 @@ impl CardEnum {
             CardEnum::PerfectedStrike => "PerfectedStrike",
             CardEnum::Thunderclap => "Thunderclap",
             CardEnum::WildStrike => "WildStrike",
+            CardEnum::Combust => "Combust",
+            CardEnum::Disarm => "Disarm",
+            CardEnum::FeelNoPain => "Feel No Pain",
+            CardEnum::Entrench => "Entrench",
             CardEnum::Slimed => "Slimed",
             CardEnum::Wound => "Wound",
         }

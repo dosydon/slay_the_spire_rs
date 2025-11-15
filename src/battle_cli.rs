@@ -472,6 +472,18 @@ impl BattleCli {
                 crate::game::effect::Effect::Heal(amount) => {
                     parts.push(format!("💚 Heal {}", amount));
                 }
+                crate::game::effect::Effect::GainPlatedArmor(amount) => {
+                    parts.push(format!("🛡️ +{} Plated Armor", amount));
+                }
+                crate::game::effect::Effect::DoubleBlock => {
+                    parts.push("⚡ Double Block".to_string());
+                }
+                crate::game::effect::Effect::ActivateCombust(amount) => {
+                    parts.push(format!("🔥 Combust ({} dmg/turn)", amount));
+                }
+                crate::game::effect::Effect::ApplyDamageReduction(percentage) => {
+                    parts.push(format!("🛡️ -{}% Damage", percentage));
+                }
             }
         }
         

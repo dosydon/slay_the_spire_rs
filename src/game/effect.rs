@@ -29,6 +29,10 @@ pub enum Effect {
     ActivateEnrage (u32), // Activates Enrage listener for this enemy
     ActivateEmbrace, // Activates Embrace listener for the player
     Heal (u32),
+    GainPlatedArmor (u32), // Gain permanent armor that stacks
+    DoubleBlock, // Double current block
+    ActivateCombust (u32), // Activates Combust listener for dealing damage at end of turn
+    ApplyDamageReduction (u32), // Target takes X% less damage (like Disarm)
 }
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -106,6 +110,21 @@ pub enum BaseEffect {
         target: Entity,
         amount: u32,
     },
+    GainPlatedArmor {
+        source: Entity,
+        amount: u32,
+    },
+    DoubleBlock {
+        source: Entity,
+    },
+    ActivateCombust {
+        source: Entity,
+        amount: u32,
+    },
+    ApplyDamageReduction {
+        target: Entity,
+        percentage: u32, // percentage reduction (25 for Disarm)
+    },
 }
 
 impl BaseEffect {
@@ -133,6 +152,10 @@ impl BaseEffect {
             Effect::ActivateEnrage(amount) => BaseEffect::ActivateEnrage { source, amount },
             Effect::ActivateEmbrace => BaseEffect::ActivateEmbrace { source },
             Effect::Heal(amount) => BaseEffect::Heal { target, amount },
+            Effect::GainPlatedArmor(amount) => BaseEffect::GainPlatedArmor { source, amount },
+            Effect::DoubleBlock => BaseEffect::DoubleBlock { source },
+            Effect::ActivateCombust(amount) => BaseEffect::ActivateCombust { source, amount },
+            Effect::ApplyDamageReduction(percentage) => BaseEffect::ApplyDamageReduction { target, percentage },
         }
     }
 }

@@ -92,6 +92,10 @@ impl Card {
             CardEnum::PerfectedStrike => crate::cards::ironclad::perfected_strike::perfected_strike_upgraded(),
             CardEnum::Thunderclap => crate::cards::ironclad::thunderclap::thunderclap_upgraded(),
             CardEnum::WildStrike => crate::cards::ironclad::wild_strike::wild_strike_upgraded(),
+            CardEnum::Combust => crate::cards::ironclad::combust::combust_upgraded(),
+            CardEnum::Disarm => crate::cards::ironclad::disarm::disarm_upgraded(),
+            CardEnum::FeelNoPain => crate::cards::ironclad::feel_no_pain::feel_no_pain_upgraded(),
+            CardEnum::Entrench => crate::cards::ironclad::entrench::entrench_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
         }

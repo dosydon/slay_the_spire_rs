@@ -195,4 +195,109 @@ mod tests {
         assert_eq!(effects.len(), 1);
         assert_eq!(effects[0], Effect::DrawCard(1));
     }
+
+    #[test]
+    fn test_embrace_with_ethereal_card_integration() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::game::enemy::EnemyTrait;
+        use crate::battle::action::Action;
+        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::enemy_enum::EnemyEnum;
+        use crate::cards::ironclad::strike::strike;
+        use crate::cards::ironclad::carnage::carnage;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Embrace, Carnage (ethereal), and Strike in hand
+        let deck = Deck::new(vec![embrace(), carnage(), strike()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Play Embrace to activate the power
+        let embrace_idx = 0;
+        let result = battle.play_card(embrace_idx, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify Embrace is active
+        let powers = battle.get_powers();
+        assert_eq!(powers.len(), 1);
+        assert_eq!(powers[0].get_name(), "Embrace");
+
+        // End turn without playing Carnage to trigger ethereal exhaustion
+        let initial_hand_size = battle.cards.hand_size();
+        let initial_exhausted_size = battle.cards.exhausted_size();
+
+        // Should have Carnage and Strike in hand (Embrace was played)
+        assert_eq!(initial_hand_size, 2);
+
+        // Process end of turn using public eval_action method
+        let result = battle.eval_action(Action::EndTurn, &mut rng);
+        assert!(result.is_ok());
+
+        // Verify Carnage was exhausted (should be in exhausted pile)
+        assert_eq!(battle.cards.exhausted_size(), initial_exhausted_size + 1);
+
+        // Verify the exhausted card is Carnage
+        let exhausted_pile = battle.cards.get_exhausted();
+        assert_eq!(exhausted_pile.len(), 1);
+        assert_eq!(exhausted_pile[0].get_name(), "Carnage");
+
+        // The CardExhausted event should have been triggered and Embrace should have drawn a card
+        // This card would be in the hand for the next turn, but since we're at the end of turn,
+        // we need to check if the draw effect was processed
+        // The exact behavior depends on when draw effects are processed in the turn flow
+    }
+
+    #[test]
+    fn test_embrace_with_ethereal_card_played_before_exhaustion() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::game::enemy::EnemyTrait;
+        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::enemy_enum::EnemyEnum;
+        use crate::cards::ironclad::strike::strike;
+        use crate::cards::ironclad::carnage::carnage;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Embrace+, Carnage (ethereal), and 2 Strikes in hand
+        let deck = Deck::new(vec![embrace_upgraded(), carnage(), strike(), strike()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Play Embrace+ to activate the power (costs 1 energy)
+        let embrace_idx = 0;
+        let result = battle.play_card(embrace_idx, Entity::Player);
+        assert!(result.is_ok());
+
+        // Play Carnage (it goes to discard pile, not exhausted)
+        let carnage_idx = 0; // Now at index 0 after Embrace was played
+        let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
+        let result = battle.play_card(carnage_idx, Entity::Enemy(0));
+        assert!(result.is_ok());
+
+        // Verify Carnage dealt damage and went to discard
+        let enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
+        let expected_hp = if initial_enemy_hp > 20 { initial_enemy_hp - 20 } else { 0 };
+        assert_eq!(enemy_hp, expected_hp);
+
+        let discard = battle.cards.get_discard_pile();
+        assert_eq!(discard.len(), 1);
+        assert_eq!(discard[0].get_name(), "Carnage");
+
+        // Embrace should not trigger since Carnage was played, not exhausted
+        let exhausted_pile = battle.cards.get_exhausted();
+        assert_eq!(exhausted_pile.len(), 0);
+    }
 }

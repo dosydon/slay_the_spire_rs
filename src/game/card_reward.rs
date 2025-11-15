@@ -76,6 +76,10 @@ impl CardRewardPool {
             CardEnum::Thunderclap => crate::cards::ironclad::thunderclap::thunderclap(),
             CardEnum::TwinStrike => crate::cards::ironclad::twin_strike::twin_strike(),
             CardEnum::WildStrike => crate::cards::ironclad::wild_strike::wild_strike(),
+            CardEnum::Combust => crate::cards::ironclad::combust::combust(),
+            CardEnum::Disarm => crate::cards::ironclad::disarm::disarm(),
+            CardEnum::FeelNoPain => crate::cards::ironclad::feel_no_pain::feel_no_pain(),
+            CardEnum::Entrench => crate::cards::ironclad::entrench::entrench(),
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
             CardEnum::Wound => crate::cards::status::wound::wound(),
         }
