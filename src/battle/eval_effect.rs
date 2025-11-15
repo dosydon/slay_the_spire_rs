@@ -38,6 +38,14 @@ impl Battle {
                     Entity::None => {} // No target
                 }
             },
+            BaseEffect::ApplyVulnerableAll { duration } => {
+                // Apply vulnerable to all enemies
+                for enemy_idx in 0..self.enemies.len() {
+                    if self.enemies[enemy_idx].battle_info.is_alive() {
+                        self.enemies[enemy_idx].battle_info.apply_vulnerable(*duration);
+                    }
+                }
+            },
             BaseEffect::ApplyWeak { target, duration } => {
                 match target {
                     Entity::Player => self.player.battle_info.apply_weak(*duration),

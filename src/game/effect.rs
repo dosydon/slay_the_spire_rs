@@ -15,6 +15,7 @@ pub enum Effect {
     },
     GainDefense (u32),
     ApplyVulnerable (u32),
+    ApplyVulnerableAll (u32),
     ApplyWeak (u32),
     ApplyFrail (u32),
     GainStrength (u32),
@@ -48,6 +49,9 @@ pub enum BaseEffect {
     },
     ApplyVulnerable {
         target: Entity,
+        duration: u32,
+    },
+    ApplyVulnerableAll {
         duration: u32,
     },
     ApplyWeak {
@@ -106,6 +110,7 @@ impl BaseEffect {
             }
             Effect::GainDefense(amount) => BaseEffect::GainDefense { source, amount },
             Effect::ApplyVulnerable(duration) => BaseEffect::ApplyVulnerable { target, duration },
+            Effect::ApplyVulnerableAll(duration) => BaseEffect::ApplyVulnerableAll { duration },
             Effect::ApplyWeak(duration) => BaseEffect::ApplyWeak { target, duration },
             Effect::ApplyFrail(duration) => BaseEffect::ApplyFrail { target, duration },
             Effect::GainStrength(amount) => BaseEffect::GainStrength { source, amount },

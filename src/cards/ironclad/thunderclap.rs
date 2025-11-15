@@ -3,13 +3,149 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 pub fn thunderclap() -> Card {
     Card::new(CardEnum::Thunderclap, 1, CardType::Attack, vec![
         Effect::AttackAllEnemies { amount: 4, num_attacks: 1 },
-        Effect::ApplyVulnerable(1)
+        Effect::ApplyVulnerableAll(1)
     ], false, true)
 }
 
 pub fn thunderclap_upgraded() -> Card {
     Card::new(CardEnum::Thunderclap, 1, CardType::Attack, vec![
-        Effect::AttackAllEnemies { amount: 6, num_attacks: 1 }, // +2 damage
-        Effect::ApplyVulnerable(2) // +1 vulnerable duration
+        Effect::AttackAllEnemies { amount: 7, num_attacks: 1 }, // +2 damage
+        Effect::ApplyVulnerableAll(1) // 
     ], true, true)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::battle::{Battle, action::Action, target::Entity};
+    use crate::game::global_info::GlobalInfo;
+    use crate::game::deck::Deck;
+    use crate::game::enemy::EnemyTrait;
+    use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
+
+    #[test]
+    fn test_thunderclap_applies_vulnerable_to_all_enemies() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        // Create multiple enemies to test ApplyVulnerableAll
+        let red_louse1 = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse2 = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse3 = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse1)),
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2)),
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse3)),
+        ];
+
+        // Create a deck with thunderclap
+        let deck = Deck::new(vec![thunderclap()]);
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Draw the thunderclap card into hand
+        battle.start_of_player_turn(&mut rng);
+
+        // Get initial vulnerable status (should be 0 for all enemies)
+        let initial_vulnerable: Vec<u32> = battle.get_enemies()
+            .iter()
+            .map(|enemy| enemy.battle_info.get_vulnerable_turns())
+            .collect();
+
+        assert!(initial_vulnerable.iter().all(|&v| v == 0),
+                "All enemies should start with 0 vulnerable, got: {:?}", initial_vulnerable);
+
+        // Play thunderclap (target doesn't matter for ApplyVulnerableAll)
+        let action = Action::PlayCard(0, Entity::Enemy(0));
+        let result = battle.eval_action(action, &mut rng);
+        assert!(result.is_ok(), "Thunderclap should play successfully");
+
+        // Check that ALL enemies now have Vulnerable(1)
+        let final_vulnerable: Vec<u32> = battle.get_enemies()
+            .iter()
+            .map(|enemy| enemy.battle_info.get_vulnerable_turns())
+            .collect();
+
+        assert!(final_vulnerable.iter().all(|&v| v == 1),
+                "All enemies should have Vulnerable(1) after thunderclap, got: {:?}", final_vulnerable);
+
+        // Check that all enemies took damage (they should have lower HP than initial)
+        let initial_hp: Vec<u32> = battle.get_enemies()
+            .iter()
+            .map(|enemy| enemy.battle_info.get_hp())
+            .collect();
+
+        // Create a fresh battle to test damage
+        let deck2 = Deck::new(vec![thunderclap()]);
+        let red_louse1_new = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse2_new = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse3_new = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies2 = vec![
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse1_new)),
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2_new)),
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse3_new)),
+        ];
+        let mut battle2 = Battle::new(deck2, global_info, 80, 80, enemies2, &mut rng);
+        battle2.start_of_player_turn(&mut rng);
+
+        let hp_before: Vec<u32> = battle2.get_enemies()
+            .iter()
+            .map(|enemy| enemy.battle_info.get_hp())
+            .collect();
+
+        let action2 = Action::PlayCard(0, Entity::Enemy(0));
+        battle2.eval_action(action2, &mut rng).unwrap();
+
+        let hp_after: Vec<u32> = battle2.get_enemies()
+            .iter()
+            .map(|enemy| enemy.battle_info.get_hp())
+            .collect();
+
+        assert!(hp_after.iter().zip(hp_before.iter()).all(|(&after, &before)| after < before),
+                "All enemies should have taken damage from thunderclap");
+    }
+
+    #[test]
+    fn test_thunderclap_upgraded_applies_vulnerable_to_all_enemies() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        // Create multiple enemies to test ApplyVulnerableAll
+        let red_louse1 = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse2 = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse1)),
+            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2)),
+        ];
+
+        // Create a deck with upgraded thunderclap
+        let deck = Deck::new(vec![thunderclap_upgraded()]);
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Draw the thunderclap+ card into hand
+        battle.start_of_player_turn(&mut rng);
+
+        // Get initial vulnerable status (should be 0 for all enemies)
+        let initial_vulnerable: Vec<u32> = battle.get_enemies()
+            .iter()
+            .map(|enemy| enemy.battle_info.get_vulnerable_turns())
+            .collect();
+
+        assert!(initial_vulnerable.iter().all(|&v| v == 0),
+                "All enemies should start with 0 vulnerable, got: {:?}", initial_vulnerable);
+
+        // Play thunderclap+ (target doesn't matter for ApplyVulnerableAll)
+        let action = Action::PlayCard(0, Entity::Enemy(0));
+        let result = battle.eval_action(action, &mut rng);
+        assert!(result.is_ok(), "Thunderclap+ should play successfully");
+
+        // Check that ALL enemies now have Vulnerable(1)
+        let final_vulnerable: Vec<u32> = battle.get_enemies()
+            .iter()
+            .map(|enemy| enemy.battle_info.get_vulnerable_turns())
+            .collect();
+
+        assert!(final_vulnerable.iter().all(|&v| v == 1),
+                "All enemies should have Vulnerable(1) after thunderclap+, got: {:?}", final_vulnerable);
+    }
 }

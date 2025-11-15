@@ -445,6 +445,9 @@ impl BattleCli {
                 crate::game::effect::Effect::ApplyVulnerable(duration) => {
                     parts.push(format!("🔻 Vulnerable {}", duration));
                 }
+                crate::game::effect::Effect::ApplyVulnerableAll(duration) => {
+                    parts.push(format!("🔻 Vulnerable {} (all)", duration));
+                }
                 crate::game::effect::Effect::ApplyFrail(duration) => {
                     parts.push(format!("🔻 Frail {}", duration));
                 }
