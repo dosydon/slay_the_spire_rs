@@ -82,9 +82,8 @@ mod tests {
         assert_eq!(powers.len(), 1);
         assert_eq!(powers[0].get_name(), "Inflame");
 
-        // Verify Inflame went to discard pile (not exhausted)
+        // Verify Inflame did NOT go to discard pile (power cards stay in play)
         let discard = battle.cards.get_discard_pile();
-        assert!(!discard.is_empty());
-        assert!(discard.iter().any(|card| card.get_name() == "Inflame"));
+        assert!(!discard.iter().any(|card| card.get_name() == "Inflame"));
     }
 }

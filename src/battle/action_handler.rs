@@ -98,8 +98,8 @@ impl Battle {
                 Err(BattleError::CardNotInHand)
             }
         } else if is_power_card {
-            // Power cards go to discard pile and are tracked
-            if let Some(played_card) = self.cards.play_card_from_hand(idx) {
+            // Power cards are removed from hand but NOT added to discard pile (they stay in play)
+            if let Some(played_card) = self.cards.remove_card_from_hand(idx) {
                 // Add to powers collection
                 self.powers.push(played_card.clone());
 

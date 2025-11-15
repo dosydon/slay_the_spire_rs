@@ -110,6 +110,15 @@ impl DeckHandPile {
             None
         }
     }
+
+    // Remove card from hand without adding to discard (for power cards)
+    pub(in crate::battle) fn remove_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
+        if hand_index < self.hand.len() {
+            Some(self.hand.remove(hand_index))
+        } else {
+            None
+        }
+    }
     
     // Getters
     pub fn get_hand(&self) -> &Vec<Card> {
