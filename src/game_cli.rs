@@ -24,122 +24,20 @@ impl GameCli {
         let map = test_map_large();
         let start_node = (0, 0); // Start position based on test_map_large 0-indexing
         
-        let game = Game::new(deck, global_info, map, start_node, 80, 80);
-        
+        let mut game = Game::new(deck, global_info, map, start_node, 80, 80);
+
+        // Add Burning Blood relic to the game
+        game.add_relic(crate::relics::Relic::BurningBlood);
+
         GameCli { game, rng }
     }
-    
-    /// Create a simple test map that matches the classic Slay the Spire Act 1 structure
-    fn create_simple_map() -> (Map, (u32, u32)) {
-        let mut map = Map::new();
 
-        // Floor 0: Start
-        let start_node = MapNode::new(0, 0, NodeType::Start);
-        map.add_node(start_node);
-
-        // Floor 1: Combat encounters - 3 paths
-        let combat1 = MapNode::new(1, 0, NodeType::Combat);
-        let combat2 = MapNode::new(1, 1, NodeType::Combat);
-        let combat3 = MapNode::new(1, 2, NodeType::Combat);
-        map.add_node(combat1);
-        map.add_node(combat2);
-        map.add_node(combat3);
-
-        // Floor 2: Elite (left path) and Rest Site (right path)
-        let elite = MapNode::new(2, 0, NodeType::Elite);
-        let rest = MapNode::new(2, 1, NodeType::RestSite);
-        map.add_node(elite);
-        map.add_node(rest);
-
-        // Floor 3: Boss
-        let boss = MapNode::new(3, 0, NodeType::Boss);
-        map.add_node(boss);
-
-        // Connect nodes following the map structure from the image
-        // Start -> 3 Combat paths
-        map.add_edge((0, 0), (1, 0)).unwrap(); // Start -> Combat 1 (left)
-        map.add_edge((0, 0), (1, 1)).unwrap(); // Start -> Combat 2 (middle)
-        map.add_edge((0, 0), (1, 2)).unwrap(); // Start -> Combat 3 (right)
-
-        // Combat paths converge to Elite and Rest
-        map.add_edge((1, 0), (2, 0)).unwrap(); // Combat 1 -> Elite (left paths converge)
-        map.add_edge((1, 1), (2, 0)).unwrap(); // Combat 2 -> Elite (middle path can go elite)
-        map.add_edge((1, 1), (2, 1)).unwrap(); // Combat 2 -> Rest (middle path can go rest)
-        map.add_edge((1, 2), (2, 1)).unwrap(); // Combat 3 -> Rest (right paths converge)
-
-        // Both Elite and Rest lead to Boss
-        map.add_edge((2, 0), (3, 0)).unwrap(); // Elite -> Boss
-        map.add_edge((2, 1), (3, 0)).unwrap(); // Rest -> Boss
-
-        (map, (0, 0)) // Return map and start node position
-    }
-
-    /// Create a more comprehensive test map for various scenarios
-    pub fn create_test_map() -> (Map, (u32, u32)) {
-        let mut map = Map::new();
-
-        // Floor 0: Start
-        let start_node = MapNode::new(0, 0, NodeType::Start);
-        map.add_node(start_node);
-
-        // Floor 1: Multiple path choices
-        let combat1 = MapNode::new(1, 0, NodeType::Combat);
-        let combat2 = MapNode::new(1, 1, NodeType::Combat);
-        let combat3 = MapNode::new(1, 2, NodeType::Combat);
-        map.add_node(combat1);
-        map.add_node(combat2);
-        map.add_node(combat3);
-
-        // Floor 2: Different node types
-        let elite = MapNode::new(2, 0, NodeType::Elite);
-        let rest = MapNode::new(2, 1, NodeType::RestSite);
-        let shop = MapNode::new(2, 2, NodeType::Shop);
-        map.add_node(elite);
-        map.add_node(rest);
-        map.add_node(shop);
-
-        // Floor 3: More choices
-        let combat4 = MapNode::new(3, 0, NodeType::Combat);
-        let treasure = MapNode::new(3, 1, NodeType::Treasure);
-        map.add_node(combat4);
-        map.add_node(treasure);
-
-        // Floor 4: Final Boss
-        let boss = MapNode::new(4, 0, NodeType::Boss);
-        map.add_node(boss);
-
-        // Create interesting path connections
-        // Start to Floor 1
-        map.add_edge((0, 0), (1, 0)).unwrap();
-        map.add_edge((0, 0), (1, 1)).unwrap();
-        map.add_edge((0, 0), (1, 2)).unwrap();
-
-        // Floor 1 to Floor 2
-        map.add_edge((1, 0), (2, 0)).unwrap(); // Combat 1 -> Elite
-        map.add_edge((1, 1), (2, 0)).unwrap(); // Combat 2 -> Elite
-        map.add_edge((1, 1), (2, 1)).unwrap(); // Combat 2 -> Rest
-        map.add_edge((1, 2), (2, 1)).unwrap(); // Combat 3 -> Rest
-        map.add_edge((1, 2), (2, 2)).unwrap(); // Combat 3 -> Shop
-
-        // Floor 2 to Floor 3
-        map.add_edge((2, 0), (3, 0)).unwrap(); // Elite -> Combat 4
-        map.add_edge((2, 1), (3, 0)).unwrap(); // Rest -> Combat 4
-        map.add_edge((2, 1), (3, 1)).unwrap(); // Rest -> Treasure
-        map.add_edge((2, 2), (3, 1)).unwrap(); // Shop -> Treasure
-
-        // Floor 3 to Boss
-        map.add_edge((3, 0), (4, 0)).unwrap(); // Combat 4 -> Boss
-        map.add_edge((3, 1), (4, 0)).unwrap(); // Treasure -> Boss
-
-        (map, (0, 0)) // Return map and start node position
-    }
-    
     /// Start the game loop
     pub fn run(&mut self) {
         println!("\n🎮 Welcome to Slay the Spire!");
         println!("Ascension Level: {}", self.game.global_info.ascention);
         self.display_game_state();
-        
+
         while !self.game.is_game_over() {
             match self.game.get_state() {
                 GameState::OnMap => {
@@ -161,19 +59,19 @@ impl GameCli {
                     }
                 },
             }
-            
+
             // Check if game ended
             if !self.game.is_player_alive() {
                 println!("\n💀 GAME OVER - You have been defeated!");
                 break;
             }
-            
+
             self.display_game_state();
         }
-        
+
         println!("\n🏁 Game ended. Thanks for playing!");
     }
-    
+
     /// Handle map navigation phase
     fn handle_map_phase(&mut self) -> Result<(), GameError> {
         let current_node_info = self.game.get_current_node()
@@ -211,15 +109,15 @@ impl GameCli {
             };
             println!("   {}. {} - {} (Floor {})", i + 1, direction, node_type, floor);
         }
-        
+
         loop {
             print!("Choose your path (1-{}, or 'left'/'middle'/'right'): ", paths.len());
-            io::stdout().flush().unwrap();
-            
+            std::io::stdout().flush().unwrap();
+
             let mut input = String::new();
-            io::stdin().read_line(&mut input).unwrap();
+            std::io::stdin().read_line(&mut input).unwrap();
             let input = input.trim().to_lowercase();
-            
+
             let path_index = match input.as_str() {
                 "1" | "left" | "l" => 0,
                 "2" | "middle" | "m" => 1,
@@ -246,24 +144,24 @@ impl GameCli {
                 }
             }
         }
-        
+
         Ok(())
     }
-    
+
     /// Handle battle phase using BattleCli
     fn handle_battle_phase(&mut self) -> Result<(), GameError> {
         if let Some(battle) = self.game.battle.take() {
             println!("\n⚔️  ENTERING COMBAT!");
-            
+
             // Create a BattleCli with the current battle
             let mut battle_cli = BattleCli::from_existing_battle(battle);
             battle_cli.run(&mut self.rng);
-            
+
             // Get the battle result and sync back to game
             let final_battle = battle_cli.into_battle();
             let player_hp = final_battle.get_final_player_hp();
             let battle_won = final_battle.get_enemies().iter().all(|e| !e.battle_info.is_alive());
-            
+
             // Update game state
             self.game.set_player_hp(player_hp);
 
@@ -280,7 +178,7 @@ impl GameCli {
         } else {
             return Err(GameError::NoBattle);
         }
-        
+
         Ok(())
     }
 
@@ -334,10 +232,10 @@ impl GameCli {
 
         loop {
             print!("Choose your card (1-{}): ", reward_options.len());
-            io::stdout().flush().unwrap();
+            std::io::stdout().flush().unwrap();
 
             let mut input = String::new();
-            io::stdin().read_line(&mut input).unwrap();
+            std::io::stdin().read_line(&mut input).unwrap();
             let input = input.trim();
 
             match input.parse::<usize>() {
@@ -378,16 +276,16 @@ impl GameCli {
         println!("🏥 PLAYER STATUS");
         println!("   HP: {}/{}", self.game.get_player_hp(), self.game.get_player_max_hp());
         println!("   Floor: {}", self.game.global_info.current_floor);
-        
+
         if let Some(node) = self.game.get_current_node() {
             println!("   Location: {}", self.format_node_type(&node.node_type));
         }
-        
+
         // Show deck summary
         println!("   Deck Size: {}", self.game.deck.size());
         println!("{}", "=".repeat(60));
     }
-    
+
     /// Format node type for display
     fn format_node_type(&self, node_type: &NodeType) -> String {
         match node_type {
@@ -585,7 +483,6 @@ impl GameCli {
         println!();
     }
 
-    
     /// Get icon for node type
     fn get_node_icon(&self, node_type: &crate::game::map::NodeType, is_current: bool) -> &'static str {
         if is_current {
@@ -604,6 +501,7 @@ impl GameCli {
         }
     }
 }
+
 
 impl BattleCli {
     /// Create BattleCli from existing battle (for GameCli integration)

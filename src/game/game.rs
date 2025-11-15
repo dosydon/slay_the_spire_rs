@@ -72,9 +72,20 @@ impl Game {
         }
     }
 
+    
     /// Add a game event listener to the game
     pub fn add_game_event_listener(&mut self, listener: Box<dyn GameEventListener>) {
         self.game_event_listeners.push(listener);
+    }
+
+    /// Add a relic to the game and register its event listener if applicable
+    pub fn add_relic(&mut self, relic: crate::relics::Relic) {
+        self.relics.push(relic.clone());
+
+        // Register game event listeners if the relic supports them
+        if let Some(listener) = relic.to_game_event_listener() {
+            self.add_game_event_listener(listener);
+        }
     }
 
     /// Emit a game event to all active listeners and apply their effects

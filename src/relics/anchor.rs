@@ -104,7 +104,7 @@ mod tests {
         use crate::game::deck::Deck;
         use crate::game::global_info::GlobalInfo;
         use crate::game::enemy::EnemyTrait;
-        use crate::battle::{Battle, events::BattleEvent};
+        use crate::battle::Battle;
         use crate::enemies::red_louse::RedLouse;
         use crate::enemies::enemy_enum::EnemyEnum;
         use crate::battle::enemy_in_battle::EnemyInBattle;

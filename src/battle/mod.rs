@@ -42,6 +42,8 @@ pub struct Battle {
     /// Stores the next move and effects for each enemy (index corresponds to enemies Vec)
     enemy_actions: Vec<Option<(EnemyMove, Vec<Effect>)>>,
     relics: Vec<Relic>,
+    /// Stores all powers played during the current battle
+    powers: Vec<crate::game::card::Card>,
 }
 
 impl Battle {
@@ -67,6 +69,7 @@ impl Battle {
             global_info,
             enemy_actions: vec![None; enemy_count],
             relics: Vec::new(),
+            powers: Vec::new(),
         };
 
         // Initialize event listeners for enemies
@@ -124,6 +127,11 @@ impl Battle {
     
     pub fn get_hand(&self) -> &Vec<Card> {
         self.cards.get_hand()
+    }
+
+    /// Get all powers played during this battle
+    pub fn get_powers(&self) -> &Vec<Card> {
+        &self.powers
     }
     
     pub fn is_battle_over(&self) -> bool {

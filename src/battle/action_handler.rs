@@ -53,7 +53,7 @@ impl Battle {
     }
 
     /// Play a card from hand targeting a specific entity
-    pub(in crate::battle) fn play_card(&mut self, idx: usize, target: Entity) -> Result<(), BattleError> {
+    pub(crate) fn play_card(&mut self, idx: usize, target: Entity) -> Result<(), BattleError> {
         if idx >= self.cards.hand_size() {
             return Err(BattleError::CardNotInHand);
         }
@@ -73,7 +73,8 @@ impl Battle {
         let card_effects = card.get_effects().clone();
         let has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust);
         let is_skill_card = card.get_card_type() == &CardType::Skill;
-        
+        let is_power_card = card.get_card_type() == &CardType::Power;
+
         // Emit SkillCardPlayed event if this is a Skill card
         if is_skill_card {
             let skill_event = BattleEvent::SkillCardPlayed {
@@ -81,9 +82,10 @@ impl Battle {
             };
             self.emit_event(skill_event);
         }
-        
-        // Remove card from hand - exhaust it if it has Exhaust effect
+
+        // Handle different card types
         if has_exhaust {
+            // Exhaust cards are removed from play entirely
             if let Some(_played_card) = self.cards.exhaust_card_from_hand(idx) {
                 // Execute non-exhaust effects
                 for effect in card_effects {
@@ -95,7 +97,22 @@ impl Battle {
             } else {
                 Err(BattleError::CardNotInHand)
             }
+        } else if is_power_card {
+            // Power cards go to discard pile and are tracked
+            if let Some(played_card) = self.cards.play_card_from_hand(idx) {
+                // Add to powers collection
+                self.powers.push(played_card.clone());
+
+                // Execute effects
+                for effect in card_effects {
+                    self.eval_base_effect(&BaseEffect::from_effect(effect, Entity::Player, target));
+                }
+                Ok(())
+            } else {
+                Err(BattleError::CardNotInHand)
+            }
         } else {
+            // Regular cards (Attack, Skill) go to discard pile normally
             if let Some(_played_card) = self.cards.play_card_from_hand(idx) {
                 for effect in card_effects {
                     self.eval_base_effect(&BaseEffect::from_effect(effect, Entity::Player, target));
