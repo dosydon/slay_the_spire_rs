@@ -472,6 +472,9 @@ impl BattleCli {
                 crate::game::effect::Effect::Heal(amount) => {
                     parts.push(format!("💚 Heal {}", amount));
                 }
+                crate::game::effect::Effect::LoseHp(amount) => {
+                    parts.push(format!("💔 Lose {} HP", amount));
+                }
                 crate::game::effect::Effect::GainPlatedArmor(amount) => {
                     parts.push(format!("🛡️ +{} Plated Armor", amount));
                 }
@@ -483,6 +486,18 @@ impl BattleCli {
                 }
                 crate::game::effect::Effect::ApplyDamageReduction(percentage) => {
                     parts.push(format!("🛡️ -{}% Damage", percentage));
+                }
+                crate::game::effect::Effect::GainEnergy(amount) => {
+                    parts.push(format!("⚡ Gain {} Energy", amount));
+                }
+                crate::game::effect::Effect::ApplyWeakAll(duration) => {
+                    parts.push(format!("😵 Weak All ({} turns)", duration));
+                }
+                crate::game::effect::Effect::Ethereal => {
+                    parts.push("👻 Ethereal".to_string());
+                }
+                crate::game::effect::Effect::AddCardToDiscard(card) => {
+                    parts.push(format!("➕ Add {} to discard", card.name()));
                 }
             }
         }

@@ -22,11 +22,14 @@ impl EventListener for CombustListener {
     fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
         match event {
             BattleEvent::EndOfTurn { entity } if *entity == self.owner => {
-                // Deal damage to all enemies at end of player's turn
-                vec![Effect::AttackAllEnemies {
-                    amount: self.damage,
-                    num_attacks: 1,
-                }]
+                // Lose 1 HP and deal damage to all enemies at end of player's turn
+                vec![
+                    Effect::AttackAllEnemies {
+                        amount: self.damage,
+                        num_attacks: 1,
+                    },
+                    Effect::LoseHp(1),
+                ]
             }
             _ => vec![]
         }
@@ -43,7 +46,7 @@ impl EventListener for CombustListener {
 
 /// Combust - Power Card
 /// Cost: 1
-/// Effect: At the end of your turn, deal 5 damage to ALL enemies.
+/// Effect: At the end of your turn, lose 1 HP and deal 5 damage to ALL enemies.
 pub fn combust() -> Card {
     Card::new(CardEnum::Combust, 1, CardType::Power, vec![
         Effect::ActivateCombust(5),
@@ -52,7 +55,7 @@ pub fn combust() -> Card {
 
 /// Combust+ (Upgraded)
 /// Cost: 1
-/// Effect: At the end of your turn, deal 7 damage to ALL enemies.
+/// Effect: At the end of your turn, lose 1 HP and deal 7 damage to ALL enemies.
 pub fn combust_upgraded() -> Card {
     Card::new(CardEnum::Combust, 1, CardType::Power, vec![
         Effect::ActivateCombust(7),
@@ -105,11 +108,12 @@ mod tests {
         };
 
         let effects = listener.on_event(&end_turn_event);
-        assert_eq!(effects.len(), 1);
+        assert_eq!(effects.len(), 2);
         assert_eq!(effects[0], Effect::AttackAllEnemies {
             amount: 5,
             num_attacks: 1,
         });
+        assert_eq!(effects[1], Effect::LoseHp(1));
         assert!(listener.is_active()); // Still active after triggering
     }
 
@@ -138,19 +142,21 @@ mod tests {
 
         // First end of turn
         let effects1 = listener.on_event(&end_turn_event);
-        assert_eq!(effects1.len(), 1);
+        assert_eq!(effects1.len(), 2);
         assert_eq!(effects1[0], Effect::AttackAllEnemies {
             amount: 5,
             num_attacks: 1,
         });
+        assert_eq!(effects1[1], Effect::LoseHp(1));
 
         // Second end of turn should also trigger
         let effects2 = listener.on_event(&end_turn_event);
-        assert_eq!(effects2.len(), 1);
+        assert_eq!(effects2.len(), 2);
         assert_eq!(effects2[0], Effect::AttackAllEnemies {
             amount: 5,
             num_attacks: 1,
         });
+        assert_eq!(effects2[1], Effect::LoseHp(1));
 
         assert!(listener.is_active()); // Always active
     }
@@ -173,11 +179,12 @@ mod tests {
         };
 
         let effects = listener.on_event(&player_end_turn_event);
-        assert_eq!(effects.len(), 1);
+        assert_eq!(effects.len(), 2);
         assert_eq!(effects[0], Effect::AttackAllEnemies {
             amount: 5,
             num_attacks: 1,
         });
+        assert_eq!(effects[1], Effect::LoseHp(1));
     }
 
     #[test]
@@ -192,13 +199,80 @@ mod tests {
         let normal_effects = normal_listener.on_event(&end_turn_event);
         let upgraded_effects = upgraded_listener.on_event(&end_turn_event);
 
+        assert_eq!(normal_effects.len(), 2);
         assert_eq!(normal_effects[0], Effect::AttackAllEnemies {
             amount: 5,
             num_attacks: 1,
         });
+        assert_eq!(normal_effects[1], Effect::LoseHp(1));
+
+        assert_eq!(upgraded_effects.len(), 2);
         assert_eq!(upgraded_effects[0], Effect::AttackAllEnemies {
             amount: 7,
             num_attacks: 1,
         });
+        assert_eq!(upgraded_effects[1], Effect::LoseHp(1));
+    }
+
+    #[test]
+    fn test_combust_hp_loss_integration() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::game::enemy::EnemyTrait;
+        use crate::battle::action::Action;
+        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::enemy_enum::EnemyEnum;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let initial_enemy_hp = red_louse.get_hp();
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Combust in hand, starting with 15 HP
+        let deck = Deck::new(vec![combust()]);
+        let mut battle = Battle::new(deck, global_info, 15, 80, enemies, &mut rng);
+
+        let initial_hp = battle.get_player().battle_info.get_hp();
+        assert_eq!(initial_hp, 15);
+
+        // Play Combust to activate the power
+        let combust_idx = 0;
+        let result = battle.play_card(combust_idx, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify Combust is active
+        let powers = battle.get_powers();
+        assert_eq!(powers.len(), 1);
+        assert_eq!(powers[0].get_name(), "Combust");
+
+        // End turn to trigger Combust effect (lose 1 HP and damage enemies)
+        let result = battle.eval_action(Action::EndTurn, &mut rng);
+        assert!(result.is_ok());
+
+        // Verify player lost 1 HP from Combust + damage from enemy attack (6)
+        // Starting from 15 HP: 15 - 1 (Combust) - 6 (Red Louse attack) = 8 HP
+        let final_hp = battle.get_player().battle_info.get_hp();
+        assert_eq!(final_hp, 8);
+
+        // Verify enemies took damage
+        let enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
+        assert_eq!(enemy_hp, initial_enemy_hp.saturating_sub(5));
+
+        // End another turn to verify repeated HP loss
+        let result = battle.eval_action(Action::EndTurn, &mut rng);
+        assert!(result.is_ok());
+
+        // Verify player lost another 1 HP from Combust + damage from enemy attack (6)
+        // Total: 8 - 1 (Combust) - 6 (Red Louse attack) = 1 HP
+        let final_hp = battle.get_player().battle_info.get_hp();
+        assert_eq!(final_hp, 1);
+
+        // Verify enemies took more damage
+        let enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
+        assert_eq!(enemy_hp, initial_enemy_hp.saturating_sub(10));
     }
 }

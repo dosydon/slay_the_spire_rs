@@ -24,6 +24,10 @@ pub enum CardEnum {
     Disarm,
     FeelNoPain,
     Entrench,
+    Bludgeon,
+    Anger,
+    SwordBoomerang,
+    Hemokinesis,
     // Status Cards
     Slimed,
     Wound,
@@ -55,6 +59,10 @@ impl CardEnum {
             CardEnum::Disarm => "Disarm",
             CardEnum::FeelNoPain => "Feel No Pain",
             CardEnum::Entrench => "Entrench",
+            CardEnum::Bludgeon => "Bludgeon",
+            CardEnum::Anger => "Anger",
+            CardEnum::SwordBoomerang => "Sword Boomerang",
+            CardEnum::Hemokinesis => "Hemokinesis",
             CardEnum::Slimed => "Slimed",
             CardEnum::Wound => "Wound",
         }

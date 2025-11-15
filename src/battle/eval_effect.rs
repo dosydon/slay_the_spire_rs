@@ -234,6 +234,45 @@ impl Battle {
                     Entity::None => {} // No target
                 }
             },
+            BaseEffect::LoseHp { target, amount } => {
+                // Direct HP loss (ignores block)
+                match target {
+                    Entity::Player => {
+                        let current_hp = self.player.battle_info.get_current_hp();
+                        let new_hp = current_hp.saturating_sub(*amount);
+                        self.player.battle_info.set_current_hp(new_hp);
+                    },
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            let current_hp = self.enemies[*idx].battle_info.get_current_hp();
+                            let new_hp = current_hp.saturating_sub(*amount);
+                            self.enemies[*idx].battle_info.set_current_hp(new_hp);
+                        }
+                    },
+                    Entity::None => {} // No target, no HP loss
+                }
+            },
+            BaseEffect::GainEnergy { source: _, amount } => {
+                // Gain energy
+                self.player.battle_info.gain_energy(*amount);
+            },
+            BaseEffect::ApplyWeakAll { duration } => {
+                // Apply Weak to all enemies
+                for enemy in &mut self.enemies {
+                    enemy.battle_info.apply_weak(*duration);
+                }
+            },
+            BaseEffect::Ethereal { hand_index: _ } => {
+                // TODO: Implement ethereal effect
+                // Mark card as ethereal (will be exhausted at end of turn)
+                // This requires implementing set_ethereal method on deck
+            },
+            BaseEffect::AddCardToDiscard { card } => {
+                // Add a card to the discard pile
+                let card_reward_pool = crate::game::card_reward::CardRewardPool::new();
+                let created_card = card_reward_pool.create_card_from_enum(*card);
+                self.cards.add_card_to_discard(created_card);
+            },
         }
     }
 

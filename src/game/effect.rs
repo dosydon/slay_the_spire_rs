@@ -29,10 +29,15 @@ pub enum Effect {
     ActivateEnrage (u32), // Activates Enrage listener for this enemy
     ActivateEmbrace, // Activates Embrace listener for the player
     Heal (u32),
+    LoseHp (u32), // Direct HP loss
     GainPlatedArmor (u32), // Gain permanent armor that stacks
     DoubleBlock, // Double current block
     ActivateCombust (u32), // Activates Combust listener for dealing damage at end of turn
     ApplyDamageReduction (u32), // Target takes X% less damage (like Disarm)
+    GainEnergy (u32), // Gain energy
+    ApplyWeakAll (u32), // Apply Weak to all enemies
+    Ethereal, // Card will be exhausted at end of turn
+    AddCardToDiscard (CardEnum), // Add a card to discard pile
 }
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -110,6 +115,10 @@ pub enum BaseEffect {
         target: Entity,
         amount: u32,
     },
+    LoseHp {
+        target: Entity,
+        amount: u32,
+    },
     GainPlatedArmor {
         source: Entity,
         amount: u32,
@@ -124,6 +133,19 @@ pub enum BaseEffect {
     ApplyDamageReduction {
         target: Entity,
         percentage: u32, // percentage reduction (25 for Disarm)
+    },
+    GainEnergy {
+        source: Entity,
+        amount: u32,
+    },
+    ApplyWeakAll {
+        duration: u32,
+    },
+    Ethereal {
+        hand_index: usize, // hand_index should be set manually when queuing
+    },
+    AddCardToDiscard {
+        card: CardEnum,
     },
 }
 
@@ -152,10 +174,15 @@ impl BaseEffect {
             Effect::ActivateEnrage(amount) => BaseEffect::ActivateEnrage { source, amount },
             Effect::ActivateEmbrace => BaseEffect::ActivateEmbrace { source },
             Effect::Heal(amount) => BaseEffect::Heal { target, amount },
+            Effect::LoseHp(amount) => BaseEffect::LoseHp { target, amount },
             Effect::GainPlatedArmor(amount) => BaseEffect::GainPlatedArmor { source, amount },
             Effect::DoubleBlock => BaseEffect::DoubleBlock { source },
             Effect::ActivateCombust(amount) => BaseEffect::ActivateCombust { source, amount },
             Effect::ApplyDamageReduction(percentage) => BaseEffect::ApplyDamageReduction { target, percentage },
+            Effect::GainEnergy(amount) => BaseEffect::GainEnergy { source, amount },
+            Effect::ApplyWeakAll(duration) => BaseEffect::ApplyWeakAll { duration },
+            Effect::Ethereal => BaseEffect::Ethereal { hand_index: 0 }, // hand_index should be set manually when queuing
+            Effect::AddCardToDiscard(card) => BaseEffect::AddCardToDiscard { card },
         }
     }
 }

@@ -96,6 +96,10 @@ impl Card {
             CardEnum::Disarm => crate::cards::ironclad::disarm::disarm_upgraded(),
             CardEnum::FeelNoPain => crate::cards::ironclad::feel_no_pain::feel_no_pain_upgraded(),
             CardEnum::Entrench => crate::cards::ironclad::entrench::entrench_upgraded(),
+            CardEnum::Bludgeon => crate::cards::ironclad::bludgeon::bludgeon_upgraded(),
+            CardEnum::Anger => crate::cards::ironclad::anger::anger_upgraded(),
+            CardEnum::SwordBoomerang => crate::cards::ironclad::sword_boomerang::sword_boomerang_upgraded(),
+            CardEnum::Hemokinesis => crate::cards::ironclad::hemokinesis::hemokinesis_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
         }

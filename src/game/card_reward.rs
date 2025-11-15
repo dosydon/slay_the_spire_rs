@@ -57,7 +57,7 @@ impl CardRewardPool {
     }
 
     /// Create a card from a CardEnum using the appropriate factory function
-    fn create_card_from_enum(&self, card_enum: CardEnum) -> Card {
+    pub fn create_card_from_enum(&self, card_enum: CardEnum) -> Card {
         match card_enum {
             CardEnum::Strike => crate::cards::ironclad::strike::strike(),
             CardEnum::Defend => crate::cards::ironclad::defend::defend(),
@@ -80,6 +80,10 @@ impl CardRewardPool {
             CardEnum::Disarm => crate::cards::ironclad::disarm::disarm(),
             CardEnum::FeelNoPain => crate::cards::ironclad::feel_no_pain::feel_no_pain(),
             CardEnum::Entrench => crate::cards::ironclad::entrench::entrench(),
+            CardEnum::Bludgeon => crate::cards::ironclad::bludgeon::bludgeon(),
+            CardEnum::Anger => crate::cards::ironclad::anger::anger(),
+            CardEnum::SwordBoomerang => crate::cards::ironclad::sword_boomerang::sword_boomerang(),
+            CardEnum::Hemokinesis => crate::cards::ironclad::hemokinesis::hemokinesis(),
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
             CardEnum::Wound => crate::cards::status::wound::wound(),
         }
