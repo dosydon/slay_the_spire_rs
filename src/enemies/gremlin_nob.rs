@@ -152,13 +152,13 @@ impl GremlinNob {
             GremlinNobMove::SkullBash => {
                 let damage = Self::calculate_skull_bash_damage(global_info);
                 vec![
-                    Effect::AttackToTarget { amount: damage, num_attacks: 1 },
+                    Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
                     Effect::ApplyVulnerable(2),
                 ]
             }
             GremlinNobMove::BullRush => {
                 let damage = Self::calculate_bull_rush_damage(global_info);
-                vec![Effect::AttackToTarget { amount: damage, num_attacks: 1 }]
+                vec![Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
             }
         }
     }
@@ -361,22 +361,22 @@ mod tests {
         // Test Skull Bash effects
         let skull_bash_effects_asc0 = gremlin_nob.get_move_effects(GremlinNobMove::SkullBash, &global_info_asc0);
         assert_eq!(skull_bash_effects_asc0, vec![
-            Effect::AttackToTarget { amount: 6, num_attacks: 1 },
+            Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
             Effect::ApplyVulnerable(2),
         ]);
         
         let skull_bash_effects_asc3 = gremlin_nob.get_move_effects(GremlinNobMove::SkullBash, &global_info_asc3);
         assert_eq!(skull_bash_effects_asc3, vec![
-            Effect::AttackToTarget { amount: 8, num_attacks: 1 },
+            Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
             Effect::ApplyVulnerable(2),
         ]);
         
         // Test Bull Rush effects
         let bull_rush_effects_asc0 = gremlin_nob.get_move_effects(GremlinNobMove::BullRush, &global_info_asc0);
-        assert_eq!(bull_rush_effects_asc0, vec![Effect::AttackToTarget { amount: 14, num_attacks: 1 }]);
+        assert_eq!(bull_rush_effects_asc0, vec![Effect::AttackToTarget { amount: 14, num_attacks: 1, strength_multiplier: 1 }]);
         
         let bull_rush_effects_asc3 = gremlin_nob.get_move_effects(GremlinNobMove::BullRush, &global_info_asc3);
-        assert_eq!(bull_rush_effects_asc3, vec![Effect::AttackToTarget { amount: 16, num_attacks: 1 }]);
+        assert_eq!(bull_rush_effects_asc3, vec![Effect::AttackToTarget { amount: 16, num_attacks: 1, strength_multiplier: 1 }]);
     }
 
     #[test]
@@ -451,12 +451,12 @@ mod tests {
         match second_move {
             GremlinNobMove::SkullBash => {
                 assert_eq!(second_effects, vec![
-                    Effect::AttackToTarget { amount: 6, num_attacks: 1 },
+                    Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
                     Effect::ApplyVulnerable(2),
                 ]);
             }
             GremlinNobMove::BullRush => {
-                assert_eq!(second_effects, vec![Effect::AttackToTarget { amount: 14, num_attacks: 1 }]);
+                assert_eq!(second_effects, vec![Effect::AttackToTarget { amount: 14, num_attacks: 1, strength_multiplier: 1 }]);
             }
             GremlinNobMove::Bellow => {
                 panic!("Second move should not be Bellow again");

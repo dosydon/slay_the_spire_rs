@@ -50,9 +50,10 @@ impl JawWorm {
     fn get_move_effects(&self, move_type: JawWormMove, global_info: &GlobalInfo) -> Vec<Effect> {
         match move_type {
             JawWormMove::Chomp => {
-                vec![Effect::AttackToTarget { 
-                    amount: Self::calculate_chomp_damage(global_info), 
-                    num_attacks: 1 
+                vec![Effect::AttackToTarget {
+                    amount: Self::calculate_chomp_damage(global_info),
+                    num_attacks: 1,
+                    strength_multiplier: 1
                 }]
             }
             JawWormMove::Bellow => {
@@ -63,9 +64,10 @@ impl JawWorm {
             }
             JawWormMove::Thrash => {
                 vec![
-                    Effect::AttackToTarget { 
-                        amount: 7, 
-                        num_attacks: 1 
+                    Effect::AttackToTarget {
+                        amount: 7,
+                        num_attacks: 1,
+                        strength_multiplier: 1
                     },
                     Effect::GainDefense(5)
                 ]
@@ -315,7 +317,7 @@ mod tests {
         
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks } => {
+            Effect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
                 assert_eq!(*amount, 11);
                 assert_eq!(*num_attacks, 1);
             }
@@ -364,7 +366,7 @@ mod tests {
         
         for effect in &effects {
             match effect {
-                Effect::AttackToTarget { amount, num_attacks } => {
+                Effect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
                     assert_eq!(*amount, 7);
                     assert_eq!(*num_attacks, 1);
                     found_attack = true;

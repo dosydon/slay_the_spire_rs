@@ -6,9 +6,9 @@ impl Battle {
     /// Apply a specific effect with its target
     pub(crate) fn eval_base_effect(&mut self, effect: &BaseEffect) {
         match effect {
-            BaseEffect::AttackToTarget { source, target, amount, num_attacks } => {
+            BaseEffect::AttackToTarget { source, target, amount, num_attacks, strength_multiplier } => {
                 for _ in 0..*num_attacks {
-                    let incoming_damage = self.calculate_incoming_damage(*source, *target, *amount);
+                    let incoming_damage = self.calculate_incoming_damage_with_multiplier(*source, *target, *amount, *strength_multiplier);
                     self.apply_damage(*target, incoming_damage);
                 }
             },
@@ -133,6 +133,15 @@ impl Battle {
                     self.add_listener(Box::new(enrage_listener));
                 }
             },
+            BaseEffect::AddCardToDrawPile { source: _, card } => {
+                // Add a specific card to the draw pile
+                let card = match card {
+                    crate::game::card_enum::CardEnum::Wound => crate::cards::status::wound::wound(),
+                    crate::game::card_enum::CardEnum::Slimed => crate::cards::status::slimed::slimed(),
+                    _ => return, // Unsupported card type
+                };
+                self.cards.add_card_to_deck(card);
+            },
             BaseEffect::DrawCard { source: _, count } => {
                 // Draw cards for the player
                 self.cards.draw_n(*count as usize);
@@ -204,6 +213,7 @@ mod tests {
             target: Entity::Enemy(0),
             amount: 10,
             num_attacks: 1,
+            strength_multiplier: 1,
         };
         
         battle.eval_base_effect(&damage_effect);
@@ -311,6 +321,7 @@ mod tests {
             target: Entity::Enemy(0),
             amount: 10,
             num_attacks: 1,
+            strength_multiplier: 1,
         };
         battle.eval_base_effect(&damage_effect);
         
@@ -338,6 +349,7 @@ mod tests {
             target: Entity::Enemy(0),
             amount: 8,
             num_attacks: 1,
+            strength_multiplier: 1,
         };
         battle.eval_base_effect(&damage_effect);
         
@@ -365,6 +377,7 @@ mod tests {
             target: Entity::Player,
             amount: 10,
             num_attacks: 1,
+            strength_multiplier: 1,
         };
         battle.eval_base_effect(&damage_effect);
         
@@ -391,6 +404,7 @@ mod tests {
             target: Entity::Enemy(0),
             amount: 6,
             num_attacks: 1,
+            strength_multiplier: 1,
         };
         battle.eval_base_effect(&attack_effect);
         

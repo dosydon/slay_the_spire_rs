@@ -23,6 +23,7 @@ pub enum BattleError {
     CardNotInHand,
     InvalidTarget,
     GameAlreadyOver,
+    CardNotPlayable,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -36,7 +37,7 @@ pub enum BattleResult {
 pub struct Battle {
     player: Player,
     enemies: Vec<EnemyInBattle>,
-    cards: DeckHandPile,
+    pub(crate) cards: DeckHandPile,
     event_listeners: Vec<Box<dyn EventListener>>,
     global_info: GlobalInfo,
     /// Stores the next move and effects for each enemy (index corresponds to enemies Vec)
@@ -107,12 +108,17 @@ impl Battle {
     
     /// Calculate incoming damage with all modifiers (strength, weak, vulnerable)
     pub fn calculate_incoming_damage(&self, attacker: Entity, target: Entity, base_damage: u32) -> u32 {
+        self.calculate_incoming_damage_with_multiplier(attacker, target, base_damage, 1)
+    }
+
+    /// Calculate incoming damage with all modifiers and custom strength multiplier
+    pub fn calculate_incoming_damage_with_multiplier(&self, attacker: Entity, target: Entity, base_damage: u32, strength_multiplier: u32) -> u32 {
         // Step 1: Calculate damage with attacker's modifiers (strength, weak)
         let modified_damage = match attacker {
-            Entity::Player => self.player.battle_info.calculate_damage(base_damage),
+            Entity::Player => self.player.battle_info.calculate_damage_with_multiplier(base_damage, strength_multiplier),
             Entity::Enemy(idx) => {
                 if idx < self.enemies.len() {
-                    self.enemies[idx].battle_info.calculate_damage(base_damage)
+                    self.enemies[idx].battle_info.calculate_damage_with_multiplier(base_damage, strength_multiplier)
                 } else {
                     base_damage
                 }

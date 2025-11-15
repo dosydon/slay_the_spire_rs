@@ -2,14 +2,14 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 
 pub fn twin_strike() -> Card {
     Card::new(CardEnum::TwinStrike, 1, CardType::Attack, vec![
-        Effect::AttackToTarget { amount: 5, num_attacks: 2 }
-    ], false)
+        Effect::AttackToTarget { amount: 5, num_attacks: 2, strength_multiplier: 1 }
+    ], false, true)
 }
 
 pub fn twin_strike_upgraded() -> Card {
     Card::new(CardEnum::TwinStrike, 1, CardType::Attack, vec![
-        Effect::AttackToTarget { amount: 7, num_attacks: 2 }
-    ], true)
+        Effect::AttackToTarget { amount: 7, num_attacks: 2, strength_multiplier: 1 }
+    ], true, true)
 }
 
 #[cfg(test)]
@@ -34,7 +34,7 @@ mod tests {
 
         // Should have 1 effect: AttackToTarget { amount: 5, num_attacks: 2 }
         assert_eq!(effects.len(), 1);
-        assert!(effects.contains(&Effect::AttackToTarget { amount: 5, num_attacks: 2 }));
+        assert!(effects.contains(&Effect::AttackToTarget { amount: 5, num_attacks: 2, strength_multiplier: 1 }));
     }
 
     #[test]
@@ -54,7 +54,7 @@ mod tests {
 
         // Should have 1 effect: AttackToTarget { amount: 7, num_attacks: 2 }
         assert_eq!(effects.len(), 1);
-        assert!(effects.contains(&Effect::AttackToTarget { amount: 7, num_attacks: 2 }));
+        assert!(effects.contains(&Effect::AttackToTarget { amount: 7, num_attacks: 2, strength_multiplier: 1 }));
     }
 
     #[test]

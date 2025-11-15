@@ -103,6 +103,15 @@ pub fn test_map_large() -> Map {
     map.add_edge((3, 5), (4, 4)).unwrap();
     map.add_edge((3, 6), (4, 6)).unwrap();
 
+    // Fifth floor nodes
+    map.add_node(MapNode::new(5, 1, NodeType::Combat));
+    map.add_node(MapNode::new(5, 5, NodeType::Event));
+
+    map.add_edge((4, 1), (5, 1)).unwrap();
+    map.add_edge((4, 2), (5, 1)).unwrap();
+    map.add_edge((4, 4), (5, 5)).unwrap();
+    map.add_edge((4, 6), (5, 5)).unwrap();
+
     map
 }
 

@@ -12,8 +12,14 @@ pub enum CardEnum {
     PommelStrike,
     ShrugItOff,
     TwinStrike,
+    Clothesline,
+    HeavyBlade,
+    PerfectedStrike,
+    Thunderclap,
+    WildStrike,
     // Status Cards
     Slimed,
+    Wound,
     // Add more cards as needed
 }
 
@@ -30,7 +36,13 @@ impl CardEnum {
             CardEnum::PommelStrike => "PommelStrike",
             CardEnum::ShrugItOff => "ShrugItOff",
             CardEnum::TwinStrike => "TwinStrike",
+            CardEnum::Clothesline => "Clothesline",
+            CardEnum::HeavyBlade => "HeavyBlade",
+            CardEnum::PerfectedStrike => "PerfectedStrike",
+            CardEnum::Thunderclap => "Thunderclap",
+            CardEnum::WildStrike => "WildStrike",
             CardEnum::Slimed => "Slimed",
+            CardEnum::Wound => "Wound",
         }
     }
     

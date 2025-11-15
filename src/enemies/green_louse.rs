@@ -71,9 +71,10 @@ impl GreenLouse {
     fn get_move_effects(&self, move_type: GreenLouseMove) -> Vec<Effect> {
         match move_type {
             GreenLouseMove::Attack => {
-                vec![Effect::AttackToTarget { 
-                    amount: self.base_damage, 
-                    num_attacks: 1 
+                vec![Effect::AttackToTarget {
+                    amount: self.base_damage,
+                    num_attacks: 1,
+                    strength_multiplier: 1
                 }]
             }
             GreenLouseMove::Weaken => {
@@ -188,7 +189,7 @@ mod tests {
         
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks } => {
+            Effect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
                 assert_eq!(*amount, 4);
                 assert_eq!(*num_attacks, 1);
             }
@@ -244,7 +245,7 @@ mod tests {
         // Should be forced to attack
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks } => {
+            Effect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
                 assert_eq!(*amount, 4);
                 assert_eq!(*num_attacks, 1);
             }

@@ -94,9 +94,10 @@ impl SpikeSlimeM {
             }
             SpikeSlimeMMove::FlameTackle => {
                 vec![
-                    Effect::AttackToTarget { 
-                        amount: Self::calculate_flame_tackle_damage(global_info), 
-                        num_attacks: 1 
+                    Effect::AttackToTarget {
+                        amount: Self::calculate_flame_tackle_damage(global_info),
+                        num_attacks: 1,
+                        strength_multiplier: 1
                     },
                     Effect::AddSlimed(1)
                 ]
@@ -222,7 +223,7 @@ mod tests {
         // Test Flame Tackle effects
         let flame_tackle_effects = spike_slime.get_move_effects(SpikeSlimeMMove::FlameTackle, &global_info);
         assert_eq!(flame_tackle_effects, vec![
-            Effect::AttackToTarget { amount: 8, num_attacks: 1 },
+            Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
             Effect::AddSlimed(1)
         ]);
     }

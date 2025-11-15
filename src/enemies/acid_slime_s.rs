@@ -42,9 +42,10 @@ impl AcidSlimeS {
                 vec![Effect::ApplyWeak(1)]
             }
             AcidSlimeSMove::Tackle => {
-                vec![Effect::AttackToTarget { 
-                    amount: Self::calculate_tackle_damage(global_info), 
-                    num_attacks: 1 
+                vec![Effect::AttackToTarget {
+                    amount: Self::calculate_tackle_damage(global_info),
+                    num_attacks: 1,
+                    strength_multiplier: 1
                 }]
             }
         }
@@ -166,14 +167,14 @@ mod tests {
         // Test Tackle effects
         let tackle_effects = acid_slime.get_move_effects(AcidSlimeSMove::Tackle, &global_info);
         assert_eq!(tackle_effects, vec![
-            Effect::AttackToTarget { amount: 3, num_attacks: 1 }
+            Effect::AttackToTarget { amount: 3, num_attacks: 1, strength_multiplier: 1 }
         ]);
 
         // Test ascension damage scaling
         let global_info_asc2 = GlobalInfo { ascention: 2, current_floor: 1 };
         let tackle_effects_asc2 = acid_slime.get_move_effects(AcidSlimeSMove::Tackle, &global_info_asc2);
         assert_eq!(tackle_effects_asc2, vec![
-            Effect::AttackToTarget { amount: 4, num_attacks: 1 }
+            Effect::AttackToTarget { amount: 4, num_attacks: 1, strength_multiplier: 1 }
         ]);
     }
 

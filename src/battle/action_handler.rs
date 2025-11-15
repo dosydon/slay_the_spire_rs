@@ -28,7 +28,7 @@ impl Battle {
                 // Restore energy since we're checking but not actually spending yet
                 self.player.battle_info.gain_energy(card.get_cost());
                 
-                self.play_card(idx, target);
+                self.play_card(idx, target)?;
             }
             Action::EndTurn => {
                 let global_info = self.global_info;
@@ -53,12 +53,22 @@ impl Battle {
     }
 
     /// Play a card from hand targeting a specific entity
-    pub(in crate::battle) fn play_card(&mut self, idx: usize, target: Entity) {
-        if idx >= self.cards.hand_size() { return; }
-        
+    pub(in crate::battle) fn play_card(&mut self, idx: usize, target: Entity) -> Result<(), BattleError> {
+        if idx >= self.cards.hand_size() {
+            return Err(BattleError::CardNotInHand);
+        }
+
         let hand = self.cards.get_hand();
         let card = &hand[idx];
-        if !self.player.spend_energy(card.get_cost()) { return; }
+
+        // Check if card is playable
+        if !card.is_playable() {
+            return Err(BattleError::CardNotPlayable);
+        }
+
+        if !self.player.spend_energy(card.get_cost()) {
+            return Err(BattleError::NotEnoughEnergy);
+        }
         
         let card_effects = card.get_effects().clone();
         let has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust);
@@ -81,12 +91,18 @@ impl Battle {
                         self.eval_base_effect(&BaseEffect::from_effect(effect, Entity::Player, target));
                     }
                 }
+                Ok(())
+            } else {
+                Err(BattleError::CardNotInHand)
             }
         } else {
             if let Some(_played_card) = self.cards.play_card_from_hand(idx) {
                 for effect in card_effects {
                     self.eval_base_effect(&BaseEffect::from_effect(effect, Entity::Player, target));
                 }
+                Ok(())
+            } else {
+                Err(BattleError::CardNotInHand)
             }
         }
     }
@@ -103,8 +119,8 @@ impl Battle {
         // Check each card in hand
         let hand = self.cards.get_hand();
         for (card_index, card) in hand.iter().enumerate() {
-            // Check if player has enough energy to play this card
-            if self.player.get_energy() >= card.get_cost() {
+            // Check if card is playable and player has enough energy
+            if card.is_playable() && self.player.get_energy() >= card.get_cost() {
                 // Determine valid targets for this card based on its type and effects
                 let valid_targets = self.get_valid_targets_for_card(card);
                 

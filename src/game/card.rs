@@ -9,16 +9,18 @@ pub struct Card {
     card_type: CardType,
     effects: Vec<Effect>,
     upgraded: bool,
+    playable: bool,
 }
 
 impl Card {
-    pub fn new(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool) -> Self {
+    pub fn new(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, playable: bool) -> Self {
         Card {
             card_enum,
             cost,
             card_type,
             effects,
             upgraded,
+            playable,
         }
     }
 
@@ -68,13 +70,24 @@ impl Card {
             CardEnum::PommelStrike => crate::cards::ironclad::pommel_strike::pommel_strike_upgraded(),
             CardEnum::ShrugItOff => crate::cards::ironclad::shrug_it_off::shrug_it_off_upgraded(),
             CardEnum::TwinStrike => crate::cards::ironclad::twin_strike::twin_strike_upgraded(),
+            CardEnum::Clothesline => crate::cards::ironclad::clothesline::clothesline_upgraded(),
+            CardEnum::HeavyBlade => crate::cards::ironclad::heavy_blade::heavy_blade_upgraded(),
+            CardEnum::PerfectedStrike => crate::cards::ironclad::perfected_strike::perfected_strike_upgraded(),
+            CardEnum::Thunderclap => crate::cards::ironclad::thunderclap::thunderclap_upgraded(),
+            CardEnum::WildStrike => crate::cards::ironclad::wild_strike::wild_strike_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
+            CardEnum::Wound => self, // Status cards don't upgrade
         }
     }
     
     /// Checks if this card is already upgraded
     pub fn is_upgraded(&self) -> bool {
         self.upgraded
+    }
+
+    /// Checks if this card is playable
+    pub fn is_playable(&self) -> bool {
+        self.playable
     }
 }
 
@@ -84,15 +97,16 @@ mod tests {
 
     #[test]
     fn test_card_creation() {
-        let card = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1 }], false);
+        let card = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], false, true);
         assert_eq!(card.get_name(), "Strike");
         assert_eq!(card.get_cost(), 1);
         assert_eq!(matches!(card.get_card_type(), CardType::Attack), true);
+        assert!(card.is_playable());
     }
 
     #[test]
     fn test_strike_upgrade() {
-        let strike = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1 }], false);
+        let strike = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], false, true);
         let upgraded = strike.upgrade();
         
         assert_eq!(upgraded.get_name(), "Strike+");
@@ -102,9 +116,10 @@ mod tests {
         
         // Check damage increased to 9
         match &upgraded.get_effects()[0] {
-            Effect::AttackToTarget { amount, num_attacks } => {
+            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 9);
                 assert_eq!(*num_attacks, 1);
+                assert_eq!(*strength_multiplier, 1);
             }
             _ => panic!("Expected AttackToTarget effect"),
         }
@@ -112,8 +127,8 @@ mod tests {
 
     #[test]
     fn test_is_upgraded() {
-        let basic = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1 }], false);
-        let upgraded = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 9, num_attacks: 1 }], true);
+        let basic = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], false, true);
+        let upgraded = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }], true, true);
         
         assert!(!basic.is_upgraded());
         assert!(upgraded.is_upgraded());

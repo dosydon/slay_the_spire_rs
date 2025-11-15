@@ -3,7 +3,7 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 pub fn slimed() -> Card {
     Card::new(CardEnum::Slimed, 1, CardType::Status, vec![
         Effect::Exhaust
-    ], false)
+    ], false, true)
 }
 
 #[cfg(test)]

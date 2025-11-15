@@ -451,6 +451,9 @@ impl BattleCli {
                 crate::game::effect::Effect::AddSlimed(count) => {
                     parts.push(format!("🐛 +{} Slimed", count));
                 }
+                crate::game::effect::Effect::AddCardToDrawPile(card) => {
+                    parts.push(format!("➕ Add {} to Draw Pile", card.name()));
+                }
                 crate::game::effect::Effect::DrawCard(count) => {
                     parts.push(format!("🎴 Draw {}", count));
                 }

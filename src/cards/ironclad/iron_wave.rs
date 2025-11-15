@@ -3,15 +3,15 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 pub fn iron_wave() -> Card {
     Card::new(CardEnum::IronWave, 1, CardType::Attack, vec![
         Effect::GainDefense(5),
-        Effect::AttackToTarget { amount: 5, num_attacks: 1 }
-    ], false)
+        Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }
+    ], false, true)
 }
 
 pub fn iron_wave_upgraded() -> Card {
     Card::new(CardEnum::IronWave, 1, CardType::Attack, vec![
         Effect::GainDefense(8),
-        Effect::AttackToTarget { amount: 8, num_attacks: 1 }
-    ], true)
+        Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 }
+    ], true, true)
 }
 
 #[cfg(test)]
@@ -37,7 +37,7 @@ mod tests {
         // Should have 2 effects: GainDefense(5) and AttackToTarget { amount: 5, num_attacks: 1 }
         assert_eq!(effects.len(), 2);
         assert!(effects.contains(&Effect::GainDefense(5)));
-        assert!(effects.contains(&Effect::AttackToTarget { amount: 5, num_attacks: 1 }));
+        assert!(effects.contains(&Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }));
     }
 
     #[test]
@@ -58,7 +58,7 @@ mod tests {
         // Should have 2 effects: GainDefense(8) and AttackToTarget { amount: 8, num_attacks: 1 }
         assert_eq!(effects.len(), 2);
         assert!(effects.contains(&Effect::GainDefense(8)));
-        assert!(effects.contains(&Effect::AttackToTarget { amount: 8, num_attacks: 1 }));
+        assert!(effects.contains(&Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 }));
     }
 
     #[test]

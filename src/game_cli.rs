@@ -304,11 +304,19 @@ impl GameCli {
             // Show card effects in a simplified way
             for effect in card.get_effects() {
                 match effect {
-                    crate::game::effect::Effect::AttackToTarget { amount, num_attacks } => {
+                    crate::game::effect::Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                         if *num_attacks == 1 {
-                            println!("    - Deal {} damage", amount);
+                            if *strength_multiplier == 1 {
+                                println!("    - Deal {} damage", amount);
+                            } else {
+                                println!("    - Deal {} damage ({}x Strength)", amount, strength_multiplier);
+                            }
                         } else {
-                            println!("    - Deal {} damage {} times", amount, num_attacks);
+                            if *strength_multiplier == 1 {
+                                println!("    - Deal {} damage {} times", amount, num_attacks);
+                            } else {
+                                println!("    - Deal {} damage {} times ({}x Strength)", amount, num_attacks, strength_multiplier);
+                            }
                         }
                     },
                     crate::game::effect::Effect::GainDefense(amount) => {

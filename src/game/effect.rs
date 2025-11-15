@@ -1,4 +1,5 @@
 use crate::battle::target::Entity;
+use crate::game::card_enum::CardEnum;
 
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -6,6 +7,7 @@ pub enum Effect {
     AttackToTarget {
         amount: u32,
         num_attacks: u32,
+        strength_multiplier: u32,
     },
     AttackAllEnemies {
         amount: u32,
@@ -20,6 +22,7 @@ pub enum Effect {
     LoseStrengthAtEndOfTurn (u32),
     GainRitual (u32),
     AddSlimed (u32),
+    AddCardToDrawPile (CardEnum),
     DrawCard (u32),
     Exhaust,
     ActivateEnrage (u32), // Activates Enrage listener for this enemy
@@ -32,6 +35,7 @@ pub enum BaseEffect {
         target: Entity,
         amount: u32,
         num_attacks: u32,
+        strength_multiplier: u32,
     },
     AttackAllEnemies {
         source: Entity,
@@ -74,6 +78,10 @@ pub enum BaseEffect {
         target: Entity,
         count: u32,
     },
+    AddCardToDrawPile {
+        source: Entity,
+        card: CardEnum,
+    },
     DrawCard {
         source: Entity,
         count: u32,
@@ -90,8 +98,8 @@ pub enum BaseEffect {
 impl BaseEffect {
     pub fn from_effect(effect: Effect, source: Entity, target: Entity) -> Self {
         match effect {
-            Effect::AttackToTarget { amount, num_attacks } => {
-                BaseEffect::AttackToTarget { source, target, amount, num_attacks }
+            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+                BaseEffect::AttackToTarget { source, target, amount, num_attacks, strength_multiplier }
             }
             Effect::AttackAllEnemies { amount, num_attacks } => {
                 BaseEffect::AttackAllEnemies { source, amount, num_attacks }
@@ -105,6 +113,7 @@ impl BaseEffect {
             Effect::LoseStrengthAtEndOfTurn(amount) => BaseEffect::LoseStrengthAtEndOfTurn { source, amount },
             Effect::GainRitual(amount) => BaseEffect::GainRitual { source, amount },
             Effect::AddSlimed(count) => BaseEffect::AddSlimed { target, count },
+            Effect::AddCardToDrawPile(card) => BaseEffect::AddCardToDrawPile { source, card },
             Effect::DrawCard(count) => BaseEffect::DrawCard { source, count },
             Effect::Exhaust => BaseEffect::Exhaust { source },
             Effect::ActivateEnrage(amount) => BaseEffect::ActivateEnrage { source, amount },

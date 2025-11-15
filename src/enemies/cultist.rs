@@ -71,7 +71,7 @@ impl Cultist {
             }
             CultistMove::DarkStrike => {
                 // Deal 6 damage
-                vec![Effect::AttackToTarget { amount: self.base_damage, num_attacks: 1 }]
+                vec![Effect::AttackToTarget { amount: self.base_damage, num_attacks: 1, strength_multiplier: 1 }]
             }
         }
     }
@@ -181,6 +181,6 @@ mod tests {
 
         // Test Dark Strike effects
         let dark_strike_effects = cultist.get_move_effects(CultistMove::DarkStrike);
-        assert_eq!(dark_strike_effects, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1 }]);
+        assert_eq!(dark_strike_effects, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
     }
 }

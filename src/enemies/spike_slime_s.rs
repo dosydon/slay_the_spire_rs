@@ -40,7 +40,7 @@ impl SpikeSlimeS {
     pub fn get_move_effects(&self, move_type: SpikeSlimeSMove) -> Vec<Effect> {
         match move_type {
             SpikeSlimeSMove::Tackle => {
-                vec![Effect::AttackToTarget { amount: self.base_damage, num_attacks: 1 }]
+                vec![Effect::AttackToTarget { amount: self.base_damage, num_attacks: 1, strength_multiplier: 1 }]
             }
         }
     }
@@ -121,7 +121,7 @@ mod tests {
         for _ in 0..10 {
             let (move_type, effects) = spike_slime.choose_move_and_effects(&global_info, &mut rng);
             assert_eq!(move_type, SpikeSlimeSMove::Tackle);
-            assert_eq!(effects, vec![Effect::AttackToTarget { amount: 5, num_attacks: 1 }]);
+            assert_eq!(effects, vec![Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }]);
         }
     }
 
@@ -148,6 +148,6 @@ mod tests {
 
         // Test Tackle effects
         let tackle_effects = spike_slime.get_move_effects(SpikeSlimeSMove::Tackle);
-        assert_eq!(tackle_effects, vec![Effect::AttackToTarget { amount: 5, num_attacks: 1 }]);
+        assert_eq!(tackle_effects, vec![Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }]);
     }
 }

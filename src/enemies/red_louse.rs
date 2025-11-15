@@ -78,9 +78,10 @@ impl RedLouse {
     pub fn get_move_effects(&self, move_type: RedLouseMove) -> Vec<Effect> {
         match move_type {
             RedLouseMove::Attack => {
-                vec![Effect::AttackToTarget { 
-                    amount: self.base_damage, 
-                    num_attacks: 1 
+                vec![Effect::AttackToTarget {
+                    amount: self.base_damage,
+                    num_attacks: 1,
+                    strength_multiplier: 1
                 }]
             }
             RedLouseMove::Grow => {
@@ -237,7 +238,7 @@ mod tests {
         let effects = louse.get_move_effects(RedLouseMove::Attack);
         
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::AttackToTarget { amount: 6, num_attacks: 1 }); 
+        assert_eq!(effects[0], Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }); 
     }
 
     #[test]
@@ -360,7 +361,7 @@ mod tests {
         let (_move, effects) = louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have chosen Attack
-        assert_eq!(effects, vec![Effect::AttackToTarget { amount: 8, num_attacks: 1 }]);
+        assert_eq!(effects, vec![Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 }]);
         assert_eq!(louse.last_moves.last().unwrap(), &RedLouseMove::Attack);
     }
 

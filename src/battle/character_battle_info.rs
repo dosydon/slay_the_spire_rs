@@ -188,8 +188,13 @@ impl CharacterBattleInfo {
 
     /// Calculate damage output with strength bonus and weak penalty
     pub(crate) fn calculate_damage(&self, base_damage: u32) -> u32 {
-        let damage_with_strength = base_damage + self.strength;
-        
+        self.calculate_damage_with_multiplier(base_damage, 1)
+    }
+
+    /// Calculate damage output with custom strength multiplier and weak penalty
+    pub(crate) fn calculate_damage_with_multiplier(&self, base_damage: u32, strength_multiplier: u32) -> u32 {
+        let damage_with_strength = base_damage + (self.strength * strength_multiplier);
+
         // Apply weak penalty (25% less damage)
         if self.weak_turns > 0 {
             (damage_with_strength as f32 * 0.75) as u32

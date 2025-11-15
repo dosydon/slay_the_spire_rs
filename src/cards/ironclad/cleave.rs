@@ -3,13 +3,13 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 pub fn cleave() -> Card {
     Card::new(CardEnum::Cleave, 1, CardType::Attack, vec![
         Effect::AttackAllEnemies { amount: 8, num_attacks: 1 }
-    ], false)
+    ], false, true)
 }
 
 pub fn cleave_upgraded() -> Card {
     Card::new(CardEnum::Cleave, 1, CardType::Attack, vec![
         Effect::AttackAllEnemies { amount: 11, num_attacks: 1 }
-    ], true)
+    ], true, true)
 }
 
 #[cfg(test)]
@@ -251,11 +251,12 @@ mod tests {
         
         // Kill the middle enemy
         let middle_enemy_hp = battle.get_enemies()[1].battle_info.get_hp();
-        let kill_effect = crate::game::effect::BaseEffect::AttackToTarget { 
-            source: Entity::None, 
-            target: Entity::Enemy(1), 
-            amount: middle_enemy_hp + 10, 
-            num_attacks: 1 
+        let kill_effect = crate::game::effect::BaseEffect::AttackToTarget {
+            source: Entity::None,
+            target: Entity::Enemy(1),
+            amount: middle_enemy_hp + 10,
+            num_attacks: 1,
+            strength_multiplier: 1
         };
         battle.eval_base_effect(&kill_effect);
         assert!(!battle.get_enemies()[1].battle_info.is_alive());

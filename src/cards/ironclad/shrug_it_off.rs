@@ -4,14 +4,14 @@ pub fn shrug_it_off() -> Card {
     Card::new(CardEnum::ShrugItOff, 1, CardType::Skill, vec![
         Effect::GainDefense(8),
         Effect::DrawCard(1)
-    ], false)
+    ], false, true)
 }
 
 pub fn shrug_it_off_upgraded() -> Card {
     Card::new(CardEnum::ShrugItOff, 1, CardType::Skill, vec![
         Effect::GainDefense(11),
         Effect::DrawCard(1)
-    ], true)
+    ], true, true)
 }
 
 #[cfg(test)]

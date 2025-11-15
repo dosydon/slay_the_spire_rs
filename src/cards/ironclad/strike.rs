@@ -2,14 +2,14 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 
 pub fn strike() -> Card {
     Card::new(CardEnum::Strike, 1, CardType::Attack, vec![
-        Effect::AttackToTarget { amount: 6, num_attacks: 1 }
-    ], false)
+        Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }
+    ], false, true)
 }
 
 pub fn strike_upgraded() -> Card {
     Card::new(CardEnum::Strike, 1, CardType::Attack, vec![
-        Effect::AttackToTarget { amount: 9, num_attacks: 1 }
-    ], true)
+        Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }
+    ], true, true)
 }
 
 #[cfg(test)]
@@ -26,9 +26,10 @@ mod tests {
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks } => {
+            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 6);
                 assert_eq!(*num_attacks, 1);
+                assert_eq!(*strength_multiplier, 1);
             }
             _ => panic!("Expected AttackToTarget effect"),
         }
@@ -44,9 +45,10 @@ mod tests {
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks } => {
+            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 9); // +3 damage over regular Strike
                 assert_eq!(*num_attacks, 1);
+                assert_eq!(*strength_multiplier, 1);
             }
             _ => panic!("Expected AttackToTarget effect"),
         }

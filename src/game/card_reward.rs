@@ -15,13 +15,17 @@ impl CardRewardPool {
             // Ironclad Common Cards (excluding basic cards)
             CardEnum::Bash,
             CardEnum::Cleave,
+            CardEnum::Clothesline,
             CardEnum::Flex,
+            CardEnum::HeavyBlade,
             CardEnum::IronWave,
+            CardEnum::PerfectedStrike,
             CardEnum::PommelStrike,
             CardEnum::ShrugItOff,
+            CardEnum::Thunderclap,
             CardEnum::TwinStrike,
-            // TODO: Add more Ironclad cards as they are implemented
-            // Status cards typically aren't rewards
+            CardEnum::WildStrike,
+            // Status cards typically aren't rewards (exclude Slimed, Wound)
         ];
 
         Self { available_cards }
@@ -59,12 +63,18 @@ impl CardRewardPool {
             CardEnum::Defend => crate::cards::ironclad::defend::defend(),
             CardEnum::Bash => crate::cards::ironclad::bash::bash(),
             CardEnum::Cleave => crate::cards::ironclad::cleave::cleave(),
+            CardEnum::Clothesline => crate::cards::ironclad::clothesline::clothesline(),
             CardEnum::Flex => crate::cards::ironclad::flex::flex(),
+            CardEnum::HeavyBlade => crate::cards::ironclad::heavy_blade::heavy_blade(),
             CardEnum::IronWave => crate::cards::ironclad::iron_wave::iron_wave(),
+            CardEnum::PerfectedStrike => crate::cards::ironclad::perfected_strike::perfected_strike(),
             CardEnum::PommelStrike => crate::cards::ironclad::pommel_strike::pommel_strike(),
             CardEnum::ShrugItOff => crate::cards::ironclad::shrug_it_off::shrug_it_off(),
+            CardEnum::Thunderclap => crate::cards::ironclad::thunderclap::thunderclap(),
             CardEnum::TwinStrike => crate::cards::ironclad::twin_strike::twin_strike(),
+            CardEnum::WildStrike => crate::cards::ironclad::wild_strike::wild_strike(),
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
+            CardEnum::Wound => crate::cards::status::wound::wound(),
         }
     }
 }
@@ -85,7 +95,7 @@ mod tests {
     fn test_card_reward_pool_creation() {
         let pool = CardRewardPool::new();
         assert!(!pool.available_cards.is_empty());
-        assert!(pool.available_cards.len() >= 8); // At least the implemented Ironclad cards
+        assert!(pool.available_cards.len() >= 12); // At least the implemented Ironclad cards
     }
 
     #[test]
