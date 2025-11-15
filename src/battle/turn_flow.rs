@@ -6,10 +6,22 @@ impl Battle {
     /// Full turn start including card draw with deck reshuffling
     pub(crate) fn start_of_player_turn(&mut self, rng: &mut impl rand::Rng) {
         self.player.at_start_of_turn();
-        
+
         // Sample enemy actions for this turn
         self.sample_enemy_actions(rng);
-        
+
+        // Draw new hand (typically 5 cards)
+        // The draw_n method will automatically reshuffle discard pile into deck if needed
+        self.cards.draw_n(5);
+    }
+
+    /// Initialize the first turn of battle (draw cards, sample enemy actions, but don't reset block)
+    pub(crate) fn initialize_first_turn(&mut self, rng: &mut impl rand::Rng) {
+        // Don't call player.at_start_of_turn() here to preserve relic block gains
+
+        // Sample enemy actions for this turn
+        self.sample_enemy_actions(rng);
+
         // Draw new hand (typically 5 cards)
         // The draw_n method will automatically reshuffle discard pile into deck if needed
         self.cards.draw_n(5);
@@ -112,14 +124,14 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
-        
+
         // Record initial state
         let initial_player_hp = battle.player.battle_info.get_hp();
         let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
         let initial_energy = battle.player.get_energy();
-        
+
         // === PLAYER TURN ===
-        
+
         // Player starts turn (should reset block and refresh energy)
         battle.player.at_start_of_turn();
         assert_eq!(battle.player.get_energy(), 3); // Energy refreshed

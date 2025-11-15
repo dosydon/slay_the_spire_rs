@@ -224,7 +224,7 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
-        
+
         let initial_energy = battle.player.get_energy();
         let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
         
@@ -253,7 +253,7 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
-        
+
         let available_actions = battle.list_available_actions();
         
         // Should have actions for playable cards + EndTurn
@@ -404,7 +404,7 @@ mod tests {
         // Create a deck with specific cards for testing
         let deck = Deck::new(vec![strike(), defend(), bash()]);
         let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
-        
+
         let available_actions = battle.list_available_actions();
         
         // Strike should target enemies
@@ -552,5 +552,32 @@ mod tests {
         // Player should have healed 6 HP from Burning Blood
         let final_hp = game.player_hp;
         assert_eq!(final_hp, initial_hp + 6);
+    }
+
+    #[test]
+    fn test_anchor_relic_starts_combat_with_10_block() {
+        use crate::cards::ironclad::strike::strike;
+        use crate::relics::create_anchor_relic;
+        use crate::battle::events::BattleEvent;
+
+        // Create a deck for the battle
+        let deck = Deck::new(vec![strike()]);
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        // Create an enemy for the battle
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Anchor relic listener
+        let relics = vec![create_anchor_relic()];
+        let mut battle = Battle::new_with_relics(deck, global_info, 50, 80, enemies, relics, &mut rng);
+
+        // Check that player now has 10 block from Anchor relic (CombatStart already emitted)
+        assert_eq!(battle.get_player().battle_info.get_block(), 10);
+
+        // Verify the anchor relic is now inactive (used once per combat)
+        // Since we can't directly check listeners, we verify the effect was applied
+        assert!(battle.player.battle_info.get_block() > 0);
     }
 }

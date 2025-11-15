@@ -485,18 +485,17 @@ mod tests {
         
         // Create battle with Jaw Worm
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
-        
+
         // Verify Jaw Worm was created correctly
         assert_eq!(battle.get_enemies().len(), 1);
         assert!(battle.get_enemies()[0].battle_info.is_alive());
-        
+
         // Verify player starts with correct stats
         assert_eq!(battle.get_player().battle_info.get_hp(), 80);
         assert_eq!(battle.get_player().get_energy(), 3);
-        
+
         // Simulate enemy turn - Jaw Worm should use Chomp first in Act 1
         let initial_player_hp = battle.get_player().battle_info.get_hp();
-        // Note: sample_enemy_actions is already called by Battle::new -> start_turn
         
         // Debug: Check what move was sampled
         if let Some(enemy_move) = battle.get_enemy_move(0) {
@@ -533,16 +532,15 @@ mod tests {
         
         // Create battle with Act 3 Jaw Worm
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
-        
+
         // Act 3 Jaw Worm should start with initial Bellow effects
         // This would typically be applied during enemy creation, but for this test
         // we'll verify the enemy exists and can perform moves
-        
+
         assert!(battle.get_enemies()[0].battle_info.is_alive());
-        
-        // Simulate enemy turn 
+
+        // Simulate enemy turn
         let initial_player_hp = battle.get_player().battle_info.get_hp();
-        // Note: sample_enemy_actions is already called by Battle::new -> start_turn
         battle.process_enemy_effects(&mut rng, &global_info);
         battle.at_end_of_enemy_turn();
         
@@ -569,17 +567,16 @@ mod tests {
         let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::EnemyEnum::JawWorm(jaw_worm))];
         
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
-        
+
         // Simulate multiple enemy turns to test move sequence
         let mut player_damage_taken = 0;
         let mut enemy_strength_gained = 0;
-        
+
         for turn in 0..5 {
             let player_hp_before = battle.get_player().battle_info.get_hp();
             let enemy_strength_before = battle.get_enemies()[0].battle_info.get_strength();
-            
+
             // Only sample actions for turns after the first one
-            // (First turn actions are already sampled by Battle::new -> start_turn)
             if turn > 0 {
                 battle.start_of_player_turn(&mut rng);
             }

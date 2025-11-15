@@ -16,6 +16,9 @@ pub enum BattleEvent {
     CombatVictory {
         player: Entity,
     },
+    CombatStart {
+        player: Entity,
+    },
 }
 
 pub trait EventListener {

@@ -13,7 +13,7 @@ mod enemy_manager;
 mod listener_manager;
 
 use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::GreenLouseMove, jaw_worm::JawWormMove, enemy_enum::{EnemyEnum, EnemyMove}}, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, enemy::EnemyTrait, global_info::GlobalInfo}, relics::Relic};
-use self::{target::Entity, events::EventListener, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
+use self::{target::Entity, events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BattleError {
@@ -46,13 +46,18 @@ pub struct Battle {
 
 impl Battle {
     pub fn new(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, rng: &mut impl rand::Rng) -> Self {
+        Self::new_with_relics(deck, global_info, initial_hp, max_hp, enemies, Vec::new(), rng)
+    }
+
+    /// Create a new battle with optional relics
+    pub fn new_with_relics(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, relics: Vec<Box<dyn EventListener>>, rng: &mut impl rand::Rng) -> Self {
         let cards = DeckHandPile::new(deck);
         let enemy_count = enemies.len();
         let mut battle = Battle {
             player: Player::new(initial_hp, max_hp, 3),
             enemies,
             cards,
-            event_listeners: Vec::new(),
+            event_listeners: relics,
             global_info,
             enemy_actions: vec![None; enemy_count],
             relics: Vec::new(),
@@ -61,19 +66,27 @@ impl Battle {
         // Initialize event listeners for enemies
         battle.initialize_enemy_listeners(&global_info, rng);
 
-        // Start the first turn (refreshes player, samples enemy actions, draws hand)
-        battle.start_of_player_turn(rng);
+        // Emit combat start event for relics
+        battle.emit_event(BattleEvent::CombatStart { player: Entity::Player });
+
+        // Initialize the first player turn (draw cards, sample enemy actions, but don't reset block)
+        battle.initialize_first_turn(rng);
 
         battle
     }
 
     /// Create a new battle with deck shuffling
-    pub fn new_with_shuffle(mut deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, rng: &mut impl rand::Rng) -> Self {
+    pub fn new_with_shuffle(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, rng: &mut impl rand::Rng) -> Self {
+        Self::new_with_shuffle_and_relics(deck, global_info, initial_hp, max_hp, enemies, Vec::new(), rng)
+    }
+
+    /// Create a new battle with deck shuffling and relics
+    pub fn new_with_shuffle_and_relics(mut deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, relics: Vec<Box<dyn EventListener>>, rng: &mut impl rand::Rng) -> Self {
         // Shuffle the deck first
         deck.shuffle(rng);
 
-        // Then call the original constructor
-        Self::new(deck, global_info, initial_hp, max_hp, enemies, rng)
+        // Then call the constructor with relics
+        Self::new_with_relics(deck, global_info, initial_hp, max_hp, enemies, relics, rng)
     }
 
     pub fn set_relics(self, relics: Vec<Relic>) -> Self {
@@ -106,10 +119,6 @@ impl Battle {
     pub fn get_hand(&self) -> &Vec<Card> {
         self.cards.get_hand()
     }
-    
-    
-    
-    
     
     pub fn is_battle_over(&self) -> bool {
         !self.player.is_alive() || self.enemies.iter().all(|e| !e.battle_info.is_alive())

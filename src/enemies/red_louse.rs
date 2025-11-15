@@ -401,13 +401,13 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::enemy_enum::EnemyEnum::RedLouse(red_louse))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
-        
+
         println!("=== FIXED HAND BATTLE TEST ===");
         println!("Initial hand:");
         for (i, card) in battle.get_hand().iter().enumerate() {
             println!("  {}: {} (cost: {})", i, card.get_name(), card.get_cost());
         }
-        
+
         // Verify we have the expected hand (first 5 cards from deck: Strike, Strike, Strike, Strike, Defend)
         let hand = battle.get_hand();
         assert!(hand.len() >= 3);

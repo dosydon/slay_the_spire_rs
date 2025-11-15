@@ -4,10 +4,11 @@ use crate::game::effect::{BaseEffect, Effect};
 
 impl Battle {
     /// Add an event listener to the battle
-    pub(in crate::battle) fn add_listener(&mut self, listener: Box<dyn EventListener>) {
+    pub fn add_listener(&mut self, listener: Box<dyn EventListener>) {
         self.event_listeners.push(listener);
     }
 
+    
     /// Emit an event to all active listeners and collect their effects
     pub(crate) fn emit_event(&mut self, event: BattleEvent) {
         let mut new_effects = Vec::new();
