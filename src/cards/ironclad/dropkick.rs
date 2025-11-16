@@ -49,7 +49,9 @@ mod tests {
     use super::*;
     use crate::battle::{Battle, target::Entity, enemy_in_battle::EnemyInBattle};
     use crate::cards::ironclad::starter_deck::starter_deck;
+    use crate::cards::ironclad::strike;
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
+    use crate::game::deck::Deck;
     use crate::game::{global_info::GlobalInfo, enemy::EnemyTrait};
 
     #[test]
@@ -156,14 +158,24 @@ mod tests {
 
     #[test]
     fn test_dropkick_with_vulnerable_enemy() {
-        let deck = starter_deck();
+        let deck = Deck::new(
+            vec![
+                dropkick(),
+                strike(),
+                strike(),
+                strike(),
+                strike(),
+                strike(),
+                strike(),
+            ]
+        );
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
 
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, 100, 100, vec![enemy], &mut rng);
 
         // Make enemy vulnerable first (manually apply vulnerable status)
         // Note: This would normally be done through game effects, but for testing we'll simulate it
@@ -172,9 +184,6 @@ mod tests {
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
         let initial_player_energy = battle.get_player().get_energy();
         let initial_hand_size = battle.cards.hand_size();
-
-        // Add Dropkick to hand manually
-        battle.add_card_to_hand_for_testing(dropkick());
 
         // Play Dropkick on vulnerable enemy
         let dropkick_idx = battle.cards.get_hand().iter()
