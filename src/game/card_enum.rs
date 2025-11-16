@@ -29,6 +29,11 @@ pub enum CardEnum {
     SwordBoomerang,
     Hemokinesis,
     Armaments,
+    Impervious,
+    Brutality,
+    Offering,
+    Shockwave,
+    Uppercut,
     // Status Cards
     Slimed,
     Wound,
@@ -65,6 +70,11 @@ impl CardEnum {
             CardEnum::SwordBoomerang => "Sword Boomerang",
             CardEnum::Hemokinesis => "Hemokinesis",
             CardEnum::Armaments => "Armaments",
+            CardEnum::Impervious => "Impervious",
+            CardEnum::Brutality => "Brutality",
+            CardEnum::Offering => "Offering",
+            CardEnum::Shockwave => "Shockwave",
+            CardEnum::Uppercut => "Uppercut",
             CardEnum::Slimed => "Slimed",
             CardEnum::Wound => "Wound",
         }

@@ -154,6 +154,13 @@ impl Battle {
                     self.add_listener(Box::new(embrace_listener));
                 }
             },
+            BaseEffect::ActivateBrutality { source } => {
+                // Add BrutalityListener for the player
+                if let Entity::Player = source {
+                    let brutality_listener = crate::cards::ironclad::brutality::BrutalityListener::new(*source);
+                    self.add_listener(Box::new(brutality_listener));
+                }
+            },
             BaseEffect::AddCardToDrawPile { source: _, card } => {
                 // Add a specific card to the draw pile
                 let card = match card {

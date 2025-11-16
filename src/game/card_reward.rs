@@ -85,6 +85,11 @@ impl CardRewardPool {
             CardEnum::SwordBoomerang => crate::cards::ironclad::sword_boomerang::sword_boomerang(),
             CardEnum::Hemokinesis => crate::cards::ironclad::hemokinesis::hemokinesis(),
             CardEnum::Armaments => crate::cards::ironclad::armaments::armaments(),
+            CardEnum::Impervious => crate::cards::ironclad::impervious::impervious(),
+            CardEnum::Brutality => crate::cards::ironclad::brutality::brutality(),
+            CardEnum::Offering => crate::cards::ironclad::offering::offering(),
+            CardEnum::Shockwave => crate::cards::ironclad::shockwave::shockwave(),
+            CardEnum::Uppercut => crate::cards::ironclad::uppercut::uppercut(),
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
             CardEnum::Wound => crate::cards::status::wound::wound(),
         }

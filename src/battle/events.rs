@@ -13,6 +13,9 @@ pub enum BattleEvent {
     CardExhausted {
         source: Entity,
     },
+    TurnStart {
+        entity: Entity,
+    },
     EndOfTurn {
         entity: Entity,
     },

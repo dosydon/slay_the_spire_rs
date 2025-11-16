@@ -505,6 +505,9 @@ impl BattleCli {
                 crate::game::effect::Effect::EnterSelectCardInHand => {
                     parts.push("🔧 Select card to upgrade".to_string());
                 }
+                crate::game::effect::Effect::ActivateBrutality => {
+                    parts.push("⚡ Brutality active".to_string());
+                }
             }
         }
         

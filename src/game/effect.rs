@@ -39,6 +39,7 @@ pub enum Effect {
     Ethereal, // Card will be exhausted at end of turn
     AddCardToDiscard (CardEnum), // Add a card to discard pile
     EnterSelectCardInHand, // Transition to SelectCardInHand state
+    ActivateBrutality, // Activates Brutality listener for drawing cards at start of turn
 }
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -112,6 +113,9 @@ pub enum BaseEffect {
     ActivateEmbrace {
         source: Entity,
     },
+    ActivateBrutality {
+        source: Entity,
+    },
     Heal {
         target: Entity,
         amount: u32,
@@ -175,6 +179,7 @@ impl BaseEffect {
             Effect::Exhaust => BaseEffect::Exhaust { hand_index: 0 }, // hand_index should be set manually when queuing
             Effect::ActivateEnrage(amount) => BaseEffect::ActivateEnrage { source, amount },
             Effect::ActivateEmbrace => BaseEffect::ActivateEmbrace { source },
+            Effect::ActivateBrutality => BaseEffect::ActivateBrutality { source },
             Effect::Heal(amount) => BaseEffect::Heal { target, amount },
             Effect::LoseHp(amount) => BaseEffect::LoseHp { target, amount },
             Effect::GainPlatedArmor(amount) => BaseEffect::GainPlatedArmor { source, amount },

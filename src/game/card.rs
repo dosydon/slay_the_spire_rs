@@ -101,6 +101,11 @@ impl Card {
             CardEnum::SwordBoomerang => crate::cards::ironclad::sword_boomerang::sword_boomerang_upgraded(),
             CardEnum::Hemokinesis => crate::cards::ironclad::hemokinesis::hemokinesis_upgraded(),
             CardEnum::Armaments => crate::cards::ironclad::armaments::armaments_upgraded(),
+            CardEnum::Impervious => crate::cards::ironclad::impervious::impervious_upgraded(),
+            CardEnum::Brutality => crate::cards::ironclad::brutality::brutality_upgraded(),
+            CardEnum::Offering => crate::cards::ironclad::offering::offering_upgraded(),
+            CardEnum::Shockwave => crate::cards::ironclad::shockwave::shockwave_upgraded(),
+            CardEnum::Uppercut => crate::cards::ironclad::uppercut::uppercut_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
         }
