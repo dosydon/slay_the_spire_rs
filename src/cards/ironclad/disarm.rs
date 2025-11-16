@@ -5,7 +5,7 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 /// Effect: Target enemy loses 2 Strength.
 pub fn disarm() -> Card {
     Card::new(CardEnum::Disarm, 1, CardType::Skill, vec![
-        Effect::LoseStrength(2),
+        Effect::LoseStrengthTarget(2),
     ], false, true)
 }
 
@@ -14,7 +14,7 @@ pub fn disarm() -> Card {
 /// Effect: Target enemy loses 3 Strength.
 pub fn disarm_upgraded() -> Card {
     Card::new(CardEnum::Disarm, 1, CardType::Skill, vec![
-        Effect::LoseStrength(3),
+        Effect::LoseStrengthTarget(3),
     ], true, true)
 }
 
@@ -30,7 +30,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), &CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::LoseStrength(2));
+        assert_eq!(card.get_effects()[0], Effect::LoseStrengthTarget(2));
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -43,7 +43,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), &CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::LoseStrength(3));
+        assert_eq!(card.get_effects()[0], Effect::LoseStrengthTarget(3));
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -56,8 +56,8 @@ mod tests {
         let normal_effects = normal_card.get_effects();
         let upgraded_effects = upgraded_card.get_effects();
 
-        assert_eq!(normal_effects[0], Effect::LoseStrength(2));
-        assert_eq!(upgraded_effects[0], Effect::LoseStrength(3));
+        assert_eq!(normal_effects[0], Effect::LoseStrengthTarget(2));
+        assert_eq!(upgraded_effects[0], Effect::LoseStrengthTarget(3));
     }
 
     #[test]

@@ -68,7 +68,7 @@ impl Battle {
                     Entity::None => {} // No source
                 }
             },
-            BaseEffect::LoseStrength { source, amount } => {
+            BaseEffect::LoseStrengthSelf { source, amount } => {
                 match source {
                     Entity::Player => {
                         // Reduce player strength, but not below 0
@@ -85,6 +85,25 @@ impl Battle {
                         }
                     },
                     Entity::None => {} // No source
+                }
+            },
+            BaseEffect::LoseStrengthTarget { target, amount } => {
+                match target {
+                    Entity::Player => {
+                        // Reduce player strength, but not below 0
+                        let current_strength = self.player.battle_info.get_strength();
+                        let actual_loss = std::cmp::min(*amount, current_strength);
+                        self.player.battle_info.strength = current_strength - actual_loss;
+                    },
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            // Reduce enemy strength, but not below 0
+                            let current_strength = self.enemies[*idx].battle_info.get_strength();
+                            let actual_loss = std::cmp::min(*amount, current_strength);
+                            self.enemies[*idx].battle_info.strength = current_strength - actual_loss;
+                        }
+                    },
+                    Entity::None => {} // No target
                 }
             },
             BaseEffect::GainRitual { source, amount } => {

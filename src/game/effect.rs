@@ -19,7 +19,8 @@ pub enum Effect {
     ApplyWeak (u32),
     ApplyFrail (u32),
     GainStrength (u32),
-    LoseStrength (u32), // Direct strength loss
+    LoseStrengthSelf (u32), // Self strength loss (targets source)
+    LoseStrengthTarget (u32), // Target strength loss (targets target)
     LoseStrengthAtEndOfTurn (u32),
     GainRitual (u32),
     AddSlimed (u32),
@@ -79,8 +80,12 @@ pub enum BaseEffect {
         source: Entity,
         amount: u32,
     },
-    LoseStrength {
+    LoseStrengthSelf {
         source: Entity,
+        amount: u32,
+    },
+    LoseStrengthTarget {
+        target: Entity,
         amount: u32,
     },
     LoseStrengthAtEndOfTurn {
@@ -170,7 +175,8 @@ impl BaseEffect {
             Effect::ApplyWeak(duration) => BaseEffect::ApplyWeak { target, duration },
             Effect::ApplyFrail(duration) => BaseEffect::ApplyFrail { target, duration },
             Effect::GainStrength(amount) => BaseEffect::GainStrength { source, amount },
-            Effect::LoseStrength(amount) => BaseEffect::LoseStrength { source, amount },
+            Effect::LoseStrengthSelf(amount) => BaseEffect::LoseStrengthSelf { source, amount },
+            Effect::LoseStrengthTarget(amount) => BaseEffect::LoseStrengthTarget { target, amount },
             Effect::LoseStrengthAtEndOfTurn(amount) => BaseEffect::LoseStrengthAtEndOfTurn { source, amount },
             Effect::GainRitual(amount) => BaseEffect::GainRitual { source, amount },
             Effect::AddSlimed(count) => BaseEffect::AddSlimed { target, count },
@@ -181,7 +187,7 @@ impl BaseEffect {
             Effect::ActivateEmbrace => BaseEffect::ActivateEmbrace { source },
             Effect::ActivateBrutality => BaseEffect::ActivateBrutality { source },
             Effect::Heal(amount) => BaseEffect::Heal { target, amount },
-            Effect::LoseHp(amount) => BaseEffect::LoseHp { target, amount },
+            Effect::LoseHp(amount) => BaseEffect::LoseHp { target: source, amount },
             Effect::GainPlatedArmor(amount) => BaseEffect::GainPlatedArmor { source, amount },
             Effect::DoubleBlock => BaseEffect::DoubleBlock { source },
             Effect::ActivateCombust(amount) => BaseEffect::ActivateCombust { source, amount },

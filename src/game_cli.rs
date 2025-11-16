@@ -3,9 +3,11 @@ use crate::game::{
     game::{Game, GameState, GameResult, GameError},
     action::GameAction,
     global_info::GlobalInfo,
+    deck::Deck,
     map::{Map, MapNode, NodeType, test_map_large},
 };
 use crate::cards::ironclad::starter_deck::starter_deck;
+use crate::cards::implemented_cards_deck::*;
 use crate::battle_cli::BattleCli;
 
 pub struct GameCli {
@@ -16,20 +18,74 @@ pub struct GameCli {
 impl GameCli {
     /// Create a new game CLI with starter deck and generated map
     pub fn new() -> Self {
+        Self::new_with_deck_choice(false)
+    }
+
+    /// Create a new game CLI with optional deck choice prompt
+    pub fn new_with_deck_choice(prompt_for_deck: bool) -> Self {
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 20, current_floor: 1 };
-        let deck = starter_deck();
-        
+
+        let deck = if prompt_for_deck {
+            Self::prompt_deck_choice()
+        } else {
+            starter_deck()
+        };
+
         // Use the large test map
         let map = test_map_large();
         let start_node = (0, 0); // Start position based on test_map_large 0-indexing
-        
+
         let mut game = Game::new(deck, global_info, map, start_node, 80, 80);
 
         // Add Burning Blood relic to the game
         game.add_relic(crate::relics::Relic::BurningBlood);
 
         GameCli { game, rng }
+    }
+
+    /// Prompt user to choose a deck
+    fn prompt_deck_choice() -> Deck {
+        println!("\n🎴 Choose your starting deck:");
+        println!("1. Starter Deck (Standard Ironclad starter)");
+        println!("2. Implemented Cards Deck (One of each implemented card)");
+        println!("3. New Cards Deck (Only newly implemented cards)");
+        println!("4. Power Cards Deck (Focus on power cards)");
+        println!("5. Attack Cards Deck (Focus on attack cards)");
+
+        loop {
+            print!("Enter your choice (1-5): ");
+            std::io::stdout().flush().ok();
+
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input).ok();
+
+            match input.trim() {
+                "1" => {
+                    println!("Selected Starter Deck");
+                    return starter_deck();
+                },
+                "2" => {
+                    println!("Selected Implemented Cards Deck");
+                    return create_implemented_cards_deck();
+                },
+                "3" => {
+                    println!("Selected New Cards Deck");
+                    return create_new_cards_deck();
+                },
+                "4" => {
+                    println!("Selected Power Cards Deck");
+                    return create_power_cards_deck();
+                },
+                "5" => {
+                    println!("Selected Attack Cards Deck");
+                    return create_attack_cards_deck();
+                },
+                _ => {
+                    println!("Invalid choice! Please enter 1, 2, 3, 4, or 5.");
+                }
+            }
+        }
     }
 
     /// Start the game loop

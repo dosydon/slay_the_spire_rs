@@ -1,6 +1,7 @@
 use std::io::{self, Write};
 use crate::battle::{Battle, BattleResult, BattleError, action::Action, target::Entity};
 use crate::cards::ironclad::starter_deck::starter_deck;
+use crate::cards::implemented_cards_deck::create_implemented_cards_deck;
 use crate::enemies::enemy_enum::EnemyEnum;
 use crate::battle::enemy_in_battle::EnemyInBattle;
 use crate::game::global_info::GlobalInfo;
@@ -13,17 +14,26 @@ pub struct BattleCli {
 impl BattleCli {
     /// Create a new battle CLI with a starter deck and selected encounter
     pub fn new() -> Self {
+        Self::new_with_deck_choice(false)
+    }
+
+    /// Create a new battle CLI with optional test deck choice and selected encounter
+    pub fn new_with_deck_choice(use_test_deck: bool) -> Self {
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 20, current_floor: 1 };
-        let deck = starter_deck();
-        
+        let deck = if use_test_deck {
+            create_implemented_cards_deck()
+        } else {
+            starter_deck()
+        };
+
         // Let user choose an encounter
         let encounter = Self::choose_encounter();
         let enemy_enums = encounter.instantiate(&mut rng, &global_info);
         let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
-        
+
         let battle = Battle::new_with_shuffle(deck, global_info, 80, 80, enemies, &mut rng);
-        
+
         BattleCli { battle }
     }
     
@@ -433,8 +443,11 @@ impl BattleCli {
                 crate::game::effect::Effect::GainStrength(amount) => {
                     parts.push(format!("💪 +{}", amount));
                 }
-                crate::game::effect::Effect::LoseStrength(amount) => {
-                    parts.push(format!("💪 -{}", amount));
+                crate::game::effect::Effect::LoseStrengthSelf(amount) => {
+                    parts.push(format!("💪 Self -{}", amount));
+                }
+                crate::game::effect::Effect::LoseStrengthTarget(amount) => {
+                    parts.push(format!("💪 Target -{}", amount));
                 }
                 crate::game::effect::Effect::LoseStrengthAtEndOfTurn(amount) => {
                     parts.push(format!("⏰ -{} Strength (end turn)", amount));

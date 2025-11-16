@@ -23,7 +23,7 @@ impl EventListener for LoseStrengthListener {
         match event {
             BattleEvent::EndOfTurn { entity } if *entity == self.owner && self.is_active => {
                 self.is_active = false; // Only trigger once
-                vec![Effect::LoseStrength(self.amount_to_lose)]
+                vec![Effect::LoseStrengthSelf(self.amount_to_lose)]
             }
             _ => vec![]
         }
@@ -59,7 +59,7 @@ mod lose_strength_tests {
 
         let effects = listener.on_event(&end_turn_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::LoseStrength(2));
+        assert_eq!(effects[0], Effect::LoseStrengthSelf(2));
         assert!(!listener.is_active()); // Used up
     }
 
@@ -74,7 +74,7 @@ mod lose_strength_tests {
         // First end turn triggers strength loss
         let effects1 = listener.on_event(&end_turn_event);
         assert_eq!(effects1.len(), 1);
-        assert_eq!(effects1[0], Effect::LoseStrength(1));
+        assert_eq!(effects1[0], Effect::LoseStrengthSelf(1));
 
         // Second end turn should not trigger
         let effects2 = listener.on_event(&end_turn_event);
@@ -104,9 +104,9 @@ mod lose_strength_tests {
         };
 
         let effects_2 = listener_2.on_event(&end_turn_event);
-        assert_eq!(effects_2, vec![Effect::LoseStrength(2)]);
+        assert_eq!(effects_2, vec![Effect::LoseStrengthSelf(2)]);
 
         let effects_5 = listener_5.on_event(&end_turn_event);
-        assert_eq!(effects_5, vec![Effect::LoseStrength(5)]);
+        assert_eq!(effects_5, vec![Effect::LoseStrengthSelf(5)]);
     }
 }
