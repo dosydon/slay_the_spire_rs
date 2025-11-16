@@ -111,7 +111,7 @@ mod tests {
         use crate::relics::Relic;
 
         let player = Entity::Player;
-        let mut anchor = AnchorRelic::new(player);
+        let anchor = AnchorRelic::new(player);
 
         // Create a battle context
         let deck = Deck::new(vec![strike()]);
@@ -122,7 +122,7 @@ mod tests {
 
         // Create battle with the anchor relic listener
         let relics = vec![Relic::Anchor];
-        let mut battle = Battle::new_with_relics(deck, global_info, 50, 80, enemies, relics, &mut rng);
+        let battle = Battle::new_with_relics(deck, global_info, 50, 80, enemies, relics, &mut rng);
 
         // Verify player now has exactly 10 block (CombatStart event already emitted)
         let final_block = battle.get_player().battle_info.get_block();

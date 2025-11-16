@@ -28,7 +28,7 @@ pub fn havoc_upgraded() -> Card {
 mod tests {
     use super::*;
     use crate::battle::{Battle, target::Entity, enemy_in_battle::EnemyInBattle};
-    use crate::cards::ironclad::starter_deck::starter_deck;
+    
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
     use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
 

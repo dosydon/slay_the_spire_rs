@@ -1,4 +1,4 @@
-use crate::{enemies::{enemy_enum::EnemyEnum, green_louse}, game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 use rand::Rng;
 
 #[derive(Clone, Debug)]
@@ -136,9 +136,9 @@ impl EnemyTrait for GreenLouse {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cards::ironclad::starter_deck::starter_deck;
-    use crate::battle::Battle;
-    use crate::game::deck::Deck;
+    
+    
+    
 
     #[test]
     fn test_green_louse_creation() {

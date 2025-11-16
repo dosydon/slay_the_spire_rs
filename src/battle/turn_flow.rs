@@ -1,5 +1,5 @@
 use super::Battle;
-use crate::game::{effect::{BaseEffect, Effect}, global_info::GlobalInfo};
+use crate::game::{effect::BaseEffect, global_info::GlobalInfo};
 use crate::battle::target::Entity;
 
 impl Battle {

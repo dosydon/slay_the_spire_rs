@@ -15,7 +15,7 @@ pub fn inflame_upgraded() -> Card {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::card::Card;
+    
 
     #[test]
     fn test_inflame_creation() {

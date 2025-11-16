@@ -66,7 +66,7 @@ mod tests {
     #[test]
     fn test_warcry_draws_cards_and_enters_selection_state() {
         // Create a battle with a known deck
-        let mut deck_cards = vec![
+        let deck_cards = vec![
             crate::cards::ironclad::strike::strike(),
             crate::cards::ironclad::defend::defend(),
             crate::cards::ironclad::bash::bash(),
@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn test_warcry_put_selected_card_on_top_of_draw_pile() {
         // Create a battle with known deck
-        let mut deck_cards = vec![
+        let deck_cards = vec![
             crate::cards::ironclad::strike::strike(),
             crate::cards::ironclad::defend::defend(),
             crate::cards::ironclad::bash::bash(),

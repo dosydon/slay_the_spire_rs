@@ -1,4 +1,3 @@
-use rand::rngs::ThreadRng;
 
 use crate::game::card::Card;
 

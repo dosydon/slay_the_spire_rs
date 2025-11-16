@@ -17,7 +17,7 @@ pub fn iron_wave_upgraded() -> Card {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::{card::Card, card_type::CardType};
+    use crate::game::card_type::CardType;
 
     #[test]
     fn test_iron_wave_basic() {

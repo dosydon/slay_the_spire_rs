@@ -12,7 +12,7 @@ mod eval_effect;
 mod enemy_manager;
 mod listener_manager;
 
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::GreenLouseMove, jaw_worm::JawWormMove, enemy_enum::{EnemyEnum, EnemyMove}}, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, enemy::EnemyTrait, global_info::GlobalInfo}, relics::Relic};
+use crate::{enemies::enemy_enum::EnemyMove, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, enemy::EnemyTrait, global_info::GlobalInfo}, relics::Relic};
 use self::{target::Entity, events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
 use crate::battle::action::BattleState;
 
@@ -219,6 +219,7 @@ mod tests {
     use super::*;
     use crate::cards::ironclad::starter_deck::starter_deck;
     use crate::game::enemy::EnemyTrait;
+    use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
 
     #[test]
     fn test_battle_initialization() {

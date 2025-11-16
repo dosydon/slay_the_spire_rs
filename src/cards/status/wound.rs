@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum};
 
 pub fn wound() -> Card {
     Card::new(CardEnum::Wound, 0, CardType::Status, vec![

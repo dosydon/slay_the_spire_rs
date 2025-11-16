@@ -1,5 +1,4 @@
 use crate::game::{card::Card, card_enum::CardEnum};
-use rand::seq::SliceRandom;
 use rand::prelude::IndexedRandom;
 
 /// Card reward pool for generating random card rewards

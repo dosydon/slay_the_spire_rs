@@ -1,5 +1,4 @@
 use super::character_battle_info::CharacterBattleInfo;
-use crate::relics::Relic;
 
 #[derive(Debug)]
 pub struct Player {

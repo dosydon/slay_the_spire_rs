@@ -1,6 +1,6 @@
 use super::Battle;
 use crate::battle::{target::Entity, events::{BattleEvent, EventListener}};
-use crate::game::effect::{BaseEffect, Effect};
+use crate::game::effect::BaseEffect;
 
 impl Battle {
     /// Add an event listener to the battle

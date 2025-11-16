@@ -1,4 +1,4 @@
-use crate::{enemies::{enemy_enum::EnemyEnum, red_louse}, game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 use rand::Rng;
 
@@ -261,7 +261,7 @@ mod tests {
         let mut rng = StdRng::seed_from_u64(42);
         
         // Use the trait method, not the internal implementation
-        use crate::game::enemy::EnemyTrait;
+        
         let move_dist = louse.choose_next_move(&global_info);
         let move1 = move_dist.sample_owned(&mut rng);
         assert!(matches!(move1, RedLouseMove::Attack | RedLouseMove::Grow));
@@ -321,7 +321,7 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         
         // Get the categorical distribution
-        use crate::game::enemy::EnemyTrait;
+        
         let move_dist = louse.choose_next_move(&global_info);
         
         // Verify the distribution has the expected moves
@@ -526,7 +526,7 @@ mod tests {
         
         // Create a deck with specific card order for initial hand
         // Since draw_card() takes from index 0, we put desired hand cards at the beginning
-        let mut deck_cards = vec![
+        let deck_cards = vec![
             // These will be the initial hand (first 5 cards, drawn in order)
             strike(), strike(), strike(), defend(), defend(),
             // Remaining cards in deck

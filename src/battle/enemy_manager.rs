@@ -1,11 +1,8 @@
 use super::Battle;
 use crate::enemies::enemy_enum::{EnemyEnum, EnemyMove};
 use crate::game::{effect::Effect, global_info::GlobalInfo};
-use crate::battle::{target::Entity, events::{BattleEvent, EventListener}};
+use crate::battle::target::Entity;
 use crate::enemies::red_louse::CurlUpListener;
-use crate::enemies::gremlin_nob::EnrageListener;
-use crate::enemies::gremlin_nob::GremlinNob;
-use crate::game::effect::BaseEffect;
 
 impl Battle {
     /// Initialize event listeners for enemies based on their type
@@ -119,7 +116,7 @@ mod tests {
 
     #[test]
     fn test_curl_up_ascension_scaling() {
-        use crate::game::deck::Deck;
+        
         
         let deck = starter_deck();
         let mut rng = rand::rng();

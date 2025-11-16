@@ -506,7 +506,7 @@ mod tests {
     fn test_anchor_relic_starts_combat_with_10_block() {
         use crate::cards::ironclad::strike::strike;
         use crate::relics::Relic;
-        use crate::battle::events::BattleEvent;
+        
 
         // Create a deck for the battle
         let deck = Deck::new(vec![strike()]);
@@ -519,7 +519,7 @@ mod tests {
 
         // Create battle with Anchor relic listener
         let relics = vec![Relic::Anchor];
-        let mut battle = Battle::new_with_relics(deck, global_info, 50, 80, enemies, relics, &mut rng);
+        let battle = Battle::new_with_relics(deck, global_info, 50, 80, enemies, relics, &mut rng);
 
         // Check that player now has 10 block from Anchor relic (CombatStart already emitted)
         assert_eq!(battle.get_player().battle_info.get_block(), 10);
@@ -545,7 +545,7 @@ mod tests {
 
         // Create battle with Blood Vial relic listener
         let relics = vec![Relic::BloodVial];
-        let mut battle = Battle::new_with_relics(deck, global_info, 48, 80, enemies, relics, &mut rng);
+        let battle = Battle::new_with_relics(deck, global_info, 48, 80, enemies, relics, &mut rng);
 
         // Check that player now has 50 HP (48 + 2 from Blood Vial)
         assert_eq!(battle.get_player().battle_info.get_hp(), 50);

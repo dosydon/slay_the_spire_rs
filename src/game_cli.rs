@@ -1,10 +1,10 @@
-use std::io::{self, Write};
+use std::io::Write;
 use crate::game::{
     game::{Game, GameState, GameResult, GameError},
     action::GameAction,
     global_info::GlobalInfo,
     deck::Deck,
-    map::{Map, MapNode, NodeType, test_map_large},
+    map::{NodeType, test_map_large},
 };
 use crate::cards::ironclad::starter_deck::starter_deck;
 use crate::cards::implemented_cards_deck::*;
@@ -23,7 +23,7 @@ impl GameCli {
 
     /// Create a new game CLI with optional deck choice prompt
     pub fn new_with_deck_choice(prompt_for_deck: bool) -> Self {
-        let mut rng = rand::rng();
+        let rng = rand::rng();
         let global_info = GlobalInfo { ascention: 20, current_floor: 1 };
 
         let deck = if prompt_for_deck {

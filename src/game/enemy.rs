@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::game::{effect::Effect, global_info::GlobalInfo};
 
 pub trait EnemyTrait {
     type MoveType;

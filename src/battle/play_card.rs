@@ -86,7 +86,7 @@ impl Battle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cards::ironclad::starter_deck::starter_deck;
+    
     use crate::battle::enemy_in_battle::EnemyInBattle;
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
     use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};

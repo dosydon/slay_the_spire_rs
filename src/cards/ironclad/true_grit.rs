@@ -27,10 +27,10 @@ pub fn true_grit_upgraded() -> Card {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::battle::{Battle, target::Entity, player::Player, enemy_in_battle::EnemyInBattle};
-    use crate::cards::ironclad::starter_deck::starter_deck;
-    use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
-    use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
+    
+    
+    
+    use crate::game::enemy::EnemyTrait;
 
     #[test]
     fn test_true_grit_card_creation() {

@@ -71,7 +71,7 @@ mod tests {
         use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
 use crate::cards::ironclad::strike;
 use crate::game::enemy::EnemyTrait;
-        use rand::RngCore;
+        
 
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 20, current_floor: 1 };
@@ -109,7 +109,7 @@ use crate::game::enemy::EnemyTrait;
         use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
 use crate::cards::ironclad::strike;
 use crate::game::enemy::EnemyTrait;
-        use rand::RngCore;
+        
 
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 20, current_floor: 1 };

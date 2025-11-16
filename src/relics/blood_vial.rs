@@ -120,7 +120,7 @@ mod tests {
 
         // Create battle with the blood vial relic listener
         let relics = vec![Relic::BloodVial];
-        let mut battle = Battle::new_with_relics(deck, global_info, 48, 80, enemies, relics, &mut rng);
+        let battle = Battle::new_with_relics(deck, global_info, 48, 80, enemies, relics, &mut rng);
 
         // Verify player now has exactly 50 HP (48 + 2 from Blood Vial)
         let final_hp = battle.get_player().battle_info.get_hp();

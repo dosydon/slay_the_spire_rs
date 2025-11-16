@@ -323,7 +323,7 @@ mod tests {
         
         // Force the AcidSlimeM to use CorrosiveSpit by manually setting up the action
         // We need to create a separate AcidSlimeM to generate the move
-        let mut test_slime = AcidSlimeM::new(30);
+        let test_slime = AcidSlimeM::new(30);
         let effects = test_slime.get_move_effects(AcidSlimeMMove::CorrosiveSpit, &global_info);
         
         // Verify the effect is ApplyWeak(2)
