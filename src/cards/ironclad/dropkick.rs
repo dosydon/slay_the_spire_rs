@@ -165,9 +165,6 @@ mod tests {
 
         let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
 
-        // Draw initial hand
-        battle.start_of_player_turn(&mut rng);
-
         // Make enemy vulnerable first (manually apply vulnerable status)
         // Note: This would normally be done through game effects, but for testing we'll simulate it
         battle.get_enemies_mut()[0].battle_info.apply_vulnerable(1);

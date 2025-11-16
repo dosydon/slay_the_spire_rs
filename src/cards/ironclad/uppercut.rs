@@ -32,6 +32,8 @@ pub fn uppercut_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::enemies::gremlin_nob::GremlinNob;
+
     use super::*;
 
     #[test]
@@ -98,14 +100,11 @@ mod tests {
         use crate::battle::enemy_in_battle::EnemyInBattle;
         use crate::game::deck::Deck;
         use crate::game::global_info::GlobalInfo;
-        use crate::game::enemy::EnemyTrait;
-        use crate::enemies::red_louse::RedLouse;
         use crate::enemies::enemy_enum::EnemyEnum;
 
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::GremlinNob(GremlinNob::new(60)))];
 
         // Create battle with Uppercut+ in hand
         let deck = Deck::new(vec![uppercut_upgraded()]);
@@ -122,7 +121,7 @@ mod tests {
 
         // Verify enemy took 13 damage
         let enemy_final_hp = battle.get_enemies()[0].get_current_hp();
-        assert_eq!(enemy_final_hp, enemy_initial_hp - 13);
+        assert_eq!(enemy_final_hp, enemy_initial_hp.saturating_sub(13));
 
         // Verify enemy has 2 Weak and 2 Vulnerable
         let enemy_final_weak = battle.get_enemies()[0].get_weak();

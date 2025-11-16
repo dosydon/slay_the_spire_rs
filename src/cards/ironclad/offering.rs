@@ -109,6 +109,11 @@ mod tests {
             strike(),
             strike(),
             strike(),
+            strike(),  // Add extra cards to ensure enough cards to draw
+            strike(),
+            strike(),
+            strike(),
+            strike(),
         ]);
         let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
 
@@ -130,7 +135,7 @@ mod tests {
 
         // Verify player drew 5 cards
         let hand_after_offering = battle.get_hand();
-        assert_eq!(hand_after_offering.len(), initial_hand_size - 1 + 5); // -1 for offering+ played, +3 drawn
+        assert_eq!(hand_after_offering.len(), initial_hand_size - 1 + 5); // -1 for offering+ played, +5 drawn
 
         // Verify Offering+ is exhausted
         let hand = battle.get_hand();
