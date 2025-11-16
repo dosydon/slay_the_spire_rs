@@ -539,6 +539,9 @@ impl BattleCli {
                 crate::game::effect::Effect::EnterSelectCardInDiscard => {
                     parts.push("📋 Select from discard".to_string());
                 }
+                crate::game::effect::Effect::ConditionalEffect(condition, effect) => {
+                    parts.push(format!("❓If {:?}: {:?}", condition, effect));
+                }
             }
         }
         

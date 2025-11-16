@@ -6,7 +6,7 @@ pub fn havoc() -> Card {
         CardEnum::Havoc,
         1,
         CardType::Skill,
-        vec![Effect::PlayTopCardAndExhaust],
+        vec![Effect::PlayTopCard, Effect::Exhaust],
         false, // not upgraded
         true,  // playable
     )
@@ -18,7 +18,7 @@ pub fn havoc_upgraded() -> Card {
         CardEnum::Havoc,
         0, // Cost reduced from 1 to 0
         CardType::Skill,
-        vec![Effect::PlayTopCardAndExhaust],
+        vec![Effect::PlayTopCard, Effect::Exhaust],
         true,  // upgraded
         true,  // playable
     )

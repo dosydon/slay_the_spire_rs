@@ -1,8 +1,12 @@
 use crate::battle::target::Entity;
 use crate::game::card_enum::CardEnum;
 
-
 #[derive(Copy, Debug, Clone, PartialEq)]
+pub enum Condition {
+    TargetIsVulnerable,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Effect {
     AttackToTarget {
         amount: u32,
@@ -46,9 +50,10 @@ pub enum Effect {
     PutCardOnTopOfDrawPile(CardEnum), // Put a card on top of the draw pile
     EnterSelectCardInDiscard, // Transition to SelectCardInDiscard state
     PutRandomDiscardCardOnTop, // Put a random card from discard on top of draw pile
+    ConditionalEffect(Condition, Box<Effect>), // Conditional effect that only triggers if condition is met
 }
 
-#[derive(Copy, Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum BaseEffect {
     AttackToTarget {
         source: Entity,
@@ -176,6 +181,12 @@ pub enum BaseEffect {
     },
     EnterSelectCardInDiscard,
     PutRandomDiscardCardOnTop,
+    ConditionalEffect {
+        condition: Condition,
+        effect: Box<Effect>,
+        source: Entity,
+        target: Entity,
+    },
 }
 
 impl BaseEffect {
@@ -220,6 +231,12 @@ impl BaseEffect {
             Effect::PutCardOnTopOfDrawPile(card) => BaseEffect::PutCardOnTopOfDrawPile { card },
             Effect::EnterSelectCardInDiscard => BaseEffect::EnterSelectCardInDiscard,
             Effect::PutRandomDiscardCardOnTop => BaseEffect::PutRandomDiscardCardOnTop,
+            Effect::ConditionalEffect(condition, effect) => BaseEffect::ConditionalEffect {
+                condition,
+                effect,
+                source,
+                target,
+            },
         }
     }
 }

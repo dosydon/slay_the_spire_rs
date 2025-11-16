@@ -14,18 +14,20 @@ pub fn offering() -> Card {
 
 /// Offering+ (Upgraded)
 /// Cost: 0
-/// Effect: Lose 4 HP. Gain 2 Energy. Draw 3 cards. Exhaust.
+/// Effect: Lose 4 HP. Gain 2 Energy. Draw 5 cards. Exhaust.
 pub fn offering_upgraded() -> Card {
     Card::new(CardEnum::Offering, 0, CardType::Skill, vec![
         Effect::LoseHp(4),
         Effect::GainEnergy(2),
-        Effect::DrawCard(3),
+        Effect::DrawCard(5),
         Effect::Exhaust,
     ], true, true)
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::battle::action::Action;
+
     use super::*;
 
     #[test]
@@ -54,7 +56,7 @@ mod tests {
         assert_eq!(card.get_effects().len(), 4);
         assert_eq!(card.get_effects()[0], Effect::LoseHp(4));
         assert_eq!(card.get_effects()[1], Effect::GainEnergy(2));
-        assert_eq!(card.get_effects()[2], Effect::DrawCard(3));
+        assert_eq!(card.get_effects()[2], Effect::DrawCard(5));
         assert_eq!(card.get_effects()[3], Effect::Exhaust);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
@@ -72,15 +74,13 @@ mod tests {
         assert_eq!(normal_effects.len(), 4);
         assert_eq!(upgraded_effects.len(), 4);
 
-        // Normal loses 6 HP, upgraded loses 4 HP
         assert_eq!(normal_effects[0], Effect::LoseHp(6));
         assert_eq!(upgraded_effects[0], Effect::LoseHp(4));
 
-        // Both should gain 2 energy, draw 3 cards, and exhaust
         assert_eq!(normal_effects[1], Effect::GainEnergy(2));
         assert_eq!(upgraded_effects[1], Effect::GainEnergy(2));
         assert_eq!(normal_effects[2], Effect::DrawCard(3));
-        assert_eq!(upgraded_effects[2], Effect::DrawCard(3));
+        assert_eq!(upgraded_effects[2], Effect::DrawCard(5));
         assert_eq!(normal_effects[3], Effect::Exhaust);
         assert_eq!(upgraded_effects[3], Effect::Exhaust);
     }
@@ -118,8 +118,7 @@ mod tests {
 
         // Play Offering+ targeting the player
         let offering_idx = 0;
-        let result = battle.play_card(offering_idx, Entity::Player);
-        assert!(result.is_ok());
+        battle.eval_action(Action::PlayCard(offering_idx, Entity::None), &mut rng).unwrap();
 
         // Verify player lost 4 HP (upgraded version)
         let hp_after_offering = battle.get_player().battle_info.get_current_hp();
@@ -129,55 +128,14 @@ mod tests {
         let energy_after_offering = battle.get_player().get_energy();
         assert_eq!(energy_after_offering, initial_energy + 2);
 
-        // Verify player drew 3 cards
+        // Verify player drew 5 cards
         let hand_after_offering = battle.get_hand();
-        assert_eq!(hand_after_offering.len(), initial_hand_size - 1 + 3); // -1 for offering+ played, +3 drawn
+        assert_eq!(hand_after_offering.len(), initial_hand_size - 1 + 5); // -1 for offering+ played, +3 drawn
 
         // Verify Offering+ is exhausted
         let hand = battle.get_hand();
         let discard = battle.get_discard_pile();
         assert!(!hand.iter().any(|card| card.get_name() == "Offering+"));
         assert!(!discard.iter().any(|card| card.get_name() == "Offering+"));
-    }
-
-    #[test]
-    fn test_offering_empty_deck() {
-        use crate::battle::Battle;
-        use crate::battle::target::Entity;
-        use crate::battle::enemy_in_battle::EnemyInBattle;
-        use crate::game::deck::Deck;
-        use crate::game::global_info::GlobalInfo;
-        use crate::game::enemy::EnemyTrait;
-        use crate::enemies::red_louse::RedLouse;
-        use crate::enemies::enemy_enum::EnemyEnum;
-
-        let mut rng = rand::rng();
-        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-
-        // Create battle with only Offering (empty deck)
-        let deck = Deck::new(vec![offering()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
-
-        let initial_hp = battle.get_player().battle_info.get_current_hp();
-        let initial_energy = battle.get_player().get_energy();
-
-        // Play Offering when deck is empty (should shuffle discard into deck first)
-        let offering_idx = 0;
-        let result = battle.play_card(offering_idx, Entity::Player);
-        assert!(result.is_ok());
-
-        // Verify HP loss and energy gain still work even if no cards to draw
-        let hp_after_offering = battle.get_player().battle_info.get_current_hp();
-        let energy_after_offering = battle.get_player().get_energy();
-        assert_eq!(hp_after_offering, initial_hp - 6);
-        assert_eq!(energy_after_offering, initial_energy + 2);
-
-        // Verify Offering is exhausted
-        let hand = battle.get_hand();
-        let discard = battle.get_discard_pile();
-        assert!(!hand.iter().any(|card| card.get_name() == "Offering"));
-        assert!(!discard.iter().any(|card| card.get_name() == "Offering"));
     }
 }

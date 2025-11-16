@@ -352,6 +352,30 @@ impl Battle {
                 // Transition to SelectCardInDiscard state
                 self.battle_state = crate::battle::action::BattleState::SelectCardInDiscard;
             },
+            BaseEffect::ConditionalEffect { condition, effect, source, target } => {
+                // Check if the condition is met before applying the effect
+                let condition_met = match condition {
+                    crate::game::effect::Condition::TargetIsVulnerable => {
+                        match target {
+                            Entity::Enemy(idx) => {
+                                if *idx < self.enemies.len() {
+                                    self.enemies[*idx].battle_info.is_vulnerable()
+                                } else {
+                                    false
+                                }
+                            },
+                            Entity::Player => self.player.battle_info.is_vulnerable(),
+                            Entity::None => false,
+                        }
+                    },
+                };
+
+                if condition_met {
+                    // Convert the inner effect to BaseEffect and evaluate it
+                    let base_effect = crate::game::effect::BaseEffect::from_effect((**effect).clone(), *source, *target);
+                    self.eval_base_effect(&base_effect);
+                }
+            },
         }
     }
 
