@@ -103,7 +103,7 @@ mod tests {
 
         // Verify Impervious is exhausted (not in hand, not in discard)
         let hand = battle.get_hand();
-        let discard = battle.get_discard();
+        let discard = battle.get_discard_pile();
         assert_eq!(hand.len(), 0); // Hand should be empty after playing
         // Card should be exhausted (not in discard pile)
         assert!(!discard.iter().any(|card| card.get_name() == "Impervious"));
@@ -143,7 +143,7 @@ mod tests {
 
         // Verify Impervious+ is exhausted
         let hand = battle.get_hand();
-        let discard = battle.get_discard();
+        let discard = battle.get_discard_pile();
         assert_eq!(hand.len(), 0);
         assert!(!discard.iter().any(|card| card.get_name() == "Impervious+"));
     }

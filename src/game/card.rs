@@ -94,6 +94,7 @@ impl Card {
             CardEnum::WildStrike => crate::cards::ironclad::wild_strike::wild_strike_upgraded(),
             CardEnum::Combust => crate::cards::ironclad::combust::combust_upgraded(),
             CardEnum::Disarm => crate::cards::ironclad::disarm::disarm_upgraded(),
+            CardEnum::Dropkick => crate::cards::ironclad::dropkick::dropkick_upgraded(),
             CardEnum::FeelNoPain => crate::cards::ironclad::feel_no_pain::feel_no_pain_upgraded(),
             CardEnum::Entrench => crate::cards::ironclad::entrench::entrench_upgraded(),
             CardEnum::Bludgeon => crate::cards::ironclad::bludgeon::bludgeon_upgraded(),
@@ -111,6 +112,8 @@ impl Card {
             CardEnum::GhostlyArmor => crate::cards::ironclad::ghostly_armor::ghostly_armor_upgraded(),
             CardEnum::Havoc => crate::cards::ironclad::havoc::havoc_upgraded(),
             CardEnum::Headbutt => crate::cards::ironclad::headbutt::headbutt_upgraded(),
+            CardEnum::TrueGrit => crate::cards::ironclad::true_grit::true_grit_upgraded(),
+            CardEnum::Warcry => crate::cards::ironclad::warcry::warcry_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
         }

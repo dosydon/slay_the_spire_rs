@@ -4,9 +4,9 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 
 ## Summary
 
-- ✅ **32 cards implemented** (3 Basic + 20 Common + 6 Rare + 3 Uncommon)
-- ❌ **42+ Ironclad cards not yet implemented** (remaining Common, Uncommon, Rare)
-- 🎯 **Implementation Progress: ~43%** of Ironclad cards
+- ✅ **37 cards implemented** (3 Basic + 25 Common + 6 Rare + 3 Uncommon)
+- ❌ **37+ Ironclad cards not yet implemented** (remaining Common, Uncommon, Rare)
+- 🎯 **Implementation Progress: ~50%** of Ironclad cards
 
 **Note:** All tables now include Cost, Cost+ (upgraded cost), Base Effects, and Upgraded Effects columns for clarity.
 
@@ -32,18 +32,18 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 | ✅ Cleave | Attack | 1 | 1 | Yes | `src/cards/ironclad/cleave.rs` | Deal 8 damage to ALL enemies | Deal 11 damage to ALL enemies |
 | ✅ Clothesline | Attack | 2 | 2 | Yes | `src/cards/ironclad/clothesline.rs` | Deal 12 damage + Apply 2 Weak | Deal 14 damage + Apply 3 Weak |
 | ✅ Flex | Skill | 0 | 0 | Yes | `src/cards/ironclad/flex.rs` | Gain 2 Strength. Lose 2 at end of turn | Gain 4 Strength. Lose 4 at end of turn |
-| ❌ Havoc | Skill | 1 | 0 | No | - | Play top card of draw pile. Exhaust it | Play top card of draw pile. Exhaust it |
+| ✅ Havoc | Skill | 1 | 0 | Yes | `src/cards/ironclad/havoc.rs` | Play top card of draw pile. Exhaust it | Play top card of draw pile. Exhaust it |
 | ✅ Heavy Blade | Attack | 2 | 2 | Yes | `src/cards/ironclad/heavy_blade.rs` | Deal 14 damage (3× Strength) | Deal 22 damage (5× Strength) |
-| ❌ Headbutt | Attack | 1 | 1 | No | - | Deal 9 damage. Put discard card on top of draw pile | Deal 12 damage. Put discard card on top of draw pile |
+| ✅ Headbutt | Attack | 1 | 1 | Yes | `src/cards/ironclad/headbutt.rs` | Deal 9 damage. Put discard card on top of draw pile | Deal 12 damage. Put discard card on top of draw pile |
 | ✅ Iron Wave | Attack | 1 | 1 | Yes | `src/cards/ironclad/iron_wave.rs` | Gain 5 Block + Deal 5 damage | Gain 8 Block + Deal 8 damage |
 | ✅ Perfected Strike | Attack | 2 | 2 | Yes | `src/cards/ironclad/perfected_strike.rs` | Deal 6 damage (+2 per Strike in deck) | Deal 10 damage (+3 per Strike in deck) |
 | ✅ Pommel Strike | Attack | 1 | 1 | Yes | `src/cards/ironclad/pommel_strike.rs` | Deal 9 damage + Draw 1 card | Deal 10 damage + Draw 2 cards |
 | ✅ Shrug It Off | Skill | 1 | 1 | Yes | `src/cards/ironclad/shrug_it_off.rs` | Gain 8 Block + Draw 1 card | Gain 11 Block + Draw 1 card |
 | ✅ Sword Boomerang | Attack | 1 | 1 | Yes | `src/cards/ironclad/sword_boomerang.rs` | Deal 3 damage 3 times | Deal 4 damage 3 times |
 | ✅ Thunderclap | Attack | 1 | 1 | Yes | `src/cards/ironclad/thunderclap.rs` | Deal 4 damage to ALL + Apply 1 Vulnerable to ALL | Deal 7 damage to ALL + Apply 1 Vulnerable to ALL |
-| ❌ True Grit | Skill | 1 | 1 | No | - | Gain 7 Block. Exhaust 1 card from hand | Gain 9 Block. Exhaust 1 card (choose) from hand |
+| ✅ True Grit | Skill | 1 | 1 | Yes | `src/cards/ironclad/true_grit.rs` | Gain 7 Block. Exhaust 1 card from hand | Gain 9 Block. Exhaust 1 card (choose) from hand |
 | ✅ Twin Strike | Attack | 1 | 1 | Yes | `src/cards/ironclad/twin_strike.rs` | Deal 5 damage twice | Deal 7 damage twice |
-| ❌ Warcry | Skill | 0 | 0 | No | - | Draw 2 cards. Put 1 card on top of draw pile | Draw 2 cards. Put 1 card (choose) on top of draw pile |
+| ✅ Warcry | Skill | 0 | 0 | Yes | `src/cards/ironclad/warcry.rs` | Draw 2 cards. Put 1 card on top of draw pile | Draw 2 cards. Put 1 card (choose) on top of draw pile |
 | ✅ Wild Strike | Attack | 1 | 1 | Yes | `src/cards/ironclad/wild_strike.rs` | Deal 12 damage + Add Wound to draw pile | Deal 17 damage + Add Wound to draw pile |
 
 
@@ -76,14 +76,14 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 | ✅ Combust | Power | 1 | 1 | Yes | `src/cards/ironclad/combust.rs` | At turn end: lose 1 HP, deal 5 damage to ALL | At turn end: lose 1 HP, deal 7 damage to ALL |
 | ✅ Dark Embrace | Power | 2 | 1 | Yes | `src/cards/ironclad/embrace.rs` | Whenever you Exhaust a card, draw 1 card | Whenever you Exhaust a card, draw 1 card |
 | ✅ Disarm | Skill | 1 | 1 | Yes | `src/cards/ironclad/disarm.rs` | Enemy loses 2 Strength. Exhaust | Enemy loses 3 Strength. Exhaust |
-| ❌ Dropkick | Attack | 1 | 1 | No | - | Deal 5 damage. If enemy Vulnerable: gain 1 Energy, draw 1 | Deal 8 damage. If enemy Vulnerable: gain 1 Energy, draw 1 |
+| ✅ Dropkick | Attack | 1 | 1 | Yes | `src/cards/ironclad/dropkick.rs` | Deal 5 damage. If enemy Vulnerable: gain 1 Energy, draw 1 | Deal 8 damage. If enemy Vulnerable: gain 1 Energy, draw 1 |
 | ❌ Dual Wield | Skill | 1 | 1 | No | - | Duplicate a card to discard pile | Duplicate a card twice to discard pile |
 | ✅ Entrench | Skill | 2 | 1 | Yes | `src/cards/ironclad/entrench.rs` | Double your current Block | Double your current Block |
 | ❌ Evolve | Power | 1 | 1 | No | - | Whenever you draw Status, draw 1 card | Whenever you draw Status, draw 2 cards |
 | ✅ Feel No Pain | Power | 1 | 1 | Yes | `src/cards/ironclad/feel_no_pain.rs` | Whenever you Exhaust, gain 3 Block | Whenever you Exhaust, gain 4 Block |
 | ❌ Fire Breathing | Power | 1 | 1 | No | - | When you draw Status/Curse, deal 6 damage to ALL | When you draw Status/Curse, deal 10 damage to ALL |
 | ❌ Flame Barrier | Skill | 2 | 2 | No | - | Gain 12 Block. This turn: attacked → deal 4 to attacker | Gain 16 Block. This turn: attacked → deal 6 to attacker |
-| ❌ Ghostly Armor | Skill | 1 | 1 | No | - | Gain 10 Block. Ethereal | Gain 13 Block. Ethereal |
+| ✅ Ghostly Armor | Skill | 1 | 1 | Yes | `src/cards/ironclad/ghostly_armor.rs` | Gain 10 Block. Ethereal | Gain 13 Block. Ethereal |
 | ✅ Hemokinesis | Attack | 1 | 1 | Yes | `src/cards/ironclad/hemokinesis.rs` | Lose 2 HP. Deal 15 damage | Lose 2 HP. Deal 22 damage |
 | ✅ Inflame | Power | 1 | 1 | Yes | `src/cards/ironclad/inflame.rs` | Gain 2 Strength | Gain 3 Strength |
 | ❌ Infernal Blade | Skill | 1 | 0 | No | - | Add random Attack to hand. Exhaust | Add random Attack to hand. Exhaust |
@@ -128,14 +128,18 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 - ✅ Block manipulation and doubling (Entrench)
 - ✅ Plated Armor system (framework for Feel No Pain)
 - ✅ Event-driven card effects (Dark Embrace listener system)
+- ✅ Deck manipulation mechanics (Havoc: play from draw pile, Headbutt: discard to top)
+- ✅ Draw pile access and manipulation (peek, draw top, put on top)
+- ✅ Discard pile manipulation (random card to top of draw pile)
+- ✅ Card play from deck system (Havoc effect processing)
 - ✅ Result-based error handling for card play
 - ✅ Upgrade system for all implemented cards
 - ✅ Comprehensive test coverage for implemented cards
 
 ### Missing Features for Full Implementation
 - ❌ Cost manipulation mechanics (Warcry)
-- ❌ Deck manipulation (top of deck, discard pile interactions)
-- ❌ Exhaust mechanics for card effects (Havoc, etc.)
+- ✅ Deck manipulation (top of deck, discard pile interactions)
+- ✅ Exhaust mechanics for card effects (Havoc, etc.)
 - ✅ Energy manipulation (Offering)
 - ✅ Self-damage mechanics (Hemokinesis, Offering)
 - ✅ Card upgrade during combat (Armaments)
@@ -152,7 +156,10 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 - ✅ Block manipulation and doubling (Entrench)
 - ⚠️ Plated Armor system framework implemented (needs full integration)
 - ❌ Cost manipulation effects
-- ❌ Deck manipulation will need enhanced access to deck/discard piles
+- ✅ Deck manipulation system implemented (Havoc, Headbutt)
+- ✅ Enhanced access to deck/discard piles (peek, draw top, put on top)
+- ✅ Card play from deck functionality
+- ✅ Discard pile to draw pile manipulation
 - ✅ Card upgrade during combat (Armaments)
 - ✅ Energy manipulation (Offering)
 - ✅ Self-damage mechanics (Hemokinesis, Offering)
@@ -161,6 +168,26 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 ## Recently Implemented Cards
 
 ### Latest Major Additions (November 2024)
+- **Havoc** (Skill, Cost 1→0) - Play top card of draw pile. Exhaust it
+  - Introduces deck manipulation mechanics with card play from draw pile
+  - Features new PlayTopCard effect system for drawing and playing cards
+  - Excellent for cycling through deck and triggering effects
+  - Upgrade: Cost reduced from 1 to 0
+- **Headbutt** (Attack, Cost 1) - Deal 9 damage. Put discard card on top of draw pile
+  - Introduces discard pile manipulation mechanics
+  - Features new PutRandomDiscardCardOnTop effect system
+  - Combines damage with deck setup for future turns
+  - Upgrade: 9 → 12 damage
+- **True Grit** (Skill, Cost 1) - Gain 7 Block. Exhaust 1 card from hand
+  - Introduces hand selection mechanics for exhaust
+  - Features new EnterSelectCardInHand effect system
+  - Combines defense with hand management
+  - Upgrade: 7 → 9 Block
+- **Warcry** (Skill, Cost 0) - Draw 2 cards. Put 1 card on top of draw pile
+  - Introduces card selection mechanics for deck manipulation
+  - Combines card draw with deck setup for future turns
+  - Free card advantage with strategic positioning
+  - Upgrade: Same effect, allows card choice
 - **Brutality** (Power, Cost 0) - At start of turn, lose 1 HP and draw 1 card
   - Features new TurnStart event system for power cards
   - Introduces sustained card draw at cost of HP
@@ -182,6 +209,13 @@ This document tracks the implementation status of all Ironclad cards in the Slay
   - Single-target damage with dual debuffs
   - Efficient damage + control combination
   - Upgrade: 1 → 2 stacks of each debuff
+
+### Latest Major Additions (November 2024)
+- **Dropkick** (Attack, Cost 1) - Deal 5 damage. If enemy Vulnerable: gain 1 Energy, draw 1 card
+  - Introduces conditional effects based on enemy status
+  - Features conditional energy gain and card draw mechanics
+  - Excellent for combos with Vulnerable-applying cards
+  - Upgrade: 5 → 8 damage, same conditional effects
 
 ### Previous Major Additions
 - **Carnage** (Attack, Cost 2) - Deal 20 damage. Ethereal

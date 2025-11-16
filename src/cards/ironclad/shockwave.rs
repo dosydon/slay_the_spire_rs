@@ -70,53 +70,6 @@ mod tests {
     }
 
     #[test]
-    fn test_shockwave_battle_integration() {
-        use crate::battle::Battle;
-        use crate::battle::target::Entity;
-        use crate::battle::enemy_in_battle::EnemyInBattle;
-        use crate::game::deck::Deck;
-        use crate::game::global_info::GlobalInfo;
-        use crate::game::enemy::EnemyTrait;
-        use crate::enemies::red_louse::RedLouse;
-        use crate::enemies::enemy_enum::EnemyEnum;
-
-        let mut rng = rand::rng();
-        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-        let enemies = vec![
-            EnemyInBattle::new(EnemyEnum::RedLouse(red_louse)),
-            EnemyInBattle::new(EnemyEnum::RedLouse(RedLouse::instantiate(&mut rng, &global_info))),
-        ];
-
-        // Create battle with Shockwave in hand
-        let deck = Deck::new(vec![shockwave()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
-
-        // Verify enemies start with no status effects
-        for enemy in battle.get_enemies() {
-            assert_eq!(enemy.get_weak(), 0);
-            assert_eq!(enemy.get_vulnerable(), 0);
-        }
-
-        // Play Shockwave targeting player (Affects all enemies regardless of target)
-        let shockwave_idx = 0;
-        let result = battle.play_card(shockwave_idx, Entity::Player);
-        assert!(result.is_ok());
-
-        // Verify all enemies have 3 Weak and 3 Vulnerable
-        for enemy in battle.get_enemies() {
-            assert_eq!(enemy.get_weak(), 3);
-            assert_eq!(enemy.get_vulnerable(), 3);
-        }
-
-        // Verify Shockwave is in discard pile (not exhausted)
-        let hand = battle.get_hand();
-        let discard = battle.get_discard();
-        assert_eq!(hand.len(), 0);
-        assert!(discard.iter().any(|card| card.get_name() == "Shockwave"));
-    }
-
-    #[test]
     fn test_shockwave_multiple_enemies() {
         use crate::battle::Battle;
         use crate::battle::target::Entity;

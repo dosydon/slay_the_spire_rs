@@ -27,6 +27,9 @@ impl CardRewardPool {
             CardEnum::WildStrike,
             CardEnum::Havoc,
             CardEnum::Headbutt,
+            CardEnum::TrueGrit,
+            CardEnum::Dropkick,
+            CardEnum::Warcry,
             // Status cards typically aren't rewards (exclude Slimed, Wound)
         ];
 
@@ -80,6 +83,7 @@ impl CardRewardPool {
             CardEnum::WildStrike => crate::cards::ironclad::wild_strike::wild_strike(),
             CardEnum::Combust => crate::cards::ironclad::combust::combust(),
             CardEnum::Disarm => crate::cards::ironclad::disarm::disarm(),
+            CardEnum::Dropkick => crate::cards::ironclad::dropkick::dropkick(),
             CardEnum::FeelNoPain => crate::cards::ironclad::feel_no_pain::feel_no_pain(),
             CardEnum::Entrench => crate::cards::ironclad::entrench::entrench(),
             CardEnum::Bludgeon => crate::cards::ironclad::bludgeon::bludgeon(),
@@ -97,6 +101,8 @@ impl CardRewardPool {
             CardEnum::GhostlyArmor => crate::cards::ironclad::ghostly_armor::ghostly_armor(),
             CardEnum::Havoc => crate::cards::ironclad::havoc::havoc(),
             CardEnum::Headbutt => crate::cards::ironclad::headbutt::headbutt(),
+            CardEnum::TrueGrit => crate::cards::ironclad::true_grit::true_grit(),
+            CardEnum::Warcry => crate::cards::ironclad::warcry::warcry(),
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
             CardEnum::Wound => crate::cards::status::wound::wound(),
         }

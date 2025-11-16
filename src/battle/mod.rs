@@ -48,8 +48,7 @@ pub struct Battle {
     powers: Vec<crate::game::card::Card>,
     /// Queue of effects to be processed
     effect_queue: Vec<BaseEffect>,
-    /// Current battle state
-    battle_state: BattleState,
+    pub(crate) battle_state: BattleState,
 }
 
 impl Battle {
@@ -142,9 +141,29 @@ impl Battle {
     pub fn get_enemies(&self) -> &Vec<EnemyInBattle> {
         &self.enemies
     }
+
+    /// Get mutable enemies (for testing purposes)
+    pub fn get_enemies_mut(&mut self) -> &mut Vec<EnemyInBattle> {
+        &mut self.enemies
+    }
     
     pub fn get_hand(&self) -> &Vec<Card> {
         self.cards.get_hand()
+    }
+
+    /// Add a card to hand (for testing purposes)
+    pub fn add_card_to_hand_for_testing(&mut self, card: Card) {
+        self.cards.add_card_to_hand(card);
+    }
+
+    /// Get the discard pile (for testing purposes)
+    pub fn get_discard_pile(&self) -> &Vec<Card> {
+        self.cards.get_discard_pile()
+    }
+
+    /// Get the deck (for testing purposes)
+    pub fn get_deck(&self) -> &crate::game::deck::Deck {
+        self.cards.get_deck()
     }
 
     /// Get all powers played during this battle

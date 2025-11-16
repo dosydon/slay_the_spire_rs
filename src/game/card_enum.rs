@@ -22,6 +22,7 @@ pub enum CardEnum {
     WildStrike,
     Combust,
     Disarm,
+    Dropkick,
     FeelNoPain,
     Entrench,
     Bludgeon,
@@ -39,6 +40,8 @@ pub enum CardEnum {
     GhostlyArmor,
     Havoc,
     Headbutt,
+    TrueGrit,
+    Warcry,
     // Status Cards
     Slimed,
     Wound,
@@ -68,6 +71,7 @@ impl CardEnum {
             CardEnum::WildStrike => "WildStrike",
             CardEnum::Combust => "Combust",
             CardEnum::Disarm => "Disarm",
+            CardEnum::Dropkick => "Dropkick",
             CardEnum::FeelNoPain => "Feel No Pain",
             CardEnum::Entrench => "Entrench",
             CardEnum::Bludgeon => "Bludgeon",
@@ -85,6 +89,8 @@ impl CardEnum {
             CardEnum::GhostlyArmor => "Ghostly Armor",
             CardEnum::Havoc => "Havoc",
             CardEnum::Headbutt => "Headbutt",
+            CardEnum::TrueGrit => "True Grit",
+            CardEnum::Warcry => "Warcry",
             CardEnum::Slimed => "Slimed",
             CardEnum::Wound => "Wound",
         }

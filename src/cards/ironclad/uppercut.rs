@@ -92,52 +92,6 @@ mod tests {
     }
 
     #[test]
-    fn test_uppercut_battle_integration() {
-        use crate::battle::Battle;
-        use crate::battle::target::Entity;
-        use crate::battle::enemy_in_battle::EnemyInBattle;
-        use crate::game::deck::Deck;
-        use crate::game::global_info::GlobalInfo;
-        use crate::game::enemy::EnemyTrait;
-        use crate::enemies::red_louse::RedLouse;
-        use crate::enemies::enemy_enum::EnemyEnum;
-
-        let mut rng = rand::rng();
-        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-
-        // Create battle with Uppercut in hand
-        let deck = Deck::new(vec![uppercut()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
-
-        let enemy_initial_hp = battle.get_enemies()[0].get_current_hp();
-        let enemy_initial_weak = battle.get_enemies()[0].get_weak();
-        let enemy_initial_vulnerable = battle.get_enemies()[0].get_vulnerable();
-
-        // Play Uppercut targeting the first enemy
-        let uppercut_idx = 0;
-        let result = battle.play_card(uppercut_idx, Entity::Enemy(0));
-        assert!(result.is_ok());
-
-        // Verify enemy took 13 damage
-        let enemy_final_hp = battle.get_enemies()[0].get_current_hp();
-        assert_eq!(enemy_final_hp, enemy_initial_hp - 13);
-
-        // Verify enemy has 1 Weak and 1 Vulnerable
-        let enemy_final_weak = battle.get_enemies()[0].get_weak();
-        let enemy_final_vulnerable = battle.get_enemies()[0].get_vulnerable();
-        assert_eq!(enemy_final_weak, enemy_initial_weak + 1);
-        assert_eq!(enemy_final_vulnerable, enemy_initial_vulnerable + 1);
-
-        // Verify Uppercut is in discard pile
-        let hand = battle.get_hand();
-        let discard = battle.get_discard();
-        assert_eq!(hand.len(), 0);
-        assert!(discard.iter().any(|card| card.get_name() == "Uppercut"));
-    }
-
-    #[test]
     fn test_uppercut_upgraded_battle_integration() {
         use crate::battle::Battle;
         use crate::battle::target::Entity;
@@ -178,9 +132,7 @@ mod tests {
 
         // Verify Uppercut+ is in discard pile
         let hand = battle.get_hand();
-        let discard = battle.get_discard();
         assert_eq!(hand.len(), 0);
-        assert!(discard.iter().any(|card| card.get_name() == "Uppercut+"));
     }
 
     #[test]

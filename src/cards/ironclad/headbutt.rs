@@ -27,9 +27,9 @@ pub fn headbutt_upgraded() -> Card {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::battle::{Battle, target::Entity, player::Player};
+    use crate::battle::{Battle, target::Entity, enemy_in_battle::EnemyInBattle};
     use crate::cards::ironclad::starter_deck::starter_deck;
-    use crate::enemies::red_louse::RedLouse;
+    use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
     use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
 
     #[test]
@@ -60,20 +60,23 @@ mod tests {
     #[test]
     fn test_headbutt_card_enum() {
         let headbutt_card = headbutt();
-        let card_enum = CardEnum::from_card(&headbutt_card);
+        let card_enum = headbutt_card.get_card_enum();
         assert!(matches!(card_enum, CardEnum::Headbutt));
     }
 
     #[test]
     fn test_headbutt_deals_damage_and_enters_selection_state() {
-        let deck_cards = starter_deck();
-        let deck = Deck::new(deck_cards);
-        let player = Player::new("Test Player".to_string(), 100, 3);
-        let enemy = RedLouse.create_enemy(&GlobalInfo::new());
-        let mut battle = Battle::new(deck, player, vec![enemy], GlobalInfo::new());
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
+
+        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
 
         // Draw initial hand and then play some cards to create discard pile
-        battle.start_turn();
+        battle.start_of_player_turn(&mut rng);
 
         // Play a card to create discard pile
         let initial_hand_size = battle.cards.hand_size();
@@ -82,7 +85,7 @@ mod tests {
         }
 
         // Add Headbutt to hand manually
-        battle.cards.add_card_to_hand(headbutt());
+        battle.add_card_to_hand_for_testing(headbutt());
 
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
         let initial_discard_size = battle.cards.discard_pile_size();

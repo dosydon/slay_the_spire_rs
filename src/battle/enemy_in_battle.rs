@@ -21,4 +21,19 @@ impl EnemyInBattle {
         }
         self.battle_info.take_damage(damage as u32)
     }
+
+    /// Get current HP
+    pub fn get_current_hp(&self) -> u32 {
+        self.battle_info.get_current_hp()
+    }
+
+    /// Get weak turns
+    pub fn get_weak(&self) -> u32 {
+        self.battle_info.get_weak_turns()
+    }
+
+    /// Get vulnerable turns
+    pub fn get_vulnerable(&self) -> u32 {
+        self.battle_info.get_vulnerable_turns()
+    }
 }

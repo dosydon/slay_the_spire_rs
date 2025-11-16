@@ -81,7 +81,7 @@ impl DeckHandPile {
         self.deck.shuffle(&mut rng);
     }
     
-    pub(in crate::battle) fn add_card_to_hand(&mut self, card: Card) {
+    pub(in crate) fn add_card_to_hand(&mut self, card: Card) {
         self.hand.push(card);
     }
     
@@ -108,7 +108,7 @@ impl DeckHandPile {
     }
 
     /// Look at the top card of the draw pile without removing it
-    pub(in crate::battle) fn peek_top_card(&mut self) -> Option<Card> {
+    pub(in crate) fn peek_top_card(&mut self) -> Option<Card> {
         // If deck is empty, shuffle discard pile into deck
         if self.is_deck_empty() && !self.discard_pile.is_empty() {
             self.shuffle_discard_into_deck();
