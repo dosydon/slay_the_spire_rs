@@ -44,6 +44,7 @@ pub enum Effect {
     Ethereal, // Card will be exhausted at end of turn
     AddCardToDiscard (CardEnum), // Add a card to discard pile
     EnterSelectCardInHand, // Transition to SelectCardInHand state
+    EnterSelectCardInHandToPutOnDeck, // Transition to SelectCardInHandToPutOnDeck state
     ActivateBrutality, // Activates Brutality listener for drawing cards at start of turn
     PlayTopCard, // Play the top card of the draw pile
     PlayTopCardAndExhaust, // Play top card and exhaust it
@@ -168,6 +169,7 @@ pub enum BaseEffect {
         card: CardEnum,
     },
     EnterSelectCardInHand,
+    EnterSelectCardInHandToPutOnDeck,
     PlayTopCard {
         source: Entity,
         target: Entity,
@@ -226,6 +228,7 @@ impl BaseEffect {
             Effect::Ethereal => BaseEffect::Ethereal { hand_index: 0 }, // hand_index should be set manually when queuing
             Effect::AddCardToDiscard(card) => BaseEffect::AddCardToDiscard { card },
             Effect::EnterSelectCardInHand => BaseEffect::EnterSelectCardInHand,
+            Effect::EnterSelectCardInHandToPutOnDeck => BaseEffect::EnterSelectCardInHandToPutOnDeck,
             Effect::PlayTopCard => BaseEffect::PlayTopCard { source, target },
             Effect::PlayTopCardAndExhaust => BaseEffect::PlayTopCardAndExhaust { source, target },
             Effect::PutCardOnTopOfDrawPile(card) => BaseEffect::PutCardOnTopOfDrawPile { card },

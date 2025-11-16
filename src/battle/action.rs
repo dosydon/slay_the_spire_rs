@@ -5,6 +5,7 @@ pub enum BattleState {
     PlayerTurn,
     SelectCardInHand,
     SelectCardInDiscard,
+    SelectCardInHandToPutOnDeck,
 }
 
 #[derive(Debug, Clone, PartialEq)]

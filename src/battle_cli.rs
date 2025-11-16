@@ -542,6 +542,9 @@ impl BattleCli {
                 crate::game::effect::Effect::ConditionalEffect(condition, effect) => {
                     parts.push(format!("❓If {:?}: {:?}", condition, effect));
                 }
+                crate::game::effect::Effect::EnterSelectCardInHandToPutOnDeck => {
+                    parts.push("📋 Select card from hand to put on top of draw pile".to_string());
+                }
             }
         }
         

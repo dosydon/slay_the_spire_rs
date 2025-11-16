@@ -304,6 +304,10 @@ impl Battle {
                 // Transition to SelectCardInHand state
                 self.battle_state = crate::battle::action::BattleState::SelectCardInHand;
             },
+            BaseEffect::EnterSelectCardInHandToPutOnDeck => {
+                // Transition to SelectCardInHandToPutOnDeck state
+                self.battle_state = crate::battle::action::BattleState::SelectCardInHandToPutOnDeck;
+            },
             BaseEffect::PlayTopCard { source, target } => {
                 // Take the top card from draw pile and play it
                 if let Some(card) = self.cards.draw_top_card() {

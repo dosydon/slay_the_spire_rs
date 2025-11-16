@@ -32,6 +32,14 @@ impl Battle {
                     _ => {}
                 }
             }
+            crate::battle::action::BattleState::SelectCardInHandToPutOnDeck => {
+                match action {
+                    Action::PlayCard(_, _) => return Err(BattleError::InvalidAction),
+                    Action::EndTurn => return Err(BattleError::InvalidAction),
+                    Action::SelectCardInDiscard(_) => return Err(BattleError::InvalidAction),
+                    _ => {}
+                }
+            }
         }
 
         match action {
@@ -70,16 +78,31 @@ impl Battle {
                     return Err(BattleError::CardNotInHand);
                 }
 
-                // Get the selected card and upgrade it
-                let hand = self.cards.get_hand();
-                let card = &hand[card_index];
+                // Check which state we're in to determine behavior
+                match &self.battle_state {
+                    crate::battle::action::BattleState::SelectCardInHand => {
+                        // Get the selected card and upgrade it
+                        let hand = self.cards.get_hand();
+                        let card = &hand[card_index];
 
-                // Only upgrade if not already upgraded
-                if !card.is_upgraded() {
-                    let upgraded_card = card.clone().upgrade();
+                        // Only upgrade if not already upgraded
+                        if !card.is_upgraded() {
+                            let upgraded_card = card.clone().upgrade();
 
-                    // Replace the card in hand with the upgraded version
-                    self.cards.replace_card_in_hand(card_index, upgraded_card);
+                            // Replace the card in hand with the upgraded version
+                            self.cards.replace_card_in_hand(card_index, upgraded_card);
+                        }
+                    }
+                    crate::battle::action::BattleState::SelectCardInHandToPutOnDeck => {
+                        // Get the selected card from hand and put it on top of draw pile
+                        if let Some(card_to_move) = self.cards.remove_card_from_hand(card_index) {
+                            // Put on top of draw pile
+                            self.cards.put_card_on_top_of_deck(card_to_move);
+                        }
+                    }
+                    _ => {
+                        return Err(BattleError::InvalidAction);
+                    }
                 }
 
                 // Return to player turn state

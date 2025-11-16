@@ -1,12 +1,12 @@
 use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
 
-/// Warcry - Draw 2 cards. Put 1 card on top of draw pile
+/// Warcry - Draw 1 cards. Put 1 card on top of draw pile
 pub fn warcry() -> Card {
     Card::new(
         CardEnum::Warcry,
         0,
         CardType::Skill,
-        vec![Effect::DrawCard(2), Effect::EnterSelectCardInHand],
+        vec![Effect::DrawCard(1), Effect::EnterSelectCardInHandToPutOnDeck],
         false, // not upgraded
         true,  // playable
     )
@@ -18,7 +18,7 @@ pub fn warcry_upgraded() -> Card {
         CardEnum::Warcry,
         0,
         CardType::Skill,
-        vec![Effect::DrawCard(2), Effect::EnterSelectCardInHand],
+        vec![Effect::DrawCard(2), Effect::EnterSelectCardInHandToPutOnDeck],
         true,  // upgraded
         true,  // playable
     )
@@ -39,8 +39,8 @@ mod tests {
         assert_eq!(warcry_card.get_card_type(), &CardType::Skill);
 
         let effects = warcry_card.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::DrawCard(2))));
-        assert!(effects.contains(&Effect::EnterSelectCardInHand));
+        assert!(effects.iter().any(|e| matches!(e, Effect::DrawCard(1))));
+        assert!(effects.contains(&Effect::EnterSelectCardInHandToPutOnDeck));
     }
 
     #[test]
@@ -52,7 +52,7 @@ mod tests {
 
         let effects = warcry_plus.get_effects();
         assert!(effects.iter().any(|e| matches!(e, Effect::DrawCard(2))));
-        assert!(effects.contains(&Effect::EnterSelectCardInHand));
+        assert!(effects.contains(&Effect::EnterSelectCardInHandToPutOnDeck));
         assert!(warcry_plus.is_upgraded());
     }
 
@@ -94,12 +94,12 @@ mod tests {
         let result = battle.play_card(warcry_idx, Entity::Player);
         assert!(result.is_ok(), "Warcry should be playable");
 
-        // Check that 2 cards were drawn
+        // Check that 1 cards were drawn
         let final_hand_size = battle.cards.hand_size();
-        assert_eq!(final_hand_size, initial_hand_size + 1, "Should draw 2 cards but play 1 (net +1)");
+        assert_eq!(final_hand_size, initial_hand_size, "Should draw 1 card but play 1 (net 0 change)");
 
-        // Check that battle entered SelectCardInHand state
-        assert!(matches!(battle.battle_state, crate::battle::action::BattleState::SelectCardInHand));
+        // Check that battle entered SelectCardInHandToPutOnDeck state
+        assert!(matches!(battle.battle_state, crate::battle::action::BattleState::SelectCardInHandToPutOnDeck));
 
         // Should have cards in hand to select from
         assert!(battle.cards.hand_size() > 0, "Should have cards in hand to select");
@@ -135,22 +135,26 @@ mod tests {
         let result = battle.play_card(warcry_idx, Entity::Player);
         assert!(result.is_ok(), "Warcry should be playable");
 
-        // Should be in SelectCardInHand state
-        assert!(matches!(battle.battle_state, crate::battle::action::BattleState::SelectCardInHand));
+        // Should be in SelectCardInHandToPutOnDeck state
+        assert!(matches!(battle.battle_state, crate::battle::action::BattleState::SelectCardInHandToPutOnDeck));
 
         // Get the current top of draw pile before selection
         let initial_top_card = battle.cards.peek_top_card();
+
+        // Store the name of the card we're about to select
+        let card_to_select_name = battle.cards.get_hand()[0].get_name().to_string();
+
+        // Select the first card in hand to put on top of draw pile
+        let select_result = battle.eval_action(crate::battle::action::Action::SelectCardInHand(0), &mut rng);
+        assert!(select_result.is_ok(), "Should be able to select a card");
 
         // Check that the selected card is now on top of draw pile
         let new_top_card = battle.cards.peek_top_card();
         assert!(new_top_card.is_some(), "Should have a card on top of draw pile");
 
-        // The new top card should be different from the initial top card (unless it was already going to be next)
-        if initial_top_card.is_some() {
-            let selected_card = &battle.cards.get_hand()[0];
-            assert_eq!(new_top_card.unwrap().get_name(), selected_card.get_name(),
-                      "Top card should be the selected card");
-        }
+        // The new top card should be the selected card
+        assert_eq!(new_top_card.unwrap().get_name(), card_to_select_name,
+                  "Top card should be the selected card");
 
         // Should be back to PlayerTurn state
         assert!(matches!(battle.battle_state, crate::battle::action::BattleState::PlayerTurn));
