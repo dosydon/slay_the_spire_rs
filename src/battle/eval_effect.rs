@@ -304,6 +304,54 @@ impl Battle {
                 // Transition to SelectCardInHand state
                 self.battle_state = crate::battle::action::BattleState::SelectCardInHand;
             },
+            BaseEffect::PlayTopCard { source, target } => {
+                // Take the top card from draw pile and play it
+                if let Some(card) = self.cards.draw_top_card() {
+                    // Add the card to hand temporarily to play it
+                    let hand_index = self.cards.hand_size();
+                    self.cards.add_card_to_hand(card.clone());
+
+                    // Play the card (this will handle cost, effects, etc.)
+                    let _ = self.play_card(hand_index, *target);
+                }
+            },
+            BaseEffect::PlayTopCardAndExhaust { source, target } => {
+                // Take the top card from draw pile and play it, then exhaust it
+                if let Some(card) = self.cards.draw_top_card() {
+                    // Add the card to hand temporarily to play it
+                    let hand_index = self.cards.hand_size();
+                    self.cards.add_card_to_hand(card.clone());
+
+                    // Check if the card has Exhaust effect
+                    let has_exhaust = card.get_effects().contains(&crate::game::effect::Effect::Exhaust);
+
+                    // Play the card (this will handle cost, effects, etc.)
+                    let _ = self.play_card(hand_index, *target);
+
+                    // If the card doesn't naturally exhaust, exhaust it manually
+                    if !has_exhaust {
+                        // Find the card in hand and exhaust it
+                        if let Some(exhaust_idx) = self.cards.get_hand().iter()
+                            .position(|c| c.get_name() == card.get_name() && !c.is_upgraded() == !card.is_upgraded()) {
+                            self.cards.exhaust_card_from_hand(exhaust_idx);
+                        }
+                    }
+                }
+            },
+            BaseEffect::PutCardOnTopOfDrawPile { card } => {
+                // Convert the card enum to actual card and put on top of draw pile
+                let card_reward_pool = crate::game::card_reward::CardRewardPool::new();
+                let created_card = card_reward_pool.create_card_from_enum(*card);
+                self.cards.put_card_on_top_of_deck(created_card);
+            },
+            BaseEffect::PutRandomDiscardCardOnTop => {
+                // Take a random card from discard pile and put on top of draw pile
+                self.cards.put_random_discard_on_top();
+            },
+            BaseEffect::EnterSelectCardInDiscard => {
+                // Transition to SelectCardInDiscard state
+                self.battle_state = crate::battle::action::BattleState::SelectCardInDiscard;
+            },
         }
     }
 

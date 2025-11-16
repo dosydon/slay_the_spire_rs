@@ -106,6 +106,11 @@ impl Card {
             CardEnum::Offering => crate::cards::ironclad::offering::offering_upgraded(),
             CardEnum::Shockwave => crate::cards::ironclad::shockwave::shockwave_upgraded(),
             CardEnum::Uppercut => crate::cards::ironclad::uppercut::uppercut_upgraded(),
+            CardEnum::Intimidate => crate::cards::ironclad::intimidate::intimidate_upgraded(),
+            CardEnum::SeeingRed => crate::cards::ironclad::seeing_red::seeing_red_upgraded(),
+            CardEnum::GhostlyArmor => crate::cards::ironclad::ghostly_armor::ghostly_armor_upgraded(),
+            CardEnum::Havoc => crate::cards::ironclad::havoc::havoc_upgraded(),
+            CardEnum::Headbutt => crate::cards::ironclad::headbutt::headbutt_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
         }

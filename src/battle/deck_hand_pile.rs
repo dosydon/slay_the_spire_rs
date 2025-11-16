@@ -1,4 +1,5 @@
 use crate::game::{card::Card, deck::Deck};
+use rand::Rng;
 
 #[derive(Debug, Clone)]
 pub struct DeckHandPile {
@@ -104,6 +105,54 @@ impl DeckHandPile {
     
     pub(in crate::battle) fn exhaust_card(&mut self, card: Card) {
         self.exhausted.push(card);
+    }
+
+    /// Look at the top card of the draw pile without removing it
+    pub(in crate::battle) fn peek_top_card(&mut self) -> Option<Card> {
+        // If deck is empty, shuffle discard pile into deck
+        if self.is_deck_empty() && !self.discard_pile.is_empty() {
+            self.shuffle_discard_into_deck();
+        }
+
+        // Return top card without removing it
+        self.deck.peek_top_card()
+    }
+
+    /// Put a card on top of the draw pile
+    pub(in crate::battle) fn put_card_on_top_of_deck(&mut self, card: Card) {
+        self.deck.put_card_on_top(card);
+    }
+
+    /// Draw top card from deck without adding to hand
+    pub(in crate::battle) fn draw_top_card(&mut self) -> Option<Card> {
+        // If deck is empty, shuffle discard pile into deck
+        if self.is_deck_empty() && !self.discard_pile.is_empty() {
+            self.shuffle_discard_into_deck();
+        }
+
+        self.deck.draw_card()
+    }
+
+    /// Put a random card from discard pile on top of draw pile
+    pub(in crate::battle) fn put_random_discard_on_top(&mut self) -> bool {
+        if self.discard_pile.is_empty() {
+            return false;
+        }
+
+        let mut rng = rand::rng();
+        let random_index = rng.random_range(0..self.discard_pile.len());
+        let card = self.discard_pile.remove(random_index);
+        self.put_card_on_top_of_deck(card);
+        true
+    }
+
+    /// Remove a card from discard pile at specific index
+    pub(in crate::battle) fn remove_from_discard_pile(&mut self, index: usize) -> Option<Card> {
+        if index < self.discard_pile.len() {
+            Some(self.discard_pile.remove(index))
+        } else {
+            None
+        }
     }
 
     // Play card from hand (removes from hand, adds to discard pile, returns the card)

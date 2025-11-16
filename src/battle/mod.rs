@@ -24,6 +24,7 @@ pub enum BattleError {
     InvalidTarget,
     GameAlreadyOver,
     CardNotPlayable,
+    CardNotInDiscardPile,
 }
 
 #[derive(Debug, Clone, PartialEq)]

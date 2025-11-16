@@ -41,6 +41,11 @@ pub enum Effect {
     AddCardToDiscard (CardEnum), // Add a card to discard pile
     EnterSelectCardInHand, // Transition to SelectCardInHand state
     ActivateBrutality, // Activates Brutality listener for drawing cards at start of turn
+    PlayTopCard, // Play the top card of the draw pile
+    PlayTopCardAndExhaust, // Play top card and exhaust it
+    PutCardOnTopOfDrawPile(CardEnum), // Put a card on top of the draw pile
+    EnterSelectCardInDiscard, // Transition to SelectCardInDiscard state
+    PutRandomDiscardCardOnTop, // Put a random card from discard on top of draw pile
 }
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -158,6 +163,19 @@ pub enum BaseEffect {
         card: CardEnum,
     },
     EnterSelectCardInHand,
+    PlayTopCard {
+        source: Entity,
+        target: Entity,
+    },
+    PlayTopCardAndExhaust {
+        source: Entity,
+        target: Entity,
+    },
+    PutCardOnTopOfDrawPile {
+        card: CardEnum,
+    },
+    EnterSelectCardInDiscard,
+    PutRandomDiscardCardOnTop,
 }
 
 impl BaseEffect {
@@ -197,6 +215,11 @@ impl BaseEffect {
             Effect::Ethereal => BaseEffect::Ethereal { hand_index: 0 }, // hand_index should be set manually when queuing
             Effect::AddCardToDiscard(card) => BaseEffect::AddCardToDiscard { card },
             Effect::EnterSelectCardInHand => BaseEffect::EnterSelectCardInHand,
+            Effect::PlayTopCard => BaseEffect::PlayTopCard { source, target },
+            Effect::PlayTopCardAndExhaust => BaseEffect::PlayTopCardAndExhaust { source, target },
+            Effect::PutCardOnTopOfDrawPile(card) => BaseEffect::PutCardOnTopOfDrawPile { card },
+            Effect::EnterSelectCardInDiscard => BaseEffect::EnterSelectCardInDiscard,
+            Effect::PutRandomDiscardCardOnTop => BaseEffect::PutRandomDiscardCardOnTop,
         }
     }
 }

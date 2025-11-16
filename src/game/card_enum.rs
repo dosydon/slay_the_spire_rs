@@ -34,6 +34,11 @@ pub enum CardEnum {
     Offering,
     Shockwave,
     Uppercut,
+    Intimidate,
+    SeeingRed,
+    GhostlyArmor,
+    Havoc,
+    Headbutt,
     // Status Cards
     Slimed,
     Wound,
@@ -75,6 +80,11 @@ impl CardEnum {
             CardEnum::Offering => "Offering",
             CardEnum::Shockwave => "Shockwave",
             CardEnum::Uppercut => "Uppercut",
+            CardEnum::Intimidate => "Intimidate",
+            CardEnum::SeeingRed => "Seeing Red",
+            CardEnum::GhostlyArmor => "Ghostly Armor",
+            CardEnum::Havoc => "Havoc",
+            CardEnum::Headbutt => "Headbutt",
             CardEnum::Slimed => "Slimed",
             CardEnum::Wound => "Wound",
         }

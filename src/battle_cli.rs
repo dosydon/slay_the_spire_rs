@@ -227,6 +227,9 @@ impl BattleCli {
                 Action::SelectCardInHand(card_idx) => {
                     // Handle card selection for upgrade
                 },
+                Action::SelectCardInDiscard(card_idx) => {
+                    // Handle card selection from discard pile
+                },
                 Action::EndTurn => {
                     end_turn_action = Some(action_index);
                 }
@@ -520,6 +523,21 @@ impl BattleCli {
                 }
                 crate::game::effect::Effect::ActivateBrutality => {
                     parts.push("⚡ Brutality active".to_string());
+                }
+                crate::game::effect::Effect::PlayTopCard => {
+                    parts.push("🎴 Play top card".to_string());
+                }
+                crate::game::effect::Effect::PlayTopCardAndExhaust => {
+                    parts.push("🎴 Play & exhaust top card".to_string());
+                }
+                crate::game::effect::Effect::PutCardOnTopOfDrawPile(card) => {
+                    parts.push(format!("⬆️ Put {} on top", card.name()));
+                }
+                crate::game::effect::Effect::PutRandomDiscardCardOnTop => {
+                    parts.push("🔄 Put discard on top".to_string());
+                }
+                crate::game::effect::Effect::EnterSelectCardInDiscard => {
+                    parts.push("📋 Select from discard".to_string());
                 }
             }
         }

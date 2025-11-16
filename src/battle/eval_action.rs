@@ -24,6 +24,14 @@ impl Battle {
                     _ => {}
                 }
             }
+            crate::battle::action::BattleState::SelectCardInDiscard => {
+                match action {
+                    Action::PlayCard(_, _) => return Err(BattleError::InvalidAction),
+                    Action::EndTurn => return Err(BattleError::InvalidAction),
+                    Action::SelectCardInHand(_) => return Err(BattleError::InvalidAction),
+                    _ => {}
+                }
+            }
         }
 
         match action {
@@ -72,6 +80,20 @@ impl Battle {
 
                     // Replace the card in hand with the upgraded version
                     self.cards.replace_card_in_hand(card_index, upgraded_card);
+                }
+
+                // Return to player turn state
+                self.battle_state = crate::battle::action::BattleState::PlayerTurn;
+            }
+            Action::SelectCardInDiscard(card_index) => {
+                if card_index >= self.cards.discard_pile_size() {
+                    return Err(BattleError::CardNotInDiscardPile);
+                }
+
+                // Get the selected card from discard pile and put it on top of draw pile
+                if let Some(card_to_move) = self.cards.remove_from_discard_pile(card_index) {
+                    // Put on top of draw pile
+                    self.cards.put_card_on_top_of_deck(card_to_move);
                 }
 
                 // Return to player turn state

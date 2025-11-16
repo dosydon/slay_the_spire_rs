@@ -25,6 +25,8 @@ impl CardRewardPool {
             CardEnum::Thunderclap,
             CardEnum::TwinStrike,
             CardEnum::WildStrike,
+            CardEnum::Havoc,
+            CardEnum::Headbutt,
             // Status cards typically aren't rewards (exclude Slimed, Wound)
         ];
 
@@ -90,6 +92,11 @@ impl CardRewardPool {
             CardEnum::Offering => crate::cards::ironclad::offering::offering(),
             CardEnum::Shockwave => crate::cards::ironclad::shockwave::shockwave(),
             CardEnum::Uppercut => crate::cards::ironclad::uppercut::uppercut(),
+            CardEnum::Intimidate => crate::cards::ironclad::intimidate::intimidate(),
+            CardEnum::SeeingRed => crate::cards::ironclad::seeing_red::seeing_red(),
+            CardEnum::GhostlyArmor => crate::cards::ironclad::ghostly_armor::ghostly_armor(),
+            CardEnum::Havoc => crate::cards::ironclad::havoc::havoc(),
+            CardEnum::Headbutt => crate::cards::ironclad::headbutt::headbutt(),
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
             CardEnum::Wound => crate::cards::status::wound::wound(),
         }

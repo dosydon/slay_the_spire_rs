@@ -45,4 +45,18 @@ impl Deck {
     pub fn is_empty(&self) -> bool {
         self.cards.is_empty()
     }
+
+    /// Look at the top card without removing it
+    pub fn peek_top_card(&self) -> Option<Card> {
+        if self.cards.is_empty() {
+            None
+        } else {
+            Some(self.cards[0].clone())
+        }
+    }
+
+    /// Put a card on top of the deck
+    pub fn put_card_on_top(&mut self, card: Card) {
+        self.cards.insert(0, card);
+    }
 }
