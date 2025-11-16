@@ -100,6 +100,7 @@ impl Card {
             CardEnum::Anger => crate::cards::ironclad::anger::anger_upgraded(),
             CardEnum::SwordBoomerang => crate::cards::ironclad::sword_boomerang::sword_boomerang_upgraded(),
             CardEnum::Hemokinesis => crate::cards::ironclad::hemokinesis::hemokinesis_upgraded(),
+            CardEnum::Armaments => crate::cards::ironclad::armaments::armaments_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
         }

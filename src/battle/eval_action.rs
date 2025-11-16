@@ -9,6 +9,23 @@ impl Battle {
             return Err(BattleError::GameAlreadyOver);
         }
 
+        // Validate action based on current battle state
+        match &self.battle_state {
+            crate::battle::action::BattleState::PlayerTurn => {
+                match action {
+                    Action::SelectCardInHand(_) => return Err(BattleError::InvalidAction),
+                    _ => {}
+                }
+            }
+            crate::battle::action::BattleState::SelectCardInHand => {
+                match action {
+                    Action::PlayCard(_, _) => return Err(BattleError::InvalidAction),
+                    Action::EndTurn => return Err(BattleError::InvalidAction),
+                    _ => {}
+                }
+            }
+        }
+
         match action {
             Action::PlayCard(idx, target) => {
                 if idx >= self.cards.hand_size() {
@@ -39,6 +56,26 @@ impl Battle {
                 self.at_end_of_enemy_turn();
 
                 self.start_of_player_turn(rng);
+            }
+            Action::SelectCardInHand(card_index) => {
+                if card_index >= self.cards.hand_size() {
+                    return Err(BattleError::CardNotInHand);
+                }
+
+                // Get the selected card and upgrade it
+                let hand = self.cards.get_hand();
+                let card = &hand[card_index];
+
+                // Only upgrade if not already upgraded
+                if !card.is_upgraded() {
+                    let upgraded_card = card.clone().upgrade();
+
+                    // Replace the card in hand with the upgraded version
+                    self.cards.replace_card_in_hand(card_index, upgraded_card);
+                }
+
+                // Return to player turn state
+                self.battle_state = crate::battle::action::BattleState::PlayerTurn;
             }
         }
         

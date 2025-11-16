@@ -55,6 +55,12 @@ impl DeckHandPile {
             None
         }
     }
+
+    pub(in crate::battle) fn replace_card_in_hand(&mut self, hand_index: usize, new_card: Card) {
+        if hand_index < self.hand.len() {
+            self.hand[hand_index] = new_card;
+        }
+    }
     
     pub(in crate::battle) fn discard_entire_hand(&mut self) {
         while !self.hand.is_empty() {

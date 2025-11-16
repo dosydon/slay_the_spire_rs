@@ -38,6 +38,7 @@ pub enum Effect {
     ApplyWeakAll (u32), // Apply Weak to all enemies
     Ethereal, // Card will be exhausted at end of turn
     AddCardToDiscard (CardEnum), // Add a card to discard pile
+    EnterSelectCardInHand, // Transition to SelectCardInHand state
 }
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -147,6 +148,7 @@ pub enum BaseEffect {
     AddCardToDiscard {
         card: CardEnum,
     },
+    EnterSelectCardInHand,
 }
 
 impl BaseEffect {
@@ -183,6 +185,7 @@ impl BaseEffect {
             Effect::ApplyWeakAll(duration) => BaseEffect::ApplyWeakAll { duration },
             Effect::Ethereal => BaseEffect::Ethereal { hand_index: 0 }, // hand_index should be set manually when queuing
             Effect::AddCardToDiscard(card) => BaseEffect::AddCardToDiscard { card },
+            Effect::EnterSelectCardInHand => BaseEffect::EnterSelectCardInHand,
         }
     }
 }

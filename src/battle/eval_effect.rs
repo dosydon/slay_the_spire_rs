@@ -273,6 +273,10 @@ impl Battle {
                 let created_card = card_reward_pool.create_card_from_enum(*card);
                 self.cards.add_card_to_discard(created_card);
             },
+            BaseEffect::EnterSelectCardInHand => {
+                // Transition to SelectCardInHand state
+                self.battle_state = crate::battle::action::BattleState::SelectCardInHand;
+            },
         }
     }
 

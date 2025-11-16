@@ -24,6 +24,7 @@ pub mod bludgeon;
 pub mod anger;
 pub mod sword_boomerang;
 pub mod hemokinesis;
+pub mod armaments;
 
 pub use strike::strike;
 pub use strike::strike_upgraded;
@@ -75,3 +76,5 @@ pub use sword_boomerang::sword_boomerang;
 pub use sword_boomerang::sword_boomerang_upgraded;
 pub use hemokinesis::hemokinesis;
 pub use hemokinesis::hemokinesis_upgraded;
+pub use armaments::armaments;
+pub use armaments::armaments_upgraded;

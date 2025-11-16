@@ -84,6 +84,7 @@ impl CardRewardPool {
             CardEnum::Anger => crate::cards::ironclad::anger::anger(),
             CardEnum::SwordBoomerang => crate::cards::ironclad::sword_boomerang::sword_boomerang(),
             CardEnum::Hemokinesis => crate::cards::ironclad::hemokinesis::hemokinesis(),
+            CardEnum::Armaments => crate::cards::ironclad::armaments::armaments(),
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
             CardEnum::Wound => crate::cards::status::wound::wound(),
         }

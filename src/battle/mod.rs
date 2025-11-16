@@ -15,6 +15,7 @@ mod listener_manager;
 
 use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::GreenLouseMove, jaw_worm::JawWormMove, enemy_enum::{EnemyEnum, EnemyMove}}, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, enemy::EnemyTrait, global_info::GlobalInfo}, relics::Relic};
 use self::{target::Entity, events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
+use crate::battle::action::BattleState;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BattleError {
@@ -47,6 +48,8 @@ pub struct Battle {
     powers: Vec<crate::game::card::Card>,
     /// Queue of effects to be processed
     effect_queue: Vec<BaseEffect>,
+    /// Current battle state
+    battle_state: BattleState,
 }
 
 impl Battle {
@@ -74,6 +77,7 @@ impl Battle {
             relics: Vec::new(),
             powers: Vec::new(),
             effect_queue: Vec::new(),
+            battle_state: BattleState::PlayerTurn,
         };
 
         // Initialize event listeners for enemies
@@ -112,6 +116,16 @@ impl Battle {
     /// Get the final HP after battle for syncing back to Game
     pub fn get_final_player_hp(&self) -> u32 {
         self.player.battle_info.get_hp()
+    }
+
+    /// Get the current battle state
+    pub fn get_battle_state(&self) -> BattleState {
+        self.battle_state.clone()
+    }
+
+    /// Set the battle state
+    pub fn set_battle_state(&mut self, state: BattleState) {
+        self.battle_state = state;
     }
 
         

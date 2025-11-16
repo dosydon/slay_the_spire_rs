@@ -214,6 +214,9 @@ impl BattleCli {
                 Action::PlayCard(card_idx, target) => {
                     card_actions.push((*card_idx, *target));
                 },
+                Action::SelectCardInHand(card_idx) => {
+                    // Handle card selection for upgrade
+                },
                 Action::EndTurn => {
                     end_turn_action = Some(action_index);
                 }
@@ -498,6 +501,9 @@ impl BattleCli {
                 }
                 crate::game::effect::Effect::AddCardToDiscard(card) => {
                     parts.push(format!("➕ Add {} to discard", card.name()));
+                }
+                crate::game::effect::Effect::EnterSelectCardInHand => {
+                    parts.push("🔧 Select card to upgrade".to_string());
                 }
             }
         }
