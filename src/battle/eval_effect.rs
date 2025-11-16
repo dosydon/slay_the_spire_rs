@@ -156,7 +156,7 @@ impl Battle {
             },
             BaseEffect::LoseStrengthAtEndOfTurn { source, amount } => {
                 // Create a LoseStrengthListener to handle strength loss at end of turn
-                let lose_listener = crate::battle::listeners::LoseStrengthListener::new(*source, *amount);
+                let lose_listener = crate::cards::ironclad::flex::LoseStrengthListener::new(*source, *amount);
                 self.add_listener(Box::new(lose_listener));
             },
             BaseEffect::ActivateEnrage { source, amount } => {
