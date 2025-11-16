@@ -228,7 +228,7 @@ mod tests {
 
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse = RedLouse::new(6, 13);
         let initial_enemy_hp = red_louse.get_hp();
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 

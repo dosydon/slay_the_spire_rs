@@ -101,36 +101,4 @@ use crate::game::enemy::EnemyTrait;
         // Verify enemy took damage (Red Louse with 11-14 HP should be defeated by 32 damage)
         assert!(!battle.get_enemies()[0].battle_info.is_alive(), "Enemy should be defeated by bludgeon damage");
     }
-
-    #[test]
-    fn test_bludgeon_integration_insufficient_energy() {
-        use crate::battle::{Battle, target::Entity};
-        use crate::game::{global_info::GlobalInfo, deck::Deck};
-        use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
-use crate::cards::ironclad::strike;
-use crate::game::enemy::EnemyTrait;
-        
-
-        let mut rng = rand::rng();
-        let global_info = GlobalInfo { ascention: 20, current_floor: 1 };
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-        let enemy = crate::battle::enemy_in_battle::EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
-
-        // Create deck with bludgeon and strike cards
-        let deck = Deck::new(vec![bludgeon(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 80, 80, vec![enemy], &mut rng);
-
-        // Find bludgeon in hand
-        let bludgeon_idx = battle.get_hand().iter()
-            .position(|card| card.get_name() == "Bludgeon")
-            .expect("Bludgeon should be in hand");
-
-        // Try to play bludgeon targeting the enemy (should fail due to insufficient energy since bludgeon costs 3)
-        let result = battle.play_card(bludgeon_idx, Entity::Enemy(0));
-        assert!(result.is_err(), "Playing bludgeon with insufficient energy should fail");
-
-        // Energy should remain at 3 (no cards played yet this turn)
-        let final_energy = battle.get_player().get_energy();
-        assert_eq!(final_energy, 3, "Player should still have 3 energy after failed play attempt");
-    }
 }

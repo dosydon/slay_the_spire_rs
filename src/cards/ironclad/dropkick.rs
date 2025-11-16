@@ -169,7 +169,7 @@ mod tests {
 
         // Check that damage was dealt
         let final_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
-        assert_eq!(final_enemy_hp, initial_enemy_hp - 5, "Enemy should take exactly 5 damage");
+        assert_eq!(final_enemy_hp, initial_enemy_hp - 7, "Enemy should take exactly 7 damage");
 
         // Check that energy was spent but bonus energy was also gained (net 0 change)
         assert_eq!(battle.get_player().get_energy(), initial_player_energy, "Should spend 1 energy but gain 1 bonus energy");

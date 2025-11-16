@@ -93,7 +93,7 @@ mod tests {
 
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 20, current_floor: 1 };
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse = RedLouse::new(6, 30);
         let enemy = crate::battle::enemy_in_battle::EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
         // Create deck with hemokinesis and strike cards
@@ -135,7 +135,7 @@ mod tests {
 
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 20, current_floor: 1 };
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let red_louse = RedLouse::new(6, 30);
         let enemy = crate::battle::enemy_in_battle::EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
         // Create deck with hemokinesis+ and strike cards
