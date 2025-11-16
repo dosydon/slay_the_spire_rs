@@ -1,7 +1,9 @@
 use super::Battle;
 use crate::enemies::enemy_enum::{EnemyEnum, EnemyMove};
 use crate::game::{effect::Effect, global_info::GlobalInfo};
-use crate::battle::{target::Entity, listeners::{CurlUpListener, EnrageListener}, events::{BattleEvent, EventListener}};
+use crate::battle::{target::Entity, events::{BattleEvent, EventListener}};
+use crate::enemies::red_louse::CurlUpListener;
+use crate::enemies::gremlin_nob::EnrageListener;
 use crate::enemies::gremlin_nob::GremlinNob;
 use crate::game::effect::BaseEffect;
 

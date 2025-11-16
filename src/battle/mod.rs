@@ -2,7 +2,6 @@ pub mod action;
 pub mod character_battle_info;
 pub mod target;
 pub mod events;
-pub mod listeners;
 pub mod player;
 pub mod deck_hand_pile;
 pub mod enemy_in_battle;

@@ -1,6 +1,7 @@
 use super::Battle;
 use crate::game::effect::BaseEffect;
 use crate::battle::{target::Entity, events::BattleEvent};
+use crate::enemies::gremlin_nob::EnrageListener;
 
 impl Battle {
     /// Apply a specific effect with its target
@@ -162,7 +163,7 @@ impl Battle {
             BaseEffect::ActivateEnrage { source, amount } => {
                 // Add EnrageListener for the specified enemy
                 if let Entity::Enemy(_enemy_idx) = source {
-                    let enrage_listener = crate::battle::listeners::EnrageListener::new(*source, *amount);
+                    let enrage_listener = EnrageListener::new(*source, *amount);
                     self.add_listener(Box::new(enrage_listener));
                 }
             },
