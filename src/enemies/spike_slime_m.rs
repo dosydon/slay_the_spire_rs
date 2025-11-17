@@ -90,7 +90,7 @@ impl SpikeSlimeM {
     pub fn get_move_effects(&self, move_type: SpikeSlimeMMove, global_info: &GlobalInfo) -> Vec<Effect> {
         match move_type {
             SpikeSlimeMMove::Lick => {
-                vec![Effect::ApplyFrail(1)]
+                vec![Effect::ApplyFrail { duration: 1 }]
             }
             SpikeSlimeMMove::FlameTackle => {
                 vec![
@@ -218,7 +218,7 @@ mod tests {
 
         // Test Lick effects
         let lick_effects = spike_slime.get_move_effects(SpikeSlimeMMove::Lick, &global_info);
-        assert_eq!(lick_effects, vec![Effect::ApplyFrail(1)]);
+        assert_eq!(lick_effects, vec![Effect::ApplyFrail { duration: 1 }]);
 
         // Test Flame Tackle effects
         let flame_tackle_effects = spike_slime.get_move_effects(SpikeSlimeMMove::FlameTackle, &global_info);

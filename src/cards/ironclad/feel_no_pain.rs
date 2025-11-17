@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}};
 
 /// Feel No Pain - Skill Card
 /// Cost: 1
@@ -7,7 +7,7 @@ pub fn feel_no_pain() -> Card {
     Card::new(CardEnum::FeelNoPain, 1, CardType::Skill, vec![
         Effect::GainPlatedArmor(5),
         Effect::Exhaust,
-        Effect::GainDefense(3), // Gain 3 Block when exhausted
+        Effect::GainDefense { amount: 3 }, // Gain 3 Block when exhausted
     ], false, true) // Initially playable
 }
 
@@ -18,7 +18,7 @@ pub fn feel_no_pain_upgraded() -> Card {
     Card::new(CardEnum::FeelNoPain, 1, CardType::Skill, vec![
         Effect::GainPlatedArmor(8),
         Effect::Exhaust,
-        Effect::GainDefense(3), // Gain 3 Block when exhausted
+        Effect::GainDefense { amount: 3 }, // Gain 3 Block when exhausted
     ], true, true) // Initially playable
 }
 
@@ -36,7 +36,7 @@ mod tests {
         assert_eq!(card.get_effects().len(), 3);
         assert_eq!(card.get_effects()[0], Effect::GainPlatedArmor(5));
         assert_eq!(card.get_effects()[1], Effect::Exhaust);
-        assert_eq!(card.get_effects()[2], Effect::GainDefense(3));
+        assert_eq!(card.get_effects()[2], Effect::GainDefense { amount: 3 });
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -51,7 +51,7 @@ mod tests {
         assert_eq!(card.get_effects().len(), 3);
         assert_eq!(card.get_effects()[0], Effect::GainPlatedArmor(8));
         assert_eq!(card.get_effects()[1], Effect::Exhaust);
-        assert_eq!(card.get_effects()[2], Effect::GainDefense(3));
+        assert_eq!(card.get_effects()[2], Effect::GainDefense { amount: 3 });
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -73,8 +73,8 @@ mod tests {
         assert_eq!(upgraded_effects[1], Effect::Exhaust);
 
         // Both should gain 3 defense when exhausted
-        assert_eq!(normal_effects[2], Effect::GainDefense(3));
-        assert_eq!(upgraded_effects[2], Effect::GainDefense(3));
+        assert_eq!(normal_effects[2], Effect::GainDefense { amount: 3 });
+        assert_eq!(upgraded_effects[2], Effect::GainDefense { amount: 3 });
     }
 
     #[test]

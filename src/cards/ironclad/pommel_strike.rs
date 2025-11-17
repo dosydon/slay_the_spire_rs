@@ -1,16 +1,16 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}};
 
 pub fn pommel_strike() -> Card {
     Card::new(CardEnum::PommelStrike, 1, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 },
-        Effect::DrawCard(1)
+        Effect::DrawCard { count: 1 }
     ], false, true)
 }
 
 pub fn pommel_strike_upgraded() -> Card {
     Card::new(CardEnum::PommelStrike, 1, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
-        Effect::DrawCard(2)
+        Effect::DrawCard { count: 2 }
     ], true, true)
 }
 
@@ -37,7 +37,7 @@ mod tests {
         // Should have 2 effects: AttackToTarget { amount: 9, num_attacks: 1 } and DrawCard(1)
         assert_eq!(effects.len(), 2);
         assert!(effects.contains(&Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }));
-        assert!(effects.contains(&Effect::DrawCard(1)));
+        assert!(effects.contains(&Effect::DrawCard { count: 1 }));
     }
 
     #[test]
@@ -58,7 +58,7 @@ mod tests {
         // Should have 2 effects: AttackToTarget { amount: 10, num_attacks: 1 } and DrawCard(2)
         assert_eq!(effects.len(), 2);
         assert!(effects.contains(&Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 }));
-        assert!(effects.contains(&Effect::DrawCard(2)));
+        assert!(effects.contains(&Effect::DrawCard { count: 2 }));
     }
 
     #[test]

@@ -10,11 +10,11 @@ pub fn dropkick() -> Card {
             Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 0 },
             Effect::ConditionalEffect(
                 Condition::TargetIsVulnerable,
-                Box::new(Effect::GainEnergy(1))
+                Box::new(Effect::GainEnergy { amount: 1 })
             ),
             Effect::ConditionalEffect(
                 Condition::TargetIsVulnerable,
-                Box::new(Effect::DrawCard(1))
+                Box::new(Effect::DrawCard { count: 1 })
             ),
         ],
         false, // not upgraded
@@ -32,11 +32,11 @@ pub fn dropkick_upgraded() -> Card {
             Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 0 },
             Effect::ConditionalEffect(
                 Condition::TargetIsVulnerable,
-                Box::new(Effect::GainEnergy(1))
+                Box::new(Effect::GainEnergy { amount: 1 })
             ),
             Effect::ConditionalEffect(
                 Condition::TargetIsVulnerable,
-                Box::new(Effect::DrawCard(1))
+                Box::new(Effect::DrawCard { count: 1 })
             ),
         ],
         true,  // upgraded

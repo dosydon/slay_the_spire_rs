@@ -83,7 +83,7 @@ impl AcidSlimeM {
     pub fn get_move_effects(&self, move_type: AcidSlimeMMove, global_info: &GlobalInfo) -> Vec<Effect> {
         match move_type {
             AcidSlimeMMove::CorrosiveSpit => {
-                vec![Effect::ApplyWeak(2)]
+                vec![Effect::ApplyWeak { duration: 2 }]
             }
             AcidSlimeMMove::Tackle => {
                 vec![Effect::AttackToTarget {
@@ -208,7 +208,7 @@ mod tests {
 
         // Test Corrosive Spit effects
         let corrosive_effects = acid_slime.get_move_effects(AcidSlimeMMove::CorrosiveSpit, &global_info);
-        assert_eq!(corrosive_effects, vec![Effect::ApplyWeak(2)]);
+        assert_eq!(corrosive_effects, vec![Effect::ApplyWeak { duration: 2 }]);
 
         // Test Tackle effects
         let tackle_effects = acid_slime.get_move_effects(AcidSlimeMMove::Tackle, &global_info);
@@ -294,7 +294,7 @@ mod tests {
         // Should get either CorrosiveSpit or Tackle
         match enemy_move {
             AcidSlimeMMove::CorrosiveSpit => {
-                assert_eq!(effects, vec![Effect::ApplyWeak(2)]);
+                assert_eq!(effects, vec![Effect::ApplyWeak { duration: 2 }]);
             }
             AcidSlimeMMove::Tackle => {
                 assert_eq!(effects, vec![Effect::AttackToTarget { amount: 7, num_attacks: 1, strength_multiplier: 1 }]);
@@ -327,7 +327,7 @@ mod tests {
         let effects = test_slime.get_move_effects(AcidSlimeMMove::CorrosiveSpit, &global_info);
         
         // Verify the effect is ApplyWeak(2)
-        assert_eq!(effects, vec![Effect::ApplyWeak(2)]);
+        assert_eq!(effects, vec![Effect::ApplyWeak { duration: 2 }]);
         
         // Apply the Weak effect to the player through the battle system
         use crate::game::effect::BaseEffect;

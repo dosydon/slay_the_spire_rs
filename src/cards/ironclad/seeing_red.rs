@@ -86,7 +86,7 @@ mod tests {
             .position(|c| c.get_name() == "Seeing Red")
             .expect("Seeing Red should be in hand");
 
-        let initial_energy = battle.player.get_energy();
+        let initial_energy = battle.get_player().get_energy();
         let initial_hand_size = battle.cards.hand_size();
         let initial_exhausted_size = battle.cards.exhausted_size();
 
@@ -94,9 +94,9 @@ mod tests {
         let result = battle.play_card(seeing_red_idx, Entity::Player);
         assert!(result.is_ok(), "Seeing Red should be playable");
 
-        // Check that player gained 2 energy
-        let final_energy = battle.player.get_energy();
-        assert_eq!(final_energy, initial_energy + 2, "Player should have gained 2 energy");
+        // Check that player gained 2 energy but spent 1 to play the card (net gain: +1)
+        let final_energy = battle.get_player().get_energy();
+        assert_eq!(final_energy, initial_energy + 2 - 1, "Player should have net gained 1 energy (gained 2, spent 1)");
 
         // Check that card was exhausted (removed from hand, not in discard)
         assert_eq!(battle.cards.hand_size(), initial_hand_size - 1, "Card should be removed from hand");
@@ -129,14 +129,14 @@ mod tests {
             .position(|c| c.get_name() == "Seeing Red+")
             .expect("Seeing Red+ should be in hand");
 
-        let initial_energy = battle.player.get_energy();
+        let initial_energy = battle.get_player().get_energy();
 
         // Play Seeing Red+
         let result = battle.play_card(seeing_red_idx, Entity::Player);
         assert!(result.is_ok(), "Seeing Red+ should be playable");
 
         // Check that player still gained 2 energy but spent 0 energy (net gain)
-        let final_energy = battle.player.get_energy();
+        let final_energy = battle.get_player().get_energy();
         assert_eq!(final_energy, initial_energy + 2, "Player should have gained 2 energy with 0 cost card");
 
         // Verify the card is exhausted

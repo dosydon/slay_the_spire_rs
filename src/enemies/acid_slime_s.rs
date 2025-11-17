@@ -39,7 +39,7 @@ impl AcidSlimeS {
     pub fn get_move_effects(&self, move_type: AcidSlimeSMove, global_info: &GlobalInfo) -> Vec<Effect> {
         match move_type {
             AcidSlimeSMove::Lick => {
-                vec![Effect::ApplyWeak(1)]
+                vec![Effect::ApplyWeak { duration: 1 }]
             }
             AcidSlimeSMove::Tackle => {
                 vec![Effect::AttackToTarget {
@@ -162,7 +162,7 @@ mod tests {
 
         // Test Lick effects
         let lick_effects = acid_slime.get_move_effects(AcidSlimeSMove::Lick, &global_info);
-        assert_eq!(lick_effects, vec![Effect::ApplyWeak(1)]);
+        assert_eq!(lick_effects, vec![Effect::ApplyWeak { duration: 1 }]);
 
         // Test Tackle effects
         let tackle_effects = acid_slime.get_move_effects(AcidSlimeSMove::Tackle, &global_info);
@@ -208,6 +208,6 @@ mod tests {
         
         // First move should be Lick (applies Weak)
         assert_eq!(enemy_move, AcidSlimeSMove::Lick);
-        assert_eq!(effects, vec![Effect::ApplyWeak(1)]);
+        assert_eq!(effects, vec![Effect::ApplyWeak { duration: 1 }]);
     }
 }

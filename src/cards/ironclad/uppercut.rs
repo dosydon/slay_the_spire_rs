@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}};
 
 /// Uppercut - Attack Card
 /// Cost: 2
@@ -10,8 +10,8 @@ pub fn uppercut() -> Card {
             num_attacks: 1,
             strength_multiplier: 1,
         },
-        Effect::ApplyWeak(1),
-        Effect::ApplyVulnerable(1),
+        Effect::ApplyWeak { duration: 1 },
+        Effect::ApplyVulnerable { duration: 1 },
     ], false, true)
 }
 
@@ -25,8 +25,8 @@ pub fn uppercut_upgraded() -> Card {
             num_attacks: 1,
             strength_multiplier: 1,
         },
-        Effect::ApplyWeak(2),
-        Effect::ApplyVulnerable(2),
+        Effect::ApplyWeak { duration: 2 },
+        Effect::ApplyVulnerable { duration: 2 },
     ], true, true)
 }
 
@@ -85,12 +85,12 @@ mod tests {
         });
 
         // Normal should apply 1 Weak, upgraded should apply 2 Weak
-        assert_eq!(normal_effects[1], Effect::ApplyWeak(1));
-        assert_eq!(upgraded_effects[1], Effect::ApplyWeak(2));
+        assert_eq!(normal_effects[1], Effect::ApplyWeak { duration: 1 });
+        assert_eq!(upgraded_effects[1], Effect::ApplyWeak { duration: 2 });
 
         // Normal should apply 1 Vulnerable, upgraded should apply 2 Vulnerable
-        assert_eq!(normal_effects[2], Effect::ApplyVulnerable(1));
-        assert_eq!(upgraded_effects[2], Effect::ApplyVulnerable(2));
+        assert_eq!(normal_effects[2], Effect::ApplyVulnerable { duration: 1 });
+        assert_eq!(upgraded_effects[2], Effect::ApplyVulnerable { duration: 2 });
     }
 
     #[test]

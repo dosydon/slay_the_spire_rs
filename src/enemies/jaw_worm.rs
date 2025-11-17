@@ -58,8 +58,8 @@ impl JawWorm {
             }
             JawWormMove::Bellow => {
                 vec![
-                    Effect::GainStrength(Self::calculate_bellow_strength(global_info)),
-                    Effect::GainDefense(Self::calculate_bellow_block(global_info))
+                    Effect::GainStrength { amount: Self::calculate_bellow_strength(global_info) },
+                    Effect::GainDefense { amount: Self::calculate_bellow_block(global_info) }
                 ]
             }
             JawWormMove::Thrash => {
@@ -69,7 +69,7 @@ impl JawWorm {
                         num_attacks: 1,
                         strength_multiplier: 1
                     },
-                    Effect::GainDefense(5)
+                    Effect::GainDefense { amount: 5 }
                 ]
             }
         }
@@ -130,8 +130,8 @@ impl JawWorm {
     pub fn apply_initial_bellow_effects(&self, global_info: &GlobalInfo) -> Vec<Effect> {
         if self.is_act3 {
             vec![
-                Effect::GainStrength(Self::calculate_bellow_strength(global_info)),
-                Effect::GainDefense(Self::calculate_bellow_block(global_info))
+                Effect::GainStrength { amount: Self::calculate_bellow_strength(global_info) },
+                Effect::GainDefense { amount: Self::calculate_bellow_block(global_info) }
             ]
         } else {
             Vec::new()
@@ -338,11 +338,11 @@ mod tests {
         
         for effect in &effects {
             match effect {
-                Effect::GainStrength(amount) => {
+                Effect::GainStrength { amount } => {
                     assert_eq!(*amount, 3);
                     found_strength = true;
                 }
-                Effect::GainDefense(amount) => {
+                Effect::GainDefense { amount } => {
                     assert_eq!(*amount, 6);
                     found_defense = true;
                 }
@@ -371,7 +371,7 @@ mod tests {
                     assert_eq!(*num_attacks, 1);
                     found_attack = true;
                 }
-                Effect::GainDefense(amount) => {
+                Effect::GainDefense { amount } => {
                     assert_eq!(*amount, 5);
                     found_defense = true;
                 }
@@ -445,11 +445,11 @@ mod tests {
         
         for effect in &initial_effects {
             match effect {
-                Effect::GainStrength(amount) => {
+                Effect::GainStrength { amount } => {
                     assert_eq!(*amount, 3);
                     found_strength = true;
                 }
-                Effect::GainDefense(amount) => {
+                Effect::GainDefense { amount } => {
                     assert_eq!(*amount, 6);
                     found_defense = true;
                 }

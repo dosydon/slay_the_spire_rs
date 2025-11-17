@@ -185,8 +185,8 @@ impl Battle {
         // Check if any effect targets self/player  
         let targets_self = card.get_effects().iter().any(|effect| {
             matches!(effect,
-                Effect::GainDefense(_) |
-                Effect::GainStrength(_)
+                Effect::GainDefense { amount: _ } |
+                Effect::GainStrength { amount: _ }
             )
         });
         

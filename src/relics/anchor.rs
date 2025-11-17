@@ -22,7 +22,7 @@ impl EventListener for AnchorRelic {
         match event {
             BattleEvent::CombatStart { player } if !self.used && *player == self.owner => {
                 self.used = true;
-                vec![Effect::GainDefense(10)]
+                vec![Effect::GainDefense { amount: 10 }]
             }
             _ => vec![]
         }
@@ -59,7 +59,7 @@ mod tests {
         let effects = anchor.on_event(&combat_start_event);
 
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainDefense(10));
+        assert_eq!(effects[0], Effect::GainDefense { amount: 10 });
         assert!(!anchor.is_active()); // Used up
     }
 
@@ -94,7 +94,7 @@ mod tests {
         let player_combat_start = BattleEvent::CombatStart { player };
         let effects = anchor.on_event(&player_combat_start);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainDefense(10));
+        assert_eq!(effects[0], Effect::GainDefense { amount: 10 });
         assert!(!anchor.is_active());
     }
 

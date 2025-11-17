@@ -1,11 +1,11 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}};
 
 /// Impervious - Rare Skill Card
 /// Cost: 2
 /// Effect: Gain 30 Block. Exhaust.
 pub fn impervious() -> Card {
     Card::new(CardEnum::Impervious, 2, CardType::Skill, vec![
-        Effect::GainDefense(30),
+        Effect::GainDefense { amount: 30 },
         Effect::Exhaust,
     ], false, true)
 }
@@ -15,7 +15,7 @@ pub fn impervious() -> Card {
 /// Effect: Gain 40 Block. Exhaust.
 pub fn impervious_upgraded() -> Card {
     Card::new(CardEnum::Impervious, 2, CardType::Skill, vec![
-        Effect::GainDefense(40),
+        Effect::GainDefense { amount: 40 },
         Effect::Exhaust,
     ], true, true)
 }
@@ -32,7 +32,7 @@ mod tests {
         assert_eq!(card.get_cost(), 2);
         assert_eq!(card.get_card_type(), &CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::GainDefense(30));
+        assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 30 });
         assert_eq!(card.get_effects()[1], Effect::Exhaust);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -46,7 +46,7 @@ mod tests {
         assert_eq!(card.get_cost(), 2);
         assert_eq!(card.get_card_type(), &CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::GainDefense(40));
+        assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 40 });
         assert_eq!(card.get_effects()[1], Effect::Exhaust);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
@@ -65,8 +65,8 @@ mod tests {
         assert_eq!(upgraded_effects[1], Effect::Exhaust);
 
         // Normal should grant 30 block, upgraded should grant 40
-        assert_eq!(normal_effects[0], Effect::GainDefense(30));
-        assert_eq!(upgraded_effects[0], Effect::GainDefense(40));
+        assert_eq!(normal_effects[0], Effect::GainDefense { amount: 30 });
+        assert_eq!(upgraded_effects[0], Effect::GainDefense { amount: 40 });
     }
 
     #[test]

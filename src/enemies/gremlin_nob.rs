@@ -154,7 +154,7 @@ impl GremlinNob {
                 let damage = Self::calculate_skull_bash_damage(global_info);
                 vec![
                     Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
-                    Effect::ApplyVulnerable(2),
+                    Effect::ApplyVulnerable { duration: 2 },
                 ]
             }
             GremlinNobMove::BullRush => {
@@ -241,7 +241,7 @@ impl EventListener for EnrageListener {
         match event {
             BattleEvent::SkillCardPlayed { source } if *source == Entity::Player => {
                 // When the player plays a Skill card, the Gremlin Nob (this listener's owner) gains Strength
-                vec![Effect::GainStrength(self.enrage_amount)]
+                vec![Effect::GainStrength { amount: self.enrage_amount }]
             }
             _ => vec![]
         }
@@ -399,13 +399,13 @@ mod tests {
         let skull_bash_effects_asc0 = gremlin_nob.get_move_effects(GremlinNobMove::SkullBash, &global_info_asc0);
         assert_eq!(skull_bash_effects_asc0, vec![
             Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
-            Effect::ApplyVulnerable(2),
+            Effect::ApplyVulnerable { duration: 2 },
         ]);
         
         let skull_bash_effects_asc3 = gremlin_nob.get_move_effects(GremlinNobMove::SkullBash, &global_info_asc3);
         assert_eq!(skull_bash_effects_asc3, vec![
             Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
-            Effect::ApplyVulnerable(2),
+            Effect::ApplyVulnerable { duration: 2 },
         ]);
         
         // Test Bull Rush effects
@@ -489,7 +489,7 @@ mod tests {
             GremlinNobMove::SkullBash => {
                 assert_eq!(second_effects, vec![
                     Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
-                    Effect::ApplyVulnerable(2),
+                    Effect::ApplyVulnerable { duration: 2 },
                 ]);
             }
             GremlinNobMove::BullRush => {
@@ -556,7 +556,7 @@ mod tests {
 
         let effects = listener.on_event(&skill_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainStrength(2));
+        assert_eq!(effects[0], Effect::GainStrength { amount: 2 });
         assert!(listener.is_active()); // Still active after triggering
     }
 
@@ -586,12 +586,12 @@ mod tests {
         // First skill card
         let effects1 = listener.on_event(&skill_event);
         assert_eq!(effects1.len(), 1);
-        assert_eq!(effects1[0], Effect::GainStrength(3));
+        assert_eq!(effects1[0], Effect::GainStrength { amount: 3 });
 
         // Second skill card should also trigger
         let effects2 = listener.on_event(&skill_event);
         assert_eq!(effects2.len(), 1);
-        assert_eq!(effects2[0], Effect::GainStrength(3));
+        assert_eq!(effects2[0], Effect::GainStrength { amount: 3 });
 
         assert!(listener.is_active()); // Always active
     }
@@ -606,10 +606,10 @@ mod tests {
         };
 
         let effects_2 = listener_2.on_event(&skill_event);
-        assert_eq!(effects_2, vec![Effect::GainStrength(2)]);
+        assert_eq!(effects_2, vec![Effect::GainStrength { amount: 2 }]);
 
         let effects_3 = listener_3.on_event(&skill_event);
-        assert_eq!(effects_3, vec![Effect::GainStrength(3)]);
+        assert_eq!(effects_3, vec![Effect::GainStrength { amount: 3 }]);
     }
 
     #[test]

@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}};
 
 /// Offering - Rare Skill Card
 /// Cost: 0
@@ -6,8 +6,8 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 pub fn offering() -> Card {
     Card::new(CardEnum::Offering, 0, CardType::Skill, vec![
         Effect::LoseHp(6),
-        Effect::GainEnergy(2),
-        Effect::DrawCard(3),
+        Effect::GainEnergy { amount: 2 },
+        Effect::DrawCard { count: 3 },
         Effect::Exhaust,
     ], false, true)
 }
@@ -18,8 +18,8 @@ pub fn offering() -> Card {
 pub fn offering_upgraded() -> Card {
     Card::new(CardEnum::Offering, 0, CardType::Skill, vec![
         Effect::LoseHp(4),
-        Effect::GainEnergy(2),
-        Effect::DrawCard(5),
+        Effect::GainEnergy { amount: 2 },
+        Effect::DrawCard { count: 5 },
         Effect::Exhaust,
     ], true, true)
 }
@@ -39,8 +39,8 @@ mod tests {
         assert_eq!(card.get_card_type(), &CardType::Skill);
         assert_eq!(card.get_effects().len(), 4);
         assert_eq!(card.get_effects()[0], Effect::LoseHp(6));
-        assert_eq!(card.get_effects()[1], Effect::GainEnergy(2));
-        assert_eq!(card.get_effects()[2], Effect::DrawCard(3));
+        assert_eq!(card.get_effects()[1], Effect::GainEnergy { amount: 2 });
+        assert_eq!(card.get_effects()[2], Effect::DrawCard { count: 3 });
         assert_eq!(card.get_effects()[3], Effect::Exhaust);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -55,8 +55,8 @@ mod tests {
         assert_eq!(card.get_card_type(), &CardType::Skill);
         assert_eq!(card.get_effects().len(), 4);
         assert_eq!(card.get_effects()[0], Effect::LoseHp(4));
-        assert_eq!(card.get_effects()[1], Effect::GainEnergy(2));
-        assert_eq!(card.get_effects()[2], Effect::DrawCard(5));
+        assert_eq!(card.get_effects()[1], Effect::GainEnergy { amount: 2 });
+        assert_eq!(card.get_effects()[2], Effect::DrawCard { count: 5 });
         assert_eq!(card.get_effects()[3], Effect::Exhaust);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
@@ -77,10 +77,10 @@ mod tests {
         assert_eq!(normal_effects[0], Effect::LoseHp(6));
         assert_eq!(upgraded_effects[0], Effect::LoseHp(4));
 
-        assert_eq!(normal_effects[1], Effect::GainEnergy(2));
-        assert_eq!(upgraded_effects[1], Effect::GainEnergy(2));
-        assert_eq!(normal_effects[2], Effect::DrawCard(3));
-        assert_eq!(upgraded_effects[2], Effect::DrawCard(5));
+        assert_eq!(normal_effects[1], Effect::GainEnergy { amount: 2 });
+        assert_eq!(upgraded_effects[1], Effect::GainEnergy { amount: 2 });
+        assert_eq!(normal_effects[2], Effect::DrawCard { count: 3 });
+        assert_eq!(upgraded_effects[2], Effect::DrawCard { count: 5 });
         assert_eq!(normal_effects[3], Effect::Exhaust);
         assert_eq!(upgraded_effects[3], Effect::Exhaust);
     }

@@ -36,7 +36,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), &CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::GainDefense(5));
+        assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 5 });
         assert_eq!(card.get_effects()[1], Effect::EnterSelectCardInHand);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -50,7 +50,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), &CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::GainDefense(5));
+        assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 5 });
         assert_eq!(card.get_effects()[1], Effect::EnterSelectCardInHand);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
@@ -69,8 +69,8 @@ mod tests {
         assert_eq!(upgraded_effects.len(), 2);
 
         // Both should gain 5 defense
-        assert_eq!(normal_effects[0], Effect::GainDefense(5));
-        assert_eq!(upgraded_effects[0], Effect::GainDefense(5));
+        assert_eq!(normal_effects[0], Effect::GainDefense { amount: 5 });
+        assert_eq!(upgraded_effects[0], Effect::GainDefense { amount: 5 });
 
         // Both should enter select card state
         assert_eq!(normal_effects[1], Effect::EnterSelectCardInHand);

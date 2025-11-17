@@ -86,7 +86,7 @@ impl RedLouse {
                 }]
             }
             RedLouseMove::Grow => {
-                vec![Effect::GainStrength(3)]
+                vec![Effect::GainStrength { amount: 3 }]
             }
         }
     }
@@ -172,7 +172,7 @@ impl EventListener for CurlUpListener {
             BattleEvent::DamageTaken { target, amount, .. }
                 if *target == self.owner && *amount > 0 && !self.used => {
                 self.used = true;
-                vec![Effect::GainDefense(self.block_amount)]
+                vec![Effect::GainDefense { amount: self.block_amount }]
             }
             _ => vec![]
         }
@@ -391,7 +391,7 @@ mod tests {
         let (_move, effects) = louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have chosen Grow (since Attack would violate consecutive rule)
-        assert_eq!(effects, vec![Effect::GainStrength(3)]);
+        assert_eq!(effects, vec![Effect::GainStrength { amount: 3 }]);
         assert_eq!(louse.last_moves.last().unwrap(), &RedLouseMove::Grow);
     }
 
@@ -432,7 +432,7 @@ mod tests {
 
         let effects = listener.on_event(&damage_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainDefense(expected_block));
+        assert_eq!(effects[0], Effect::GainDefense { amount: expected_block });
         assert!(!listener.is_active()); // Used up
     }
 
@@ -515,7 +515,7 @@ mod tests {
         let (_move, effects) = louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have chosen Grow
-        assert_eq!(effects, vec![Effect::GainStrength(3)]);
+        assert_eq!(effects, vec![Effect::GainStrength { amount: 3 }]);
         assert_eq!(louse.last_moves.last().unwrap(), &RedLouseMove::Grow);
     }
 

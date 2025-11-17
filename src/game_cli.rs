@@ -273,10 +273,10 @@ impl GameCli {
                             }
                         }
                     },
-                    crate::game::effect::Effect::GainDefense(amount) => {
+                    crate::game::effect::Effect::GainDefense { amount } => {
                         println!("    - Gain {} Block", amount);
                     },
-                    crate::game::effect::Effect::DrawCard(count) => {
+                    crate::game::effect::Effect::DrawCard { count } => {
                         println!("    - Draw {} card(s)", count);
                     },
                     _ => {

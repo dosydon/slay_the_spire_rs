@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 /// Brutality Power Listener
@@ -23,7 +23,7 @@ impl EventListener for BrutalityListener {
                 // At the start of owner's turn, lose 1 HP and draw 1 card
                 vec![
                     Effect::LoseHp(1),
-                    Effect::DrawCard(1),
+                    Effect::DrawCard { count: 1 },
                 ]
             }
             _ => vec![]
@@ -97,7 +97,7 @@ mod tests {
 
         assert_eq!(effects.len(), 2);
         assert_eq!(effects[0], Effect::LoseHp(1));
-        assert_eq!(effects[1], Effect::DrawCard(1));
+        assert_eq!(effects[1], Effect::DrawCard { count: 1 });
 
         // Test turn start event for enemy (should not trigger)
         let enemy_turn_start = BattleEvent::TurnStart { entity: Entity::Enemy(0) };

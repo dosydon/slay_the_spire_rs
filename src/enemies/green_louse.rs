@@ -78,7 +78,7 @@ impl GreenLouse {
                 }]
             }
             GreenLouseMove::Weaken => {
-                vec![Effect::ApplyWeak(2)] // Apply 2 turns of weak
+                vec![Effect::ApplyWeak { duration: 2 }] // Apply 2 turns of weak
             }
         }
     }
@@ -204,7 +204,7 @@ mod tests {
         
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::ApplyWeak(turns) => {
+            Effect::ApplyWeak { duration: turns } => {
                 assert_eq!(*turns, 2);
             }
             _ => panic!("Expected ApplyWeak effect"),
@@ -292,7 +292,7 @@ mod tests {
         assert!(!character.is_weak());
         
         // Apply the weak effect
-        if let Effect::ApplyWeak(turns) = effects[0] {
+        if let Effect::ApplyWeak { duration: turns } = effects[0] {
             character.apply_weak(turns);
             assert!(character.is_weak());
             assert_eq!(character.get_weak_turns(), 2);

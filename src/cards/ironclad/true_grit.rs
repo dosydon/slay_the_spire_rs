@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// True Grit - Gain 7 Block. Exhaust 1 card from hand
 pub fn true_grit() -> Card {
@@ -6,7 +6,7 @@ pub fn true_grit() -> Card {
         CardEnum::TrueGrit,
         1,
         CardType::Skill,
-        vec![Effect::GainDefense(7), Effect::EnterSelectCardInHand],
+        vec![Effect::GainDefense { amount: 7 }, Effect::EnterSelectCardInHand],
         false, // not upgraded
         true,  // playable
     )
@@ -18,7 +18,7 @@ pub fn true_grit_upgraded() -> Card {
         CardEnum::TrueGrit,
         1,
         CardType::Skill,
-        vec![Effect::GainDefense(9), Effect::EnterSelectCardInHand],
+        vec![Effect::GainDefense { amount: 9 }, Effect::EnterSelectCardInHand],
         true,  // upgraded
         true,  // playable
     )
@@ -40,7 +40,7 @@ mod tests {
         assert_eq!(true_grit_card.get_card_type(), &CardType::Skill);
 
         let effects = true_grit_card.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::GainDefense(7))));
+        assert!(effects.iter().any(|e| matches!(e, Effect::GainDefense { amount: 7 })));
         assert!(effects.contains(&Effect::EnterSelectCardInHand));
     }
 
@@ -52,7 +52,7 @@ mod tests {
         assert_eq!(true_grit_plus.get_card_type(), &CardType::Skill);
 
         let effects = true_grit_plus.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::GainDefense(9))));
+        assert!(effects.iter().any(|e| matches!(e, Effect::GainDefense { amount: 9 })));
         assert!(effects.contains(&Effect::EnterSelectCardInHand));
         assert!(true_grit_plus.is_upgraded());
     }

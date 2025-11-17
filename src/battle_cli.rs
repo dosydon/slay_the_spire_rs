@@ -440,10 +440,10 @@ impl BattleCli {
                         parts.push(format!("🗡️ {} (all)", amount));
                     }
                 }
-                crate::game::effect::Effect::GainDefense(amount) => {
+                crate::game::effect::Effect::GainDefense { amount } => {
                     parts.push(format!("🛡️ {}", amount));
                 }
-                crate::game::effect::Effect::GainStrength(amount) => {
+                crate::game::effect::Effect::GainStrength { amount } => {
                     parts.push(format!("💪 +{}", amount));
                 }
                 crate::game::effect::Effect::LoseStrengthSelf(amount) => {
@@ -458,16 +458,16 @@ impl BattleCli {
                 crate::game::effect::Effect::GainRitual(amount) => {
                     parts.push(format!("✨ Ritual {}", amount));
                 }
-                crate::game::effect::Effect::ApplyWeak(duration) => {
+                crate::game::effect::Effect::ApplyWeak { duration } => {
                     parts.push(format!("🔻 Weak {}", duration));
                 }
-                crate::game::effect::Effect::ApplyVulnerable(duration) => {
+                crate::game::effect::Effect::ApplyVulnerable { duration } => {
                     parts.push(format!("🔻 Vulnerable {}", duration));
                 }
-                crate::game::effect::Effect::ApplyVulnerableAll(duration) => {
+                crate::game::effect::Effect::ApplyVulnerableAll { duration } => {
                     parts.push(format!("🔻 Vulnerable {} (all)", duration));
                 }
-                crate::game::effect::Effect::ApplyFrail(duration) => {
+                crate::game::effect::Effect::ApplyFrail { duration } => {
                     parts.push(format!("🔻 Frail {}", duration));
                 }
                 crate::game::effect::Effect::AddSlimed(count) => {
@@ -476,7 +476,7 @@ impl BattleCli {
                 crate::game::effect::Effect::AddCardToDrawPile(card) => {
                     parts.push(format!("➕ Add {} to Draw Pile", card.name()));
                 }
-                crate::game::effect::Effect::DrawCard(count) => {
+                crate::game::effect::Effect::DrawCard { count } => {
                     parts.push(format!("🎴 Draw {}", count));
                 }
                 crate::game::effect::Effect::Exhaust => {
@@ -506,10 +506,10 @@ impl BattleCli {
                 crate::game::effect::Effect::ApplyDamageReduction(percentage) => {
                     parts.push(format!("🛡️ -{}% Damage", percentage));
                 }
-                crate::game::effect::Effect::GainEnergy(amount) => {
+                crate::game::effect::Effect::GainEnergy { amount } => {
                     parts.push(format!("⚡ Gain {} Energy", amount));
                 }
-                crate::game::effect::Effect::ApplyWeakAll(duration) => {
+                crate::game::effect::Effect::ApplyWeakAll { duration } => {
                     parts.push(format!("😵 Weak All ({} turns)", duration));
                 }
                 crate::game::effect::Effect::Ethereal => {

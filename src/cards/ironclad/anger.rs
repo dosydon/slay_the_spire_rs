@@ -137,9 +137,9 @@ mod tests {
         let result = battle.play_card(anger_idx, Entity::Enemy(0));
         assert!(result.is_ok(), "Anger should be playable");
 
-        // Check that a copy was added to discard pile
-        assert_eq!(battle.cards.discard_pile_size(), initial_discard_size + 1,
-                  "Should have added a copy of Anger to discard pile");
+        // Check that a copy was added to discard pile (played card + effect = 2 cards)
+        assert_eq!(battle.cards.discard_pile_size(), initial_discard_size + 2,
+                  "Should have added played Anger + copy of Anger to discard pile");
 
         // Check that the added card is Anger
         let discard_cards = battle.cards.get_discard_pile();
