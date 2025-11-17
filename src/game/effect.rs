@@ -26,19 +26,19 @@ pub enum Effect {
         amount: u32,
         num_attacks: u32,
     },
-    GainDefense (u32),
-    ApplyVulnerable (u32),
-    ApplyVulnerableAll (u32),
-    ApplyWeak (u32),
-    ApplyFrail (u32),
-    GainStrength (u32),
+    GainDefense { amount: u32 },
+    ApplyVulnerable { duration: u32 },
+    ApplyVulnerableAll { duration: u32 },
+    ApplyWeak { duration: u32 },
+    ApplyFrail { duration: u32 },
+    GainStrength { amount: u32 },
     LoseStrengthSelf (u32), // Self strength loss (targets source)
     LoseStrengthTarget (u32), // Target strength loss (targets target)
     LoseStrengthAtEndOfTurn (u32),
     GainRitual (u32),
     AddSlimed (u32),
     AddCardToDrawPile (CardEnum),
-    DrawCard (u32),
+    DrawCard { count: u32 },
     Exhaust,
     ActivateEnrage (u32), // Activates Enrage listener for this enemy
     ActivateEmbrace, // Activates Embrace listener for the player
@@ -48,8 +48,8 @@ pub enum Effect {
     DoubleBlock, // Double current block
     ActivateCombust (u32), // Activates Combust listener for dealing damage at end of turn
     ApplyDamageReduction (u32), // Target takes X% less damage (like Disarm)
-    GainEnergy (u32), // Gain energy
-    ApplyWeakAll (u32), // Apply Weak to all enemies
+    GainEnergy { amount: u32 }, // Gain energy
+    ApplyWeakAll { duration: u32 }, // Apply Weak to all enemies
     Ethereal, // Card will be exhausted at end of turn
     AddCardToDiscard (CardEnum), // Add a card to discard pile
     EnterSelectCardInHand, // Transition to SelectCardInHand state
@@ -214,19 +214,19 @@ impl BaseEffect {
                 BaseEffect::AttackAllEnemies { source, amount, num_attacks }
             }
             Effect::AttackToTargetWithBlock => BaseEffect::AttackToTargetWithBlock { source, target },
-            Effect::GainDefense(amount) => BaseEffect::GainDefense { source, amount },
-            Effect::ApplyVulnerable(duration) => BaseEffect::ApplyVulnerable { target, duration },
-            Effect::ApplyVulnerableAll(duration) => BaseEffect::ApplyVulnerableAll { duration },
-            Effect::ApplyWeak(duration) => BaseEffect::ApplyWeak { target, duration },
-            Effect::ApplyFrail(duration) => BaseEffect::ApplyFrail { target, duration },
-            Effect::GainStrength(amount) => BaseEffect::GainStrength { source, amount },
+            Effect::GainDefense { amount } => BaseEffect::GainDefense { source, amount },
+            Effect::ApplyVulnerable { duration } => BaseEffect::ApplyVulnerable { target, duration },
+            Effect::ApplyVulnerableAll { duration } => BaseEffect::ApplyVulnerableAll { duration },
+            Effect::ApplyWeak { duration } => BaseEffect::ApplyWeak { target, duration },
+            Effect::ApplyFrail { duration } => BaseEffect::ApplyFrail { target, duration },
+            Effect::GainStrength { amount } => BaseEffect::GainStrength { source, amount },
             Effect::LoseStrengthSelf(amount) => BaseEffect::LoseStrengthSelf { source, amount },
             Effect::LoseStrengthTarget(amount) => BaseEffect::LoseStrengthTarget { target, amount },
             Effect::LoseStrengthAtEndOfTurn(amount) => BaseEffect::LoseStrengthAtEndOfTurn { source, amount },
             Effect::GainRitual(amount) => BaseEffect::GainRitual { source, amount },
             Effect::AddSlimed(count) => BaseEffect::AddSlimed { target, count },
             Effect::AddCardToDrawPile(card) => BaseEffect::AddCardToDrawPile { source, card },
-            Effect::DrawCard(count) => BaseEffect::DrawCard { source, count },
+            Effect::DrawCard { count } => BaseEffect::DrawCard { source, count },
             Effect::Exhaust => BaseEffect::Exhaust { hand_index: 0 }, // hand_index should be set manually when queuing
             Effect::ActivateEnrage(amount) => BaseEffect::ActivateEnrage { source, amount },
             Effect::ActivateEmbrace => BaseEffect::ActivateEmbrace { source },
@@ -237,8 +237,8 @@ impl BaseEffect {
             Effect::DoubleBlock => BaseEffect::DoubleBlock { source },
             Effect::ActivateCombust(amount) => BaseEffect::ActivateCombust { source, amount },
             Effect::ApplyDamageReduction(percentage) => BaseEffect::ApplyDamageReduction { target, percentage },
-            Effect::GainEnergy(amount) => BaseEffect::GainEnergy { source, amount },
-            Effect::ApplyWeakAll(duration) => BaseEffect::ApplyWeakAll { duration },
+            Effect::GainEnergy { amount } => BaseEffect::GainEnergy { source, amount },
+            Effect::ApplyWeakAll { duration } => BaseEffect::ApplyWeakAll { duration },
             Effect::Ethereal => BaseEffect::Ethereal { hand_index: 0 }, // hand_index should be set manually when queuing
             Effect::AddCardToDiscard(card) => BaseEffect::AddCardToDiscard { card },
             Effect::EnterSelectCardInHand => BaseEffect::EnterSelectCardInHand,

@@ -1,9 +1,9 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 pub fn defend() -> Card {
-    Card::new(CardEnum::Defend, 1, CardType::Skill, vec![Effect::GainDefense(5)], false, true)
+    Card::new_with_condition(CardEnum::Defend, 1, CardType::Skill, vec![Effect::GainDefense { amount: 5 }], false, Condition::True)
 }
 
 pub fn defend_upgraded() -> Card {
-    Card::new(CardEnum::Defend, 1, CardType::Skill, vec![Effect::GainDefense(8)], true, true)
+    Card::new_with_condition(CardEnum::Defend, 1, CardType::Skill, vec![Effect::GainDefense { amount: 8 }], true, Condition::True)
 }

@@ -1,23 +1,27 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
-/// Armaments - Skill Card
-/// Cost: 1
-/// Effect: Gain 5 Block. Upgrade a card in your hand for the rest of combat.
+/// Armaments - Gain 5 Block. Upgrade a card in your hand for the rest of combat.
 pub fn armaments() -> Card {
-    Card::new(CardEnum::Armaments, 1, CardType::Skill, vec![
-        Effect::GainDefense(5),
-        Effect::EnterSelectCardInHand,
-    ], false, true)
+    Card::new_with_condition(
+        CardEnum::Armaments,
+        1,
+        CardType::Skill,
+        vec![Effect::GainDefense { amount: 5 }, Effect::EnterSelectCardInHand],
+        false, // not upgraded
+        Condition::True,
+    )
 }
 
-/// Armaments+ (Upgraded)
-/// Cost: 1
-/// Effect: Gain 5 Block. Upgrade a card in your hand for the rest of combat.
+/// Armaments+ (Upgraded version) - Gain 5 Block. Upgrade a card in your hand for the rest of combat.
 pub fn armaments_upgraded() -> Card {
-    Card::new(CardEnum::Armaments, 1, CardType::Skill, vec![
-        Effect::GainDefense(5),
-        Effect::EnterSelectCardInHand,
-    ], true, true)
+    Card::new_with_condition(
+        CardEnum::Armaments,
+        1,
+        CardType::Skill,
+        vec![Effect::GainDefense { amount: 5 }, Effect::EnterSelectCardInHand],
+        true,  // upgraded
+        Condition::True,
+    )
 }
 
 #[cfg(test)]

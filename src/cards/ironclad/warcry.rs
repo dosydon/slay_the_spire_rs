@@ -1,26 +1,26 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Warcry - Draw 1 cards. Put 1 card on top of draw pile
 pub fn warcry() -> Card {
-    Card::new(
+    Card::new_with_condition(
         CardEnum::Warcry,
         0,
         CardType::Skill,
-        vec![Effect::DrawCard(1), Effect::EnterSelectCardInHandToPutOnDeck],
+        vec![Effect::DrawCard { count: 1 }, Effect::EnterSelectCardInHandToPutOnDeck],
         false, // not upgraded
-        true,  // playable
+        Condition::True,
     )
 }
 
 /// Warcry+ (upgraded version)
 pub fn warcry_upgraded() -> Card {
-    Card::new(
+    Card::new_with_condition(
         CardEnum::Warcry,
         0,
         CardType::Skill,
-        vec![Effect::DrawCard(2), Effect::EnterSelectCardInHandToPutOnDeck],
+        vec![Effect::DrawCard { count: 2 }, Effect::EnterSelectCardInHandToPutOnDeck],
         true,  // upgraded
-        true,  // playable
+        Condition::True,
     )
 }
 
@@ -39,7 +39,7 @@ mod tests {
         assert_eq!(warcry_card.get_card_type(), &CardType::Skill);
 
         let effects = warcry_card.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::DrawCard(1))));
+        assert!(effects.iter().any(|e| matches!(e, Effect::DrawCard { count: 1 })));
         assert!(effects.contains(&Effect::EnterSelectCardInHandToPutOnDeck));
     }
 
@@ -51,7 +51,7 @@ mod tests {
         assert_eq!(warcry_plus.get_card_type(), &CardType::Skill);
 
         let effects = warcry_plus.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::DrawCard(2))));
+        assert!(effects.iter().any(|e| matches!(e, Effect::DrawCard { count: 2 })));
         assert!(effects.contains(&Effect::EnterSelectCardInHandToPutOnDeck));
         assert!(warcry_plus.is_upgraded());
     }

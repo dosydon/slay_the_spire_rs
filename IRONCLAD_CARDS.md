@@ -4,9 +4,10 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 
 ## Summary
 
-- ✅ **37 cards implemented** (3 Basic + 25 Common + 6 Rare + 3 Uncommon)
-- ❌ **37+ Ironclad cards not yet implemented** (remaining Common, Uncommon, Rare)
-- 🎯 **Implementation Progress: ~50%** of Ironclad cards
+- ✅ **44 cards implemented** (3 Basic + 28 Common + 6 Rare + 7 Uncommon)
+- ❌ **30+ Ironclad cards not yet implemented** (remaining Common, Uncommon, Rare)
+- 🎯 **Implementation Progress: ~59%** of Ironclad cards
+- 🚀 **Recent System Enhancement**: Replaced `is_playable` boolean with flexible `play_condition` system for complex card restrictions
 
 **Note:** All tables now include Cost, Cost+ (upgraded cost), Base Effects, and Upgraded Effects columns for clarity.
 
@@ -26,9 +27,9 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 |-----------|------|------|-------|-------------|---------------|--------------|------------------|
 | ✅ Anger | Attack | 0 | 0 | Yes | `src/cards/ironclad/anger.rs` | Deal 6 damage. Add copy to discard | Deal 8 damage. Add copy to discard |
 | ✅ Armaments | Skill | 1 | 1 | Yes | `src/cards/ironclad/armaments.rs` | Gain 5 Block. Upgrade a card in hand | Gain 5 Block. Upgrade ALL cards in hand |
-| ❌ Body Slam | Attack | 1 | 0 | No | - | Deal damage equal to your Block | Deal damage equal to your Block |
+| ✅ Body Slam | Attack | 1 | 0 | Yes | `src/cards/ironclad/body_slam.rs` | Deal damage equal to your Block | Deal damage equal to your Block |
 | ✅ Carnage | Attack | 2 | 2 | Yes | `src/cards/ironclad/carnage.rs` | Deal 20 damage. Ethereal | Deal 28 damage. Ethereal |
-| ❌ Clash | Attack | 0 | 0 | No | - | Deal 14 damage. Can only play if hand is all Attacks | Deal 18 damage. Can only play if hand is all Attacks |
+| ✅ Clash | Attack | 0 | 0 | Yes | `src/cards/ironclad/clash.rs` | Deal 14 damage. **Condition**: Hand must be all Attacks | Deal 18 damage. **Condition**: Hand must be all Attacks |
 | ✅ Cleave | Attack | 1 | 1 | Yes | `src/cards/ironclad/cleave.rs` | Deal 8 damage to ALL enemies | Deal 11 damage to ALL enemies |
 | ✅ Clothesline | Attack | 2 | 2 | Yes | `src/cards/ironclad/clothesline.rs` | Deal 12 damage + Apply 2 Weak | Deal 14 damage + Apply 3 Weak |
 | ✅ Flex | Skill | 0 | 0 | Yes | `src/cards/ironclad/flex.rs` | Gain 2 Strength. Lose 2 at end of turn | Gain 4 Strength. Lose 4 at end of turn |
@@ -87,7 +88,7 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 | ✅ Hemokinesis | Attack | 1 | 1 | Yes | `src/cards/ironclad/hemokinesis.rs` | Lose 2 HP. Deal 15 damage | Lose 2 HP. Deal 22 damage |
 | ✅ Inflame | Power | 1 | 1 | Yes | `src/cards/ironclad/inflame.rs` | Gain 2 Strength | Gain 3 Strength |
 | ❌ Infernal Blade | Skill | 1 | 0 | No | - | Add random Attack to hand. Exhaust | Add random Attack to hand. Exhaust |
-| ❌ Intimidate | Skill | 0 | 0 | No | - | Apply 1 Weak to ALL. Exhaust | Apply 2 Weak to ALL. Exhaust |
+| ✅ Intimidate | Skill | 0 | 0 | Yes | `src/cards/ironclad/intimidate.rs` | Apply 1 Weak to ALL enemies. Exhaust | Apply 2 Weak to ALL enemies. Exhaust |
 | ❌ Metallicize | Power | 1 | 1 | No | - | At turn end, gain 3 Block | At turn end, gain 4 Block |
 | ❌ Power Through | Skill | 1 | 1 | No | - | Add 2 Wounds to hand. Gain 15 Block | Add 2 Wounds to hand. Gain 20 Block |
 | ❌ Pummel | Attack | 1 | 1 | No | - | Deal 2 damage 4 times. Exhaust | Deal 2 damage 5 times. Exhaust |
@@ -97,7 +98,7 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 | ❌ Rupture | Power | 1 | 1 | No | - | When you lose HP: gain 1 Strength | When you lose HP: gain 1 Strength |
 | ❌ Searing Blow | Attack | 2 | 2 | No | - | Deal 12 damage. Can upgrade infinitely | Deal 16 damage. Can upgrade infinitely |
 | ❌ Second Wind | Skill | 1 | 1 | No | - | Exhaust non-Attacks. Gain 5 Block per card | Exhaust non-Attacks. Gain 7 Block per card |
-| ❌ Seeing Red | Skill | 1 | 0 | No | - | Gain 2 Energy. Exhaust | Gain 2 Energy. Exhaust |
+| ✅ Seeing Red | Skill | 1 | 0 | Yes | `src/cards/ironclad/seeing_red.rs` | Gain 2 Energy. Exhaust | Gain 2 Energy. Exhaust |
 | ❌ Sentinel | Skill | 1 | 0 | No | - | Gain 5 Block. If no Block: gain 2 Energy | Gain 8 Block. If no Block: gain 3 Energy |
 | ❌ Sever Soul | Attack | 2 | 2 | No | - | Deal 16 damage. Exhaust non-Attacks | Deal 22 damage. Exhaust non-Attacks |
 | ❌ Spot Weakness | Skill | 1 | 1 | No | - | If enemy attacking: gain 3 Strength. Exhaust | If enemy attacking: gain 4 Strength. Exhaust |
@@ -137,15 +138,16 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 - ✅ Comprehensive test coverage for implemented cards
 
 ### Missing Features for Full Implementation
-- ❌ Cost manipulation mechanics (Warcry)
+- ✅ Cost manipulation mechanics (Seeing Red energy gain)
 - ✅ Deck manipulation (top of deck, discard pile interactions)
 - ✅ Exhaust mechanics for card effects (Havoc, etc.)
-- ✅ Energy manipulation (Offering)
+- ✅ Energy manipulation (Seeing Red, Offering)
 - ✅ Self-damage mechanics (Hemokinesis, Offering)
 - ✅ Card upgrade during combat (Armaments)
-- ❌ Conditional effects (Clash requirements, etc.)
+- ✅ Conditional effects (Clash hand requirements)
+- ✅ Multi-target status effects (Intimidate ApplyWeakAll)
+- ✅ Card recycling (Anger discard pile mechanics)
 - ❌ Multi-turn effects (Rampage scaling, etc.)
-- ❌ Reactive effects (Clash validation, etc.)
 
 ### Technical Debt
 - ✅ ApplyVulnerableAll effect system implemented
@@ -164,3 +166,60 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 - ✅ Energy manipulation (Offering)
 - ✅ Self-damage mechanics (Hemokinesis, Offering)
 - ✅ TurnStart event system for power cards (Brutality)
+- ✅ **Body Slam**: AttackToTargetWithBlock effect that deals damage equal to player's current Block
+- ✅ **Clash**: Hand restriction validation using Condition::HandAllAttacks - can only be played if all cards in hand are Attack cards
+- ✅ **Seeing Red**: Energy gain mechanics with Exhaust - provides 2 energy at cost 1 (0 when upgraded)
+- ✅ **Intimidate**: Multi-target Weak application using ApplyWeakAll effect with Exhaust
+- ✅ **Anger**: Card recycling mechanics - adds copy to discard pile when played
+- ✅ **Armaments**: Combat-time card upgrade system with SelectCardInHand state transition
+- ✅ **Enhanced Play Condition System**: Replaced is_playable boolean with flexible Condition enum supporting complex validation logic
+
+## Recently Implemented Cards (Latest Update)
+
+### ✅ Seeing Red (Uncommon Skill)
+- **File**: `src/cards/ironclad/seeing_red.rs`
+- **Effects**: Gain 2 Energy. Exhaust
+- **Upgraded**: Costs 0 energy (instead of 1)
+- **Key Mechanics**: Energy manipulation, Exhaust system
+- **Test Coverage**: ✅ Energy gain verification, Exhaust mechanics, cost validation
+
+### ✅ Intimidate (Uncommon Skill)
+- **File**: `src/cards/ironclad/intimidate.rs`
+- **Effects**: Apply 1 Weak to ALL enemies. Exhaust
+- **Upgraded**: Apply 2 Weak to ALL enemies
+- **Key Mechanics**: Multi-target status effects, ApplyWeakAll system
+- **Test Coverage**: ✅ Multi-enemy Weak application, Exhaust verification
+
+### ✅ Anger (Common Attack)
+- **File**: `src/cards/ironclad/anger.rs`
+- **Effects**: Deal 6 damage. Add copy to discard pile
+- **Upgraded**: Deal 8 damage
+- **Key Mechanics**: Card recycling, discard pile manipulation
+- **Test Coverage**: ✅ Damage verification, discard pile mechanics, zero-cost validation
+
+### ✅ Armaments (Uncommon Skill)
+- **File**: `src/cards/ironclad/armaments.rs`
+- **Effects**: Gain 5 Block. Upgrade a card in hand for combat
+- **Upgraded**: Same effects (upgrade improvement not yet implemented)
+- **Key Mechanics**: Combat-time card upgrades, SelectCardInHand state
+- **Test Coverage**: ✅ Block gain, card selection and upgrade, state transitions
+
+## System Architecture Improvements
+
+### ✅ Enhanced Play Condition System
+- **Before**: Simple `is_playable: bool` field in Card struct
+- **After**: Flexible `play_condition: Condition` enum with:
+  - `Condition::True` - Always playable
+  - `Condition::False` - Never playable
+  - `Condition::HandAllAttacks` - All cards in hand must be Attack type
+  - `Condition::TargetIsVulnerable` - Target must have Vulnerable status
+- **Benefits**: Enables complex card restrictions like Clash's hand requirement
+- **Implementation**: `eval_condition()` method in Battle for context-aware validation
+
+### ✅ Effect Syntax Migration
+- **Progress**: Updated core effects to use struct syntax instead of tuple syntax
+- **Examples**:
+  - `Effect::GainDefense(5)` → `Effect::GainDefense { amount: 5 }`
+  - `Effect::ApplyWeak(2)` → `Effect::ApplyWeak { duration: 2 }`
+  - `Effect::GainEnergy(2)` → `Effect::GainEnergy { amount: 2 }`
+- **Benefits**: More explicit field names, better type safety, easier maintenance
