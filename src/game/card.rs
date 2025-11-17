@@ -130,6 +130,11 @@ impl Card {
             CardEnum::Warcry => crate::cards::ironclad::warcry::warcry_upgraded(),
             CardEnum::BodySlam => crate::cards::ironclad::body_slam::body_slam_upgraded(),
             CardEnum::Clash => crate::cards::ironclad::clash::clash_upgraded(),
+            CardEnum::Corruption => crate::cards::ironclad::corruption::corruption_upgraded(),
+            CardEnum::Metallicize => crate::cards::ironclad::metallicize::metallicize_upgraded(),
+            CardEnum::FlameBarrier => crate::cards::ironclad::flame_barrier::flame_barrier_upgraded(),
+            CardEnum::Rampage => self, // TODO: Implement rampage_upgraded()
+            CardEnum::Sentinel => self, // TODO: Implement sentinel_upgraded()
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
         }

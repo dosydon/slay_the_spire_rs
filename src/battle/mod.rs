@@ -170,6 +170,20 @@ impl Battle {
     pub fn get_powers(&self) -> &Vec<Card> {
         &self.powers
     }
+
+    /// Check if Corruption power is active (makes skills cost 0)
+    pub fn has_corruption_active(&self) -> bool {
+        self.powers.iter().any(|card| card.get_name() == "Corruption" || card.get_name() == "Corruption+")
+    }
+
+    /// Get the modified cost of a card considering active powers like Corruption
+    pub fn get_modified_cost(&self, card: &crate::game::card::Card) -> u32 {
+        if card.get_card_type() == &crate::game::card_type::CardType::Skill && self.has_corruption_active() {
+            0  // Skills cost 0 with Corruption
+        } else {
+            card.get_cost()
+        }
+    }
     
     pub fn is_battle_over(&self) -> bool {
         !self.player.is_alive() || self.enemies.iter().all(|e| !e.battle_info.is_alive())

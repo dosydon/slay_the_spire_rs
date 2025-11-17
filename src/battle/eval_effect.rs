@@ -188,6 +188,27 @@ impl Battle {
                     self.add_listener(Box::new(brutality_listener));
                 }
             },
+            BaseEffect::ActivateCorruption { source } => {
+                // Add CorruptionListener for the player
+                if let Entity::Player = source {
+                    let corruption_listener = crate::cards::ironclad::corruption::CorruptionListener::new(*source);
+                    self.add_listener(Box::new(corruption_listener));
+                }
+            },
+            BaseEffect::ActivateMetallicize { source, amount } => {
+                // Add MetallicizeListener for the player
+                if let Entity::Player = source {
+                    let metallicize_listener = crate::cards::ironclad::metallicize::MetallicizeListener::new(*source, *amount);
+                    self.add_listener(Box::new(metallicize_listener));
+                }
+            },
+            BaseEffect::ActivateFlameBarrier { source, damage } => {
+                // Add FlameBarrierListener for the player
+                if let Entity::Player = source {
+                    let flame_barrier_listener = crate::cards::ironclad::flame_barrier::FlameBarrierListener::new(*source, *damage);
+                    self.add_listener(Box::new(flame_barrier_listener));
+                }
+            },
             BaseEffect::AddCardToDrawPile { source: _, card } => {
                 // Add a specific card to the draw pile
                 let card = match card {

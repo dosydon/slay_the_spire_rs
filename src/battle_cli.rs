@@ -548,6 +548,15 @@ impl BattleCli {
                 crate::game::effect::Effect::AttackToTargetWithBlock => {
                     parts.push("🗡️ Damage = Block".to_string());
                 }
+                crate::game::effect::Effect::ActivateCorruption => {
+                    parts.push("🔥 Skills cost 0 and Exhaust".to_string());
+                }
+                crate::game::effect::Effect::ActivateMetallicize { amount } => {
+                    parts.push(format!("🛡️ End of turn: Gain {} Block", amount));
+                }
+                crate::game::effect::Effect::ActivateFlameBarrier { damage } => {
+                    parts.push(format!("🔥 When attacked: Deal {} damage", damage));
+                }
             }
         }
         

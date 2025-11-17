@@ -61,6 +61,9 @@ pub enum Effect {
     EnterSelectCardInDiscard, // Transition to SelectCardInDiscard state
     PutRandomDiscardCardOnTop, // Put a random card from discard on top of draw pile
     ConditionalEffect(Condition, Box<Effect>), // Conditional effect that only triggers if condition is met
+    ActivateCorruption, // Activates Corruption power for making skills cost 0 and exhaust them
+    ActivateMetallicize { amount: u32 }, // Activates Metallicize power for end-of-turn block generation
+    ActivateFlameBarrier { damage: u32 }, // Activates Flame Barrier for retaliation damage
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -144,6 +147,17 @@ pub enum BaseEffect {
     },
     ActivateBrutality {
         source: Entity,
+    },
+    ActivateCorruption {
+        source: Entity,
+    },
+    ActivateMetallicize {
+        source: Entity,
+        amount: u32,
+    },
+    ActivateFlameBarrier {
+        source: Entity,
+        damage: u32,
     },
     Heal {
         target: Entity,
@@ -231,6 +245,9 @@ impl BaseEffect {
             Effect::ActivateEnrage(amount) => BaseEffect::ActivateEnrage { source, amount },
             Effect::ActivateEmbrace => BaseEffect::ActivateEmbrace { source },
             Effect::ActivateBrutality => BaseEffect::ActivateBrutality { source },
+            Effect::ActivateCorruption => BaseEffect::ActivateCorruption { source },
+            Effect::ActivateMetallicize { amount } => BaseEffect::ActivateMetallicize { source, amount },
+            Effect::ActivateFlameBarrier { damage } => BaseEffect::ActivateFlameBarrier { source, damage },
             Effect::Heal(amount) => BaseEffect::Heal { target, amount },
             Effect::LoseHp(amount) => BaseEffect::LoseHp { target: source, amount },
             Effect::GainPlatedArmor(amount) => BaseEffect::GainPlatedArmor { source, amount },

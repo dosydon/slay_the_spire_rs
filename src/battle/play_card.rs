@@ -9,29 +9,47 @@ impl Battle {
             return Err(BattleError::CardNotInHand);
         }
 
-        let hand = self.cards.get_hand();
-        let card = &hand[idx];
+        let card_effects;
+        let is_skill_card;
+        let is_power_card;
+        let has_exhaust;
 
-        // Check if card is playable based on its condition
-        if !self.eval_condition(card.get_play_condition()) {
-            return Err(BattleError::CardNotPlayable);
-        }
+        {
+            let hand = self.cards.get_hand();
+            let card = &hand[idx];
 
-        if !self.player.spend_energy(card.get_cost()) {
-            return Err(BattleError::NotEnoughEnergy);
-        }
+            // Check if card is playable based on its condition
+            if !self.eval_condition(card.get_play_condition()) {
+                return Err(BattleError::CardNotPlayable);
+            }
 
-        let card_effects = card.get_effects().clone();
-        let is_skill_card = card.get_card_type() == &CardType::Skill;
-        let is_power_card = card.get_card_type() == &CardType::Power;
-        let has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust);
+            // Calculate modified cost considering active powers like Corruption
+            let modified_cost = self.get_modified_cost(card);
 
-        // Emit SkillCardPlayed event if this is a Skill card
-        if is_skill_card {
-            let skill_event = BattleEvent::SkillCardPlayed {
+            if !self.player.spend_energy(modified_cost) {
+                return Err(BattleError::NotEnoughEnergy);
+            }
+
+            card_effects = card.get_effects().clone();
+            let card_type_clone = card.get_card_type().clone();
+            is_skill_card = card.get_card_type() == &CardType::Skill;
+            is_power_card = card.get_card_type() == &CardType::Power;
+            has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust);
+
+            // Emit SkillCardPlayed event if this is a Skill card
+            if is_skill_card {
+                let skill_event = BattleEvent::SkillCardPlayed {
+                    source: Entity::Player,
+                };
+                self.emit_event(skill_event);
+            }
+
+            // Emit CardPlayed event for Corruption and other listeners
+            let card_played_event = BattleEvent::CardPlayed {
                 source: Entity::Player,
+                card_type: card_type_clone,
             };
-            self.emit_event(skill_event);
+            self.emit_event(card_played_event);
         }
 
         // Handle different card types

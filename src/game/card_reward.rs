@@ -104,6 +104,11 @@ impl CardRewardPool {
             CardEnum::Warcry => crate::cards::ironclad::warcry::warcry(),
             CardEnum::BodySlam => crate::cards::ironclad::body_slam::body_slam(),
             CardEnum::Clash => crate::cards::ironclad::clash::clash(),
+            CardEnum::Corruption => crate::cards::ironclad::corruption::corruption(),
+            CardEnum::Metallicize => crate::cards::ironclad::metallicize::metallicize(),
+            CardEnum::FlameBarrier => crate::cards::ironclad::flame_barrier::flame_barrier(),
+            CardEnum::Rampage => todo!("Implement rampage()"),
+            CardEnum::Sentinel => todo!("Implement sentinel()"),
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
             CardEnum::Wound => crate::cards::status::wound::wound(),
         }

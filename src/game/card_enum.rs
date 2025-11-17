@@ -44,6 +44,11 @@ pub enum CardEnum {
     Headbutt,
     TrueGrit,
     Warcry,
+    Corruption,
+    Metallicize,
+    FlameBarrier,
+    Rampage,
+    Sentinel,
     // Status Cards
     Slimed,
     Wound,
@@ -95,6 +100,11 @@ impl CardEnum {
             CardEnum::Headbutt => "Headbutt",
             CardEnum::TrueGrit => "True Grit",
             CardEnum::Warcry => "Warcry",
+            CardEnum::Corruption => "Corruption",
+            CardEnum::Metallicize => "Metallicize",
+            CardEnum::FlameBarrier => "Flame Barrier",
+            CardEnum::Rampage => "Rampage",
+            CardEnum::Sentinel => "Sentinel",
             CardEnum::Slimed => "Slimed",
             CardEnum::Wound => "Wound",
         }

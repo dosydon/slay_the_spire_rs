@@ -10,6 +10,10 @@ pub enum BattleEvent {
     SkillCardPlayed {
         source: Entity,
     },
+    CardPlayed {
+        source: Entity,
+        card_type: crate::game::card_type::CardType,
+    },
     CardExhausted {
         source: Entity,
     },
