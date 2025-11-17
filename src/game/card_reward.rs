@@ -102,6 +102,8 @@ impl CardRewardPool {
             CardEnum::Headbutt => crate::cards::ironclad::headbutt::headbutt(),
             CardEnum::TrueGrit => crate::cards::ironclad::true_grit::true_grit(),
             CardEnum::Warcry => crate::cards::ironclad::warcry::warcry(),
+            CardEnum::BodySlam => crate::cards::ironclad::body_slam::body_slam(),
+            CardEnum::Clash => crate::cards::ironclad::clash::clash(),
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
             CardEnum::Wound => crate::cards::status::wound::wound(),
         }

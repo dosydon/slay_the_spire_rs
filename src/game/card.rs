@@ -1,6 +1,6 @@
 use crate::game::card_type::CardType;
 use crate::game::card_enum::CardEnum;
-use crate::game::effect::Effect;
+use crate::game::effect::{Effect, Condition};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Card {
@@ -9,32 +9,46 @@ pub struct Card {
     card_type: CardType,
     effects: Vec<Effect>,
     upgraded: bool,
-    playable: bool,
+    play_condition: Condition,
     ethereal: bool,
 }
 
 impl Card {
     pub fn new(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, playable: bool) -> Self {
+        let play_condition = if playable { Condition::True } else { Condition::False };
         Card {
             card_enum,
             cost,
             card_type,
             effects,
             upgraded,
-            playable,
+            play_condition,
             ethereal: false,
         }
     }
 
     pub fn new_with_ethereal(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, playable: bool, ethereal: bool) -> Self {
+        let play_condition = if playable { Condition::True } else { Condition::False };
         Card {
             card_enum,
             cost,
             card_type,
             effects,
             upgraded,
-            playable,
+            play_condition,
             ethereal,
+        }
+    }
+
+    pub fn new_with_condition(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, play_condition: Condition) -> Self {
+        Card {
+            card_enum,
+            cost,
+            card_type,
+            effects,
+            upgraded,
+            play_condition,
+            ethereal: false,
         }
     }
 
@@ -114,6 +128,8 @@ impl Card {
             CardEnum::Headbutt => crate::cards::ironclad::headbutt::headbutt_upgraded(),
             CardEnum::TrueGrit => crate::cards::ironclad::true_grit::true_grit_upgraded(),
             CardEnum::Warcry => crate::cards::ironclad::warcry::warcry_upgraded(),
+            CardEnum::BodySlam => crate::cards::ironclad::body_slam::body_slam_upgraded(),
+            CardEnum::Clash => crate::cards::ironclad::clash::clash_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
         }
@@ -124,9 +140,17 @@ impl Card {
         self.upgraded
     }
 
-    /// Checks if this card is playable
+    /// Gets the play condition for this card
+    pub fn get_play_condition(&self) -> Condition {
+        self.play_condition
+    }
+
+    /// Checks if this card is playable (for backward compatibility - always returns true for now since playability depends on context)
     pub fn is_playable(&self) -> bool {
-        self.playable
+        match self.play_condition {
+            Condition::False => false,
+            _ => true, // True, HandAllAttacks, etc. depend on context
+        }
     }
 
     /// Checks if this card is ethereal (exhausts at end of turn if not played)

@@ -208,10 +208,23 @@ impl Battle {
             Entity::None => modified_damage,
         }
     }
-    
-    
 
-    
+    /// Evaluate if a condition is met in the current battle context
+    pub fn eval_condition(&self, condition: crate::game::effect::Condition) -> bool {
+        use crate::game::effect::Condition;
+        match condition {
+            Condition::True => true,
+            Condition::False => false,
+            Condition::TargetIsVulnerable => {
+                // This would need target context, for now return false
+                false
+            }
+            Condition::HandAllAttacks => {
+                let hand = self.cards.get_hand();
+                hand.iter().all(|c| c.get_card_type() == &crate::game::card_type::CardType::Attack)
+            }
+        }
+    }
 }
 
 #[cfg(test)]

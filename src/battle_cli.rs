@@ -545,6 +545,9 @@ impl BattleCli {
                 crate::game::effect::Effect::EnterSelectCardInHandToPutOnDeck => {
                     parts.push("📋 Select card from hand to put on top of draw pile".to_string());
                 }
+                crate::game::effect::Effect::AttackToTargetWithBlock => {
+                    parts.push("🗡️ Damage = Block".to_string());
+                }
             }
         }
         

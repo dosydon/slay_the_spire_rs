@@ -24,6 +24,10 @@ impl Player {
         self.battle_info.get_block()
     }
 
+    pub fn gain_block(&mut self, amount: u32) {
+        self.battle_info.gain_block(amount);
+    }
+
     pub(in crate::battle) fn apply_vulnerable(&mut self, turns: u32) {
         self.battle_info.apply_vulnerable(turns);
     }

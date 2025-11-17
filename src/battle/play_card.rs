@@ -12,8 +12,8 @@ impl Battle {
         let hand = self.cards.get_hand();
         let card = &hand[idx];
 
-        // Check if card is playable
-        if !card.is_playable() {
+        // Check if card is playable based on its condition
+        if !self.eval_condition(card.get_play_condition()) {
             return Err(BattleError::CardNotPlayable);
         }
 

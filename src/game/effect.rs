@@ -3,7 +3,15 @@ use crate::game::card_enum::CardEnum;
 
 #[derive(Copy, Debug, Clone, PartialEq)]
 pub enum Condition {
+    // Target conditions
     TargetIsVulnerable,
+
+    // Hand conditions
+    HandAllAttacks,
+
+    // Universal conditions
+    True,
+    False,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -13,6 +21,7 @@ pub enum Effect {
         num_attacks: u32,
         strength_multiplier: u32,
     },
+    AttackToTargetWithBlock, // Deal damage equal to player's Block
     AttackAllEnemies {
         amount: u32,
         num_attacks: u32,
@@ -67,6 +76,10 @@ pub enum BaseEffect {
         source: Entity,
         amount: u32,
         num_attacks: u32,
+    },
+    AttackToTargetWithBlock {
+        source: Entity,
+        target: Entity,
     },
     GainDefense {
         source: Entity,
@@ -200,6 +213,7 @@ impl BaseEffect {
             Effect::AttackAllEnemies { amount, num_attacks } => {
                 BaseEffect::AttackAllEnemies { source, amount, num_attacks }
             }
+            Effect::AttackToTargetWithBlock => BaseEffect::AttackToTargetWithBlock { source, target },
             Effect::GainDefense(amount) => BaseEffect::GainDefense { source, amount },
             Effect::ApplyVulnerable(duration) => BaseEffect::ApplyVulnerable { target, duration },
             Effect::ApplyVulnerableAll(duration) => BaseEffect::ApplyVulnerableAll { duration },

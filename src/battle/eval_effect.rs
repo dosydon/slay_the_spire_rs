@@ -13,6 +13,13 @@ impl Battle {
                     self.apply_damage(*target, incoming_damage);
                 }
             },
+            BaseEffect::AttackToTargetWithBlock { source: _, target } => {
+                // Deal damage equal to player's current Block
+                let damage_amount = self.player.get_block();
+                if damage_amount > 0 {
+                    self.apply_damage(*target, damage_amount);
+                }
+            },
             BaseEffect::AttackAllEnemies { source, amount, num_attacks } => {
                 for _ in 0..*num_attacks {
                     for enemy_idx in 0..self.enemies.len() {
@@ -372,6 +379,14 @@ impl Battle {
                             Entity::None => false,
                         }
                     },
+                    crate::game::effect::Condition::HandAllAttacks => {
+                        // For conditional effects, this would need to know which player's hand
+                        // For now, use current player's hand
+                        let hand = self.cards.get_hand();
+                        hand.iter().all(|c| c.get_card_type() == &crate::game::card_type::CardType::Attack)
+                    },
+                    crate::game::effect::Condition::True => true,
+                    crate::game::effect::Condition::False => false,
                 };
 
                 if condition_met {
