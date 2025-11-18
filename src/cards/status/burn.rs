@@ -41,9 +41,9 @@ impl EventListener for BurnListener {
 }
 
 pub fn burn() -> Card {
-    Card::new(CardEnum::Burn, 1, CardType::Status, vec![
+    Card::new(CardEnum::Burn, 0, CardType::Status, vec![
         Effect::ActivateBurn { damage: 2 }, // Activate Burn listener for end-of-turn damage
-    ], false, true) // unplayable
+    ], false, false) // not upgraded, not playable
 }
 
 #[cfg(test)]
@@ -55,10 +55,10 @@ mod tests {
         let card = burn();
 
         assert_eq!(card.get_name(), "Burn");
-        assert_eq!(card.get_cost(), 1);
+        assert_eq!(card.get_cost(), 0);
         assert_eq!(card.get_card_type(), &CardType::Status);
         assert_eq!(card.get_effects().len(), 1);
-        assert!(matches!(card.get_effects()[0], Effect::LoseHp(2)));
+        assert!(matches!(card.get_effects()[0], Effect::ActivateBurn { damage: 2 }));
         assert!(!card.is_upgraded());
         assert!(!card.is_playable()); // Status cards are not playable
     }
@@ -69,7 +69,7 @@ mod tests {
         let effects = card.get_effects();
 
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::LoseHp(2));
+        assert!(matches!(effects[0], Effect::ActivateBurn { damage: 2 }));
     }
 
     #[test]

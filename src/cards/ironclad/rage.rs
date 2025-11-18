@@ -3,14 +3,14 @@ use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 /// Rage - Uncommon Skill Card
 /// Cost: 0 (0 when upgraded)
-/// Effect: Whenever you play an Attack card this turn, gain 1 Block.
+/// Effect: Whenever you play an Attack card this turn, gain 3 Block.
 pub fn rage() -> Card {
     Card::new_with_condition(
         CardEnum::Rage,
         0,
         CardType::Skill,
         vec![
-            Effect::ActivateRage { block_per_attack: 1 },
+            Effect::ActivateRage { block_per_attack: 3 },
         ],
         false, // not upgraded
         Condition::True,
@@ -19,14 +19,14 @@ pub fn rage() -> Card {
 
 /// Rage+ (Upgraded version)
 /// Cost: 0 (0 when upgraded)
-/// Effect: Whenever you play an Attack card this turn, gain 2 Block.
+/// Effect: Whenever you play an Attack card this turn, gain 4 Block.
 pub fn rage_upgraded() -> Card {
     Card::new_with_condition(
         CardEnum::Rage,
         0,
         CardType::Skill,
         vec![
-            Effect::ActivateRage { block_per_attack: 2 },
+            Effect::ActivateRage { block_per_attack: 4 },
         ],
         true,  // upgraded
         Condition::True,
@@ -69,7 +69,7 @@ mod tests {
         assert_eq!(effects.len(), 1);
         match &effects[0] {
             Effect::ActivateRage { block_per_attack } => {
-                assert_eq!(*block_per_attack, 1);
+                assert_eq!(*block_per_attack, 3);
             }
             _ => panic!("Expected ActivateRage effect"),
         }
@@ -83,7 +83,7 @@ mod tests {
         assert_eq!(effects.len(), 1);
         match &effects[0] {
             Effect::ActivateRage { block_per_attack } => {
-                assert_eq!(*block_per_attack, 2);
+                assert_eq!(*block_per_attack, 4);
             }
             _ => panic!("Expected ActivateRage effect"),
         }
@@ -132,9 +132,9 @@ mod tests {
         let result = battle.play_card(strike_idx, Entity::Enemy(0));
         assert!(result.is_ok());
 
-        // Verify Block was gained (1 block from Rage)
+        // Verify Block was gained (3 block from Rage)
         let final_block = battle.get_player().battle_info.get_block();
-        assert_eq!(final_block, 1);
+        assert_eq!(final_block, 3);
     }
 
     #[test]
@@ -171,18 +171,18 @@ mod tests {
         let result = battle.play_card(strike_idx, Entity::Enemy(0));
         assert!(result.is_ok());
 
-        // Verify Block was gained (2 block from Rage+)
+        // Verify Block was gained (4 block from Rage+)
         let block_after_first_strike = battle.get_player().battle_info.get_block();
-        assert_eq!(block_after_first_strike, 2);
+        assert_eq!(block_after_first_strike, 4);
 
         // Play second Strike (should trigger Rage+ effect again)
         let strike_idx = 0; // Second Strike is now at index 0
         let result = battle.play_card(strike_idx, Entity::Enemy(0));
         assert!(result.is_ok());
 
-        // Verify more Block was gained (2 more block from Rage+)
+        // Verify more Block was gained (4 more block from Rage+)
         let final_block = battle.get_player().battle_info.get_block();
-        assert_eq!(final_block, 4);
+        assert_eq!(final_block, 8);
     }
 
     #[test]
@@ -216,7 +216,7 @@ mod tests {
         assert!(result.is_ok());
         let block_after_rage1 = battle.get_player().battle_info.get_block();
         let rage1_block = block_after_rage1 - block_after_first_strike;
-        assert_eq!(rage1_block, 1); // First Strike should trigger 1 block from Rage
+        assert_eq!(rage1_block, 3); // First Strike should trigger 3 block from Rage
 
         // Play Defend (should NOT trigger Rage, but should give its own block)
         let block_before_defend = battle.get_player().battle_info.get_block();
@@ -232,11 +232,11 @@ mod tests {
         assert!(result.is_ok());
         let final_block = battle.get_player().battle_info.get_block();
         let rage2_block = final_block - block_before_second_strike;
-        assert_eq!(rage2_block, 1); // Second Strike should trigger 1 block from Rage
+        assert_eq!(rage2_block, 3); // Second Strike should trigger 3 block from Rage
 
-        // Total Rage block should be 2 (1 from each Strike)
+        // Total Rage block should be 6 (3 from each Strike)
         let total_rage_block = rage1_block + rage2_block;
-        assert_eq!(total_rage_block, 2);
+        assert_eq!(total_rage_block, 6);
     }
 
     #[test]

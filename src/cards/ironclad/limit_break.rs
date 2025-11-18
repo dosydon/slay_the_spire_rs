@@ -118,14 +118,14 @@ mod tests {
         use crate::game::deck::Deck;
         use crate::game::global_info::GlobalInfo;
         use crate::game::enemy::EnemyTrait;
-        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::gremlin_nob::GremlinNob;
         use crate::enemies::enemy_enum::EnemyEnum;
         use crate::cards::ironclad::inflame::inflame;
 
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let gremlin_nob = GremlinNob::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::GremlinNob(gremlin_nob))];
 
         // Create battle with Limit Break and Inflame in hand
         let deck = Deck::new(vec![limit_break(), inflame()]);
@@ -139,7 +139,7 @@ mod tests {
         assert_eq!(initial_strength, 0);
 
         // Play Inflame first to gain some Strength
-        let inflame_idx = 0;
+        let inflame_idx = 1; // Inflame is at index 1 in the deck [limit_break(), inflame()]
         let result = battle.play_card(inflame_idx, Entity::Player);
         assert!(result.is_ok());
 
@@ -168,14 +168,14 @@ mod tests {
         use crate::game::deck::Deck;
         use crate::game::global_info::GlobalInfo;
         use crate::game::enemy::EnemyTrait;
-        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::gremlin_nob::GremlinNob;
         use crate::enemies::enemy_enum::EnemyEnum;
         use crate::cards::ironclad::inflame::inflame;
 
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let gremlin_nob = GremlinNob::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::GremlinNob(gremlin_nob))];
 
         // Create battle with multiple Limit Break cards
         let deck = Deck::new(vec![inflame(), limit_break(), limit_break()]);
@@ -215,14 +215,14 @@ mod tests {
         use crate::game::deck::Deck;
         use crate::game::global_info::GlobalInfo;
         use crate::game::enemy::EnemyTrait;
-        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::gremlin_nob::GremlinNob;
         use crate::enemies::enemy_enum::EnemyEnum;
         use crate::cards::ironclad::inflame::inflame;
 
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let gremlin_nob = GremlinNob::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::GremlinNob(gremlin_nob))];
 
         // Create battle with Limit Break+ and Inflame in hand
         let deck = Deck::new(vec![limit_break_upgraded(), inflame()]);
