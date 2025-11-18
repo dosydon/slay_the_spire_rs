@@ -97,6 +97,7 @@ impl Card {
             CardEnum::Embrace => crate::cards::ironclad::embrace::embrace_upgraded(),
             CardEnum::Flex => crate::cards::ironclad::flex::flex_upgraded(),
             CardEnum::Inflame => crate::cards::ironclad::inflame::inflame_upgraded(),
+            CardEnum::Immolate => crate::cards::ironclad::immolate::immolate_upgraded(),
             CardEnum::IronWave => crate::cards::ironclad::iron_wave::iron_wave_upgraded(),
             CardEnum::PommelStrike => crate::cards::ironclad::pommel_strike::pommel_strike_upgraded(),
             CardEnum::ShrugItOff => crate::cards::ironclad::shrug_it_off::shrug_it_off_upgraded(),
@@ -131,12 +132,19 @@ impl Card {
             CardEnum::BodySlam => crate::cards::ironclad::body_slam::body_slam_upgraded(),
             CardEnum::Clash => crate::cards::ironclad::clash::clash_upgraded(),
             CardEnum::Corruption => crate::cards::ironclad::corruption::corruption_upgraded(),
+            CardEnum::LimitBreak => crate::cards::ironclad::limit_break::limit_break_upgraded(),
             CardEnum::Metallicize => crate::cards::ironclad::metallicize::metallicize_upgraded(),
             CardEnum::FlameBarrier => crate::cards::ironclad::flame_barrier::flame_barrier_upgraded(),
+            CardEnum::Rage => crate::cards::ironclad::rage::rage_upgraded(),
             CardEnum::Rampage => self, // TODO: Implement rampage_upgraded()
+            CardEnum::InfernalBlade => crate::cards::ironclad::infernal_blade::infernal_blade_upgraded(),
+            CardEnum::Evolve => crate::cards::ironclad::evolve::evolve_upgraded(),
             CardEnum::Sentinel => self, // TODO: Implement sentinel_upgraded()
+            CardEnum::Whirlwind => crate::cards::ironclad::whirlwind::whirlwind_upgraded(),
+            CardEnum::DemonForm => crate::cards::ironclad::demon_form::demon_form_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
+            CardEnum::Burn => self, // Status cards don't upgrade
         }
     }
     

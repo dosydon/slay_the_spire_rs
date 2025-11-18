@@ -32,6 +32,7 @@ pub enum Effect {
     ApplyWeak { duration: u32 },
     ApplyFrail { duration: u32 },
     GainStrength { amount: u32 },
+    DoubleStrength, // Double current Strength
     LoseStrengthSelf (u32), // Self strength loss (targets source)
     LoseStrengthTarget (u32), // Target strength loss (targets target)
     LoseStrengthAtEndOfTurn (u32),
@@ -64,6 +65,11 @@ pub enum Effect {
     ActivateCorruption, // Activates Corruption power for making skills cost 0 and exhaust them
     ActivateMetallicize { amount: u32 }, // Activates Metallicize power for end-of-turn block generation
     ActivateFlameBarrier { damage: u32 }, // Activates Flame Barrier for retaliation damage
+    ActivateBurn { damage: u32 }, // Activates Burn for end-of-turn damage
+    ActivateDemonForm { strength_per_turn: u32 }, // Activates Demon Form for turn-based Strength gain
+    ActivateRage { block_per_attack: u32 }, // Activates Rage for gaining block when playing attacks
+    AddRandomAttackToHand, // Add a random Attack card to hand
+    ActivateEvolve, // Activates Evolve for drawing cards when Status cards are drawn
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -106,6 +112,9 @@ pub enum BaseEffect {
     GainStrength {
         source: Entity,
         amount: u32,
+    },
+    DoubleStrength {
+        source: Entity,
     },
     LoseStrengthSelf {
         source: Entity,
@@ -158,6 +167,24 @@ pub enum BaseEffect {
     ActivateFlameBarrier {
         source: Entity,
         damage: u32,
+    },
+    ActivateBurn {
+        source: Entity,
+        damage: u32,
+    },
+    ActivateDemonForm {
+        source: Entity,
+        strength_per_turn: u32,
+    },
+    ActivateRage {
+        source: Entity,
+        block_per_attack: u32,
+    },
+    AddRandomAttackToHand {
+        source: Entity,
+    },
+    ActivateEvolve {
+        source: Entity,
     },
     Heal {
         target: Entity,
@@ -234,6 +261,7 @@ impl BaseEffect {
             Effect::ApplyWeak { duration } => BaseEffect::ApplyWeak { target, duration },
             Effect::ApplyFrail { duration } => BaseEffect::ApplyFrail { target, duration },
             Effect::GainStrength { amount } => BaseEffect::GainStrength { source, amount },
+            Effect::DoubleStrength => BaseEffect::DoubleStrength { source },
             Effect::LoseStrengthSelf(amount) => BaseEffect::LoseStrengthSelf { source, amount },
             Effect::LoseStrengthTarget(amount) => BaseEffect::LoseStrengthTarget { target, amount },
             Effect::LoseStrengthAtEndOfTurn(amount) => BaseEffect::LoseStrengthAtEndOfTurn { source, amount },
@@ -248,6 +276,11 @@ impl BaseEffect {
             Effect::ActivateCorruption => BaseEffect::ActivateCorruption { source },
             Effect::ActivateMetallicize { amount } => BaseEffect::ActivateMetallicize { source, amount },
             Effect::ActivateFlameBarrier { damage } => BaseEffect::ActivateFlameBarrier { source, damage },
+            Effect::ActivateBurn { damage } => BaseEffect::ActivateBurn { source, damage },
+            Effect::ActivateDemonForm { strength_per_turn } => BaseEffect::ActivateDemonForm { source, strength_per_turn },
+            Effect::ActivateRage { block_per_attack } => BaseEffect::ActivateRage { source, block_per_attack },
+            Effect::AddRandomAttackToHand => BaseEffect::AddRandomAttackToHand { source },
+            Effect::ActivateEvolve => BaseEffect::ActivateEvolve { source },
             Effect::Heal(amount) => BaseEffect::Heal { target, amount },
             Effect::LoseHp(amount) => BaseEffect::LoseHp { target: source, amount },
             Effect::GainPlatedArmor(amount) => BaseEffect::GainPlatedArmor { source, amount },

@@ -13,6 +13,7 @@ pub enum CardEnum {
     Embrace,
     Flex,
     Inflame,
+    Immolate,
     IronWave,
     PommelStrike,
     ShrugItOff,
@@ -45,13 +46,20 @@ pub enum CardEnum {
     TrueGrit,
     Warcry,
     Corruption,
+    LimitBreak,
     Metallicize,
     FlameBarrier,
+    Rage,
     Rampage,
+    InfernalBlade,
+    Evolve,
     Sentinel,
+    Whirlwind,
+    DemonForm,
     // Status Cards
     Slimed,
     Wound,
+    Burn,
     // Add more cards as needed
 }
 
@@ -69,6 +77,7 @@ impl CardEnum {
             CardEnum::Embrace => "Embrace",
             CardEnum::Flex => "Flex",
             CardEnum::Inflame => "Inflame",
+            CardEnum::Immolate => "Immolate",
             CardEnum::IronWave => "IronWave",
             CardEnum::PommelStrike => "PommelStrike",
             CardEnum::ShrugItOff => "ShrugItOff",
@@ -101,12 +110,19 @@ impl CardEnum {
             CardEnum::TrueGrit => "True Grit",
             CardEnum::Warcry => "Warcry",
             CardEnum::Corruption => "Corruption",
+            CardEnum::LimitBreak => "Limit Break",
             CardEnum::Metallicize => "Metallicize",
             CardEnum::FlameBarrier => "Flame Barrier",
+            CardEnum::Rage => "Rage",
             CardEnum::Rampage => "Rampage",
+            CardEnum::InfernalBlade => "Infernal Blade",
+            CardEnum::Evolve => "Evolve",
             CardEnum::Sentinel => "Sentinel",
+            CardEnum::Whirlwind => "Whirlwind",
+            CardEnum::DemonForm => "Demon Form",
             CardEnum::Slimed => "Slimed",
             CardEnum::Wound => "Wound",
+            CardEnum::Burn => "Burn",
         }
     }
     

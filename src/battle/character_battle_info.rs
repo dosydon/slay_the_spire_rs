@@ -196,6 +196,11 @@ impl CharacterBattleInfo {
         self.strength
     }
 
+    /// Set strength to a specific value
+    pub fn set_strength(&mut self, amount: u32) {
+        self.strength = amount;
+    }
+
     /// Calculate damage output with strength bonus and weak penalty
     pub(crate) fn calculate_damage(&self, base_damage: u32) -> u32 {
         self.calculate_damage_with_multiplier(base_damage, 1)

@@ -2,6 +2,7 @@ use super::Battle;
 use crate::game::effect::BaseEffect;
 use crate::battle::{target::Entity, events::BattleEvent};
 use crate::enemies::gremlin_nob::EnrageListener;
+use rand::prelude::IndexedRandom;
 
 impl Battle {
     /// Apply a specific effect with its target
@@ -71,6 +72,21 @@ impl Battle {
                     Entity::Enemy(idx) => {
                         if *idx < self.enemies.len() {
                             self.enemies[*idx].battle_info.gain_strength(*amount);
+                        }
+                    },
+                    Entity::None => {} // No source
+                }
+            },
+            BaseEffect::DoubleStrength { source } => {
+                match source {
+                    Entity::Player => {
+                        let current_strength = self.player.battle_info.get_strength();
+                        self.player.battle_info.set_strength(current_strength * 2);
+                    },
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            let current_strength = self.enemies[*idx].battle_info.get_strength();
+                            self.enemies[*idx].battle_info.set_strength(current_strength * 2);
                         }
                     },
                     Entity::None => {} // No source
@@ -207,6 +223,62 @@ impl Battle {
                 if let Entity::Player = source {
                     let flame_barrier_listener = crate::cards::ironclad::flame_barrier::FlameBarrierListener::new(*source, *damage);
                     self.add_listener(Box::new(flame_barrier_listener));
+                }
+            },
+            BaseEffect::ActivateBurn { source, damage } => {
+                // Add BurnListener for the player
+                if let Entity::Player = source {
+                    let burn_listener = crate::cards::status::burn::BurnListener::new(*source, *damage);
+                    self.add_listener(Box::new(burn_listener));
+                }
+            },
+            BaseEffect::ActivateDemonForm { source, strength_per_turn } => {
+                // Add DemonFormListener for the player
+                if let Entity::Player = source {
+                    let demon_form_listener = crate::cards::ironclad::demon_form::DemonFormListener::new(*source, *strength_per_turn);
+                    self.add_listener(Box::new(demon_form_listener));
+                }
+            },
+            BaseEffect::ActivateRage { source, block_per_attack } => {
+                // Add RageListener for the player
+                if let Entity::Player = source {
+                    let rage_listener = crate::cards::ironclad::rage::RageListener::new(*source, *block_per_attack);
+                    self.add_listener(Box::new(rage_listener));
+                }
+            },
+            BaseEffect::AddRandomAttackToHand { source } => {
+                // Add a random Ironclad Attack card to hand
+                if let Entity::Player = source {
+                    let ironclad_attacks = vec![
+                        crate::cards::ironclad::strike::strike(),
+                        crate::cards::ironclad::bash::bash(),
+                        crate::cards::ironclad::cleave::cleave(),
+                        crate::cards::ironclad::clothesline::clothesline(),
+                        crate::cards::ironclad::heavy_blade::heavy_blade(),
+                        crate::cards::ironclad::iron_wave::iron_wave(),
+                        crate::cards::ironclad::perfected_strike::perfected_strike(),
+                        crate::cards::ironclad::pommel_strike::pommel_strike(),
+                        crate::cards::ironclad::thunderclap::thunderclap(),
+                        crate::cards::ironclad::twin_strike::twin_strike(),
+                        crate::cards::ironclad::wild_strike::wild_strike(),
+                        crate::cards::ironclad::body_slam::body_slam(),
+                        crate::cards::ironclad::carnage::carnage(),
+                        crate::cards::ironclad::clash::clash(),
+                        crate::cards::ironclad::headbutt::headbutt(),
+                        crate::cards::ironclad::hemokinesis::hemokinesis(),
+                        crate::cards::ironclad::sword_boomerang::sword_boomerang(),
+                    ];
+
+                    if let Some(random_attack) = ironclad_attacks.choose(&mut rand::rng()) {
+                        self.cards.add_card_to_hand(random_attack.clone());
+                    }
+                }
+            },
+            BaseEffect::ActivateEvolve { source: _ } => {
+                // Evolve activation - currently just draws 1 card immediately
+                // In full implementation, would add a listener for Status card draws
+                for _ in 0..1 {
+                    self.cards.draw_card();
                 }
             },
             BaseEffect::AddCardToDrawPile { source: _, card } => {

@@ -72,6 +72,7 @@ impl CardRewardPool {
             CardEnum::Embrace => crate::cards::ironclad::embrace::embrace(),
             CardEnum::Flex => crate::cards::ironclad::flex::flex(),
             CardEnum::Inflame => crate::cards::ironclad::inflame::inflame(),
+            CardEnum::Immolate => crate::cards::ironclad::immolate::immolate(),
             CardEnum::HeavyBlade => crate::cards::ironclad::heavy_blade::heavy_blade(),
             CardEnum::IronWave => crate::cards::ironclad::iron_wave::iron_wave(),
             CardEnum::PerfectedStrike => crate::cards::ironclad::perfected_strike::perfected_strike(),
@@ -105,12 +106,19 @@ impl CardRewardPool {
             CardEnum::BodySlam => crate::cards::ironclad::body_slam::body_slam(),
             CardEnum::Clash => crate::cards::ironclad::clash::clash(),
             CardEnum::Corruption => crate::cards::ironclad::corruption::corruption(),
+            CardEnum::LimitBreak => crate::cards::ironclad::limit_break::limit_break(),
             CardEnum::Metallicize => crate::cards::ironclad::metallicize::metallicize(),
             CardEnum::FlameBarrier => crate::cards::ironclad::flame_barrier::flame_barrier(),
+            CardEnum::Rage => crate::cards::ironclad::rage::rage(),
             CardEnum::Rampage => todo!("Implement rampage()"),
+            CardEnum::InfernalBlade => crate::cards::ironclad::infernal_blade::infernal_blade(),
+            CardEnum::Evolve => crate::cards::ironclad::evolve::evolve(),
             CardEnum::Sentinel => todo!("Implement sentinel()"),
+            CardEnum::Whirlwind => crate::cards::ironclad::whirlwind::whirlwind(),
+            CardEnum::DemonForm => crate::cards::ironclad::demon_form::demon_form(),
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
             CardEnum::Wound => crate::cards::status::wound::wound(),
+            CardEnum::Burn => crate::cards::status::burn::burn(),
         }
     }
 }

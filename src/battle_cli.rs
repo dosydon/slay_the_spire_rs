@@ -557,6 +557,24 @@ impl BattleCli {
                 crate::game::effect::Effect::ActivateFlameBarrier { damage } => {
                     parts.push(format!("🔥 When attacked: Deal {} damage", damage));
                 }
+                crate::game::effect::Effect::ActivateBurn { damage } => {
+                    parts.push(format!("🔥 End of turn: Take {} damage", damage));
+                }
+                crate::game::effect::Effect::ActivateDemonForm { strength_per_turn } => {
+                    parts.push(format!("😈 Start of turn: Gain {} Strength", strength_per_turn));
+                }
+                crate::game::effect::Effect::ActivateRage { block_per_attack } => {
+                    parts.push(format!("🛡️ When Attack played: Gain {} Block", block_per_attack));
+                }
+                crate::game::effect::Effect::AddRandomAttackToHand => {
+                    parts.push("⚔️ Add random Attack to hand".to_string());
+                }
+                crate::game::effect::Effect::ActivateEvolve => {
+                    parts.push("🔄 Draw card when Status drawn".to_string());
+                }
+                crate::game::effect::Effect::DoubleStrength => {
+                    parts.push("💪 Double Strength".to_string());
+                }
             }
         }
         
