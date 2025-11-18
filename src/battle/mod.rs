@@ -137,7 +137,17 @@ impl Battle {
     pub(crate) fn get_player_mut(&mut self) -> &mut Player {
         &mut self.player
     }
-    
+
+    /// Get current HP
+    pub fn get_current_hp(&self) -> u32 {
+        self.player.get_current_hp()
+    }
+
+    /// Get max HP
+    pub fn get_max_hp(&self) -> u32 {
+        self.player.get_max_hp()
+    }
+
     pub fn get_enemies(&self) -> &Vec<EnemyInBattle> {
         &self.enemies
     }
@@ -159,6 +169,11 @@ impl Battle {
     /// Get the discard pile (for testing purposes)
     pub fn get_discard_pile(&self) -> &Vec<Card> {
         self.cards.get_discard_pile()
+    }
+
+    /// Get the exhaust pile (for testing purposes)
+    pub fn get_exhaust_pile(&self) -> &Vec<Card> {
+        self.cards.get_exhausted()
     }
 
     /// Get the deck (for testing purposes)

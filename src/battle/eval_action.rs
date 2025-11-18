@@ -40,6 +40,24 @@ impl Battle {
                     _ => {}
                 }
             }
+            crate::battle::action::BattleState::SelectCardToDuplicate { .. } => {
+                match action {
+                    Action::PlayCard(_, _) => return Err(BattleError::InvalidAction),
+                    Action::EndTurn => return Err(BattleError::InvalidAction),
+                    Action::SelectCardInHand(_) => return Err(BattleError::InvalidAction),
+                    Action::SelectCardInDiscard(_) => return Err(BattleError::InvalidAction),
+                    _ => {}
+                }
+            }
+            crate::battle::action::BattleState::SelectCardInExhaust => {
+                match action {
+                    Action::PlayCard(_, _) => return Err(BattleError::InvalidAction),
+                    Action::EndTurn => return Err(BattleError::InvalidAction),
+                    Action::SelectCardInHand(_) => return Err(BattleError::InvalidAction),
+                    Action::SelectCardInDiscard(_) => return Err(BattleError::InvalidAction),
+                    _ => {}
+                }
+            }
         }
 
         match action {
@@ -118,6 +136,46 @@ impl Battle {
                     // Put on top of draw pile
                     self.cards.put_card_on_top_of_deck(card_to_move);
                 }
+
+                // Return to player turn state
+                self.battle_state = crate::battle::action::BattleState::PlayerTurn;
+            }
+            Action::SelectCardToDuplicate(card_index) => {
+                if card_index >= self.cards.hand_size() {
+                    return Err(BattleError::CardNotInHand);
+                }
+
+                // Get the number of copies from the current battle state
+                if let crate::battle::action::BattleState::SelectCardToDuplicate { copies } = &self.battle_state {
+                    // Get the selected card from hand
+                    let hand = self.cards.get_hand();
+                    let card_to_duplicate = hand[card_index].clone();
+
+                    // Add the specified number of copies to the discard pile
+                    for _ in 0..*copies {
+                        self.cards.add_card_to_discard(card_to_duplicate.clone());
+                    }
+                }
+
+                // Return to player turn state
+                self.battle_state = crate::battle::action::BattleState::PlayerTurn;
+            }
+            Action::SelectCardInExhaust(card_index) => {
+                // Check if we're in the SelectCardInExhaust state
+                if !matches!(self.battle_state, crate::battle::action::BattleState::SelectCardInExhaust) {
+                    return Err(BattleError::InvalidAction);
+                }
+
+                // Get the card from the exhaust pile and add it to hand
+                let exhausted = self.cards.get_exhausted();
+                if card_index >= exhausted.len() {
+                    return Err(BattleError::InvalidAction);
+                }
+
+                // Remove the card from exhaust pile and add to hand
+                let card = exhausted[card_index].clone();
+                self.cards.remove_card_from_exhausted(card_index);
+                self.cards.add_card_to_hand(card);
 
                 // Return to player turn state
                 self.battle_state = crate::battle::action::BattleState::PlayerTurn;

@@ -271,6 +271,12 @@ impl CharacterBattleInfo {
     pub fn increase_rampage_damage(&mut self, amount: u32) {
         self.rampage_damage += amount;
     }
+
+    /// Increase max HP and also heal by the same amount
+    pub fn increase_max_hp(&mut self, amount: u32) {
+        self.max_hp += amount;
+        self.current_hp += amount; // Also heal by the same amount
+    }
 }
 
 #[cfg(test)]

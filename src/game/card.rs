@@ -120,6 +120,7 @@ impl Card {
             CardEnum::Impervious => crate::cards::ironclad::impervious::impervious_upgraded(),
             CardEnum::Brutality => crate::cards::ironclad::brutality::brutality_upgraded(),
             CardEnum::Offering => crate::cards::ironclad::offering::offering_upgraded(),
+            CardEnum::PowerThrough => crate::cards::ironclad::power_through::power_through_upgraded(),
             CardEnum::Shockwave => crate::cards::ironclad::shockwave::shockwave_upgraded(),
             CardEnum::Uppercut => crate::cards::ironclad::uppercut::uppercut_upgraded(),
             CardEnum::Intimidate => crate::cards::ironclad::intimidate::intimidate_upgraded(),
@@ -137,6 +138,7 @@ impl Card {
             CardEnum::FlameBarrier => crate::cards::ironclad::flame_barrier::flame_barrier_upgraded(),
             CardEnum::Rage => crate::cards::ironclad::rage::rage_upgraded(),
             CardEnum::Rampage => self, // TODO: Implement rampage_upgraded()
+            CardEnum::Pummel => crate::cards::ironclad::pummel::pummel_upgraded(),
             CardEnum::InfernalBlade => crate::cards::ironclad::infernal_blade::infernal_blade_upgraded(),
             CardEnum::Evolve => crate::cards::ironclad::evolve::evolve_upgraded(),
             CardEnum::Sentinel => self, // TODO: Implement sentinel_upgraded()
@@ -144,6 +146,13 @@ impl Card {
             CardEnum::DemonForm => crate::cards::ironclad::demon_form::demon_form_upgraded(),
             CardEnum::SecondWind => crate::cards::ironclad::second_wind::second_wind_upgraded(),
             CardEnum::Rupture => crate::cards::ironclad::rupture::rupture_upgraded(),
+            CardEnum::DualWield => crate::cards::ironclad::dual_wield::dual_wield_upgraded(),
+            CardEnum::DoubleTap => crate::cards::ironclad::double_tap::double_tap_upgraded(),
+            CardEnum::Exhume => crate::cards::ironclad::exhume::exhume_upgraded(),
+            CardEnum::Feed => crate::cards::ironclad::feed::feed_upgraded(),
+            CardEnum::Reaper => crate::cards::ironclad::reaper::reaper_upgraded(),
+            CardEnum::FiendFire => crate::cards::ironclad::fiend_fire::fiend_fire_upgraded(),
+            CardEnum::FireBreathing => crate::cards::ironclad::fire_breathing::fire_breathing_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
             CardEnum::Burn => self, // Status cards don't upgrade

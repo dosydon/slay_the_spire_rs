@@ -21,6 +21,10 @@ pub enum BattleEvent {
     CardExhausted {
         source: Entity,
     },
+    BlockGained {
+        source: Entity,
+        amount: u32,
+    },
     TurnStart {
         entity: Entity,
     },
@@ -32,6 +36,10 @@ pub enum BattleEvent {
     },
     CombatStart {
         player: Entity,
+    },
+    CardDrawn {
+        card_type: crate::game::card_type::CardType,
+        is_status_or_curse: bool,
     },
 }
 

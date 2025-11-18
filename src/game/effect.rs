@@ -44,7 +44,9 @@ pub enum Effect {
     Exhaust,
     ActivateEnrage (u32), // Activates Enrage listener for this enemy
     ActivateEmbrace, // Activates Embrace listener for the player
+    ActivateFeelNoPain { block_per_exhaust: u32 }, // Activates Feel No Pain listener for the player
     Heal (u32),
+    HealAndIncreaseMaxHp (u32), // Heal and increase max HP by the same amount
     LoseHp (u32), // Direct HP loss
     GainPlatedArmor (u32), // Gain permanent armor that stacks
     DoubleBlock, // Double current block
@@ -54,6 +56,7 @@ pub enum Effect {
     ApplyWeakAll { duration: u32 }, // Apply Weak to all enemies
     Ethereal, // Card will be exhausted at end of turn
     AddCardToDiscard (CardEnum), // Add a card to discard pile
+    AddCardToHand (CardEnum), // Add a card to hand
     EnterSelectCardInHand, // Transition to SelectCardInHand state
     EnterSelectCardInHandToPutOnDeck, // Transition to SelectCardInHandToPutOnDeck state
     ActivateBrutality, // Activates Brutality listener for drawing cards at start of turn
@@ -73,6 +76,15 @@ pub enum Effect {
     ActivateEvolve, // Activates Evolve for drawing cards when Status cards are drawn
     ExhaustNonAttackCardsFromHand { block_per_card: u32 }, // Exhaust all non-Attack cards from hand, gain block per card
     ActivateRupture, // Activates Rupture for gaining Strength when losing HP
+    EnterSelectCardToDuplicate { copies: u32 }, // Transition to SelectCardToDuplicate state to duplicate a card
+    ActivateDoubleTap { remaining_attacks: u32 }, // Activates Double Tap for playing next Attack(s) twice
+    EnterSelectCardInExhaust, // Transition to SelectCardInExhaust state to select card from exhaust pile
+    HealOnKill { amount: u32 }, // Heal specified amount if the target enemy dies from this attack
+    AttackAllEnemiesAndHeal { amount: u32, num_attacks: u32 }, // Deal damage to all enemies and heal for unblocked damage
+    ExhaustHandForDamage { damage_per_card: u32 }, // Exhaust all cards in hand and deal damage per card exhausted
+    ActivateJuggernaut { damage_per_block: u32 }, // Activates Juggernaut for dealing damage when gaining block
+    AttackRandomEnemy { amount: u32, num_attacks: u32, strength_multiplier: u32 }, // Deal damage to a random enemy
+    AddFireBreathing { damage_per_status: u32 }, // Activates Fire Breathing for dealing damage when Status/Curse cards are drawn
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -163,6 +175,10 @@ pub enum BaseEffect {
     ActivateEmbrace {
         source: Entity,
     },
+    ActivateFeelNoPain {
+        source: Entity,
+        block_per_exhaust: u32,
+    },
     ActivateBrutality {
         source: Entity,
     },
@@ -199,6 +215,10 @@ pub enum BaseEffect {
         target: Entity,
         amount: u32,
     },
+    HealAndIncreaseMaxHp {
+        target: Entity,
+        amount: u32,
+    },
     LoseHp {
         target: Entity,
         amount: u32,
@@ -231,6 +251,10 @@ pub enum BaseEffect {
     AddCardToDiscard {
         card: CardEnum,
     },
+    AddCardToHand {
+        source: Entity,
+        card: CardEnum,
+    },
     EnterSelectCardInHand,
     EnterSelectCardInHandToPutOnDeck,
     PlayTopCard {
@@ -256,6 +280,36 @@ pub enum BaseEffect {
         block_per_card: u32,
     },
     ActivateRupture,
+    ActivateDoubleTap {
+        remaining_attacks: u32,
+    },
+    EnterSelectCardToDuplicate {
+        copies: u32,
+    },
+    EnterSelectCardInExhaust,
+    HealOnKill {
+        amount: u32,
+    },
+    AttackAllEnemiesAndHeal {
+        amount: u32,
+        num_attacks: u32,
+    },
+    ExhaustHandForDamage {
+        damage_per_card: u32,
+    },
+    // TODO: Uncomment when Juggernaut is implemented
+    // ActivateJuggernaut {
+    //     damage_per_block: u32,
+    // },
+    AttackRandomEnemy {
+        amount: u32,
+        num_attacks: u32,
+        strength_multiplier: u32,
+    },
+    ActivateFireBreathing {
+        source: Entity,
+        damage_per_status: u32,
+    },
 }
 
 impl BaseEffect {
@@ -286,6 +340,7 @@ impl BaseEffect {
             Effect::Exhaust => BaseEffect::Exhaust { hand_index: 0 }, // hand_index should be set manually when queuing
             Effect::ActivateEnrage(amount) => BaseEffect::ActivateEnrage { source, amount },
             Effect::ActivateEmbrace => BaseEffect::ActivateEmbrace { source },
+            Effect::ActivateFeelNoPain { block_per_exhaust } => BaseEffect::ActivateFeelNoPain { source, block_per_exhaust },
             Effect::ActivateBrutality => BaseEffect::ActivateBrutality { source },
             Effect::ActivateCorruption => BaseEffect::ActivateCorruption { source },
             Effect::ActivateMetallicize { amount } => BaseEffect::ActivateMetallicize { source, amount },
@@ -296,6 +351,7 @@ impl BaseEffect {
             Effect::AddRandomAttackToHand => BaseEffect::AddRandomAttackToHand { source },
             Effect::ActivateEvolve => BaseEffect::ActivateEvolve { source },
             Effect::Heal(amount) => BaseEffect::Heal { target, amount },
+            Effect::HealAndIncreaseMaxHp(amount) => BaseEffect::HealAndIncreaseMaxHp { target, amount },
             Effect::LoseHp(amount) => BaseEffect::LoseHp { target: source, amount },
             Effect::GainPlatedArmor(amount) => BaseEffect::GainPlatedArmor { source, amount },
             Effect::DoubleBlock => BaseEffect::DoubleBlock { source },
@@ -305,6 +361,7 @@ impl BaseEffect {
             Effect::ApplyWeakAll { duration } => BaseEffect::ApplyWeakAll { duration },
             Effect::Ethereal => BaseEffect::Ethereal { hand_index: 0 }, // hand_index should be set manually when queuing
             Effect::AddCardToDiscard(card) => BaseEffect::AddCardToDiscard { card },
+            Effect::AddCardToHand(card) => BaseEffect::AddCardToHand { source, card },
             Effect::EnterSelectCardInHand => BaseEffect::EnterSelectCardInHand,
             Effect::EnterSelectCardInHandToPutOnDeck => BaseEffect::EnterSelectCardInHandToPutOnDeck,
             Effect::PlayTopCard => BaseEffect::PlayTopCard { source, target },
@@ -320,6 +377,15 @@ impl BaseEffect {
             },
             Effect::ExhaustNonAttackCardsFromHand { block_per_card } => BaseEffect::ExhaustNonAttackCardsFromHand { block_per_card },
             Effect::ActivateRupture => BaseEffect::ActivateRupture,
+            Effect::ActivateDoubleTap { remaining_attacks } => BaseEffect::ActivateDoubleTap { remaining_attacks },
+            Effect::EnterSelectCardToDuplicate { copies } => BaseEffect::EnterSelectCardToDuplicate { copies },
+            Effect::EnterSelectCardInExhaust => BaseEffect::EnterSelectCardInExhaust,
+            Effect::HealOnKill { amount } => BaseEffect::HealOnKill { amount },
+            Effect::AttackAllEnemiesAndHeal { amount, num_attacks } => BaseEffect::AttackAllEnemiesAndHeal { amount, num_attacks },
+            Effect::ExhaustHandForDamage { damage_per_card } => BaseEffect::ExhaustHandForDamage { damage_per_card },
+            Effect::ActivateJuggernaut { .. } => todo!("Implement Juggernaut when ready"),
+            Effect::AttackRandomEnemy { amount, num_attacks, strength_multiplier } => BaseEffect::AttackRandomEnemy { amount, num_attacks, strength_multiplier },
+            Effect::AddFireBreathing { damage_per_status } => BaseEffect::ActivateFireBreathing { source, damage_per_status },
         }
     }
 }

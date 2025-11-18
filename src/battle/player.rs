@@ -44,4 +44,19 @@ impl Player {
     pub fn is_alive(&self) -> bool {
         self.battle_info.is_alive()
     }
+
+    /// Increase max HP and also heal by the same amount
+    pub fn increase_max_hp(&mut self, amount: u32) {
+        self.battle_info.increase_max_hp(amount);
+    }
+
+    /// Get current HP
+    pub fn get_current_hp(&self) -> u32 {
+        self.battle_info.get_current_hp()
+    }
+
+    /// Get max HP
+    pub fn get_max_hp(&self) -> u32 {
+        self.battle_info.get_max_hp()
+    }
 }

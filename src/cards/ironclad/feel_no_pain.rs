@@ -1,25 +1,72 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::battle::events::{BattleEvent, EventListener};
+use crate::battle::target::Entity;
 
-/// Feel No Pain - Skill Card
+/// Event listener for Feel No Pain power
+/// Whenever a card is exhausted, gain block
+#[derive(Debug)]
+pub struct FeelNoPainListener {
+    owner: Entity,
+    block_per_exhaust: u32,
+}
+
+impl FeelNoPainListener {
+    pub fn new(owner: Entity, block_per_exhaust: u32) -> Self {
+        Self {
+            owner,
+            block_per_exhaust,
+        }
+    }
+}
+
+impl EventListener for FeelNoPainListener {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+        match event {
+            BattleEvent::CardExhausted { source } if *source == self.owner => {
+                // When the owner exhausts a card, gain block
+                vec![Effect::GainDefense {
+                    amount: self.block_per_exhaust,
+                }]
+            }
+            _ => vec![],
+        }
+    }
+
+    fn is_active(&self) -> bool {
+        true // Always active once played
+    }
+
+    fn get_owner(&self) -> Entity {
+        self.owner
+    }
+}
+
+/// Feel No Pain - Power Card
 /// Cost: 1
-/// Effect: Gain 5 Plated Armor. Exhaust. (Gains 3 Block when exhausted)
+/// Effect: Whenever you Exhaust a card, gain 3 Block.
 pub fn feel_no_pain() -> Card {
-    Card::new(CardEnum::FeelNoPain, 1, CardType::Skill, vec![
-        Effect::GainPlatedArmor(5),
-        Effect::Exhaust,
-        Effect::GainDefense { amount: 3 }, // Gain 3 Block when exhausted
-    ], false, true) // Initially playable
+    Card::new(
+        CardEnum::FeelNoPain,
+        1,
+        CardType::Power,
+        vec![Effect::ActivateFeelNoPain { block_per_exhaust: 3 }],
+        false,
+        true,
+    )
 }
 
 /// Feel No Pain+ (Upgraded)
 /// Cost: 1
-/// Effect: Gain 8 Plated Armor. Exhaust. (Gains 3 Block when exhausted)
+/// Effect: Whenever you Exhaust a card, gain 4 Block.
 pub fn feel_no_pain_upgraded() -> Card {
-    Card::new(CardEnum::FeelNoPain, 1, CardType::Skill, vec![
-        Effect::GainPlatedArmor(8),
-        Effect::Exhaust,
-        Effect::GainDefense { amount: 3 }, // Gain 3 Block when exhausted
-    ], true, true) // Initially playable
+    Card::new(
+        CardEnum::FeelNoPain,
+        1,
+        CardType::Power,
+        vec![Effect::ActivateFeelNoPain { block_per_exhaust: 4 }],
+        true,
+        true,
+    )
 }
 
 #[cfg(test)]
@@ -32,11 +79,14 @@ mod tests {
 
         assert_eq!(card.get_name(), "Feel No Pain");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
-        assert_eq!(card.get_effects().len(), 3);
-        assert_eq!(card.get_effects()[0], Effect::GainPlatedArmor(5));
-        assert_eq!(card.get_effects()[1], Effect::Exhaust);
-        assert_eq!(card.get_effects()[2], Effect::GainDefense { amount: 3 });
+        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_effects().len(), 1);
+        match &card.get_effects()[0] {
+            Effect::ActivateFeelNoPain { block_per_exhaust } => {
+                assert_eq!(*block_per_exhaust, 3);
+            }
+            _ => panic!("Expected ActivateFeelNoPain effect"),
+        }
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -47,34 +97,16 @@ mod tests {
 
         assert_eq!(card.get_name(), "Feel No Pain+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
-        assert_eq!(card.get_effects().len(), 3);
-        assert_eq!(card.get_effects()[0], Effect::GainPlatedArmor(8));
-        assert_eq!(card.get_effects()[1], Effect::Exhaust);
-        assert_eq!(card.get_effects()[2], Effect::GainDefense { amount: 3 });
+        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_effects().len(), 1);
+        match &card.get_effects()[0] {
+            Effect::ActivateFeelNoPain { block_per_exhaust } => {
+                assert_eq!(*block_per_exhaust, 4);
+            }
+            _ => panic!("Expected ActivateFeelNoPain effect"),
+        }
         assert!(card.is_upgraded());
         assert!(card.is_playable());
-    }
-
-    #[test]
-    fn test_feel_no_pain_effect_values() {
-        let normal_card = feel_no_pain();
-        let upgraded_card = feel_no_pain_upgraded();
-
-        let normal_effects = normal_card.get_effects();
-        let upgraded_effects = upgraded_card.get_effects();
-
-        // Check plated armor amounts
-        assert_eq!(normal_effects[0], Effect::GainPlatedArmor(5));
-        assert_eq!(upgraded_effects[0], Effect::GainPlatedArmor(8));
-
-        // Both should have exhaust effect
-        assert_eq!(normal_effects[1], Effect::Exhaust);
-        assert_eq!(upgraded_effects[1], Effect::Exhaust);
-
-        // Both should gain 3 defense when exhausted
-        assert_eq!(normal_effects[2], Effect::GainDefense { amount: 3 });
-        assert_eq!(upgraded_effects[2], Effect::GainDefense { amount: 3 });
     }
 
     #[test]
@@ -87,37 +119,94 @@ mod tests {
         use crate::game::enemy::EnemyTrait;
         use crate::enemies::red_louse::RedLouse;
         use crate::enemies::enemy_enum::EnemyEnum;
+        use crate::cards::status::slimed::slimed;
 
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 
-        // Create battle with Feel No Pain in hand
-        let deck = Deck::new(vec![feel_no_pain()]);
+        // Create battle with Feel No Pain and Slimed (an exhaust card)
+        let deck = Deck::new(vec![feel_no_pain(), slimed()]);
         let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
 
-        let initial_exhausted_size = battle.cards.exhausted_size();
-
-        // Play Feel No Pain targeting the player
-        let feel_no_pain_idx = 0;
+        // Play Feel No Pain to activate the power
+        let feel_no_pain_idx = battle.get_hand().iter().position(|c| c.get_name() == "Feel No Pain").unwrap();
         let result = battle.play_card(feel_no_pain_idx, Entity::Player);
         assert!(result.is_ok());
 
-        // Verify Feel No Pain was exhausted (should be in exhausted pile)
-        assert_eq!(battle.cards.exhausted_size(), initial_exhausted_size + 1);
+        // Verify Feel No Pain is now a power
+        let powers = battle.get_powers();
+        assert_eq!(powers.len(), 1);
+        assert_eq!(powers[0].get_name(), "Feel No Pain");
+
+        let initial_block = battle.get_player().get_block();
+
+        // Play Slimed (which exhausts itself)
+        let slimed_idx = battle.get_hand().iter().position(|c| c.get_name() == "Slimed").unwrap();
+        let result = battle.play_card(slimed_idx, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify player gained 3 block from Feel No Pain when Slimed exhausted
+        let final_block = battle.get_player().get_block();
+        assert_eq!(final_block, initial_block + 3);
+
+        // Verify Slimed was exhausted
         let exhausted_pile = battle.cards.get_exhausted();
         assert_eq!(exhausted_pile.len(), 1);
-        assert_eq!(exhausted_pile[0].get_name(), "Feel No Pain");
-
-        // TODO: Add test for plated armor gain once the system is implemented
-        // This would involve checking that the player gained 5 plated armor
-        // TODO: Add test for 3 defense gain when exhausted
-        // This would involve checking that the player gained 3 block from the exhaustion effect
+        assert_eq!(exhausted_pile[0].get_name(), "Slimed");
     }
 
     #[test]
     fn test_feel_no_pain_upgraded_battle_integration() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::game::enemy::EnemyTrait;
+        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::enemy_enum::EnemyEnum;
+        use crate::cards::status::slimed::slimed;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Feel No Pain+ and Slimed
+        let deck = Deck::new(vec![feel_no_pain_upgraded(), slimed()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Play Feel No Pain+ to activate the power
+        let feel_no_pain_idx = battle.get_hand().iter().position(|c| c.get_name() == "Feel No Pain+").unwrap();
+        let result = battle.play_card(feel_no_pain_idx, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify Feel No Pain+ is now a power
+        let powers = battle.get_powers();
+        assert_eq!(powers.len(), 1);
+        assert_eq!(powers[0].get_name(), "Feel No Pain+");
+
+        let initial_block = battle.get_player().get_block();
+
+        // Play Slimed (which exhausts itself)
+        let slimed_idx = battle.get_hand().iter().position(|c| c.get_name() == "Slimed").unwrap();
+        let result = battle.play_card(slimed_idx, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify player gained 4 block from Feel No Pain+ when Slimed exhausted
+        let final_block = battle.get_player().get_block();
+        assert_eq!(final_block, initial_block + 4);
+
+        // Verify Slimed was exhausted
+        let exhausted_pile = battle.cards.get_exhausted();
+        assert_eq!(exhausted_pile.len(), 1);
+        assert_eq!(exhausted_pile[0].get_name(), "Slimed");
+    }
+
+    #[test]
+    fn test_feel_no_pain_costs_one_energy() {
         use crate::battle::Battle;
         use crate::battle::target::Entity;
         use crate::battle::enemy_in_battle::EnemyInBattle;
@@ -132,26 +221,16 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 
-        // Create battle with Feel No Pain+ in hand
-        let deck = Deck::new(vec![feel_no_pain_upgraded()]);
+        let deck = Deck::new(vec![feel_no_pain()]);
         let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
 
-        let initial_exhausted_size = battle.cards.exhausted_size();
+        let initial_energy = battle.get_player().get_energy();
 
-        // Play Feel No Pain+ targeting the player
-        let feel_no_pain_idx = 0;
-        let result = battle.play_card(feel_no_pain_idx, Entity::Player);
+        // Play Feel No Pain
+        let result = battle.play_card(0, Entity::Player);
         assert!(result.is_ok());
 
-        // Verify Feel No Pain+ was exhausted
-        assert_eq!(battle.cards.exhausted_size(), initial_exhausted_size + 1);
-        let exhausted_pile = battle.cards.get_exhausted();
-        assert_eq!(exhausted_pile.len(), 1);
-        assert_eq!(exhausted_pile[0].get_name(), "Feel No Pain+");
-
-        // TODO: Add test for plated armor gain once the system is implemented
-        // This would involve checking that the player gained 8 plated armor
-        // TODO: Add test for 3 defense gain when exhausted
-        // This would involve checking that the player gained 3 block from the exhaustion effect
+        // Verify energy was consumed
+        assert_eq!(battle.get_player().get_energy(), initial_energy - 1);
     }
 }

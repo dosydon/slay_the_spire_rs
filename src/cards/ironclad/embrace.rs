@@ -300,4 +300,125 @@ mod tests {
         let exhausted_pile = battle.cards.get_exhausted();
         assert_eq!(exhausted_pile.len(), 0);
     }
+
+    #[test]
+    fn test_embrace_with_exhaust_card_draws() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::game::enemy::EnemyTrait;
+        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::enemy_enum::EnemyEnum;
+        use crate::cards::ironclad::strike::strike;
+        use crate::cards::status::slimed::slimed;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Embrace, Slimed (exhaust card), and extra Strikes in deck
+        // Need extra cards beyond the initial 5-card hand so Embrace can draw
+        let deck = Deck::new(vec![
+            embrace(),
+            slimed(),
+            strike(),
+            strike(),
+            strike(),
+            strike(), // Extra card to be drawn when Embrace triggers
+        ]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Play Embrace to activate the power
+        let embrace_idx = battle.get_hand().iter().position(|c| c.get_name() == "Embrace").unwrap();
+        let result = battle.play_card(embrace_idx, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify Embrace is active
+        let powers = battle.get_powers();
+        assert_eq!(powers.len(), 1);
+
+        let initial_hand_size = battle.get_hand().len();
+        let initial_deck_size = battle.cards.deck_size();
+
+        // Play Slimed (should exhaust and trigger Embrace to draw a card)
+        let slimed_idx = battle.get_hand().iter().position(|c| c.get_name() == "Slimed").unwrap();
+        let result = battle.play_card(slimed_idx, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify Slimed was exhausted
+        let exhaust_pile = battle.cards.get_exhausted();
+        assert_eq!(exhaust_pile.len(), 1);
+        assert_eq!(exhaust_pile[0].get_name(), "Slimed");
+
+        // Verify a card was drawn due to Embrace trigger
+        // Hand had initial_hand_size cards, Slimed was removed (-1), and Embrace drew 1 card (+1)
+        // So final hand size should equal initial hand size
+        let final_hand_size = battle.get_hand().len();
+        assert_eq!(final_hand_size, initial_hand_size);
+
+        // Verify deck size decreased by 1 (card was drawn)
+        let final_deck_size = battle.cards.deck_size();
+        assert_eq!(final_deck_size, initial_deck_size - 1);
+    }
+
+    #[test]
+    fn test_embrace_upgraded_costs_one_energy() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::game::enemy::EnemyTrait;
+        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::enemy_enum::EnemyEnum;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        let deck = Deck::new(vec![embrace_upgraded()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        let initial_energy = battle.get_player().get_energy();
+
+        // Play Embrace+
+        let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify energy was consumed (upgraded costs 1)
+        assert_eq!(battle.get_player().get_energy(), initial_energy - 1);
+    }
+
+    #[test]
+    fn test_embrace_normal_costs_two_energy() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::game::enemy::EnemyTrait;
+        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::enemy_enum::EnemyEnum;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        let deck = Deck::new(vec![embrace()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        let initial_energy = battle.get_player().get_energy();
+
+        // Play Embrace
+        let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify energy was consumed (costs 2)
+        assert_eq!(battle.get_player().get_energy(), initial_energy - 2);
+    }
 }

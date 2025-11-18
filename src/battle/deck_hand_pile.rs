@@ -155,6 +155,15 @@ impl DeckHandPile {
         }
     }
 
+    /// Remove a card from exhausted pile at specific index
+    pub(in crate::battle) fn remove_card_from_exhausted(&mut self, index: usize) -> Option<Card> {
+        if index < self.exhausted.len() {
+            Some(self.exhausted.remove(index))
+        } else {
+            None
+        }
+    }
+
     // Play card from hand (removes from hand, adds to discard pile, returns the card)
     pub(in crate::battle) fn play_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
         if hand_index < self.hand.len() {

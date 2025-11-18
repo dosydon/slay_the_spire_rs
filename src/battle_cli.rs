@@ -230,6 +230,12 @@ impl BattleCli {
                 Action::SelectCardInDiscard(card_idx) => {
                     // Handle card selection from discard pile
                 },
+                Action::SelectCardToDuplicate(card_idx) => {
+                    // Handle card selection for duplication
+                },
+                Action::SelectCardInExhaust(card_idx) => {
+                    // Handle card selection from exhaust pile
+                },
                 Action::EndTurn => {
                     end_turn_action = Some(action_index);
                 }
@@ -583,6 +589,39 @@ impl BattleCli {
                 }
                 crate::game::effect::Effect::ActivateRupture => {
                     parts.push("💀 Gain Strength when losing HP".to_string());
+                }
+                crate::game::effect::Effect::EnterSelectCardToDuplicate { copies } => {
+                    parts.push(format!("📋 Duplicate card {}x", copies));
+                }
+                crate::game::effect::Effect::ActivateDoubleTap { remaining_attacks } => {
+                    parts.push(format!("🔄 Next {} Attack(s) played twice", remaining_attacks));
+                }
+                crate::game::effect::Effect::EnterSelectCardInExhaust => {
+                    parts.push("💀 Select card from exhaust pile".to_string());
+                }
+                crate::game::effect::Effect::HealOnKill { amount } => {
+                    parts.push(format!("💚 Heal {} HP if target dies", amount));
+                }
+                crate::game::effect::Effect::AttackAllEnemiesAndHeal { amount, .. } => {
+                    parts.push(format!("⚔️ {} to ALL + Heal for unblocked damage", amount));
+                }
+                crate::game::effect::Effect::ExhaustHandForDamage { damage_per_card } => {
+                    parts.push(format!("💀 Exhaust hand for {} damage per card", damage_per_card));
+                }
+                crate::game::effect::Effect::ActivateJuggernaut { damage_per_block } => {
+                    parts.push(format!("🛡️ {} damage when gaining Block", damage_per_block));
+                }
+                crate::game::effect::Effect::AttackRandomEnemy { amount, .. } => {
+                    parts.push(format!("⚔️ {} to random enemy", amount));
+                }
+                crate::game::effect::Effect::AddFireBreathing { damage_per_status } => {
+                    parts.push(format!("🔥 {} damage when drawing Status/Curse", damage_per_status));
+                }
+                crate::game::effect::Effect::AddCardToHand(card) => {
+                    parts.push(format!("➕ Add {} to hand", card.name()));
+                }
+                crate::game::effect::Effect::HealAndIncreaseMaxHp(amount) => {
+                    parts.push(format!("❤️ +{} HP & Max HP", amount));
                 }
             }
         }

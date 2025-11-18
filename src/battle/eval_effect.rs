@@ -206,6 +206,13 @@ impl Battle {
                     self.add_listener(Box::new(embrace_listener));
                 }
             },
+            BaseEffect::ActivateFeelNoPain { source, block_per_exhaust } => {
+                // Add FeelNoPainListener for the player
+                if let Entity::Player = source {
+                    let feel_no_pain_listener = crate::cards::ironclad::feel_no_pain::FeelNoPainListener::new(*source, *block_per_exhaust);
+                    self.add_listener(Box::new(feel_no_pain_listener));
+                }
+            },
             BaseEffect::ActivateBrutality { source } => {
                 // Add BrutalityListener for the player
                 if let Entity::Player = source {
@@ -435,6 +442,14 @@ impl Battle {
                 // Transition to SelectCardInHandToPutOnDeck state
                 self.battle_state = crate::battle::action::BattleState::SelectCardInHandToPutOnDeck;
             },
+            BaseEffect::EnterSelectCardToDuplicate { copies } => {
+                // Transition to SelectCardToDuplicate state
+                self.battle_state = crate::battle::action::BattleState::SelectCardToDuplicate { copies: *copies };
+            },
+            BaseEffect::EnterSelectCardInExhaust => {
+                // Transition to SelectCardInExhaust state
+                self.battle_state = crate::battle::action::BattleState::SelectCardInExhaust;
+            },
             BaseEffect::PlayTopCard { source, target } => {
                 // Take the top card from draw pile and play it
                 if let Some(card) = self.cards.draw_top_card() {
@@ -544,6 +559,128 @@ impl Battle {
                 // Activate Rupture listener for gaining Strength when losing HP
                 let rupture_listener = crate::cards::ironclad::rupture::RuptureListener::new(crate::battle::target::Entity::Player);
                 self.add_listener(Box::new(rupture_listener));
+            },
+            BaseEffect::ActivateDoubleTap { remaining_attacks } => {
+                // Activate DoubleTap listener for playing next Attack(s) twice
+                if let Entity::Player = crate::battle::target::Entity::Player {
+                    let double_tap_listener = crate::cards::ironclad::double_tap::DoubleTapListener::new(crate::battle::target::Entity::Player, *remaining_attacks);
+                    self.add_listener(Box::new(double_tap_listener));
+                }
+            },
+            BaseEffect::HealOnKill { amount } => {
+                // Add HealOnKill listener for healing if target dies
+                // This will need to track which enemy is being attacked
+                // For now, we'll store this in a temporary state
+                // TODO: Implement proper HealOnKill listener system
+            },
+            BaseEffect::AttackAllEnemiesAndHeal { amount, num_attacks } => {
+                // Deal damage to all enemies and heal for unblocked damage
+                let mut total_unblocked_damage = 0u32;
+
+                for _ in 0..*num_attacks {
+                    for enemy_idx in 0..self.enemies.len() {
+                        if self.enemies[enemy_idx].battle_info.is_alive() {
+                            let target = Entity::Enemy(enemy_idx);
+                            let source = Entity::Player; // Assume player is the source
+                            let incoming_damage = self.calculate_incoming_damage(source, target, *amount);
+                            let actual_damage = self.apply_damage(target, incoming_damage);
+
+                            // Add to total unblocked damage (actual damage is what went through block)
+                            total_unblocked_damage += actual_damage;
+                        }
+                    }
+                }
+
+                // Heal the player for total unblocked damage dealt
+                if total_unblocked_damage > 0 {
+                    let heal_effect = BaseEffect::Heal {
+                        target: Entity::Player,
+                        amount: total_unblocked_damage,
+                    };
+                    self.eval_base_effect(&heal_effect);
+                }
+            },
+            BaseEffect::ExhaustHandForDamage { damage_per_card } => {
+                // Exhaust all cards in hand and deal damage per card exhausted
+                let num_cards = self.cards.hand_size() as u32;
+
+                if num_cards > 0 {
+                    // Exhaust all cards from hand (in reverse to avoid index shifting)
+                    for i in (0..num_cards).rev() {
+                        self.cards.exhaust_card_from_hand(i as usize);
+                    }
+
+                    // Deal damage to first alive enemy (simplified from random selection)
+                    for enemy_idx in 0..self.enemies.len() {
+                        if self.enemies[enemy_idx].battle_info.is_alive() {
+                            let total_damage = num_cards * damage_per_card;
+                            let target = Entity::Enemy(enemy_idx);
+                            let source = Entity::Player;
+
+                            let incoming_damage = self.calculate_incoming_damage(source, target, total_damage);
+                            self.apply_damage(target, incoming_damage);
+                            break; // Only damage one enemy
+                        }
+                    }
+                }
+            },
+            // TODO: Implement Juggernaut listener
+            // BaseEffect::ActivateJuggernaut { damage_per_block } => {
+            //     // Activate Juggernaut listener for dealing damage when gaining block
+            //     if let Entity::Player = crate::battle::target::Entity::Player {
+            //         let juggernaut_listener = crate::cards::ironclad::juggernaut::JuggernautListener::new(crate::battle::target::Entity::Player, *damage_per_block);
+            //         self.add_listener(Box::new(juggernaut_listener));
+            //     }
+            // },
+            BaseEffect::AttackRandomEnemy { amount, num_attacks, strength_multiplier } => {
+                // Deal damage to first alive enemy (simplified from random selection)
+                for _ in 0..*num_attacks {
+                    for enemy_idx in 0..self.enemies.len() {
+                        if self.enemies[enemy_idx].battle_info.is_alive() {
+                            let target = Entity::Enemy(enemy_idx);
+                            let source = Entity::Player;
+                            let incoming_damage = self.calculate_incoming_damage(source, target, *amount);
+
+                            // Apply strength multiplier if present
+                            let final_amount = if *strength_multiplier > 1 {
+                                let strength = self.player.battle_info.get_strength();
+                                incoming_damage + ((amount * strength) / 2)
+                            } else {
+                                incoming_damage
+                            };
+
+                            self.apply_damage(target, final_amount);
+                            break; // Only damage one enemy
+                        }
+                    }
+                }
+            },
+            BaseEffect::ActivateFireBreathing { source: _, damage_per_status } => {
+                // Activate Fire Breathing listener for dealing damage when Status/Curse cards are drawn
+                let fire_breathing_listener = crate::cards::ironclad::fire_breathing::FireBreathingListener::new(crate::battle::target::Entity::Player, *damage_per_status);
+                self.add_listener(Box::new(fire_breathing_listener));
+            },
+            BaseEffect::AddCardToHand { source: _, card } => {
+                // Add card to hand
+                let card_reward_pool = crate::game::card_reward::CardRewardPool::new();
+                let created_card = card_reward_pool.create_card_from_enum(*card);
+                self.cards.add_card_to_hand(created_card);
+            },
+                        BaseEffect::HealAndIncreaseMaxHp { target, amount } => {
+                // Heal the target and increase max HP by the same amount
+                match *target {
+                    Entity::Player => {
+                        self.player.battle_info.heal(*amount);
+                        self.player.increase_max_hp(*amount);
+                    },
+                    Entity::Enemy(idx) => {
+                        if idx < self.enemies.len() {
+                            self.enemies[idx].battle_info.heal(*amount);
+                            // Note: Enemies don't have max HP increase in this implementation
+                        }
+                    }
+                    Entity::None => {} // No target, no healing
+                };
             },
         }
     }
