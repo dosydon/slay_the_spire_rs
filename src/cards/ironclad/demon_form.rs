@@ -163,17 +163,22 @@ mod tests {
         let strength_after_play = battle.get_player().battle_info.get_strength();
         assert_eq!(strength_after_play, 0);
 
-        // Verify Demon Form was not exhausted (powers go to discard pile)
+        // Demon Form should be in the powers pile (Power cards go to powers when played)
+        let powers = battle.get_powers();
+        assert_eq!(powers.len(), 1);
+        assert_eq!(powers[0].get_name(), "Demon Form");
+
+        // Demon Form should NOT be in exhaust pile
         let exhausted_cards = battle.cards.get_exhausted();
         let demon_form_exhausted = exhausted_cards.iter()
             .any(|card| card.get_name() == "Demon Form");
-        assert!(!demon_form_exhausted, "Demon Form should not exhaust");
+        assert!(!demon_form_exhausted, "Demon Form should not be exhausted");
 
-        // Should be in discard pile instead
+        // Demon Form should NOT be in discard pile (Power cards go to powers, not discard)
         let discard = battle.cards.get_discard_pile();
         let demon_form_in_discard = discard.iter()
             .any(|card| card.get_name() == "Demon Form");
-        assert!(demon_form_in_discard, "Demon Form should be in discard pile");
+        assert!(!demon_form_in_discard, "Demon Form should not be in discard pile");
     }
 
     #[test]
@@ -198,17 +203,107 @@ mod tests {
         // Energy should be spent (Demon Form+ costs 2)
         assert_eq!(battle.get_player().get_energy(), initial_energy - 2);
 
-        // Verify Demon Form+ was not exhausted
-        let exhausted_cards = battle.cards.get_exhausted();
-        let demon_form_exhausted = exhausted_cards.iter()
-            .any(|card| card.get_name() == "Demon Form+");
-        assert!(!demon_form_exhausted, "Demon Form+ should not exhaust");
+        // Demon Form+ should be in the powers pile (Power cards go to powers when played)
+        let powers = battle.get_powers();
+        assert_eq!(powers.len(), 1);
+        assert_eq!(powers[0].get_name(), "Demon Form+");
+    }
 
-        // Should be in discard pile
-        let discard = battle.cards.get_discard_pile();
-        let demon_form_in_discard = discard.iter()
-            .any(|card| card.get_name() == "Demon Form+");
-        assert!(demon_form_in_discard, "Demon Form+ should be in discard pile");
+    #[test]
+    fn test_demon_form_turn_based_strength_gain() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Demon Form in hand
+        let deck = Deck::new(vec![demon_form()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Give player enough energy to play Demon Form
+        battle.get_player_mut().battle_info.energy = 3;
+
+        // Check initial strength
+        let initial_strength = battle.get_player().battle_info.get_strength();
+        assert_eq!(initial_strength, 0);
+
+        // Play Demon Form
+        let demon_form_idx = 0;
+        let result = battle.play_card(demon_form_idx, Entity::Player);
+        assert!(result.is_ok());
+
+        // Demon Form should not give immediate strength
+        let strength_after_play = battle.get_player().battle_info.get_strength();
+        assert_eq!(strength_after_play, 0);
+
+        // Simulate turn start event to trigger Demon Form effect
+        let turn_start_event = crate::battle::events::BattleEvent::TurnStart { entity: crate::battle::target::Entity::Player };
+        battle.emit_event(turn_start_event);
+
+        // Now player should have gained 2 Strength from Demon Form
+        let strength_after_turn_start = battle.get_player().battle_info.get_strength();
+        assert_eq!(strength_after_turn_start, 2, "Player should gain 2 Strength at turn start from Demon Form");
+    }
+
+    #[test]
+    fn test_demon_form_upgraded_turn_based_strength_gain() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Demon Form+ in hand
+        let deck = Deck::new(vec![demon_form_upgraded()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Give player enough energy
+        battle.get_player_mut().battle_info.energy = 2;
+
+        // Play Demon Form+
+        let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok());
+
+        // Demon Form+ should not give immediate strength
+        let strength_after_play = battle.get_player().battle_info.get_strength();
+        assert_eq!(strength_after_play, 0);
+
+        // Simulate turn start event to trigger Demon Form+ effect
+        let turn_start_event = crate::battle::events::BattleEvent::TurnStart { entity: crate::battle::target::Entity::Player };
+        battle.emit_event(turn_start_event);
+
+        // Now player should have gained 3 Strength from Demon Form+
+        let strength_after_turn_start = battle.get_player().battle_info.get_strength();
+        assert_eq!(strength_after_turn_start, 3, "Player should gain 3 Strength at turn start from Demon Form+");
+    }
+
+    #[test]
+    fn test_demon_form_multiple_turns_strength_accumulation() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Demon Form in hand
+        let deck = Deck::new(vec![demon_form()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Give player enough energy to play Demon Form
+        battle.get_player_mut().battle_info.energy = 3;
+
+        // Play Demon Form
+        let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok());
+
+        let turn_start_event = crate::battle::events::BattleEvent::TurnStart { entity: crate::battle::target::Entity::Player };
+
+        // Simulate multiple turn starts
+        for turn in 1..=3 {
+            battle.emit_event(turn_start_event.clone());
+            let expected_strength = turn * 2; // 2 Strength per turn from Demon Form
+            let current_strength = battle.get_player().battle_info.get_strength();
+            assert_eq!(current_strength, expected_strength,
+                "After turn {}, player should have {} Strength", turn, expected_strength);
+        }
     }
 
     #[test]
@@ -235,12 +330,26 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(battle.get_player().get_energy(), 0); // Spent 2 more energy
 
-        // Verify both cards are in discard pile
-        let discard = battle.cards.get_discard_pile();
-        let demon_form_count = discard.iter()
+        // Verify both cards are in the powers pile (Power cards go to powers when played)
+        let powers = battle.get_powers();
+        assert_eq!(powers.len(), 2);
+        let power_names: Vec<String> = powers.iter().map(|card| card.get_name().to_string()).collect();
+        assert!(power_names.contains(&"Demon Form".to_string()), "Demon Form should be in powers pile");
+        assert!(power_names.contains(&"Demon Form+".to_string()), "Demon Form+ should be in powers pile");
+
+        // Verify neither card is in exhaust pile (Power cards go to powers, not exhaust)
+        let exhausted_cards = battle.cards.get_exhausted();
+        let demon_form_exhausted = exhausted_cards.iter()
             .filter(|card| card.get_name() == "Demon Form" || card.get_name() == "Demon Form+")
             .count();
-        assert_eq!(demon_form_count, 2, "Both Demon Form cards should be in discard pile");
+        assert_eq!(demon_form_exhausted, 0, "No Demon Form cards should be exhausted");
+
+        // Verify neither card is in discard pile (Power cards go to powers, not discard)
+        let discard = battle.cards.get_discard_pile();
+        let demon_form_in_discard = discard.iter()
+            .filter(|card| card.get_name() == "Demon Form" || card.get_name() == "Demon Form+")
+            .count();
+        assert_eq!(demon_form_in_discard, 0, "No Demon Form cards should be in discard pile");
     }
 }
 

@@ -1,7 +1,6 @@
 use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Limit Break - Rare Skill Card
-/// Cost: 1 (0 when upgraded)
 /// Effect: Double your Strength. Exhaust.
 pub fn limit_break() -> Card {
     Card::new_with_condition(
