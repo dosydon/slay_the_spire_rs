@@ -22,6 +22,7 @@ pub enum Effect {
         strength_multiplier: u32,
     },
     AttackToTargetWithBlock, // Deal damage equal to player's Block
+    AttackToTargetWithScaling { base_damage: u32, scaling: u32 }, // Scaling damage attack (Rampage)
     AttackAllEnemies {
         amount: u32,
         num_attacks: u32,
@@ -70,6 +71,8 @@ pub enum Effect {
     ActivateRage { block_per_attack: u32 }, // Activates Rage for gaining block when playing attacks
     AddRandomAttackToHand, // Add a random Attack card to hand
     ActivateEvolve, // Activates Evolve for drawing cards when Status cards are drawn
+    ExhaustNonAttackCardsFromHand { block_per_card: u32 }, // Exhaust all non-Attack cards from hand, gain block per card
+    ActivateRupture, // Activates Rupture for gaining Strength when losing HP
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -89,6 +92,12 @@ pub enum BaseEffect {
     AttackToTargetWithBlock {
         source: Entity,
         target: Entity,
+    },
+    AttackToTargetWithScaling {
+        source: Entity,
+        target: Entity,
+        base_damage: u32,
+        scaling: u32,
     },
     GainDefense {
         source: Entity,
@@ -243,6 +252,10 @@ pub enum BaseEffect {
         source: Entity,
         target: Entity,
     },
+    ExhaustNonAttackCardsFromHand {
+        block_per_card: u32,
+    },
+    ActivateRupture,
 }
 
 impl BaseEffect {
@@ -255,6 +268,7 @@ impl BaseEffect {
                 BaseEffect::AttackAllEnemies { source, amount, num_attacks }
             }
             Effect::AttackToTargetWithBlock => BaseEffect::AttackToTargetWithBlock { source, target },
+            Effect::AttackToTargetWithScaling { base_damage, scaling } => BaseEffect::AttackToTargetWithScaling { source, target, base_damage, scaling },
             Effect::GainDefense { amount } => BaseEffect::GainDefense { source, amount },
             Effect::ApplyVulnerable { duration } => BaseEffect::ApplyVulnerable { target, duration },
             Effect::ApplyVulnerableAll { duration } => BaseEffect::ApplyVulnerableAll { duration },
@@ -304,6 +318,8 @@ impl BaseEffect {
                 source,
                 target,
             },
+            Effect::ExhaustNonAttackCardsFromHand { block_per_card } => BaseEffect::ExhaustNonAttackCardsFromHand { block_per_card },
+            Effect::ActivateRupture => BaseEffect::ActivateRupture,
         }
     }
 }

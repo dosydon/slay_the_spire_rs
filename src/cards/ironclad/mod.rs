@@ -50,6 +50,8 @@ pub mod whirlwind;
 pub mod infernal_blade;
 pub mod evolve;
 pub mod demon_form;
+pub mod second_wind;
+pub mod rupture;
 
 pub use strike::strike;
 pub use strike::strike_upgraded;
@@ -153,3 +155,7 @@ pub use demon_form::demon_form;
 pub use demon_form::demon_form_upgraded;
 pub use warcry::warcry;
 pub use warcry::warcry_upgraded;
+pub use second_wind::second_wind;
+pub use second_wind::second_wind_upgraded;
+pub use rupture::rupture;
+pub use rupture::rupture_upgraded;

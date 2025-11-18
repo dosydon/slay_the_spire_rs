@@ -7,6 +7,10 @@ pub enum BattleEvent {
         amount: u32,
         source: Entity
     },
+    HpLostFromCard {
+        target: Entity,
+        amount: u32,
+    },
     SkillCardPlayed {
         source: Entity,
     },

@@ -56,6 +56,8 @@ pub enum CardEnum {
     Sentinel,
     Whirlwind,
     DemonForm,
+    SecondWind,
+    Rupture,
     // Status Cards
     Slimed,
     Wound,
@@ -120,6 +122,8 @@ impl CardEnum {
             CardEnum::Sentinel => "Sentinel",
             CardEnum::Whirlwind => "Whirlwind",
             CardEnum::DemonForm => "Demon Form",
+            CardEnum::SecondWind => "Second Wind",
+            CardEnum::Rupture => "Rupture",
             CardEnum::Slimed => "Slimed",
             CardEnum::Wound => "Wound",
             CardEnum::Burn => "Burn",

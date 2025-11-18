@@ -575,6 +575,15 @@ impl BattleCli {
                 crate::game::effect::Effect::DoubleStrength => {
                     parts.push("💪 Double Strength".to_string());
                 }
+                crate::game::effect::Effect::AttackToTargetWithScaling { base_damage, scaling } => {
+                    parts.push(format!("⚔️ {} + scaling {}", base_damage, scaling));
+                }
+                crate::game::effect::Effect::ExhaustNonAttackCardsFromHand { block_per_card } => {
+                    parts.push(format!("💨 Exhaust non-Attacks, {} Block each", block_per_card));
+                }
+                crate::game::effect::Effect::ActivateRupture => {
+                    parts.push("💀 Gain Strength when losing HP".to_string());
+                }
             }
         }
         

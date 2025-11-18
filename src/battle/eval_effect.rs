@@ -21,6 +21,15 @@ impl Battle {
                     self.apply_damage(*target, damage_amount);
                 }
             },
+            BaseEffect::AttackToTargetWithScaling { source, target, base_damage, scaling } => {
+                // Calculate damage with current rampage scaling
+                let total_damage = base_damage + self.player.battle_info.get_rampage_damage();
+                let incoming_damage = self.calculate_incoming_damage_with_multiplier(*source, *target, total_damage, 1);
+                self.apply_damage(*target, incoming_damage);
+
+                // Increase rampage scaling for next use
+                self.player.battle_info.increase_rampage_damage(*scaling);
+            },
             BaseEffect::AttackAllEnemies { source, amount, num_attacks } => {
                 for _ in 0..*num_attacks {
                     for enemy_idx in 0..self.enemies.len() {
@@ -368,12 +377,30 @@ impl Battle {
                         let current_hp = self.player.battle_info.get_current_hp();
                         let new_hp = current_hp.saturating_sub(*amount);
                         self.player.battle_info.set_current_hp(new_hp);
+
+                        // Emit HP loss from card event for Rupture and other listeners
+                        if *amount > 0 {
+                            let hp_loss_event = BattleEvent::HpLostFromCard {
+                                target: *target,
+                                amount: *amount,
+                            };
+                            self.emit_event(hp_loss_event);
+                        }
                     },
                     Entity::Enemy(idx) => {
                         if *idx < self.enemies.len() {
                             let current_hp = self.enemies[*idx].battle_info.get_current_hp();
                             let new_hp = current_hp.saturating_sub(*amount);
                             self.enemies[*idx].battle_info.set_current_hp(new_hp);
+
+                            // Emit HP loss from card event for listeners
+                            if *amount > 0 {
+                                let hp_loss_event = BattleEvent::HpLostFromCard {
+                                    target: *target,
+                                    amount: *amount,
+                                };
+                                self.emit_event(hp_loss_event);
+                            }
                         }
                     },
                     Entity::None => {} // No target, no HP loss
@@ -487,6 +514,36 @@ impl Battle {
                     let base_effect = crate::game::effect::BaseEffect::from_effect((**effect).clone(), *source, *target);
                     self.eval_base_effect(&base_effect);
                 }
+            },
+            BaseEffect::ExhaustNonAttackCardsFromHand { block_per_card } => {
+                // Exhaust all non-Attack cards from hand and gain block per card exhausted
+                let hand = self.cards.get_hand().clone();
+                let mut cards_to_exhaust = Vec::new();
+                let mut num_exhausted = 0u32;
+
+                // Find all non-Attack cards in hand
+                for (index, card) in hand.iter().enumerate() {
+                    if card.get_card_type() != &crate::game::card_type::CardType::Attack {
+                        cards_to_exhaust.push(index);
+                        num_exhausted += 1;
+                    }
+                }
+
+                // Exhaust the non-Attack cards (remove in reverse order to maintain indices)
+                for &index in cards_to_exhaust.iter().rev() {
+                    self.cards.exhaust_card_from_hand(index);
+                }
+
+                // Gain block based on number of cards exhausted
+                if num_exhausted > 0 {
+                    let total_block = num_exhausted * block_per_card;
+                    self.player.battle_info.gain_block(total_block);
+                }
+            },
+            BaseEffect::ActivateRupture => {
+                // Activate Rupture listener for gaining Strength when losing HP
+                let rupture_listener = crate::cards::ironclad::rupture::RuptureListener::new(crate::battle::target::Entity::Player);
+                self.add_listener(Box::new(rupture_listener));
             },
         }
     }

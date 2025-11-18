@@ -9,6 +9,7 @@ pub struct CharacterBattleInfo {
     pub weak_turns: u32,
     pub frail_turns: u32,
     pub ritual: u32,
+    pub rampage_damage: u32,
     // Additional status effects can be added here
 }
 
@@ -24,6 +25,7 @@ impl CharacterBattleInfo {
             weak_turns: 0,
             frail_turns: 0,
             ritual: 0,
+            rampage_damage: 0,
         }
     }
 
@@ -38,6 +40,7 @@ impl CharacterBattleInfo {
             weak_turns: 0,
             frail_turns: 0,
             ritual: 0,
+            rampage_damage: 0,
         }
     }
 
@@ -257,6 +260,16 @@ impl CharacterBattleInfo {
         if self.ritual > 0 {
             self.gain_strength(self.ritual);
         }
+    }
+
+    /// Get rampage damage scaling
+    pub fn get_rampage_damage(&self) -> u32 {
+        self.rampage_damage
+    }
+
+    /// Increase rampage damage scaling
+    pub fn increase_rampage_damage(&mut self, amount: u32) {
+        self.rampage_damage += amount;
     }
 }
 

@@ -142,6 +142,8 @@ impl Card {
             CardEnum::Sentinel => self, // TODO: Implement sentinel_upgraded()
             CardEnum::Whirlwind => crate::cards::ironclad::whirlwind::whirlwind_upgraded(),
             CardEnum::DemonForm => crate::cards::ironclad::demon_form::demon_form_upgraded(),
+            CardEnum::SecondWind => crate::cards::ironclad::second_wind::second_wind_upgraded(),
+            CardEnum::Rupture => crate::cards::ironclad::rupture::rupture_upgraded(),
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
             CardEnum::Burn => self, // Status cards don't upgrade

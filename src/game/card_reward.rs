@@ -116,6 +116,8 @@ impl CardRewardPool {
             CardEnum::Sentinel => todo!("Implement sentinel()"),
             CardEnum::Whirlwind => crate::cards::ironclad::whirlwind::whirlwind(),
             CardEnum::DemonForm => crate::cards::ironclad::demon_form::demon_form(),
+            CardEnum::SecondWind => crate::cards::ironclad::second_wind::second_wind(),
+            CardEnum::Rupture => crate::cards::ironclad::rupture::rupture(),
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
             CardEnum::Wound => crate::cards::status::wound::wound(),
             CardEnum::Burn => crate::cards::status::burn::burn(),
