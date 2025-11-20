@@ -600,25 +600,31 @@ impl Battle {
                     self.eval_base_effect(&heal_effect);
                 }
             },
-            BaseEffect::ExhaustHandForDamage { damage_per_card } => {
+            BaseEffect::ExhaustHandForDamage { damage_per_card, target } => {
                 // Exhaust all cards in hand and deal damage per card exhausted
                 let num_cards = self.cards.hand_size() as u32;
 
                 if num_cards > 0 {
                     // Exhaust all cards from hand (in reverse to avoid index shifting)
                     for i in (0..num_cards).rev() {
-                        self.cards.exhaust_card_from_hand(i as usize);
+                        if let Some(_card) = self.cards.exhaust_card_from_hand(i as usize) {
+                            // Emit CardExhausted event for each card exhausted
+                            let exhaust_event = BattleEvent::CardExhausted {
+                                source: *target,
+                            };
+                            self.emit_event(exhaust_event);
+                        }
                     }
 
                     // Deal damage to first alive enemy (simplified from random selection)
                     for enemy_idx in 0..self.enemies.len() {
                         if self.enemies[enemy_idx].battle_info.is_alive() {
                             let total_damage = num_cards * damage_per_card;
-                            let target = Entity::Enemy(enemy_idx);
-                            let source = Entity::Player;
+                            let damage_target = Entity::Enemy(enemy_idx);
+                            let source = target;
 
-                            let incoming_damage = self.calculate_incoming_damage(source, target, total_damage);
-                            self.apply_damage(target, incoming_damage);
+                            let incoming_damage = self.calculate_incoming_damage(*source, damage_target, total_damage);
+                            self.apply_damage(damage_target, incoming_damage);
                             break; // Only damage one enemy
                         }
                     }

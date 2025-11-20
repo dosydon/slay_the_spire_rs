@@ -71,6 +71,13 @@ pub enum CardEnum {
     Slimed,
     Wound,
     Burn,
+
+    // Colorless Cards
+    SwiftStrike,
+    Finesse,
+    FlashOfSteel,
+    Blind,
+    Trip,
     // Add more cards as needed
 }
 
@@ -145,6 +152,11 @@ impl CardEnum {
             CardEnum::Slimed => "Slimed",
             CardEnum::Wound => "Wound",
             CardEnum::Burn => "Burn",
+            CardEnum::SwiftStrike => "Swift Strike",
+            CardEnum::Finesse => "Finesse",
+            CardEnum::FlashOfSteel => "Flash of Steel",
+            CardEnum::Blind => "Blind",
+            CardEnum::Trip => "Trip",
         }
     }
     

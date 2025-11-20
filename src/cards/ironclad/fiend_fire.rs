@@ -1,4 +1,5 @@
 use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::battle::target::Entity;
 
 pub fn fiend_fire() -> Card {
     Card::new(
@@ -7,7 +8,7 @@ pub fn fiend_fire() -> Card {
         CardType::Attack,
         vec![
             Effect::Exhaust,
-            Effect::ExhaustHandForDamage { damage_per_card: 7 },
+            Effect::ExhaustHandForDamage { damage_per_card: 7, target: Entity::Player },
         ],
         false, // not upgraded
         true,  // playable
@@ -21,7 +22,7 @@ pub fn fiend_fire_upgraded() -> Card {
         CardType::Attack,
         vec![
             Effect::Exhaust,
-            Effect::ExhaustHandForDamage { damage_per_card: 10 },
+            Effect::ExhaustHandForDamage { damage_per_card: 10, target: Entity::Player },
         ],
         true,  // upgraded
         true,  // playable
@@ -62,8 +63,9 @@ mod tests {
         assert_eq!(effects.len(), 2);
         assert_eq!(effects[0], Effect::Exhaust);
         match &effects[1] {
-            Effect::ExhaustHandForDamage { damage_per_card } => {
+            Effect::ExhaustHandForDamage { damage_per_card, target } => {
                 assert_eq!(*damage_per_card, 7);
+                assert_eq!(*target, Entity::Player);
             }
             _ => panic!("Expected ExhaustHandForDamage effect"),
         }
@@ -77,8 +79,9 @@ mod tests {
         assert_eq!(effects.len(), 2);
         assert_eq!(effects[0], Effect::Exhaust);
         match &effects[1] {
-            Effect::ExhaustHandForDamage { damage_per_card } => {
+            Effect::ExhaustHandForDamage { damage_per_card, target } => {
                 assert_eq!(*damage_per_card, 10);
+                assert_eq!(*target, Entity::Player);
             }
             _ => panic!("Expected ExhaustHandForDamage effect"),
         }
@@ -211,11 +214,15 @@ mod integration_tests {
         let jaw_worm = JawWorm::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
-        // Create battle with Embrace, Fiend Fire, and 3 Strikes
-        // Embrace will draw cards when cards are exhausted
+        // Create battle with Embrace, Fiend Fire, and many Strikes
+        // Embrace will draw cards when cards are exhausted - need enough cards in deck
         let deck = Deck::new(vec![
             embrace(),
             fiend_fire(),
+            strike(),
+            strike(),
+            strike(),
+            strike(),
             strike(),
             strike(),
             strike(),

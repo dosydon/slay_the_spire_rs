@@ -156,6 +156,13 @@ impl Card {
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
             CardEnum::Burn => self, // Status cards don't upgrade
+
+            // Colorless cards
+            CardEnum::SwiftStrike => crate::cards::colorless::swift_strike::swift_strike_upgraded(),
+            CardEnum::Finesse => crate::cards::colorless::finesse::finesse_upgraded(),
+            CardEnum::FlashOfSteel => crate::cards::colorless::flash_of_steel::flash_of_steel_upgraded(),
+            CardEnum::Blind => crate::cards::colorless::blind::blind_upgraded(),
+            CardEnum::Trip => crate::cards::colorless::trip::trip_upgraded(),
         }
     }
     

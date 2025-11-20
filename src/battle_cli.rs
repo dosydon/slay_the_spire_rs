@@ -605,8 +605,8 @@ impl BattleCli {
                 crate::game::effect::Effect::AttackAllEnemiesAndHeal { amount, .. } => {
                     parts.push(format!("⚔️ {} to ALL + Heal for unblocked damage", amount));
                 }
-                crate::game::effect::Effect::ExhaustHandForDamage { damage_per_card } => {
-                    parts.push(format!("💀 Exhaust hand for {} damage per card", damage_per_card));
+                crate::game::effect::Effect::ExhaustHandForDamage { damage_per_card, target } => {
+                    parts.push(format!("💀 {:?} exhausts hand for {} damage per card", target, damage_per_card));
                 }
                 crate::game::effect::Effect::ActivateJuggernaut { damage_per_block } => {
                     parts.push(format!("🛡️ {} damage when gaining Block", damage_per_block));
@@ -619,6 +619,9 @@ impl BattleCli {
                 }
                 crate::game::effect::Effect::AddCardToHand(card) => {
                     parts.push(format!("➕ Add {} to hand", card.name()));
+                }
+                crate::game::effect::Effect::ActivateFeelNoPain { block_per_exhaust } => {
+                    parts.push(format!("🛡️ {} Block when Exhausting", block_per_exhaust));
                 }
                 crate::game::effect::Effect::HealAndIncreaseMaxHp(amount) => {
                     parts.push(format!("❤️ +{} HP & Max HP", amount));

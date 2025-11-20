@@ -130,6 +130,13 @@ impl CardRewardPool {
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),
             CardEnum::Wound => crate::cards::status::wound::wound(),
             CardEnum::Burn => crate::cards::status::burn::burn(),
+
+            // Colorless cards
+            CardEnum::SwiftStrike => crate::cards::colorless::swift_strike::swift_strike(),
+            CardEnum::Finesse => crate::cards::colorless::finesse::finesse(),
+            CardEnum::FlashOfSteel => crate::cards::colorless::flash_of_steel::flash_of_steel(),
+            CardEnum::Blind => crate::cards::colorless::blind::blind(),
+            CardEnum::Trip => crate::cards::colorless::trip::trip(),
         }
     }
 }

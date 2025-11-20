@@ -81,7 +81,7 @@ pub enum Effect {
     EnterSelectCardInExhaust, // Transition to SelectCardInExhaust state to select card from exhaust pile
     HealOnKill { amount: u32 }, // Heal specified amount if the target enemy dies from this attack
     AttackAllEnemiesAndHeal { amount: u32, num_attacks: u32 }, // Deal damage to all enemies and heal for unblocked damage
-    ExhaustHandForDamage { damage_per_card: u32 }, // Exhaust all cards in hand and deal damage per card exhausted
+    ExhaustHandForDamage { damage_per_card: u32, target: Entity }, // Exhaust all cards in hand and deal damage per card exhausted
     ActivateJuggernaut { damage_per_block: u32 }, // Activates Juggernaut for dealing damage when gaining block
     AttackRandomEnemy { amount: u32, num_attacks: u32, strength_multiplier: u32 }, // Deal damage to a random enemy
     AddFireBreathing { damage_per_status: u32 }, // Activates Fire Breathing for dealing damage when Status/Curse cards are drawn
@@ -296,6 +296,7 @@ pub enum BaseEffect {
     },
     ExhaustHandForDamage {
         damage_per_card: u32,
+        target: Entity,
     },
     // TODO: Uncomment when Juggernaut is implemented
     // ActivateJuggernaut {
@@ -382,7 +383,7 @@ impl BaseEffect {
             Effect::EnterSelectCardInExhaust => BaseEffect::EnterSelectCardInExhaust,
             Effect::HealOnKill { amount } => BaseEffect::HealOnKill { amount },
             Effect::AttackAllEnemiesAndHeal { amount, num_attacks } => BaseEffect::AttackAllEnemiesAndHeal { amount, num_attacks },
-            Effect::ExhaustHandForDamage { damage_per_card } => BaseEffect::ExhaustHandForDamage { damage_per_card },
+            Effect::ExhaustHandForDamage { damage_per_card, target } => BaseEffect::ExhaustHandForDamage { damage_per_card, target },
             Effect::ActivateJuggernaut { .. } => todo!("Implement Juggernaut when ready"),
             Effect::AttackRandomEnemy { amount, num_attacks, strength_multiplier } => BaseEffect::AttackRandomEnemy { amount, num_attacks, strength_multiplier },
             Effect::AddFireBreathing { damage_per_status } => BaseEffect::ActivateFireBreathing { source, damage_per_status },
