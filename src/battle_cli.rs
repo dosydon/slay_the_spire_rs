@@ -17,8 +17,9 @@ use crate::cards::ironclad::{
     bludgeon, anger, sword_boomerang, hemokinesis, armaments, impervious, brutality, offering,
     power_through, shockwave, uppercut, intimidate, seeing_red, ghostly_armor, havoc, headbutt,
     true_grit, warcry, corruption, limit_break, metallicize, flame_barrier, rage, rampage,
-    pummel, whirlwind, infernal_blade, evolve, demon_form, second_wind, rupture, dual_wield,
-    double_tap, exhume, feed, reaper, fiend_fire, fire_breathing,
+    reckless_charge, searing_blow, sentinel, sever_soul, spot_weakness, pummel, whirlwind, infernal_blade,
+    evolve, demon_form, second_wind, rupture, dual_wield, double_tap, exhume, feed, reaper,
+    fiend_fire, fire_breathing,
 };
 
 pub struct BattleCli {
@@ -80,6 +81,11 @@ impl BattleCli {
         lookup.insert("flame_barrier", flame_barrier as fn() -> Card);
         lookup.insert("rage", rage as fn() -> Card);
         lookup.insert("rampage", rampage as fn() -> Card);
+        lookup.insert("reckless_charge", reckless_charge as fn() -> Card);
+        lookup.insert("searing_blow", searing_blow as fn() -> Card);
+        lookup.insert("sentinel", sentinel as fn() -> Card);
+        lookup.insert("sever_soul", sever_soul as fn() -> Card);
+        lookup.insert("spot_weakness", spot_weakness as fn() -> Card);
         lookup.insert("pummel", pummel as fn() -> Card);
         lookup.insert("whirlwind", whirlwind as fn() -> Card);
         lookup.insert("infernal_blade", infernal_blade as fn() -> Card);

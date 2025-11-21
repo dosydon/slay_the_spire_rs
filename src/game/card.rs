@@ -138,6 +138,10 @@ impl Card {
             CardEnum::FlameBarrier => crate::cards::ironclad::flame_barrier::flame_barrier_upgraded(),
             CardEnum::Rage => crate::cards::ironclad::rage::rage_upgraded(),
             CardEnum::Rampage => self, // TODO: Implement rampage_upgraded()
+            CardEnum::RecklessCharge => crate::cards::ironclad::reckless_charge::reckless_charge_upgraded(),
+            CardEnum::SearingBlow => self.upgrade_searing_blow(),
+            CardEnum::SeverSoul => crate::cards::ironclad::sever_soul::sever_soul_upgraded(),
+            CardEnum::SpotWeakness => crate::cards::ironclad::spot_weakness::spot_weakness_upgraded(),
             CardEnum::Pummel => crate::cards::ironclad::pummel::pummel_upgraded(),
             CardEnum::InfernalBlade => crate::cards::ironclad::infernal_blade::infernal_blade_upgraded(),
             CardEnum::Evolve => crate::cards::ironclad::evolve::evolve_upgraded(),
@@ -156,6 +160,7 @@ impl Card {
             CardEnum::Slimed => self, // Status cards don't upgrade
             CardEnum::Wound => self, // Status cards don't upgrade
             CardEnum::Burn => self, // Status cards don't upgrade
+            CardEnum::Dazed => self, // Status cards don't upgrade
 
             // Colorless cards
             CardEnum::SwiftStrike => crate::cards::colorless::swift_strike::swift_strike_upgraded(),
@@ -168,7 +173,23 @@ impl Card {
             CardEnum::DeepBreath => crate::cards::colorless::deep_breath::deep_breath_upgraded(),
         }
     }
-    
+
+    /// Special upgrade method for Searing Blow that supports multiple upgrade levels
+    /// Uses quadratic progression: damage = n(n+7)/2+12 where n is upgrade level
+    fn upgrade_searing_blow(self) -> Card {
+        // For now, implement basic upgrade (level 0 to level 1)
+        // Full multi-level upgrade system would need persistent storage of upgrade levels
+        if !self.upgraded {
+            // First upgrade: level 0 (12 damage) to level 1 (16 damage)
+            crate::cards::ironclad::searing_blow::searing_blow_upgraded()
+        } else {
+            // Already upgraded, but Searing Blow can be upgraded infinitely
+            // In a full implementation, this would track upgrade level and apply quadratic scaling
+            // For now, return the current card - the upgrade system outside of combat would handle this
+            self
+        }
+    }
+
     /// Checks if this card is already upgraded
     pub fn is_upgraded(&self) -> bool {
         self.upgraded

@@ -9,6 +9,9 @@ pub enum Condition {
     // Hand conditions
     HandAllAttacks,
 
+    // Enemy state conditions
+    EnemyIsAttacking,
+
     // Universal conditions
     True,
     False,
@@ -89,6 +92,10 @@ pub enum Effect {
     AddFireBreathing { damage_per_status: u32 }, // Activates Fire Breathing for dealing damage when Status/Curse cards are drawn
     ShuffleDiscardIntoDraw, // Shuffle discard pile into draw pile
     AttackAllEnemiesForCurrentEnergy { amount_per_hit: u32 }, // Spend all energy and attack all enemies X times where X is energy spent
+    AddStatusToDiscard { status_card: CardEnum }, // Add a status card to discard pile
+    GainEnergyIfNoBlock { amount: u32 }, // Gain energy if player has no block
+    ExhaustNonAttacksInHand, // Exhaust all non-Attack cards in hand
+    GainStrengthIfEnemyAttacking { amount: u32 }, // Gain strength if enemy is attacking
 }
 
 #[derive(Debug, Clone, PartialEq)]
