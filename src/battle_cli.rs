@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+use std::collections::HashMap;
 use crate::battle::{Battle, BattleResult, BattleError, action::Action, target::Entity};
 use crate::cards::ironclad::starter_deck::starter_deck;
 use crate::cards::implemented_cards_deck::create_implemented_cards_deck;
@@ -6,12 +7,182 @@ use crate::enemies::enemy_enum::EnemyEnum;
 use crate::battle::enemy_in_battle::EnemyInBattle;
 use crate::game::global_info::GlobalInfo;
 use crate::events::encounter_event::EncounterEvent;
+use crate::game::card::Card;
+
+// Import all Ironclad card creation functions
+use crate::cards::ironclad::{
+    strike, defend, bash, body_slam, clash, carnage, cleave, clothesline, embrace, flex,
+    heavy_blade, inflame, immolate, iron_wave, perfected_strike, pommel_strike, shrug_it_off,
+    thunderclap, twin_strike, wild_strike, combust, disarm, dropkick, feel_no_pain, entrench,
+    bludgeon, anger, sword_boomerang, hemokinesis, armaments, impervious, brutality, offering,
+    power_through, shockwave, uppercut, intimidate, seeing_red, ghostly_armor, havoc, headbutt,
+    true_grit, warcry, corruption, limit_break, metallicize, flame_barrier, rage, rampage,
+    pummel, whirlwind, infernal_blade, evolve, demon_form, second_wind, rupture, dual_wield,
+    double_tap, exhume, feed, reaper, fiend_fire, fire_breathing,
+};
 
 pub struct BattleCli {
     pub(crate) battle: Battle,
 }
 
 impl BattleCli {
+    /// Create a card lookup table for finding cards by name
+    fn create_card_lookup() -> HashMap<&'static str, fn() -> Card> {
+        let mut lookup = HashMap::new();
+
+        // Add all Ironclad cards to the lookup table
+        lookup.insert("strike", strike as fn() -> Card);
+        lookup.insert("defend", defend as fn() -> Card);
+        lookup.insert("bash", bash as fn() -> Card);
+        lookup.insert("body_slam", body_slam as fn() -> Card);
+        lookup.insert("clash", clash as fn() -> Card);
+        lookup.insert("carnage", carnage as fn() -> Card);
+        lookup.insert("cleave", cleave as fn() -> Card);
+        lookup.insert("clothesline", clothesline as fn() -> Card);
+        lookup.insert("embrace", embrace as fn() -> Card);
+        lookup.insert("flex", flex as fn() -> Card);
+        lookup.insert("heavy_blade", heavy_blade as fn() -> Card);
+        lookup.insert("inflame", inflame as fn() -> Card);
+        lookup.insert("immolate", immolate as fn() -> Card);
+        lookup.insert("iron_wave", iron_wave as fn() -> Card);
+        lookup.insert("perfected_strike", perfected_strike as fn() -> Card);
+        lookup.insert("pommel_strike", pommel_strike as fn() -> Card);
+        lookup.insert("shrug_it_off", shrug_it_off as fn() -> Card);
+        lookup.insert("thunderclap", thunderclap as fn() -> Card);
+        lookup.insert("twin_strike", twin_strike as fn() -> Card);
+        lookup.insert("wild_strike", wild_strike as fn() -> Card);
+        lookup.insert("combust", combust as fn() -> Card);
+        lookup.insert("disarm", disarm as fn() -> Card);
+        lookup.insert("dropkick", dropkick as fn() -> Card);
+        lookup.insert("feel_no_pain", feel_no_pain as fn() -> Card);
+        lookup.insert("entrench", entrench as fn() -> Card);
+        lookup.insert("bludgeon", bludgeon as fn() -> Card);
+        lookup.insert("anger", anger as fn() -> Card);
+        lookup.insert("sword_boomerang", sword_boomerang as fn() -> Card);
+        lookup.insert("hemokinesis", hemokinesis as fn() -> Card);
+        lookup.insert("armaments", armaments as fn() -> Card);
+        lookup.insert("impervious", impervious as fn() -> Card);
+        lookup.insert("brutality", brutality as fn() -> Card);
+        lookup.insert("offering", offering as fn() -> Card);
+        lookup.insert("power_through", power_through as fn() -> Card);
+        lookup.insert("shockwave", shockwave as fn() -> Card);
+        lookup.insert("uppercut", uppercut as fn() -> Card);
+        lookup.insert("intimidate", intimidate as fn() -> Card);
+        lookup.insert("seeing_red", seeing_red as fn() -> Card);
+        lookup.insert("ghostly_armor", ghostly_armor as fn() -> Card);
+        lookup.insert("havoc", havoc as fn() -> Card);
+        lookup.insert("headbutt", headbutt as fn() -> Card);
+        lookup.insert("true_grit", true_grit as fn() -> Card);
+        lookup.insert("warcry", warcry as fn() -> Card);
+        lookup.insert("corruption", corruption as fn() -> Card);
+        lookup.insert("limit_break", limit_break as fn() -> Card);
+        lookup.insert("metallicize", metallicize as fn() -> Card);
+        lookup.insert("flame_barrier", flame_barrier as fn() -> Card);
+        lookup.insert("rage", rage as fn() -> Card);
+        lookup.insert("rampage", rampage as fn() -> Card);
+        lookup.insert("pummel", pummel as fn() -> Card);
+        lookup.insert("whirlwind", whirlwind as fn() -> Card);
+        lookup.insert("infernal_blade", infernal_blade as fn() -> Card);
+        lookup.insert("evolve", evolve as fn() -> Card);
+        lookup.insert("demon_form", demon_form as fn() -> Card);
+        lookup.insert("second_wind", second_wind as fn() -> Card);
+        lookup.insert("rupture", rupture as fn() -> Card);
+        lookup.insert("dual_wield", dual_wield as fn() -> Card);
+        lookup.insert("double_tap", double_tap as fn() -> Card);
+        lookup.insert("exhume", exhume as fn() -> Card);
+        lookup.insert("feed", feed as fn() -> Card);
+        lookup.insert("reaper", reaper as fn() -> Card);
+        lookup.insert("fiend_fire", fiend_fire as fn() -> Card);
+        lookup.insert("fire_breathing", fire_breathing as fn() -> Card);
+
+        lookup
+    }
+
+    /// Parse card names from command line arguments and create cards
+    fn parse_card_args(card_names: &[String]) -> Result<Vec<Card>, String> {
+        let lookup = Self::create_card_lookup();
+        let mut cards = Vec::new();
+
+        for card_name in card_names {
+            let normalized_name = card_name.to_lowercase().replace('_', "").replace('-', "").replace(' ', "_");
+
+            if let Some(card_fn) = lookup.get(normalized_name.as_str()) {
+                cards.push(card_fn());
+            } else {
+                return Err(format!("Unknown card: '{}'. Available cards: {}",
+                    card_name,
+                    lookup.keys().map(|k| k.to_string()).collect::<Vec<_>>().join(", ")
+                ));
+            }
+        }
+
+        Ok(cards)
+    }
+
+    /// Create a new battle CLI with optional additional cards on top of the deck
+    pub fn new_with_cards(card_args: Vec<String>) -> Self {
+        // Parse card arguments
+        let extra_cards = match Self::parse_card_args(&card_args) {
+            Ok(cards) => {
+                if !cards.is_empty() {
+                    println!("Adding {} cards to top of deck: {}",
+                        cards.len(),
+                        cards.iter().map(|c| c.get_name()).collect::<Vec<_>>().join(", ")
+                    );
+                }
+                cards
+            },
+            Err(err) => {
+                eprintln!("Error parsing card arguments: {}", err);
+                eprintln!("Usage: cargo run -- [card1] [card2] ...");
+                eprintln!("Example: cargo run -- strike strike defend bash");
+                Vec::new()
+            }
+        };
+
+        // Use implemented cards deck instead of starter deck
+        let base_deck_cards = vec![
+            // Basic Cards
+            strike(), defend(), bash(),
+
+            // Common Attack Cards
+            cleave(), iron_wave(), pommel_strike(), clothesline(), heavy_blade(),
+            perfected_strike(), thunderclap(), twin_strike(), wild_strike(),
+
+            // Common Skill Cards
+            flex(), shrug_it_off(),
+
+            // Common Power Cards
+            combust(), disarm(), feel_no_pain(), entrench(), embrace(),
+
+            // Newly Implemented Cards
+            anger(), armaments(), sword_boomerang(),
+
+            // Uncommon Cards
+            hemokinesis(), inflame(),
+
+            // Rare Cards
+            bludgeon(), brutality(), impervious(), offering(), shockwave(), uppercut(),
+        ];
+
+        // Add extra cards to top of deck (they will be drawn first)
+        let mut deck_cards = extra_cards;
+        deck_cards.extend(base_deck_cards);
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 20, current_floor: 1 };
+
+        // Let user choose an encounter
+        let encounter = Self::choose_encounter();
+        let enemy_enums = encounter.instantiate(&mut rng, &global_info);
+        let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
+
+        let deck = crate::game::deck::Deck::new(deck_cards);
+        let battle = Battle::new_with_relics(deck, global_info, 80, 80, enemies, Vec::new(), &mut rng);
+
+        BattleCli { battle }
+    }
+
     /// Create a new battle CLI with a starter deck and selected encounter
     pub fn new() -> Self {
         Self::new_with_deck_choice(false)
@@ -125,10 +296,26 @@ impl BattleCli {
     /// Display the current battle state
     fn display_battle_state(&self) {
         println!("\n{}", "=".repeat(60));
-        
+
+        // Display current battle state if it's a special state
+        let battle_state = self.battle.get_battle_state();
+        if self.is_in_card_selection_state(&battle_state) {
+            let state_msg = match battle_state {
+                crate::battle::action::BattleState::SelectCardInHand => "🎯 Select Card to Upgrade",
+                crate::battle::action::BattleState::SelectCardInDiscard => "📋 Select Card from Discard",
+                crate::battle::action::BattleState::SelectCardInHandToPutOnDeck => "⬆️ Select Card to Put on Deck",
+                crate::battle::action::BattleState::SelectCardToDuplicate { copies } => {
+                    &format!("🔄 Select Card to Duplicate ({} copies)", copies)
+                },
+                crate::battle::action::BattleState::SelectCardInExhaust => "🔥 Select Card from Exhaust",
+                _ => "",
+            };
+            println!("🎮 BATTLE STATE: {}", state_msg);
+        }
+
         // Player state
         let player = self.battle.get_player();
-        println!("🧙 PLAYER: HP {}/{} | Block {} | Energy {}", 
+        println!("🧙 PLAYER: HP {}/{} | Block {} | Energy {}",
             player.battle_info.get_hp(),
             player.battle_info.get_max_hp(),
             player.get_block(),
@@ -211,30 +398,42 @@ impl BattleCli {
     /// Display available actions
     fn display_available_actions(&self) {
         let actions = self.battle.list_available_actions();
+        let battle_state = self.battle.get_battle_state();
+
+        // Check if we're in a card selection state first
+        if self.is_in_card_selection_state(&battle_state) {
+            self.display_card_selection_actions(&battle_state);
+            return;
+        }
+
         println!("\n📋 Available Actions:");
-        
+
         let mut action_index = 1;
-        
+
         // Group actions by type for better display
         let mut card_actions = Vec::new();
         let mut end_turn_action = None;
-        
+
         for action in &actions {
             match action {
                 Action::PlayCard(card_idx, target) => {
                     card_actions.push((*card_idx, *target));
                 },
                 Action::SelectCardInHand(card_idx) => {
-                    // Handle card selection for upgrade
+                    println!("   {}. Select card {} from hand", action_index, card_idx + 1);
+                    action_index += 1;
                 },
                 Action::SelectCardInDiscard(card_idx) => {
-                    // Handle card selection from discard pile
+                    println!("   {}. Select card {} from discard pile", action_index, card_idx + 1);
+                    action_index += 1;
                 },
                 Action::SelectCardToDuplicate(card_idx) => {
-                    // Handle card selection for duplication
+                    println!("   {}. Select card {} from hand to duplicate", action_index, card_idx + 1);
+                    action_index += 1;
                 },
                 Action::SelectCardInExhaust(card_idx) => {
-                    // Handle card selection from exhaust pile
+                    println!("   {}. Select card {} from exhaust pile", action_index, card_idx + 1);
+                    action_index += 1;
                 },
                 Action::EndTurn => {
                     end_turn_action = Some(action_index);
@@ -287,18 +486,62 @@ impl BattleCli {
     
     /// Get player action input
     fn get_player_action(&self) -> Option<Action> {
+        let battle_state = self.battle.get_battle_state();
+
+        // Handle card selection states
+        if self.is_in_card_selection_state(&battle_state) {
+            print!("Enter card number: ");
+            io::stdout().flush().unwrap();
+
+            let mut input = String::new();
+            io::stdin().read_line(&mut input).unwrap();
+            let input = input.trim();
+
+            // Handle empty input
+            if input.is_empty() {
+                return None;
+            }
+
+            if let Ok(card_num) = input.parse::<usize>() {
+                if card_num == 0 { return None; }
+                let card_idx = card_num - 1;
+
+                return match battle_state {
+                    crate::battle::action::BattleState::SelectCardInHand => {
+                        Some(Action::SelectCardInHand(card_idx))
+                    },
+                    crate::battle::action::BattleState::SelectCardInDiscard => {
+                        Some(Action::SelectCardInDiscard(card_idx))
+                    },
+                    crate::battle::action::BattleState::SelectCardInHandToPutOnDeck => {
+                        Some(Action::SelectCardInHand(card_idx))
+                    },
+                    crate::battle::action::BattleState::SelectCardToDuplicate { .. } => {
+                        Some(Action::SelectCardToDuplicate(card_idx))
+                    },
+                    crate::battle::action::BattleState::SelectCardInExhaust => {
+                        Some(Action::SelectCardInExhaust(card_idx))
+                    },
+                    _ => None,
+                };
+            }
+
+            return None;
+        }
+
+        // Normal action handling for regular battle states
         print!("Enter action (card number, action number, or 'end'): ");
         io::stdout().flush().unwrap();
-        
+
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
         let input = input.trim().to_lowercase();
-        
+
         // Handle empty input
         if input.is_empty() {
             return None;
         }
-        
+
         if input == "end" || input == "e" {
             return Some(Action::EndTurn);
         }
@@ -397,7 +640,43 @@ impl BattleCli {
                 return Some(Action::PlayCard(card_idx, target));
             }
         }
-        
+
+        // Handle direct card selection action inputs (when not in card selection state)
+        let available_actions = self.battle.list_available_actions();
+        for action in &available_actions {
+            match action {
+                Action::SelectCardInHand(card_idx) => {
+                    if let Ok(num) = input.parse::<usize>() {
+                        if num > 0 && num == *card_idx + 1 {
+                            return Some(Action::SelectCardInHand(*card_idx));
+                        }
+                    }
+                },
+                Action::SelectCardInDiscard(card_idx) => {
+                    if let Ok(num) = input.parse::<usize>() {
+                        if num > 0 && num == *card_idx + 1 {
+                            return Some(Action::SelectCardInDiscard(*card_idx));
+                        }
+                    }
+                },
+                Action::SelectCardToDuplicate(card_idx) => {
+                    if let Ok(num) = input.parse::<usize>() {
+                        if num > 0 && num == *card_idx + 1 {
+                            return Some(Action::SelectCardToDuplicate(*card_idx));
+                        }
+                    }
+                },
+                Action::SelectCardInExhaust(card_idx) => {
+                    if let Ok(num) = input.parse::<usize>() {
+                        if num > 0 && num == *card_idx + 1 {
+                            return Some(Action::SelectCardInExhaust(*card_idx));
+                        }
+                    }
+                },
+                _ => {}
+            }
+        }
+
         None
     }
     
@@ -646,5 +925,98 @@ impl BattleCli {
         } else {
             parts.join(" ")
         }
+    }
+
+    /// Check if we're in a card selection state
+    fn is_in_card_selection_state(&self, battle_state: &crate::battle::action::BattleState) -> bool {
+        use crate::battle::action::BattleState;
+        matches!(battle_state,
+            BattleState::SelectCardInHand |
+            BattleState::SelectCardInDiscard |
+            BattleState::SelectCardInHandToPutOnDeck |
+            BattleState::SelectCardToDuplicate { .. } |
+            BattleState::SelectCardInExhaust
+        )
+    }
+
+    /// Display actions for card selection states
+    fn display_card_selection_actions(&self, battle_state: &crate::battle::action::BattleState) {
+        use crate::battle::action::BattleState;
+
+        match battle_state {
+            BattleState::SelectCardInHand => {
+                println!("\n🎯 Select a card from your hand to upgrade:");
+                self.display_hand_selection_actions();
+            },
+            BattleState::SelectCardInDiscard => {
+                println!("\n📋 Select a card from discard pile:");
+                self.display_discard_selection_actions();
+            },
+            BattleState::SelectCardInHandToPutOnDeck => {
+                println!("\n⬆️ Select a card from your hand to put on top of draw pile:");
+                self.display_hand_selection_actions();
+            },
+            BattleState::SelectCardToDuplicate { copies } => {
+                println!("\n🔄 Select a card from your hand to duplicate ({} copies to discard):", copies);
+                self.display_hand_selection_actions();
+            },
+            BattleState::SelectCardInExhaust => {
+                println!("\n🔥 Select a card from exhaust pile:");
+                self.display_exhaust_selection_actions();
+            },
+            _ => {
+                println!("\n📋 Available Actions:");
+                // Fallback to normal action display
+            }
+        }
+    }
+
+    /// Display hand card selection actions
+    fn display_hand_selection_actions(&self) {
+        let hand = self.battle.get_hand();
+        if hand.is_empty() {
+            println!("   No cards in hand to select.");
+            return;
+        }
+
+        println!();
+        for (i, card) in hand.iter().enumerate() {
+            let status = if card.is_upgraded() { "(Already upgraded)" } else { "(Can be upgraded)" };
+            println!("   {}. {} {} - {}", i + 1, card.get_name(), card.get_cost(), status);
+        }
+        println!();
+        println!("Enter card number to select:");
+    }
+
+    /// Display discard pile selection actions
+    fn display_discard_selection_actions(&self) {
+        let discard = self.battle.get_discard_pile();
+        if discard.is_empty() {
+            println!("   No cards in discard pile to select.");
+            return;
+        }
+
+        println!();
+        for (i, card) in discard.iter().enumerate() {
+            println!("   {}. {} {} - {} cards ago", i + 1, card.get_name(), card.get_cost(), i + 1);
+        }
+        println!();
+        println!("Enter card number to select:");
+    }
+
+    /// Display exhaust pile selection actions
+    fn display_exhaust_selection_actions(&self) {
+        let exhausted = self.battle.cards.get_exhausted();
+        if exhausted.is_empty() {
+            println!("   No cards in exhaust pile to select.");
+            return;
+        }
+
+        println!();
+        for (i, card) in exhausted.iter().enumerate() {
+            println!("   {}. {} {}", i + 1, card.get_name(), card.get_cost());
+        }
+        println!();
+        println!("Enter card number to select:");
     }
 }
