@@ -56,6 +56,8 @@ pub enum Effect {
     ApplyWeakAll { duration: u32 }, // Apply Weak to all enemies
     Ethereal, // Card will be exhausted at end of turn
     AddCardToDiscard (CardEnum), // Add a card to discard pile
+    AddUpgradedCardToDiscard (CardEnum), // Add an upgraded card to discard pile
+    UpgradeAllCardsInHand, // Upgrade all cards in hand for the rest of combat
     AddCardToHand (CardEnum), // Add a card to hand
     EnterSelectCardInHand, // Transition to SelectCardInHand state
     EnterSelectCardInHandToPutOnDeck, // Transition to SelectCardInHandToPutOnDeck state
@@ -85,6 +87,8 @@ pub enum Effect {
     ActivateJuggernaut { damage_per_block: u32 }, // Activates Juggernaut for dealing damage when gaining block
     AttackRandomEnemy { amount: u32, num_attacks: u32, strength_multiplier: u32 }, // Deal damage to a random enemy
     AddFireBreathing { damage_per_status: u32 }, // Activates Fire Breathing for dealing damage when Status/Curse cards are drawn
+    ShuffleDiscardIntoDraw, // Shuffle discard pile into draw pile
+    AttackAllEnemiesForCurrentEnergy { amount_per_hit: u32 }, // Spend all energy and attack all enemies X times where X is energy spent
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -251,6 +255,12 @@ pub enum BaseEffect {
     AddCardToDiscard {
         card: CardEnum,
     },
+    AddUpgradedCardToDiscard {
+        card: CardEnum,
+    },
+    UpgradeAllCardsInHand {
+        source: Entity,
+    },
     AddCardToHand {
         source: Entity,
         card: CardEnum,
@@ -311,6 +321,12 @@ pub enum BaseEffect {
         source: Entity,
         damage_per_status: u32,
     },
+    ShuffleDiscardIntoDraw {
+        source: Entity,
+    },
+    AttackAllEnemiesForCurrentEnergy {
+        amount_per_hit: u32,
+    },
 }
 
 impl BaseEffect {
@@ -362,6 +378,8 @@ impl BaseEffect {
             Effect::ApplyWeakAll { duration } => BaseEffect::ApplyWeakAll { duration },
             Effect::Ethereal => BaseEffect::Ethereal { hand_index: 0 }, // hand_index should be set manually when queuing
             Effect::AddCardToDiscard(card) => BaseEffect::AddCardToDiscard { card },
+            Effect::AddUpgradedCardToDiscard(card) => BaseEffect::AddUpgradedCardToDiscard { card },
+            Effect::UpgradeAllCardsInHand => BaseEffect::UpgradeAllCardsInHand { source },
             Effect::AddCardToHand(card) => BaseEffect::AddCardToHand { source, card },
             Effect::EnterSelectCardInHand => BaseEffect::EnterSelectCardInHand,
             Effect::EnterSelectCardInHandToPutOnDeck => BaseEffect::EnterSelectCardInHandToPutOnDeck,
@@ -387,6 +405,8 @@ impl BaseEffect {
             Effect::ActivateJuggernaut { .. } => todo!("Implement Juggernaut when ready"),
             Effect::AttackRandomEnemy { amount, num_attacks, strength_multiplier } => BaseEffect::AttackRandomEnemy { amount, num_attacks, strength_multiplier },
             Effect::AddFireBreathing { damage_per_status } => BaseEffect::ActivateFireBreathing { source, damage_per_status },
+            Effect::ShuffleDiscardIntoDraw => BaseEffect::ShuffleDiscardIntoDraw { source },
+            Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit } => BaseEffect::AttackAllEnemiesForCurrentEnergy { amount_per_hit },
         }
     }
 }

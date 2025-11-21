@@ -23,7 +23,7 @@ pub fn anger_upgraded() -> Card {
         CardType::Attack,
         vec![
             Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
-            Effect::AddCardToDiscard(CardEnum::Anger),
+            Effect::AddUpgradedCardToDiscard(CardEnum::Anger),
         ],
         true,  // upgraded
         Condition::True,
@@ -60,7 +60,7 @@ mod tests {
 
         let effects = anger_plus.get_effects();
         assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 8, .. })));
-        assert!(effects.iter().any(|e| matches!(e, Effect::AddCardToDiscard(CardEnum::Anger))));
+        assert!(effects.iter().any(|e| matches!(e, Effect::AddUpgradedCardToDiscard(CardEnum::Anger))));
     }
 
     #[test]
@@ -192,5 +192,43 @@ mod tests {
 
         let anger_plus = anger_upgraded();
         assert_eq!(anger_plus.get_cost(), 0, "Anger+ should also cost 0 energy");
+    }
+
+    #[test]
+    fn test_anger_upgraded_adds_upgraded_to_discard() {
+        // Create a battle with Anger+
+        let deck_cards = vec![
+            anger_upgraded(),
+            crate::cards::ironclad::strike::strike(),
+        ];
+        let deck = Deck::new(deck_cards);
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
+
+        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
+
+        // Find Anger+ in hand
+        let anger_idx = battle.cards.get_hand().iter()
+            .position(|c| c.get_name() == "Anger+")
+            .expect("Anger+ should be in hand");
+
+        let initial_discard_size = battle.cards.discard_pile_size();
+
+        // Play Anger+
+        let result = battle.play_card(anger_idx, Entity::Enemy(0));
+        assert!(result.is_ok(), "Anger+ should be playable");
+
+        // Check that a copy was added to discard pile (played card + effect = 2 cards)
+        assert_eq!(battle.cards.discard_pile_size(), initial_discard_size + 2,
+                  "Should have added played Anger+ + copy of Anger+ to discard pile");
+
+        // Check that the added card is Anger+ (upgraded)
+        let discard_cards = battle.cards.get_discard_pile();
+        assert_eq!(discard_cards.last().unwrap().get_name(), "Anger+");
+        assert!(discard_cards.last().unwrap().is_upgraded(), "Added card should be upgraded");
     }
 }

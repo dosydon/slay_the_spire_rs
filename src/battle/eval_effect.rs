@@ -434,6 +434,17 @@ impl Battle {
                 let created_card = card_reward_pool.create_card_from_enum(*card);
                 self.cards.add_card_to_discard(created_card);
             },
+            BaseEffect::AddUpgradedCardToDiscard { card } => {
+                // Add an upgraded card to the discard pile
+                let card_reward_pool = crate::game::card_reward::CardRewardPool::new();
+                let created_card = card_reward_pool.create_card_from_enum(*card);
+                let upgraded_card = created_card.upgrade();
+                self.cards.add_card_to_discard(upgraded_card);
+            },
+            BaseEffect::UpgradeAllCardsInHand { source: _ } => {
+                // Upgrade all cards in hand for the rest of combat
+                self.cards.upgrade_all_cards_in_hand();
+            },
             BaseEffect::EnterSelectCardInHand => {
                 // Transition to SelectCardInHand state
                 self.battle_state = crate::battle::action::BattleState::SelectCardInHand;
@@ -687,6 +698,30 @@ impl Battle {
                     }
                     Entity::None => {} // No target, no healing
                 };
+            },
+            BaseEffect::ShuffleDiscardIntoDraw { source: _ } => {
+                // Shuffle discard pile into draw pile
+                self.cards.shuffle_discard_into_deck();
+            },
+            BaseEffect::AttackAllEnemiesForCurrentEnergy { amount_per_hit } => {
+                // Spend all available energy and attack all enemies X times where X is energy spent
+                let current_energy = self.player.get_energy();
+                if current_energy > 0 {
+                    // Spend all energy
+                    self.player.spend_energy(current_energy);
+
+                    // Deal damage to all enemies current_energy times
+                    for _ in 0..current_energy {
+                        for enemy_idx in 0..self.enemies.len() {
+                            if self.enemies[enemy_idx].battle_info.is_alive() {
+                                let target = Entity::Enemy(enemy_idx);
+                                let source = Entity::Player;
+                                let incoming_damage = self.calculate_incoming_damage(source, target, *amount_per_hit);
+                                self.apply_damage(target, incoming_damage);
+                            }
+                        }
+                    }
+                }
             },
         }
     }

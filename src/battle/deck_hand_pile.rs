@@ -224,6 +224,18 @@ impl DeckHandPile {
     pub fn cards_in_play(&self) -> usize {
         self.hand.len() + self.deck.size() + self.discard_pile.len()
     }
+
+    /// Upgrade all cards in hand for the rest of combat
+    pub(in crate) fn upgrade_all_cards_in_hand(&mut self) {
+        // Process each card in hand and upgrade if not already upgraded
+        for i in 0..self.hand.len() {
+            let card = &mut self.hand[i];
+            if !card.is_upgraded() {
+                let upgraded_card = card.clone().upgrade();
+                *card = upgraded_card;
+            }
+        }
+    }
     
     // Helper methods
     fn is_deck_empty(&self) -> bool {

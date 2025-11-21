@@ -524,6 +524,12 @@ impl BattleCli {
                 crate::game::effect::Effect::AddCardToDiscard(card) => {
                     parts.push(format!("➕ Add {} to discard", card.name()));
                 }
+                crate::game::effect::Effect::AddUpgradedCardToDiscard(card) => {
+                    parts.push(format!("➕ Add {}+ to discard", card.name()));
+                }
+                crate::game::effect::Effect::UpgradeAllCardsInHand => {
+                    parts.push("⬆️ Upgrade all cards in hand".to_string());
+                }
                 crate::game::effect::Effect::EnterSelectCardInHand => {
                     parts.push("🔧 Select card to upgrade".to_string());
                 }
@@ -616,6 +622,12 @@ impl BattleCli {
                 }
                 crate::game::effect::Effect::AddFireBreathing { damage_per_status } => {
                     parts.push(format!("🔥 {} damage when drawing Status/Curse", damage_per_status));
+                }
+                crate::game::effect::Effect::ShuffleDiscardIntoDraw => {
+                    parts.push("🔀 Shuffle discard into draw".to_string());
+                }
+                crate::game::effect::Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit } => {
+                    parts.push(format!("⚡ {} damage to ALL per Energy spent", amount_per_hit));
                 }
                 crate::game::effect::Effect::AddCardToHand(card) => {
                     parts.push(format!("➕ Add {} to hand", card.name()));

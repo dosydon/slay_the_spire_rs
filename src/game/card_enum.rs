@@ -78,6 +78,9 @@ pub enum CardEnum {
     FlashOfSteel,
     Blind,
     Trip,
+    GoodInstincts,
+    BandageUp,
+    DeepBreath,
     // Add more cards as needed
 }
 
@@ -157,6 +160,9 @@ impl CardEnum {
             CardEnum::FlashOfSteel => "Flash of Steel",
             CardEnum::Blind => "Blind",
             CardEnum::Trip => "Trip",
+            CardEnum::GoodInstincts => "Good Instincts",
+            CardEnum::BandageUp => "Bandage Up",
+            CardEnum::DeepBreath => "Deep Breath",
         }
     }
     

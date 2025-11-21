@@ -163,6 +163,9 @@ impl Card {
             CardEnum::FlashOfSteel => crate::cards::colorless::flash_of_steel::flash_of_steel_upgraded(),
             CardEnum::Blind => crate::cards::colorless::blind::blind_upgraded(),
             CardEnum::Trip => crate::cards::colorless::trip::trip_upgraded(),
+            CardEnum::GoodInstincts => crate::cards::colorless::good_instincts::good_instincts_upgraded(),
+            CardEnum::BandageUp => crate::cards::colorless::bandage_up::bandage_up_upgraded(),
+            CardEnum::DeepBreath => crate::cards::colorless::deep_breath::deep_breath_upgraded(),
         }
     }
     

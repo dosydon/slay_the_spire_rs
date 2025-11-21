@@ -137,6 +137,9 @@ impl CardRewardPool {
             CardEnum::FlashOfSteel => crate::cards::colorless::flash_of_steel::flash_of_steel(),
             CardEnum::Blind => crate::cards::colorless::blind::blind(),
             CardEnum::Trip => crate::cards::colorless::trip::trip(),
+            CardEnum::GoodInstincts => crate::cards::colorless::good_instincts::good_instincts(),
+            CardEnum::BandageUp => crate::cards::colorless::bandage_up::bandage_up(),
+            CardEnum::DeepBreath => crate::cards::colorless::deep_breath::deep_breath(),
         }
     }
 }

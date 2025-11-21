@@ -249,4 +249,70 @@ mod integration_tests {
         let final_player_hp = battle.get_player().get_current_hp();
         assert_eq!(final_player_hp, initial_player_hp + 4);
     }
+
+    #[test]
+    fn test_reaper_heals_only_for_unblocked_damage() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let jaw_worm = JawWorm::instantiate(&mut rng, &global_info);
+        let mut enemy = EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm));
+
+        // Give the enemy 10 block to test damage blocking
+        enemy.battle_info.gain_block(10);
+        let enemies = vec![enemy];
+
+        let deck = Deck::new(vec![reaper()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        let initial_player_hp = battle.get_player().get_current_hp();
+        let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
+        let initial_enemy_block = battle.get_enemies()[0].battle_info.get_block();
+
+        // Play Reaper against enemy with block
+        let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify enemy block was reduced but HP unchanged (all 4 damage was blocked)
+        let final_enemy_hp = battle.get_enemies()[0].get_current_hp();
+        let final_enemy_block = battle.get_enemies()[0].battle_info.get_block();
+        assert_eq!(final_enemy_hp, initial_enemy_hp); // No HP damage
+        assert_eq!(final_enemy_block, initial_enemy_block - 4); // Block reduced by 4
+
+        // Verify player healed for 0 HP (no unblocked damage dealt)
+        let final_player_hp = battle.get_player().get_current_hp();
+        assert_eq!(final_player_hp, initial_player_hp); // No healing since all damage was blocked
+    }
+
+    #[test]
+    fn test_reaper_heals_for_partial_unblocked_damage() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let jaw_worm = JawWorm::instantiate(&mut rng, &global_info);
+        let mut enemy = EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm));
+
+        // Give the enemy 2 block to test partial damage blocking
+        enemy.battle_info.gain_block(2);
+        let enemies = vec![enemy];
+
+        let deck = Deck::new(vec![reaper()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        let initial_player_hp = battle.get_player().get_current_hp();
+        let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
+        let initial_enemy_block = battle.get_enemies()[0].battle_info.get_block();
+
+        // Play Reaper against enemy with partial block
+        let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify enemy took 2 HP damage (4 damage - 2 block)
+        let final_enemy_hp = battle.get_enemies()[0].get_current_hp();
+        let final_enemy_block = battle.get_enemies()[0].battle_info.get_block();
+        assert_eq!(final_enemy_hp, initial_enemy_hp - 2); // 2 HP damage
+        assert_eq!(final_enemy_block, 0); // All block consumed
+
+        // Verify player healed for 2 HP (only unblocked damage)
+        let final_player_hp = battle.get_player().get_current_hp();
+        assert_eq!(final_player_hp, initial_player_hp + 2); // Healed for unblocked damage only
+    }
 }

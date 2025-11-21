@@ -12,13 +12,13 @@ pub fn armaments() -> Card {
     )
 }
 
-/// Armaments+ (Upgraded version) - Gain 5 Block. Upgrade a card in your hand for the rest of combat.
+/// Armaments+ (Upgraded version) - Gain 5 Block. Upgrade ALL cards in your hand for the rest of combat.
 pub fn armaments_upgraded() -> Card {
     Card::new_with_condition(
         CardEnum::Armaments,
         1,
         CardType::Skill,
-        vec![Effect::GainDefense { amount: 5 }, Effect::EnterSelectCardInHand],
+        vec![Effect::GainDefense { amount: 5 }, Effect::UpgradeAllCardsInHand],
         true,  // upgraded
         Condition::True,
     )
@@ -51,7 +51,7 @@ mod tests {
         assert_eq!(card.get_card_type(), &CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 5 });
-        assert_eq!(card.get_effects()[1], Effect::EnterSelectCardInHand);
+        assert_eq!(card.get_effects()[1], Effect::UpgradeAllCardsInHand);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -64,7 +64,7 @@ mod tests {
         let normal_effects = normal_card.get_effects();
         let upgraded_effects = upgraded_card.get_effects();
 
-        // Both should have same effects
+        // Both should have same number of effects
         assert_eq!(normal_effects.len(), 2);
         assert_eq!(upgraded_effects.len(), 2);
 
@@ -72,9 +72,9 @@ mod tests {
         assert_eq!(normal_effects[0], Effect::GainDefense { amount: 5 });
         assert_eq!(upgraded_effects[0], Effect::GainDefense { amount: 5 });
 
-        // Both should enter select card state
+        // Normal should enter select card state, upgraded should upgrade all cards
         assert_eq!(normal_effects[1], Effect::EnterSelectCardInHand);
-        assert_eq!(upgraded_effects[1], Effect::EnterSelectCardInHand);
+        assert_eq!(upgraded_effects[1], Effect::UpgradeAllCardsInHand);
     }
 
     #[test]
@@ -208,5 +208,52 @@ mod tests {
         let result = battle.eval_action(crate::battle::action::Action::SelectCardInHand(0), &mut rng);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), crate::battle::BattleError::CardNotInHand);
+    }
+
+    #[test]
+    fn test_armaments_upgraded_upgrades_all_cards_in_hand() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::game::enemy::EnemyTrait;
+        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::enemy_enum::EnemyEnum;
+        use crate::cards::ironclad::strike::strike;
+        use crate::cards::ironclad::defend::defend;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Armaments+ and multiple cards in hand
+        let deck = Deck::new(vec![armaments_upgraded(), strike(), defend()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Play Armaments+ (index 0)
+        let armaments_idx = 0;
+        let result = battle.play_card(armaments_idx, Entity::Player);
+        assert!(result.is_ok());
+
+        // Verify player gained 5 block
+        let block_after_armaments = battle.get_player().get_block();
+        assert_eq!(block_after_armaments, 5);
+
+        // Verify battle should still be in PlayerTurn state (no card selection needed)
+        assert_eq!(battle.get_battle_state(), crate::battle::action::BattleState::PlayerTurn);
+
+        // Verify all cards in hand are now upgraded
+        let hand = battle.get_hand();
+        assert_eq!(hand.len(), 2); // Strike and Defend should remain
+
+        // Check Strike is upgraded
+        let strike_card = hand.iter().find(|c| c.get_name() == "Strike+").unwrap();
+        assert!(strike_card.is_upgraded());
+
+        // Check Defend is upgraded
+        let defend_card = hand.iter().find(|c| c.get_name() == "Defend+").unwrap();
+        assert!(defend_card.is_upgraded());
     }
 }
