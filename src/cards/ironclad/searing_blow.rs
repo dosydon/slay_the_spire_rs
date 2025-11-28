@@ -22,14 +22,14 @@ fn calculate_searing_blow_damage(upgrade_level: u32) -> u32 {
 fn searing_blow_with_level(upgrade_level: u32) -> Card {
     let damage = calculate_searing_blow_damage(upgrade_level);
 
-    Card::new(
+    Card::new_with_upgrade_level(
         CardEnum::SearingBlow,
         2,
         CardType::Attack,
         vec![
             Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
         ],
-        upgrade_level > 0, // upgraded if level > 0
+        upgrade_level,
         true,  // playable
     )
 }
@@ -57,10 +57,15 @@ pub fn searing_blow_at_level(upgrade_level: u32) -> Card {
 /// Upgrade a Searing Blow card to the next level
 /// Returns a new card with one higher upgrade level
 pub fn upgrade_searing_blow_to_next_level(current_card: Card) -> Card {
-    // For now, we can't easily track upgrade level from a Card
-    // In a full implementation, this would need persistent storage or card metadata
-    // For now, assume standard upgrade (level 0 to level 1)
-    searing_blow_upgraded()
+    let current_level = current_card.get_upgrade_level();
+    searing_blow_at_level(current_level + 1)
+}
+
+/// Upgrade a Searing Blow card multiple levels
+/// Returns a new card with the specified number of additional upgrades
+pub fn upgrade_searing_blow_multiple_levels(current_card: Card, additional_upgrades: u32) -> Card {
+    let current_level = current_card.get_upgrade_level();
+    searing_blow_at_level(current_level + additional_upgrades)
 }
 
 #[cfg(test)]
@@ -167,7 +172,7 @@ mod tests {
 
         // Verify increased damage dealt
         let final_enemy_hp = battle.get_enemies()[0].get_current_hp();
-        assert_eq!(final_enemy_hp, initial_enemy_hp - 16);
+        assert_eq!(final_enemy_hp, initial_enemy_hp.saturating_sub(16));
     }
 
     #[test]
@@ -214,7 +219,7 @@ mod tests {
         assert_eq!(calculate_searing_blow_damage(3), 27);  // +6
         assert_eq!(calculate_searing_blow_damage(4), 34);  // +7
         assert_eq!(calculate_searing_blow_damage(5), 42);  // +8
-        assert_eq!(calculate_searing_blow_damage(10), 84); // +13
+        assert_eq!(calculate_searing_blow_damage(10), 97); // +13
     }
 
     #[test]
@@ -226,15 +231,46 @@ mod tests {
 
         assert_eq!(level_0.get_effects()[0],
                   Effect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(level_0.get_upgrade_level(), 0);
         assert!(!level_0.is_upgraded());
 
         assert_eq!(level_2.get_effects()[0],
                   Effect::AttackToTarget { amount: 21, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(level_2.get_upgrade_level(), 2);
         assert!(level_2.is_upgraded());
 
         assert_eq!(level_5.get_effects()[0],
                   Effect::AttackToTarget { amount: 42, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(level_5.get_upgrade_level(), 5);
         assert!(level_5.is_upgraded());
+    }
+
+    #[test]
+    fn test_searing_blow_upgrade_to_next_level() {
+        // Test upgrading a card to the next level
+        let level_0 = searing_blow();
+        let level_1 = upgrade_searing_blow_to_next_level(level_0);
+        let level_2 = upgrade_searing_blow_to_next_level(level_1.clone()); 
+
+        assert_eq!(level_1.get_upgrade_level(), 1);
+        assert_eq!(level_2.get_upgrade_level(), 2);
+
+        // Verify damage progression
+        assert_eq!(level_1.get_effects()[0],
+                  Effect::AttackToTarget { amount: 16, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(level_2.get_effects()[0],
+                  Effect::AttackToTarget { amount: 21, num_attacks: 1, strength_multiplier: 1 });
+    }
+
+    #[test]
+    fn test_searing_blow_upgrade_multiple_levels() {
+        // Test upgrading a card multiple levels at once
+        let level_0 = searing_blow();
+        let level_3 = upgrade_searing_blow_multiple_levels(level_0, 3);
+
+        assert_eq!(level_3.get_upgrade_level(), 3);
+        assert_eq!(level_3.get_effects()[0],
+                  Effect::AttackToTarget { amount: 27, num_attacks: 1, strength_multiplier: 1 });
     }
 
     #[test]

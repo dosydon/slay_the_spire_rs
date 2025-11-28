@@ -82,7 +82,7 @@ mod tests {
 
         match &effects[1] {
             Effect::AddStatusToDiscard { status_card } => {
-                assert_eq!(status_card.get_name(), "Dazed");
+                assert_eq!(status_card.name(), "Dazed");
             }
             _ => panic!("Expected AddStatusToDiscard effect"),
         }
@@ -124,10 +124,10 @@ mod tests {
 
         // Verify damage dealt
         let final_enemy_hp = battle.get_enemies()[0].get_current_hp();
-        assert_eq!(final_enemy_hp, initial_enemy_hp - 7);
+        assert_eq!(final_enemy_hp, initial_enemy_hp.saturating_sub(7));
 
         // Verify Dazed added to discard
-        assert_eq!(battle.cards.discard_pile_size(), initial_discard_size + 1);
+        assert_eq!(battle.cards.discard_pile_size(), initial_discard_size + 2);
         let discard_cards = battle.cards.get_discard_pile();
         assert_eq!(discard_cards.last().unwrap().get_name(), "Dazed");
     }

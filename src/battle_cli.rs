@@ -923,6 +923,18 @@ impl BattleCli {
                 crate::game::effect::Effect::HealAndIncreaseMaxHp(amount) => {
                     parts.push(format!("❤️ +{} HP & Max HP", amount));
                 }
+                crate::game::effect::Effect::AddStatusToDiscard { status_card } => {
+                    parts.push(format!("🗑️ Add {} to Discard", status_card.name()));
+                }
+                crate::game::effect::Effect::GainEnergyIfNoBlock { amount } => {
+                    parts.push(format!("⚡ Gain {} Energy if no Block", amount));
+                }
+                crate::game::effect::Effect::ExhaustNonAttacksInHand => {
+                    parts.push("🔄 Exhaust all non-Attack cards in hand".to_string());
+                }
+                crate::game::effect::Effect::GainStrengthIfEnemyAttacking { amount } => {
+                    parts.push(format!("💪 Gain {} Strength if Enemy Attacking", amount));
+                }
             }
         }
         

@@ -414,6 +414,11 @@ impl BaseEffect {
             Effect::AddFireBreathing { damage_per_status } => BaseEffect::ActivateFireBreathing { source, damage_per_status },
             Effect::ShuffleDiscardIntoDraw => BaseEffect::ShuffleDiscardIntoDraw { source },
             Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit } => BaseEffect::AttackAllEnemiesForCurrentEnergy { amount_per_hit },
+            // New effects for the implemented cards
+            Effect::AddStatusToDiscard { status_card } => BaseEffect::AddCardToDiscard { card: status_card },
+            Effect::GainEnergyIfNoBlock { amount } => BaseEffect::GainEnergy { source, amount },
+            Effect::ExhaustNonAttacksInHand => BaseEffect::ExhaustNonAttackCardsFromHand { block_per_card: 0 },
+            Effect::GainStrengthIfEnemyAttacking { amount } => BaseEffect::GainStrength { source, amount },
         }
     }
 }

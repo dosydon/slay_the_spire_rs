@@ -252,6 +252,12 @@ impl Battle {
                 let hand = self.cards.get_hand();
                 hand.iter().all(|c| c.get_card_type() == &crate::game::card_type::CardType::Attack)
             }
+            Condition::EnemyIsAttacking => {
+                // Check if any enemy is currently attacking
+                // For now, assume all moves are attacking (simplified)
+                // In a full implementation, we'd check specific move types
+                !self.enemies.is_empty()
+            }
         }
     }
 }

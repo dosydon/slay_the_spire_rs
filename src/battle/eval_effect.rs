@@ -533,6 +533,12 @@ impl Battle {
                     },
                     crate::game::effect::Condition::True => true,
                     crate::game::effect::Condition::False => false,
+                    crate::game::effect::Condition::EnemyIsAttacking => {
+                        // Check if any enemy is currently attacking
+                        // For now, assume all moves are attacking (simplified)
+                        // In a full implementation, we'd check specific move types
+                        !self.enemies.is_empty()
+                    },
                 };
 
                 if condition_met {

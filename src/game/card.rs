@@ -8,7 +8,7 @@ pub struct Card {
     cost: u32,
     card_type: CardType,
     effects: Vec<Effect>,
-    upgraded: bool,
+    upgrade_level: u32, // 0 = not upgraded, 1+ = upgraded level
     play_condition: Condition,
     ethereal: bool,
 }
@@ -16,12 +16,26 @@ pub struct Card {
 impl Card {
     pub fn new(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, playable: bool) -> Self {
         let play_condition = if playable { Condition::True } else { Condition::False };
+        let upgrade_level = if upgraded { 1 } else { 0 };
         Card {
             card_enum,
             cost,
             card_type,
             effects,
-            upgraded,
+            upgrade_level,
+            play_condition,
+            ethereal: false,
+        }
+    }
+
+    pub fn new_with_upgrade_level(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgrade_level: u32, playable: bool) -> Self {
+        let play_condition = if playable { Condition::True } else { Condition::False };
+        Card {
+            card_enum,
+            cost,
+            card_type,
+            effects,
+            upgrade_level,
             play_condition,
             ethereal: false,
         }
@@ -29,31 +43,33 @@ impl Card {
 
     pub fn new_with_ethereal(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, playable: bool, ethereal: bool) -> Self {
         let play_condition = if playable { Condition::True } else { Condition::False };
+        let upgrade_level = if upgraded { 1 } else { 0 };
         Card {
             card_enum,
             cost,
             card_type,
             effects,
-            upgraded,
+            upgrade_level,
             play_condition,
             ethereal,
         }
     }
 
     pub fn new_with_condition(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, play_condition: Condition) -> Self {
+        let upgrade_level = if upgraded { 1 } else { 0 };
         Card {
             card_enum,
             cost,
             card_type,
             effects,
-            upgraded,
+            upgrade_level,
             play_condition,
             ethereal: false,
         }
     }
 
     pub fn get_name(&self) -> String {
-        if self.upgraded {
+        if self.upgrade_level > 0 {
             self.card_enum.upgraded_name()
         } else {
             self.card_enum.name().to_string()
@@ -83,7 +99,7 @@ impl Card {
     /// Upgrades this card to its improved version
     /// Returns a new Card instance with upgraded properties
     pub fn upgrade(self) -> Card {
-        if self.upgraded {
+        if self.upgrade_level > 0 {
             return self; // Already upgraded
         }
         
@@ -177,22 +193,31 @@ impl Card {
     /// Special upgrade method for Searing Blow that supports multiple upgrade levels
     /// Uses quadratic progression: damage = n(n+7)/2+12 where n is upgrade level
     fn upgrade_searing_blow(self) -> Card {
-        // For now, implement basic upgrade (level 0 to level 1)
-        // Full multi-level upgrade system would need persistent storage of upgrade levels
-        if !self.upgraded {
-            // First upgrade: level 0 (12 damage) to level 1 (16 damage)
-            crate::cards::ironclad::searing_blow::searing_blow_upgraded()
-        } else {
-            // Already upgraded, but Searing Blow can be upgraded infinitely
-            // In a full implementation, this would track upgrade level and apply quadratic scaling
-            // For now, return the current card - the upgrade system outside of combat would handle this
-            self
-        }
+        // Use the Searing Blow special upgrade system that tracks upgrade levels
+        crate::cards::ironclad::searing_blow::upgrade_searing_blow_to_next_level(self)
     }
 
     /// Checks if this card is already upgraded
     pub fn is_upgraded(&self) -> bool {
-        self.upgraded
+        self.upgrade_level > 0
+    }
+
+    /// Gets the upgrade level of this card
+    pub fn get_upgrade_level(&self) -> u32 {
+        self.upgrade_level
+    }
+
+    /// Creates a new card with a specific upgrade level
+    pub fn with_upgrade_level(self, upgrade_level: u32) -> Card {
+        Card {
+            card_enum: self.card_enum,
+            cost: self.cost,
+            card_type: self.card_type,
+            effects: self.effects,
+            upgrade_level,
+            play_condition: self.play_condition,
+            ethereal: self.ethereal,
+        }
     }
 
     /// Gets the play condition for this card

@@ -4,7 +4,7 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 /// Cost: -
 /// Effect: Cannot be played. Ethereal (exhausts at end of turn)
 pub fn dazed() -> Card {
-    Card::new(
+    Card::new_with_condition(
         CardEnum::Dazed,
         1, // Cost 1 but unplayable due to condition
         CardType::Status,

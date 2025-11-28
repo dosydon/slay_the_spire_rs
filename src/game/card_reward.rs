@@ -140,6 +140,13 @@ impl CardRewardPool {
             CardEnum::GoodInstincts => crate::cards::colorless::good_instincts::good_instincts(),
             CardEnum::BandageUp => crate::cards::colorless::bandage_up::bandage_up(),
             CardEnum::DeepBreath => crate::cards::colorless::deep_breath::deep_breath(),
+            // New Ironclad cards
+            CardEnum::RecklessCharge => crate::cards::ironclad::reckless_charge::reckless_charge(),
+            CardEnum::SearingBlow => crate::cards::ironclad::searing_blow::searing_blow(),
+            CardEnum::SeverSoul => crate::cards::ironclad::sever_soul::sever_soul(),
+            CardEnum::SpotWeakness => crate::cards::ironclad::spot_weakness::spot_weakness(),
+            // Status cards
+            CardEnum::Dazed => crate::cards::status::dazed::dazed(),
         }
     }
 }

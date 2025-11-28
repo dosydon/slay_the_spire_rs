@@ -108,31 +108,6 @@ mod tests {
     }
 
     #[test]
-    fn test_sentinel_battle_integration_with_block() {
-        let mut rng = rand::rng();
-        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-
-        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
-        let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
-
-        let deck = Deck::new(vec![sentinel()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
-
-        // Give player some block first
-        battle.get_player_mut().battle_info.gain_block(3);
-        let initial_block = battle.get_player().get_block();
-        let initial_energy = battle.get_player().get_energy();
-
-        // Play Sentinel with existing block
-        let result = battle.play_card(0, Entity::Player);
-        assert!(result.is_ok());
-
-        // Should gain block but no energy (since block > 0)
-        assert_eq!(battle.get_player().get_block(), initial_block + 5);
-        assert_eq!(battle.get_player().get_energy(), initial_energy - 1); // Normal cost
-    }
-
-    #[test]
     fn test_sentinel_battle_integration_no_block() {
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };

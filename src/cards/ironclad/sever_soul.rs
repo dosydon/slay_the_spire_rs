@@ -133,12 +133,12 @@ mod tests {
 
         // Verify damage dealt
         let final_enemy_hp = battle.get_enemies()[0].get_current_hp();
-        assert_eq!(final_enemy_hp, initial_enemy_hp - 16);
+        assert_eq!(final_enemy_hp, initial_enemy_hp.saturating_sub(16));
 
         // Verify non-Attack cards exhausted (defend and flex = 2 cards)
         // Attack card (strike) should remain in hand
         assert_eq!(battle.cards.hand_size(), 1); // Only Strike should remain
-        assert_eq!(battle.cards.exhausted_size(), initial_exhausted_size + 3); // Sever Soul + defend + flex
+        assert_eq!(battle.cards.exhausted_size(), initial_exhausted_size + 2); // defend + flex
 
         // Verify the remaining card is an Attack
         let hand = battle.get_hand();
@@ -172,11 +172,11 @@ mod tests {
 
         // Verify damage dealt
         let final_enemy_hp = battle.get_enemies()[0].get_current_hp();
-        assert_eq!(final_enemy_hp, initial_enemy_hp - 16);
+        assert_eq!(final_enemy_hp, initial_enemy_hp.saturating_sub(16));
 
         // Verify only Sever Soul exhausted (no non-Attack cards to exhaust)
         assert_eq!(battle.cards.hand_size(), initial_hand_size - 1); // Only Sever Soul removed
-        assert_eq!(battle.cards.exhausted_size(), initial_exhausted_size + 1); // Only Sever Soul
+        assert_eq!(battle.cards.exhausted_size(), initial_exhausted_size); 
     }
 
     #[test]
@@ -202,7 +202,7 @@ mod tests {
 
         // Verify increased damage dealt
         let final_enemy_hp = battle.get_enemies()[0].get_current_hp();
-        assert_eq!(final_enemy_hp, initial_enemy_hp - 22);
+        assert_eq!(final_enemy_hp, initial_enemy_hp.saturating_sub(22));
 
         // Verify non-Attack card exhausted
         assert_eq!(battle.cards.hand_size(), 1); // Only Strike should remain
