@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, effect::Condition};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 use crate::battle::{target::Entity, events::BattleEvent, events::EventListener};
 
 /// Demon Form - Rare Power Card

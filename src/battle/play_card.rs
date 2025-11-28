@@ -34,7 +34,9 @@ impl Battle {
             let card_type_clone = card.get_card_type().clone();
             is_skill_card = card.get_card_type() == &CardType::Skill;
             is_power_card = card.get_card_type() == &CardType::Power;
-            has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust);
+            // A card has exhaust if it naturally has the Exhaust effect OR if it's a Skill with Corruption active
+            has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust)
+                || (is_skill_card && self.has_corruption_active());
 
             // Emit SkillCardPlayed event if this is a Skill card
             if is_skill_card {
@@ -68,18 +70,29 @@ impl Battle {
                 Err(BattleError::CardNotInHand)
             }
         } else if has_exhaust {
-            // Cards with Exhaust stay in hand until the Exhaust effect is processed
+            // Cards with Exhaust (or Skills with Corruption) stay in hand until the Exhaust effect is processed
             // Queue all effects, with special handling for Exhaust to include the hand index
+            let mut has_exhaust_effect = false;
             for effect in card_effects {
                 if effect == crate::game::effect::Effect::Exhaust {
                     // Create Exhaust effect with hand index
                     self.queue_effect(BaseEffect::Exhaust {
                         hand_index: idx,
                     });
+                    has_exhaust_effect = true;
                 } else {
                     self.queue_effect(BaseEffect::from_effect(effect, Entity::Player, target));
                 }
             }
+
+            // If the card didn't have its own Exhaust effect but should be exhausted due to Corruption,
+            // queue the Exhaust effect now
+            if !has_exhaust_effect {
+                self.queue_effect(BaseEffect::Exhaust {
+                    hand_index: idx,
+                });
+            }
+
             Ok(())
         } else {
             // Regular cards (Attack, Skill, Status without Exhaust) go to discard pile

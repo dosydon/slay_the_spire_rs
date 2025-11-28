@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
 
 /// True Grit - Gain 7 Block. Exhaust 1 card from hand
 pub fn true_grit() -> Card {

@@ -12,7 +12,7 @@ pub enum EncounterEvent {
     GremlinNob,
 }
 
-pub fn sample_encounter_event(global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> EncounterEvent {
+pub fn sample_encounter_event(_global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> EncounterEvent {
     // For simplicity, we only implement Act 1 first three encounters sampling here
     act1_first_three_encounters().sample_owned(rng)
 }
@@ -36,7 +36,6 @@ impl EncounterEvent {
     pub fn instantiate(&self, rng: &mut impl rand::Rng, global_info: &crate::game::global_info::GlobalInfo) -> Vec<EnemyEnum> {
         match self {
             EncounterEvent::TwoLouses => {
-                use rand::Rng;
                 
                 // First louse: 50% chance of red or green
                 let louse1 = if rng.random::<f64>() < 0.5 {

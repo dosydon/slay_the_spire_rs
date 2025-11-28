@@ -204,6 +204,7 @@ impl CharacterBattleInfo {
         self.strength = amount;
     }
 
+    #[allow(dead_code)]
     /// Calculate damage output with strength bonus and weak penalty
     pub(crate) fn calculate_damage(&self, base_damage: u32) -> u32 {
         self.calculate_damage_with_multiplier(base_damage, 1)

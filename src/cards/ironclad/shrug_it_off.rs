@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
 
 pub fn shrug_it_off() -> Card {
     Card::new(CardEnum::ShrugItOff, 1, CardType::Skill, vec![

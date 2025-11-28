@@ -1,6 +1,5 @@
 use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
-use rand::Rng;
 
 #[derive(Clone, Debug)]
 pub struct RedLouse {

@@ -220,12 +220,10 @@ impl Battle {
                     self.add_listener(Box::new(brutality_listener));
                 }
             },
-            BaseEffect::ActivateCorruption { source } => {
-                // Add CorruptionListener for the player
-                if let Entity::Player = source {
-                    let corruption_listener = crate::cards::ironclad::corruption::CorruptionListener::new(*source);
-                    self.add_listener(Box::new(corruption_listener));
-                }
+            BaseEffect::ActivateCorruption { source: _ } => {
+                // Corruption is now handled passively in play_card logic
+                // Skills cost 0 and are exhausted when Corruption power is in the powers collection
+                // No listener needed
             },
             BaseEffect::ActivateMetallicize { source, amount } => {
                 // Add MetallicizeListener for the player
@@ -361,7 +359,7 @@ impl Battle {
                     self.add_listener(Box::new(combust_listener));
                 }
             },
-            BaseEffect::ApplyDamageReduction { target, percentage } => {
+            BaseEffect::ApplyDamageReduction { target, percentage: _ } => {
                 // Apply damage reduction to the target entity
                 match target {
                     Entity::Player => {
@@ -461,7 +459,7 @@ impl Battle {
                 // Transition to SelectCardInExhaust state
                 self.battle_state = crate::battle::action::BattleState::SelectCardInExhaust;
             },
-            BaseEffect::PlayTopCard { source, target } => {
+            BaseEffect::PlayTopCard { source: _, target } => {
                 // Take the top card from draw pile and play it
                 if let Some(card) = self.cards.draw_top_card() {
                     // Add the card to hand temporarily to play it
@@ -472,7 +470,7 @@ impl Battle {
                     let _ = self.play_card(hand_index, *target);
                 }
             },
-            BaseEffect::PlayTopCardAndExhaust { source, target } => {
+            BaseEffect::PlayTopCardAndExhaust { source: _, target } => {
                 // Take the top card from draw pile and play it, then exhaust it
                 if let Some(card) = self.cards.draw_top_card() {
                     // Add the card to hand temporarily to play it
@@ -584,7 +582,7 @@ impl Battle {
                     self.add_listener(Box::new(double_tap_listener));
                 }
             },
-            BaseEffect::HealOnKill { amount } => {
+            BaseEffect::HealOnKill { amount: _ } => {
                 // Add HealOnKill listener for healing if target dies
                 // This will need to track which enemy is being attacked
                 // For now, we'll store this in a temporary state

@@ -148,7 +148,6 @@ mod tests {
         // Record initial state
         let initial_player_hp = battle.player.battle_info.get_hp();
         let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
-        let initial_energy = battle.player.get_energy();
 
         // === PLAYER TURN ===
 
@@ -161,7 +160,7 @@ mod tests {
         let defend_idx = battle.cards.get_hand().iter().position(|card| card.get_name() == "Defend");
         if let Some(idx) = defend_idx {
             let hand_size_before = battle.cards.hand_size();
-            battle.play_card(idx, Entity::Player);
+            battle.play_card(idx, Entity::Player).unwrap();
             
             // Check card was played
             assert_eq!(battle.cards.hand_size(), hand_size_before - 1);
@@ -175,7 +174,7 @@ mod tests {
         let strike_idx = battle.cards.get_hand().iter().position(|card| card.get_name() == "Strike");
         if let Some(idx) = strike_idx {
             let enemy_hp_before = battle.enemies[0].battle_info.get_hp();
-            battle.play_card(idx, Entity::Enemy(0));
+            battle.play_card(idx, Entity::Enemy(0)).unwrap();
             
             // Check energy was spent (Strike costs 1)
             assert_eq!(battle.player.get_energy(), 1);
@@ -242,10 +241,6 @@ mod tests {
         assert!(!battle.enemies[0].battle_info.is_alive(), "First enemy should be dead");
         assert!(battle.enemies[1].battle_info.is_alive(), "Second enemy should be alive");
         
-        // Record player HP before enemy turn
-        let player_hp_before = battle.player.battle_info.get_hp();
-        let player_block_before = battle.player.battle_info.get_block();
-        
         // Execute enemy turn - defeated enemy should not act
         battle.process_enemy_effects(&mut rng, &global_info);
         
@@ -285,8 +280,6 @@ mod tests {
         let hand = battle.cards.get_hand();
         let ethereal_count = hand.iter().filter(|c| c.is_ethereal()).count();
         let non_ethereal_count = hand.len() - ethereal_count;
-
-        let initial_hand_size = battle.cards.hand_size();
         let initial_discard_size = battle.cards.discard_pile_size();
         let initial_exhausted_size = battle.cards.exhausted_size();
 
@@ -343,9 +336,6 @@ mod tests {
             // End turn - should only exhaust ethereal cards still in hand
             battle.at_end_of_player_turn();
 
-            // The played Carnage should still be in discard (total discard = 1 played + remaining non-ethereal)
-            // And only ethereal cards that weren't played should be exhausted
-            let hand_size_before_end = battle.cards.hand_size();
             assert_eq!(battle.cards.hand_size(), 0);
             assert_eq!(battle.cards.exhausted_size(), initial_exhausted + ethereal_in_hand);
         }

@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
 
 /// Sever Soul - Uncommon Attack Card
 /// Cost: 2 (2 when upgraded)

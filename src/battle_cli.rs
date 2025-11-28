@@ -367,7 +367,7 @@ impl BattleCli {
                 );
                 
                 // Display intended action if available
-                if let Some((enemy_move, effects)) = self.battle.get_enemy_move_and_effects(i) {
+                if let Some((_, effects)) = self.battle.get_enemy_move_and_effects(i) {
                     let display_string = self.get_move_display_string(i, effects);
                     println!("   📋 Next: {}", display_string);
                 }

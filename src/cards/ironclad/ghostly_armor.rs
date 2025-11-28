@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
 
 pub fn ghostly_armor() -> Card {
     Card::new(CardEnum::GhostlyArmor, 1, CardType::Skill, vec![

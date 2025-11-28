@@ -1,5 +1,4 @@
 use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
-use rand::Rng;
 
 #[derive(Clone, Debug)]
 pub struct JawWorm {

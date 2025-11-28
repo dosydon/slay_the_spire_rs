@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
 
 /// Impervious - Rare Skill Card
 /// Cost: 2

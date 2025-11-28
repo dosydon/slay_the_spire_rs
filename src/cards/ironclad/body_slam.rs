@@ -178,14 +178,9 @@ mod tests {
             .position(|c| c.get_name() == "Body Slam+")
             .expect("Body Slam+ should be in hand");
 
-        // Check that player has enough energy (cost 0)
-        assert!(battle.get_player().get_energy() >= 0, "Player should have enough energy for Body Slam+");
-
         // Play Body Slam+
         let result = battle.play_card(body_slam_idx, Entity::Enemy(0));
         assert!(result.is_ok(), "Body Slam+ should be playable");
 
-        // Energy should not be spent (cost 0)
-        assert!(battle.get_player().get_energy() >= 0, "Player should not lose energy playing Body Slam+");
     }
 }

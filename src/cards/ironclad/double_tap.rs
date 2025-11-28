@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     fn test_double_tap_listener_exhaustion() {
-        let mut listener = DoubleTapListener::new(Entity::Player, 0);
+        let listener = DoubleTapListener::new(Entity::Player, 0);
         assert_eq!(listener.remaining_attacks, 0);
         assert!(!listener.is_active());
     }
@@ -122,12 +122,12 @@ mod tests {
             card_type: crate::game::card_type::CardType::Attack,
         };
 
-        let effects = listener.on_event(&event);
+        listener.on_event(&event);
         assert_eq!(listener.remaining_attacks, 1);
         assert!(listener.is_active());
 
         // Play another Attack
-        let effects = listener.on_event(&event);
+        listener.on_event(&event);
         assert_eq!(listener.remaining_attacks, 0);
         assert!(!listener.is_active());
     }

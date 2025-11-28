@@ -1,41 +1,4 @@
 use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
-use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
-
-/// Corruption Listener
-/// Makes all Skills cost 0 and causes them to be Exhausted when played
-#[derive(Debug)]
-pub struct CorruptionListener {
-    owner: Entity,
-}
-
-impl CorruptionListener {
-    pub fn new(owner: Entity) -> Self {
-        CorruptionListener {
-            owner,
-        }
-    }
-}
-
-impl EventListener for CorruptionListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
-        match event {
-            BattleEvent::CardPlayed { source, card_type }
-                if *source == self.owner && *card_type == crate::game::card_type::CardType::Skill => {
-                // When player plays a Skill, make it get exhausted
-                vec![Effect::Exhaust]
-            }
-            _ => vec![]
-        }
-    }
-
-    fn is_active(&self) -> bool {
-        true // Corruption is always active once played
-    }
-
-    fn get_owner(&self) -> Entity {
-        self.owner
-    }
-}
 
 /// Corruption - Power Card
 /// Cost: 3 (2 when upgraded)
@@ -82,79 +45,6 @@ mod tests {
         assert!(card.is_playable());
     }
 
-    #[test]
-    fn test_corruption_listener_creation() {
-        let listener = CorruptionListener::new(Entity::Player);
-        assert!(listener.is_active());
-        assert_eq!(listener.get_owner(), Entity::Player);
-    }
-
-    #[test]
-    fn test_corruption_triggers_on_skill_played() {
-        let mut listener = CorruptionListener::new(Entity::Player);
-
-        let skill_event = BattleEvent::CardPlayed {
-            source: Entity::Player,
-            card_type: crate::game::card_type::CardType::Skill,
-        };
-
-        let effects = listener.on_event(&skill_event);
-        assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::Exhaust);
-        assert!(listener.is_active()); // Still active after triggering
-    }
-
-    #[test]
-    fn test_corruption_does_not_trigger_on_attack_played() {
-        let mut listener = CorruptionListener::new(Entity::Player);
-
-        let attack_event = BattleEvent::CardPlayed {
-            source: Entity::Player,
-            card_type: crate::game::card_type::CardType::Attack,
-        };
-
-        let effects = listener.on_event(&attack_event);
-        assert_eq!(effects.len(), 0);
-        assert!(listener.is_active());
-    }
-
-    #[test]
-    fn test_corruption_does_not_trigger_on_power_played() {
-        let mut listener = CorruptionListener::new(Entity::Player);
-
-        let power_event = BattleEvent::CardPlayed {
-            source: Entity::Player,
-            card_type: crate::game::card_type::CardType::Power,
-        };
-
-        let effects = listener.on_event(&power_event);
-        assert_eq!(effects.len(), 0);
-        assert!(listener.is_active());
-    }
-
-    #[test]
-    fn test_corruption_only_triggers_for_owner() {
-        let mut listener = CorruptionListener::new(Entity::Player);
-
-        // Enemy playing a skill should not trigger
-        let enemy_skill_event = BattleEvent::CardPlayed {
-            source: Entity::Enemy(0),
-            card_type: crate::game::card_type::CardType::Skill,
-        };
-
-        let effects = listener.on_event(&enemy_skill_event);
-        assert_eq!(effects.len(), 0);
-
-        // Player playing a skill should trigger
-        let player_skill_event = BattleEvent::CardPlayed {
-            source: Entity::Player,
-            card_type: crate::game::card_type::CardType::Skill,
-        };
-
-        let effects = listener.on_event(&player_skill_event);
-        assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::Exhaust);
-    }
 
     #[test]
     fn test_corruption_power_activation() {
@@ -242,28 +132,137 @@ mod tests {
 
         // Check what's in hand after playing Corruption
         let hand = battle.get_hand();
-        assert!(hand.len() >= 1, "Should have at least 1 card in hand");
+        assert_eq!(hand.len(), 1, "Should have 1 card in hand after playing Corruption");
+        
+        // Check the card at index 0 before playing
+        let card_name = hand[0].get_name();
+        let card_cost = hand[0].get_cost();
+        let card_modified_cost = battle.get_modified_cost(&hand[0]);
+        assert_eq!(card_name, "Defend", "Card should be Defend");
+        assert_eq!(card_cost, 1); // Base cost is still 1
+        assert_eq!(card_modified_cost, 0); // Modified cost is 0 with Corruption
 
-        let defend_card = &hand[0]; // Defend should be at index 0
-        assert_eq!(defend_card.get_name(), "Defend", "First card should be Defend");
-        assert_eq!(defend_card.get_cost(), 1); // Base cost is still 1
-        assert_eq!(battle.get_modified_cost(defend_card), 0); // Modified cost is 0 with Corruption
-
-        // The main test: verify that skills cost 0 energy when Corruption is active
-        // We can't actually play the card because Corruption exhaustes it immediately,
-        // but we can verify the cost calculation works correctly
+        // Store player's current block and energy before playing Defend
+        let initial_block = battle.get_player().battle_info.get_block();
         let current_energy = battle.get_player().get_energy();
-
-        // Try to play Defend - it should be exhausted immediately due to Corruption
+        
+        // Debug: Check hand state right before playing Defend
+        let hand_before = battle.get_hand();
+        
+        // Try to play Defend at index 0 - it should be exhausted immediately due to Corruption
         let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok(), "Should be able to play Defend with Corruption active");
 
         // The play should succeed (card gets exhausted) but energy should not be spent since cost is 0
         let energy_after_play = battle.get_player().get_energy();
-        assert_eq!(energy_after_play, current_energy, "Energy should not be spent when skill costs 0");
+        let hand_after = battle.get_hand();
+                assert_eq!(energy_after_play, current_energy, "Energy should not be spent when skill costs 0");
+
+        // Verify Defend's effects were applied - player should have gained 5 block
+        let final_block = battle.get_player().battle_info.get_block();
+        assert_eq!(final_block, initial_block + 5, "Player should have gained 5 block from Defend");
 
         // Verify Defend was exhausted due to Corruption
         let exhausted_cards = battle.cards.get_exhausted();
         assert!(exhausted_cards.iter().any(|card| card.get_name() == "Defend"));
+
+        // Verify hand is empty after playing the only Defend card
+        assert_eq!(hand_after.len(), 0, "Should have 0 cards in hand after Defend is exhausted");
+    }
+
+    #[test]
+    fn test_corruption_exhausts_multiple_skills() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::game::enemy::EnemyTrait;
+        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::enemy_enum::EnemyEnum;
+        use crate::cards::ironclad::defend::defend;
+        use crate::cards::ironclad::shrug_it_off::shrug_it_off;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Corruption and multiple Skill cards in hand
+        let deck = Deck::new(vec![corruption(), defend(), shrug_it_off(), defend()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Give player enough energy to play all cards
+        battle.get_player_mut().battle_info.energy = 10;
+
+        // Play Corruption first
+        let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok(), "Should be able to play Corruption");
+
+        // Verify Corruption is active
+        assert!(battle.has_corruption_active());
+
+        // Now play first Defend - should be exhausted
+        let initial_exhausted = battle.cards.exhausted_size();
+        let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok(), "Should be able to play Defend");
+        assert_eq!(battle.cards.exhausted_size(), initial_exhausted + 1, "Defend should be exhausted");
+
+        // Play Shrug It Off - should also be exhausted
+        let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok(), "Should be able to play Shrug It Off");
+        assert_eq!(battle.cards.exhausted_size(), initial_exhausted + 2, "Shrug It Off should be exhausted");
+
+        // Play second Defend - should also be exhausted
+        let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok(), "Should be able to play second Defend");
+        assert_eq!(battle.cards.exhausted_size(), initial_exhausted + 3, "Second Defend should be exhausted");
+
+        // Verify all three Skill cards are in the exhausted pile
+        let exhausted_cards = battle.cards.get_exhausted();
+        let skill_cards_exhausted = exhausted_cards.iter()
+            .filter(|card| card.get_card_type() == &crate::game::card_type::CardType::Skill)
+            .count();
+        assert_eq!(skill_cards_exhausted, 3, "All three Skill cards should be exhausted");
+    }
+
+    #[test]
+    fn test_corruption_does_not_exhaust_attacks() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::game::enemy::EnemyTrait;
+        use crate::enemies::red_louse::RedLouse;
+        use crate::enemies::enemy_enum::EnemyEnum;
+        use crate::cards::ironclad::strike::strike;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create battle with Corruption and an Attack card
+        let deck = Deck::new(vec![corruption(), strike()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Give player enough energy
+        battle.get_player_mut().battle_info.energy = 10;
+
+        // Play Corruption first
+        let result = battle.play_card(0, Entity::Player);
+        assert!(result.is_ok(), "Should be able to play Corruption");
+
+        // Play Strike - should NOT be exhausted (it's an Attack, not a Skill)
+        let initial_exhausted = battle.cards.exhausted_size();
+        let result = battle.play_card(0, Entity::Enemy(0));
+        assert!(result.is_ok(), "Should be able to play Strike");
+        assert_eq!(battle.cards.exhausted_size(), initial_exhausted, "Strike should NOT be exhausted");
+
+        // Verify Strike went to discard pile instead
+        let discard = battle.cards.get_discard_pile();
+        assert!(discard.iter().any(|card| card.get_name() == "Strike"), "Strike should be in discard pile");
     }
 
     }

@@ -425,7 +425,7 @@ impl GameCli {
             }
 
             if let Some(node) = position_map.get(&pos) {
-                let (icon, is_current) = if node.id() == current_node_position {
+                let (icon, _is_current) = if node.id() == current_node_position {
                     (self.get_node_icon(&node.node_type, true), true)
                 } else {
                     (self.get_node_icon(&node.node_type, false), false)

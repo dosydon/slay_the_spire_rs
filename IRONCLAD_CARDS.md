@@ -7,9 +7,6 @@ This document tracks the implementation status of all Ironclad cards in the Slay
 - ✅ **69 cards implemented** (3 Basic + 29 Common + 14 Rare + 23 Uncommon)
 - ❌ **0 Ironclad cards not yet implemented**
 - 🎯 **Implementation Progress: 100%** of Ironclad cards
-- 🚀 **Recent Enhancement**: Added cost modification system with `get_modified_cost()` for powers like Corruption
-
-**Note:** All tables now include Cost, Cost+ (upgraded cost), Base Effects, and Upgraded Effects columns for clarity.
 
 ## Card Implementation Status
 

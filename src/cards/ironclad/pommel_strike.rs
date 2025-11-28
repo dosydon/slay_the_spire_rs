@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
 
 pub fn pommel_strike() -> Card {
     Card::new(CardEnum::PommelStrike, 1, CardType::Attack, vec![
