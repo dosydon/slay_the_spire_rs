@@ -179,7 +179,14 @@ impl Battle {
             },
             BaseEffect::Exhaust { hand_index } => {
                 // Remove card from hand and add to exhausted pile
-                if let Some(_card) = self.cards.exhaust_card_from_hand(*hand_index) {
+                if let Some(card) = self.cards.exhaust_card_from_hand(*hand_index) {
+                    // Check if the card has on_exhaust effects and queue them
+                    if let Some(on_exhaust_effects) = card.get_on_exhaust() {
+                        for effect in on_exhaust_effects {
+                            self.queue_effect(BaseEffect::from_effect(effect.clone(), Entity::Player, Entity::Player));
+                        }
+                    }
+
                     // Emit CardExhausted event
                     let exhaust_event = BattleEvent::CardExhausted {
                         source: Entity::Player,
@@ -680,6 +687,10 @@ impl Battle {
                 // Activate Fire Breathing listener for dealing damage when Status/Curse cards are drawn
                 let fire_breathing_listener = crate::cards::ironclad::fire_breathing::FireBreathingListener::new(crate::battle::target::Entity::Player, *damage_per_status);
                 self.add_listener(Box::new(fire_breathing_listener));
+            },
+            BaseEffect::ActivateSentinel { source: _, energy_on_exhaust: _ } => {
+                // Sentinel now uses on_exhaust card property instead of a listener
+                // This effect is a no-op
             },
             BaseEffect::AddCardToHand { source: _, card } => {
                 // Add card to hand

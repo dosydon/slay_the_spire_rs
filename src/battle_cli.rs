@@ -935,6 +935,9 @@ impl BattleCli {
                 crate::game::effect::Effect::GainStrengthIfEnemyAttacking { amount } => {
                     parts.push(format!("💪 Gain {} Strength if Enemy Attacking", amount));
                 }
+                crate::game::effect::Effect::ActivateSentinel { energy_on_exhaust } => {
+                    parts.push(format!("⚡ Gain {} Energy when exhausted", energy_on_exhaust));
+                }
             }
         }
         

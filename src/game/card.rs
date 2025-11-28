@@ -11,6 +11,7 @@ pub struct Card {
     upgrade_level: u32, // 0 = not upgraded, 1+ = upgraded level
     play_condition: Condition,
     ethereal: bool,
+    on_exhaust: Option<Vec<Effect>>, // Effects that trigger when this card is exhausted
 }
 
 impl Card {
@@ -25,6 +26,7 @@ impl Card {
             upgrade_level,
             play_condition,
             ethereal: false,
+            on_exhaust: None,
         }
     }
 
@@ -38,6 +40,7 @@ impl Card {
             upgrade_level,
             play_condition,
             ethereal: false,
+            on_exhaust: None,
         }
     }
 
@@ -52,6 +55,7 @@ impl Card {
             upgrade_level,
             play_condition,
             ethereal,
+            on_exhaust: None,
         }
     }
 
@@ -65,6 +69,21 @@ impl Card {
             upgrade_level,
             play_condition,
             ethereal: false,
+            on_exhaust: None,
+        }
+    }
+
+    pub fn new_with_on_exhaust(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, play_condition: Condition, on_exhaust: Vec<Effect>) -> Self {
+        let upgrade_level = if upgraded { 1 } else { 0 };
+        Card {
+            card_enum,
+            cost,
+            card_type,
+            effects,
+            upgrade_level,
+            play_condition,
+            ethereal: false,
+            on_exhaust: Some(on_exhaust),
         }
     }
 
@@ -90,6 +109,10 @@ impl Card {
 
     pub fn get_effects(&self) -> &Vec<Effect> {
         &self.effects
+    }
+
+    pub fn get_on_exhaust(&self) -> Option<&Vec<Effect>> {
+        self.on_exhaust.as_ref()
     }
 
     pub fn cost(&self) -> u32 {
@@ -217,6 +240,7 @@ impl Card {
             upgrade_level,
             play_condition: self.play_condition,
             ethereal: self.ethereal,
+            on_exhaust: self.on_exhaust,
         }
     }
 

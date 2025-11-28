@@ -96,6 +96,7 @@ pub enum Effect {
     GainEnergyIfNoBlock { amount: u32 }, // Gain energy if player has no block
     ExhaustNonAttacksInHand, // Exhaust all non-Attack cards in hand
     GainStrengthIfEnemyAttacking { amount: u32 }, // Gain strength if enemy is attacking
+    ActivateSentinel { energy_on_exhaust: u32 }, // Activates Sentinel listener for gaining energy when this card is exhausted
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -328,6 +329,10 @@ pub enum BaseEffect {
         source: Entity,
         damage_per_status: u32,
     },
+    ActivateSentinel {
+        source: Entity,
+        energy_on_exhaust: u32,
+    },
     ShuffleDiscardIntoDraw {
         source: Entity,
     },
@@ -412,6 +417,7 @@ impl BaseEffect {
             Effect::ActivateJuggernaut { .. } => todo!("Implement Juggernaut when ready"),
             Effect::AttackRandomEnemy { amount, num_attacks, strength_multiplier } => BaseEffect::AttackRandomEnemy { amount, num_attacks, strength_multiplier },
             Effect::AddFireBreathing { damage_per_status } => BaseEffect::ActivateFireBreathing { source, damage_per_status },
+            Effect::ActivateSentinel { energy_on_exhaust } => BaseEffect::ActivateSentinel { source, energy_on_exhaust },
             Effect::ShuffleDiscardIntoDraw => BaseEffect::ShuffleDiscardIntoDraw { source },
             Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit } => BaseEffect::AttackAllEnemiesForCurrentEnergy { amount_per_hit },
             // New effects for the implemented cards
