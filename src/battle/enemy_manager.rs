@@ -41,6 +41,15 @@ impl Battle {
                     // Gremlin Nob gets an enrage listener only AFTER it uses its first move (Bellow)
                     // This will be added dynamically when the first move is executed
                 }
+                EnemyEnum::Lagavulin(_) => {
+                    // Lagavulin gets a listener for wake-from-damage, initial block, and Stunned→Awake transition
+                    let lagavulin_listener = crate::enemies::lagavulin::LagavulinListener::new(i);
+                    self.event_listeners.push(Box::new(lagavulin_listener));
+
+                    // Lagavulin starts with Metallicize 8 while asleep (removed when awakened)
+                    let metallicize_listener = crate::cards::ironclad::metallicize::MetallicizeListener::new(Entity::Enemy(i), 8);
+                    self.event_listeners.push(Box::new(metallicize_listener));
+                }
             }
         }
     }

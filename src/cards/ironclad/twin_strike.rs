@@ -97,7 +97,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeM(acid_slime))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
 
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
 
@@ -132,7 +132,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeM(acid_slime))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
 
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
 
@@ -167,7 +167,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeM(acid_slime))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
 
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         // Give player 3 strength
         battle.get_player_mut().battle_info.gain_strength(3);
@@ -206,7 +206,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeM(acid_slime))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
 
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         // Give player 2 strength
         battle.get_player_mut().battle_info.gain_strength(2);

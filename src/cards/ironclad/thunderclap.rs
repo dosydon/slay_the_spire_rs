@@ -44,7 +44,7 @@ mod tests {
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
 
         // Draw the thunderclap card into hand
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         // Get initial vulnerable status (should be 0 for all enemies)
         let initial_vulnerable: Vec<u32> = battle.get_enemies()
@@ -86,7 +86,7 @@ mod tests {
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse3_new)),
         ];
         let mut battle2 = Battle::new(deck2, global_info, 80, 80, enemies2, &mut rng);
-        battle2.start_of_player_turn(&mut rng);
+        battle2.at_start_of_player_turn(&mut rng);
 
         let hp_before: Vec<u32> = battle2.get_enemies()
             .iter()
@@ -123,7 +123,7 @@ mod tests {
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
 
         // Draw the thunderclap+ card into hand
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         // Get initial vulnerable status (should be 0 for all enemies)
         let initial_vulnerable: Vec<u32> = battle.get_enemies()

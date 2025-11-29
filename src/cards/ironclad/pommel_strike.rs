@@ -101,7 +101,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
 
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
         let initial_hand_size = battle.get_hand().len();
@@ -141,7 +141,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
 
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
         let initial_hand_size = battle.get_hand().len();

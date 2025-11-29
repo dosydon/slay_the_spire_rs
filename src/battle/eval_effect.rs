@@ -90,12 +90,14 @@ impl Battle {
                 match source {
                     Entity::Player => {
                         let current_strength = self.player.battle_info.get_strength();
-                        self.player.battle_info.set_strength(current_strength * 2);
+                        let doubled_strength = current_strength * 2;
+                        self.player.battle_info.set_strength(doubled_strength.max(0) as u32);
                     },
                     Entity::Enemy(idx) => {
                         if *idx < self.enemies.len() {
                             let current_strength = self.enemies[*idx].battle_info.get_strength();
-                            self.enemies[*idx].battle_info.set_strength(current_strength * 2);
+                            let doubled_strength = current_strength * 2;
+                            self.enemies[*idx].battle_info.set_strength(doubled_strength.max(0) as u32);
                         }
                     },
                     Entity::None => {} // No source
@@ -104,17 +106,13 @@ impl Battle {
             BaseEffect::LoseStrengthSelf { source, amount } => {
                 match source {
                     Entity::Player => {
-                        // Reduce player strength, but not below 0
-                        let current_strength = self.player.battle_info.get_strength();
-                        let actual_loss = std::cmp::min(*amount, current_strength);
-                        self.player.battle_info.strength = current_strength - actual_loss;
+                        // Reduce player strength, now allows negative values
+                        self.player.battle_info.lose_strength(*amount);
                     },
                     Entity::Enemy(idx) => {
                         if *idx < self.enemies.len() {
-                            // Reduce enemy strength, but not below 0
-                            let current_strength = self.enemies[*idx].battle_info.get_strength();
-                            let actual_loss = std::cmp::min(*amount, current_strength);
-                            self.enemies[*idx].battle_info.strength = current_strength - actual_loss;
+                            // Reduce enemy strength, now allows negative values
+                            self.enemies[*idx].battle_info.lose_strength(*amount);
                         }
                     },
                     Entity::None => {} // No source
@@ -123,17 +121,48 @@ impl Battle {
             BaseEffect::LoseStrengthTarget { target, amount } => {
                 match target {
                     Entity::Player => {
-                        // Reduce player strength, but not below 0
-                        let current_strength = self.player.battle_info.get_strength();
-                        let actual_loss = std::cmp::min(*amount, current_strength);
-                        self.player.battle_info.strength = current_strength - actual_loss;
+                        self.player.battle_info.lose_strength(*amount);
                     },
                     Entity::Enemy(idx) => {
                         if *idx < self.enemies.len() {
-                            // Reduce enemy strength, but not below 0
-                            let current_strength = self.enemies[*idx].battle_info.get_strength();
-                            let actual_loss = std::cmp::min(*amount, current_strength);
-                            self.enemies[*idx].battle_info.strength = current_strength - actual_loss;
+                            self.enemies[*idx].battle_info.lose_strength(*amount);
+                        }
+                    },
+                    Entity::None => {} // No target
+                }
+            },
+            BaseEffect::GainDexterity { source, amount } => {
+                match source {
+                    Entity::Player => self.player.battle_info.gain_dexterity(*amount),
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            self.enemies[*idx].battle_info.gain_dexterity(*amount);
+                        }
+                    },
+                    Entity::None => {} // No source
+                }
+            },
+            BaseEffect::LoseDexteritySelf { source, amount } => {
+                match source {
+                    Entity::Player => {
+                        self.player.battle_info.lose_dexterity(*amount);
+                    },
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            self.enemies[*idx].battle_info.lose_dexterity(*amount);
+                        }
+                    },
+                    Entity::None => {} // No source
+                }
+            },
+            BaseEffect::LoseDexterityTarget { target, amount } => {
+                match target {
+                    Entity::Player => {
+                        self.player.battle_info.lose_dexterity(*amount);
+                    },
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            self.enemies[*idx].battle_info.lose_dexterity(*amount);
                         }
                     },
                     Entity::None => {} // No target
@@ -672,7 +701,7 @@ impl Battle {
                             // Apply strength multiplier if present
                             let final_amount = if *strength_multiplier > 1 {
                                 let strength = self.player.battle_info.get_strength();
-                                incoming_damage + ((amount * strength) / 2)
+                                incoming_damage + (((*amount as i32 * strength) / 2).max(0) as u32)
                             } else {
                                 incoming_damage
                             };
@@ -691,6 +720,35 @@ impl Battle {
             BaseEffect::ActivateSentinel { source: _, energy_on_exhaust: _ } => {
                 // Sentinel now uses on_exhaust card property instead of a listener
                 // This effect is a no-op
+            },
+            BaseEffect::WakeLagavulin { enemy_index } => {
+                // Wake up Lagavulin from sleep (transitions to Stunned state)
+                if *enemy_index < self.enemies.len() {
+                    if let crate::enemies::enemy_enum::EnemyEnum::Lagavulin(lagavulin) = &mut self.enemies[*enemy_index].enemy {
+                        lagavulin.wake_from_damage();
+                    }
+                    // Also remove Metallicize power when Lagavulin wakes
+                    self.queue_effect(BaseEffect::RemoveMetallicize { enemy_index: *enemy_index });
+                }
+            },
+            BaseEffect::TransitionLagavulinStunnedToAwake { enemy_index } => {
+                // Transition Lagavulin from Stunned to Awake at start of turn
+                if *enemy_index < self.enemies.len() {
+                    if let crate::enemies::enemy_enum::EnemyEnum::Lagavulin(lagavulin) = &mut self.enemies[*enemy_index].enemy {
+                        lagavulin.at_start_of_turn();
+                    }
+                }
+            },
+            BaseEffect::RemoveMetallicize { enemy_index } => {
+                // Deactivate all Metallicize listeners for this enemy
+                for listener in &mut self.event_listeners {
+                    if listener.get_owner() == Entity::Enemy(*enemy_index) {
+                        // Check if this is a MetallicizeListener by attempting a downcast
+                        if let Some(metallicize) = listener.as_any_mut().downcast_mut::<crate::cards::ironclad::metallicize::MetallicizeListener>() {
+                            metallicize.deactivate();
+                        }
+                    }
+                }
             },
             BaseEffect::AddCardToHand { source: _, card } => {
                 // Add card to hand

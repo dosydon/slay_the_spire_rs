@@ -39,6 +39,10 @@ impl EventListener for FeelNoPainListener {
     fn get_owner(&self) -> Entity {
         self.owner
     }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
 }
 
 /// Feel No Pain - Power Card

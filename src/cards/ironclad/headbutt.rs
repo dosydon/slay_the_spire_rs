@@ -76,7 +76,7 @@ mod tests {
         let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
 
         // Draw initial hand and then play some cards to create discard pile
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         // Play a card to create discard pile
         let initial_hand_size = battle.cards.hand_size();

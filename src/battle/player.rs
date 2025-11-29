@@ -45,6 +45,14 @@ impl Player {
         self.battle_info.is_alive()
     }
 
+    pub fn get_dexterity(&self) -> i32 {
+        self.battle_info.get_dexterity()
+    }
+
+    pub fn get_strength(&self) -> i32 {
+        self.battle_info.get_strength()
+    }
+
     /// Increase max HP and also heal by the same amount
     pub fn increase_max_hp(&mut self, amount: u32) {
         self.battle_info.increase_max_hp(amount);

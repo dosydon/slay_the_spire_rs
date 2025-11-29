@@ -4,7 +4,7 @@ use crate::battle::target::Entity;
 
 impl Battle {
     /// Full turn start including card draw with deck reshuffling
-    pub(crate) fn start_of_player_turn(&mut self, rng: &mut impl rand::Rng) {
+    pub(crate) fn at_start_of_player_turn(&mut self, rng: &mut impl rand::Rng) {
         self.player.at_start_of_turn();
 
         // Sample enemy actions for this turn
@@ -25,6 +25,15 @@ impl Battle {
         // Draw new hand (typically 5 cards)
         // The draw_n method will automatically reshuffle discard pile into deck if needed
         self.cards.draw_n(5);
+    }
+
+    /// End the current player turn and start the enemy turn (for testing)
+    pub fn end_turn(&mut self, rng: &mut impl rand::Rng, global_info: &GlobalInfo) {
+        self.at_end_of_player_turn();
+        self.at_start_of_enemy_turn();
+        self.process_enemy_effects(rng, global_info);
+        self.at_end_of_enemy_turn();
+        self.at_start_of_player_turn(rng);
     }
     
     /// Ends the player turn
@@ -61,11 +70,25 @@ impl Battle {
         self.cards.discard_entire_hand();
     }
     
-    /// Starts enemy turns - resets enemy block
-    pub(in crate::battle) fn at_start_of_enemy_turn(&mut self) {
+    /// Starts enemy turns - emits events and resets enemy block
+    pub(crate) fn at_start_of_enemy_turn(&mut self) {
+        // Emit StartOfEnemyTurn events for each alive enemy
+        let alive_enemy_indices: Vec<usize> = self.enemies.iter()
+            .enumerate()
+            .filter(|(_, enemy)| enemy.battle_info.is_alive())
+            .map(|(i, _)| i)
+            .collect();
+
+        for i in alive_enemy_indices {
+            let start_turn_event = super::events::BattleEvent::StartOfEnemyTurn {
+                enemy_index: i,
+            };
+            self.emit_event(start_turn_event);
+        }
+
+        // Reset enemy block at start of their turn
         for enemy in &mut self.enemies {
             if enemy.battle_info.is_alive() {
-                // Reset enemy's block at start of their turn
                 enemy.battle_info.at_start_of_turn();
             }
         }

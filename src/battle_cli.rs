@@ -347,7 +347,7 @@ impl BattleCli {
         for (i, enemy) in self.battle.get_enemies().iter().enumerate() {
             let name = match &enemy.enemy {
                 EnemyEnum::RedLouse(_) => "Red Louse",
-                EnemyEnum::GreenLouse(_) => "Green Louse", 
+                EnemyEnum::GreenLouse(_) => "Green Louse",
                 EnemyEnum::JawWorm(_) => "Jaw Worm",
                 EnemyEnum::Cultist(_) => "Cultist",
                 EnemyEnum::SpikeSlimeS(_) => "Spike Slime (S)",
@@ -355,6 +355,7 @@ impl BattleCli {
                 EnemyEnum::AcidSlimeS(_) => "Acid Slime (S)",
                 EnemyEnum::AcidSlimeM(_) => "Acid Slime (M)",
                 EnemyEnum::GremlinNob(_) => "Gremlin Nob",
+                EnemyEnum::Lagavulin(_) => "Lagavulin",
             };
             
             if enemy.battle_info.is_alive() {
@@ -471,6 +472,7 @@ impl BattleCli {
                                 EnemyEnum::AcidSlimeS(_) => "Acid Slime (S)",
                                 EnemyEnum::AcidSlimeM(_) => "Acid Slime (M)",
                                 EnemyEnum::GremlinNob(_) => "Gremlin Nob",
+                                EnemyEnum::Lagavulin(_) => "Lagavulin",
                             };
                             println!("      {}{}. Target {} {}", action_index, 
                                 char::from(b'a' + target_idx as u8), enemy_name, enemy_idx + 1);
@@ -746,6 +748,15 @@ impl BattleCli {
                 crate::game::effect::Effect::LoseStrengthAtEndOfTurn(amount) => {
                     parts.push(format!("⏰ -{} Strength (end turn)", amount));
                 }
+                crate::game::effect::Effect::GainDexterity { amount } => {
+                    parts.push(format!("🤸 +{} Dexterity", amount));
+                }
+                crate::game::effect::Effect::LoseDexteritySelf(amount) => {
+                    parts.push(format!("🤸 Self -{} Dexterity", amount));
+                }
+                crate::game::effect::Effect::LoseDexterityTarget(amount) => {
+                    parts.push(format!("🤸 Target -{} Dexterity", amount));
+                }
                 crate::game::effect::Effect::GainRitual(amount) => {
                     parts.push(format!("✨ Ritual {}", amount));
                 }
@@ -937,6 +948,15 @@ impl BattleCli {
                 }
                 crate::game::effect::Effect::ActivateSentinel { energy_on_exhaust } => {
                     parts.push(format!("⚡ Gain {} Energy when exhausted", energy_on_exhaust));
+                }
+                crate::game::effect::Effect::WakeLagavulin { .. } => {
+                    // Internal effect, not displayed to user
+                }
+                crate::game::effect::Effect::TransitionLagavulinStunnedToAwake { .. } => {
+                    // Internal effect, not displayed to user
+                }
+                crate::game::effect::Effect::RemoveMetallicize { .. } => {
+                    // Internal effect, not displayed to user
                 }
             }
         }

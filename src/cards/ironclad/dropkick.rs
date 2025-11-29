@@ -96,7 +96,7 @@ mod tests {
         let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
 
         // Draw initial hand
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         // Add Dropkick to hand manually
         battle.add_card_to_hand_for_testing(dropkick());
@@ -136,7 +136,7 @@ mod tests {
         let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
 
         // Draw initial hand
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         // Add Dropkick+ to hand manually
         battle.add_card_to_hand_for_testing(dropkick_upgraded());

@@ -254,6 +254,10 @@ impl EventListener for EnrageListener {
     fn get_owner(&self) -> Entity {
         self.owner
     }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]
@@ -658,7 +662,7 @@ mod tests {
         
         let final_strength = battle.get_enemies()[0].battle_info.get_strength();
         let expected_strength_gain = GremlinNob::calculate_enrage_amount(&global_info);
-        assert_eq!(final_strength, initial_strength + expected_strength_gain,
+        assert_eq!(final_strength, initial_strength + expected_strength_gain as i32,
                   "Enrage should trigger on skill card. Initial: {}, Final: {}, Expected gain: {}",
                   initial_strength, final_strength, expected_strength_gain);
         
@@ -668,8 +672,8 @@ mod tests {
         };
         battle.emit_event(second_skill_event);
         let final_strength_2 = battle.get_enemies()[0].battle_info.get_strength();
-        assert_eq!(final_strength_2, initial_strength + (2 * expected_strength_gain),
-                  "Multiple skill cards should stack enrage. Expected: {}, Got: {}", 
-                  initial_strength + (2 * expected_strength_gain), final_strength_2);
+        assert_eq!(final_strength_2, initial_strength + (2 * expected_strength_gain) as i32,
+                  "Multiple skill cards should stack enrage. Expected: {}, Got: {}",
+                  initial_strength + (2 * expected_strength_gain) as i32, final_strength_2);
     }
 }

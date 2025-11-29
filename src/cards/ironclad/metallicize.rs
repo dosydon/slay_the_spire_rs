@@ -18,6 +18,11 @@ impl MetallicizeListener {
             is_active: true,
         }
     }
+
+    /// Deactivate this listener (used when Lagavulin wakes up)
+    pub fn deactivate(&mut self) {
+        self.is_active = false;
+    }
 }
 
 impl EventListener for MetallicizeListener {
@@ -37,6 +42,10 @@ impl EventListener for MetallicizeListener {
 
     fn get_owner(&self) -> Entity {
         self.owner
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
     }
 }
 

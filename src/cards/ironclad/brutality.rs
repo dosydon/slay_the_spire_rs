@@ -19,8 +19,8 @@ impl BrutalityListener {
 impl EventListener for BrutalityListener {
     fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
         match event {
-            BattleEvent::TurnStart { entity } if *entity == self.owner => {
-                // At the start of owner's turn, lose 1 HP and draw 1 card
+            BattleEvent::StartOfPlayerTurn if self.owner == Entity::Player => {
+                // At the start of player's turn, lose 1 HP and draw 1 card
                 vec![
                     Effect::LoseHp(1),
                     Effect::DrawCard { count: 1 },
@@ -36,6 +36,10 @@ impl EventListener for BrutalityListener {
 
     fn get_owner(&self) -> Entity {
         self.owner
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
     }
 }
 
@@ -92,15 +96,15 @@ mod tests {
         let mut listener = BrutalityListener::new(Entity::Player);
 
         // Test turn start event for player
-        let turn_start_event = BattleEvent::TurnStart { entity: Entity::Player };
+        let turn_start_event = BattleEvent::StartOfPlayerTurn;
         let effects = listener.on_event(&turn_start_event);
 
         assert_eq!(effects.len(), 2);
         assert_eq!(effects[0], Effect::LoseHp(1));
         assert_eq!(effects[1], Effect::DrawCard { count: 1 });
 
-        // Test turn start event for enemy (should not trigger)
-        let enemy_turn_start = BattleEvent::TurnStart { entity: Entity::Enemy(0) };
+        // Test enemy turn start (should not trigger for player listener)
+        let enemy_turn_start = BattleEvent::StartOfEnemyTurn { enemy_index: 0 };
         let effects = listener.on_event(&enemy_turn_start);
         assert_eq!(effects.len(), 0);
 

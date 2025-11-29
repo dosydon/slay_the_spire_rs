@@ -577,7 +577,7 @@ mod tests {
 
             // Only sample actions for turns after the first one
             if turn > 0 {
-                battle.start_of_player_turn(&mut rng);
+                battle.at_start_of_player_turn(&mut rng);
             }
             battle.process_enemy_effects(&mut rng, &global_info);
         battle.at_end_of_enemy_turn();

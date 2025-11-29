@@ -35,6 +35,10 @@ impl EventListener for AnchorRelic {
     fn get_owner(&self) -> Entity {
         self.owner
     }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]

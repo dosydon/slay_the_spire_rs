@@ -7,6 +7,7 @@ pub mod spike_slime_m;
 pub mod acid_slime_s;
 pub mod acid_slime_m;
 pub mod gremlin_nob;
+pub mod lagavulin;
 pub mod enemy_enum;
 
 pub use enemy_enum::EnemyEnum;

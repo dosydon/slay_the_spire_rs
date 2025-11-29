@@ -67,6 +67,10 @@ impl EventListener for DoubleTapListener {
     fn get_owner(&self) -> Entity {
         self.source
     }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]

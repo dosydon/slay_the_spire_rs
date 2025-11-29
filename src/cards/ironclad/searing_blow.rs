@@ -148,9 +148,9 @@ mod tests {
         let result = battle.play_card(0, Entity::Enemy(0));
         assert!(result.is_ok());
 
-        // Verify damage dealt
+        // Verify damage dealt (damage should not go below 0)
         let final_enemy_hp = battle.get_enemies()[0].get_current_hp();
-        assert_eq!(final_enemy_hp, initial_enemy_hp - 12);
+        assert_eq!(final_enemy_hp, initial_enemy_hp.saturating_sub(12));
     }
 
     #[test]

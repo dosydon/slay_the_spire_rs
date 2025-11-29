@@ -80,7 +80,7 @@ mod tests {
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
         
         // Draw hand (manually add to hand for testing)
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
         
         // Record initial HP of all enemies
         let initial_enemy1_hp = battle.get_enemies()[0].battle_info.get_hp();
@@ -148,7 +148,7 @@ mod tests {
         battle.eval_base_effect(&strength_effect);
         assert_eq!(battle.get_player().battle_info.get_strength(), 3);
         
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
         
         let initial_enemy1_hp = battle.get_enemies()[0].battle_info.get_hp();
         let initial_enemy2_hp = battle.get_enemies()[1].battle_info.get_hp();
@@ -202,7 +202,7 @@ mod tests {
         assert!(battle.get_enemies()[0].battle_info.is_vulnerable());
         assert!(battle.get_enemies()[1].battle_info.is_vulnerable());
         
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
         
         let initial_enemy1_hp = battle.get_enemies()[0].battle_info.get_hp();
         let initial_enemy2_hp = battle.get_enemies()[1].battle_info.get_hp();
@@ -261,7 +261,7 @@ mod tests {
         battle.eval_base_effect(&kill_effect);
         assert!(!battle.get_enemies()[1].battle_info.is_alive());
         
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
         
         let initial_enemy1_hp = battle.get_enemies()[0].battle_info.get_hp();
         let initial_enemy3_hp = battle.get_enemies()[2].battle_info.get_hp();

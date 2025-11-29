@@ -184,6 +184,10 @@ impl EventListener for CurlUpListener {
     fn get_owner(&self) -> Entity {
         self.owner
     }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]
@@ -619,7 +623,7 @@ mod tests {
         battle.at_end_of_enemy_turn();
         
         // End of turn 1 - start new player turn
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
         
         println!("End of Turn 1 - Player HP: {}, Enemy HP: {}, Enemy Strength: {}", 
             battle.get_player().battle_info.get_hp(), 

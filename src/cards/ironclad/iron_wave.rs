@@ -101,7 +101,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
 
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         let initial_player_block = battle.get_player().battle_info.get_block();
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
@@ -137,7 +137,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
 
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         let initial_player_block = battle.get_player().battle_info.get_block();
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();

@@ -40,6 +40,9 @@ pub enum Effect {
     LoseStrengthSelf (u32), // Self strength loss (targets source)
     LoseStrengthTarget (u32), // Target strength loss (targets target)
     LoseStrengthAtEndOfTurn (u32),
+    GainDexterity { amount: u32 },
+    LoseDexteritySelf (u32), // Self dexterity loss (targets source)
+    LoseDexterityTarget (u32), // Target dexterity loss (targets target)
     GainRitual (u32),
     AddSlimed (u32),
     AddCardToDrawPile (CardEnum),
@@ -97,6 +100,9 @@ pub enum Effect {
     ExhaustNonAttacksInHand, // Exhaust all non-Attack cards in hand
     GainStrengthIfEnemyAttacking { amount: u32 }, // Gain strength if enemy is attacking
     ActivateSentinel { energy_on_exhaust: u32 }, // Activates Sentinel listener for gaining energy when this card is exhausted
+    WakeLagavulin { enemy_index: usize }, // Wake up Lagavulin from sleep state (transitions to stunned)
+    TransitionLagavulinStunnedToAwake { enemy_index: usize }, // Transition Lagavulin from Stunned to Awake at start of turn
+    RemoveMetallicize { enemy_index: usize }, // Remove Metallicize power from an enemy (used when Lagavulin wakes)
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -159,6 +165,18 @@ pub enum BaseEffect {
     },
     LoseStrengthAtEndOfTurn {
         source: Entity,
+        amount: u32,
+    },
+    GainDexterity {
+        source: Entity,
+        amount: u32,
+    },
+    LoseDexteritySelf {
+        source: Entity,
+        amount: u32,
+    },
+    LoseDexterityTarget {
+        target: Entity,
         amount: u32,
     },
     GainRitual {
@@ -339,6 +357,15 @@ pub enum BaseEffect {
     AttackAllEnemiesForCurrentEnergy {
         amount_per_hit: u32,
     },
+    WakeLagavulin {
+        enemy_index: usize,
+    },
+    TransitionLagavulinStunnedToAwake {
+        enemy_index: usize,
+    },
+    RemoveMetallicize {
+        enemy_index: usize,
+    },
 }
 
 impl BaseEffect {
@@ -362,6 +389,9 @@ impl BaseEffect {
             Effect::LoseStrengthSelf(amount) => BaseEffect::LoseStrengthSelf { source, amount },
             Effect::LoseStrengthTarget(amount) => BaseEffect::LoseStrengthTarget { target, amount },
             Effect::LoseStrengthAtEndOfTurn(amount) => BaseEffect::LoseStrengthAtEndOfTurn { source, amount },
+            Effect::GainDexterity { amount } => BaseEffect::GainDexterity { source, amount },
+            Effect::LoseDexteritySelf(amount) => BaseEffect::LoseDexteritySelf { source, amount },
+            Effect::LoseDexterityTarget(amount) => BaseEffect::LoseDexterityTarget { target, amount },
             Effect::GainRitual(amount) => BaseEffect::GainRitual { source, amount },
             Effect::AddSlimed(count) => BaseEffect::AddSlimed { target, count },
             Effect::AddCardToDrawPile(card) => BaseEffect::AddCardToDrawPile { source, card },
@@ -425,6 +455,9 @@ impl BaseEffect {
             Effect::GainEnergyIfNoBlock { amount } => BaseEffect::GainEnergy { source, amount },
             Effect::ExhaustNonAttacksInHand => BaseEffect::ExhaustNonAttackCardsFromHand { block_per_card: 0 },
             Effect::GainStrengthIfEnemyAttacking { amount } => BaseEffect::GainStrength { source, amount },
+            Effect::WakeLagavulin { enemy_index } => BaseEffect::WakeLagavulin { enemy_index },
+            Effect::TransitionLagavulinStunnedToAwake { enemy_index } => BaseEffect::TransitionLagavulinStunnedToAwake { enemy_index },
+            Effect::RemoveMetallicize { enemy_index } => BaseEffect::RemoveMetallicize { enemy_index },
         }
     }
 }

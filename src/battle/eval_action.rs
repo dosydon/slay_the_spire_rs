@@ -82,14 +82,14 @@ impl Battle {
                 self.play_card(idx, target)?;
             }
             Action::EndTurn => {
-                let global_info = self.global_info;
                 self.at_end_of_player_turn();
 
                 self.at_start_of_enemy_turn();
-                self.process_enemy_effects(rng, &global_info);
+                let global_info_clone = self.global_info.clone();
+                self.process_enemy_effects(rng, &global_info_clone);
                 self.at_end_of_enemy_turn();
 
-                self.start_of_player_turn(rng);
+                self.at_start_of_player_turn(rng);
             }
             Action::SelectCardInHand(card_index) => {
                 if card_index >= self.cards.hand_size() {

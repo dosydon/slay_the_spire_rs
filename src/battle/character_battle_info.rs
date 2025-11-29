@@ -5,7 +5,8 @@ pub struct CharacterBattleInfo {
     pub block: u32,
     pub energy: u32,
     pub vulnerable_turns: u32,
-    pub strength: u32,
+    pub strength: i32,
+    pub dexterity: i32,
     pub weak_turns: u32,
     pub frail_turns: u32,
     pub ritual: u32,
@@ -22,6 +23,7 @@ impl CharacterBattleInfo {
             energy,
             vulnerable_turns: 0,
             strength: 0,
+            dexterity: 0,
             weak_turns: 0,
             frail_turns: 0,
             ritual: 0,
@@ -37,6 +39,7 @@ impl CharacterBattleInfo {
             energy: 0, // Enemies don't use energy
             vulnerable_turns: 0,
             strength: 0,
+            dexterity: 0,
             weak_turns: 0,
             frail_turns: 0,
             ritual: 0,
@@ -64,11 +67,14 @@ impl CharacterBattleInfo {
 
     /// Gain block (defense)
     pub fn gain_block(&mut self, amount: u32) {
+        // Add dexterity bonus to block amount
+        let amount_with_dexterity = (amount as i32 + self.dexterity).max(0) as u32;
+
         let actual_amount = if self.frail_turns > 0 {
             // Frail reduces block gain by 25%
-            (amount as f32 * 0.75) as u32
+            (amount_with_dexterity as f32 * 0.75) as u32
         } else {
-            amount
+            amount_with_dexterity
         };
         self.block += actual_amount;
     }
@@ -191,17 +197,42 @@ impl CharacterBattleInfo {
 
     /// Gain strength
     pub fn gain_strength(&mut self, amount: u32) {
-        self.strength += amount;
+        self.strength += amount as i32;
     }
 
     /// Get strength
-    pub fn get_strength(&self) -> u32 {
+    pub fn get_strength(&self) -> i32 {
         self.strength
     }
 
     /// Set strength to a specific value
     pub fn set_strength(&mut self, amount: u32) {
-        self.strength = amount;
+        self.strength = amount as i32;
+    }
+
+    /// Lose strength (now allows negative values)
+    pub fn lose_strength(&mut self, amount: u32) {
+        self.strength -= amount as i32;
+    }
+
+    /// Gain dexterity
+    pub fn gain_dexterity(&mut self, amount: u32) {
+        self.dexterity += amount as i32;
+    }
+
+    /// Get dexterity
+    pub fn get_dexterity(&self) -> i32 {
+        self.dexterity
+    }
+
+    /// Set dexterity to a specific value
+    pub fn set_dexterity(&mut self, amount: u32) {
+        self.dexterity = amount as i32;
+    }
+
+    /// Lose dexterity (now allows negative values)
+    pub fn lose_dexterity(&mut self, amount: u32) {
+        self.dexterity -= amount as i32;
     }
 
     #[allow(dead_code)]
@@ -212,7 +243,8 @@ impl CharacterBattleInfo {
 
     /// Calculate damage output with custom strength multiplier and weak penalty
     pub(crate) fn calculate_damage_with_multiplier(&self, base_damage: u32, strength_multiplier: u32) -> u32 {
-        let damage_with_strength = base_damage + (self.strength * strength_multiplier);
+        let strength_bonus = self.strength * strength_multiplier as i32;
+        let damage_with_strength = (base_damage as i32 + strength_bonus).max(0) as u32;
 
         // Apply weak penalty (25% less damage)
         if self.weak_turns > 0 {
@@ -412,6 +444,46 @@ mod tests {
         character.gain_strength(2);
         assert_eq!(character.get_strength(), 5);
         assert_eq!(character.calculate_damage(8), 13);
+    }
+
+    #[test]
+    fn test_dexterity_mechanics() {
+        let mut character = CharacterBattleInfo::new(50, 50, 3);
+        assert_eq!(character.get_dexterity(), 0);
+
+        // Gain dexterity
+        character.gain_dexterity(3);
+        assert_eq!(character.get_dexterity(), 3);
+
+        // Test block calculation with dexterity
+        character.gain_block(5); // 5 base + 3 dexterity = 8 block
+        assert_eq!(character.get_block(), 8);
+
+        // Lose dexterity
+        character.lose_dexterity(1);
+        assert_eq!(character.get_dexterity(), 2);
+
+        // Reset block
+        character.block = 0;
+
+        // Test block with new dexterity
+        character.gain_block(5); // 5 base + 2 dexterity = 7 block
+        assert_eq!(character.get_block(), 7);
+    }
+
+    #[test]
+    fn test_dexterity_negative_values() {
+        let mut character = CharacterBattleInfo::new(50, 50, 3);
+        character.gain_dexterity(2);
+        assert_eq!(character.get_dexterity(), 2);
+
+        // Try to lose more dexterity than we have
+        character.lose_dexterity(5);
+        assert_eq!(character.get_dexterity(), -3); // Should allow negative values
+
+        // Verify block with negative dexterity (should reduce block gain)
+        character.gain_block(5); // 5 base + (-3) dexterity = 2 block
+        assert_eq!(character.get_block(), 2);
     }
 
     #[test]

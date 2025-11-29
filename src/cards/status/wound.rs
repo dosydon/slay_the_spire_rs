@@ -31,7 +31,7 @@ mod tests {
         let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
 
         // Draw the wound card into hand
-        battle.start_of_player_turn(&mut rng);
+        battle.at_start_of_player_turn(&mut rng);
 
         // Try to play the wound card - it should be in hand at index 0
         let action = Action::PlayCard(0, Entity::Player);

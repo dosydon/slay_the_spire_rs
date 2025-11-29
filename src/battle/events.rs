@@ -1,4 +1,5 @@
 use crate::{battle::target::Entity, game::effect::Effect};
+use std::any::Any;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BattleEvent {
@@ -25,8 +26,9 @@ pub enum BattleEvent {
         source: Entity,
         amount: u32,
     },
-    TurnStart {
-        entity: Entity,
+    StartOfPlayerTurn,
+    StartOfEnemyTurn {
+        enemy_index: usize,
     },
     EndOfTurn {
         entity: Entity,
@@ -43,8 +45,11 @@ pub enum BattleEvent {
     },
 }
 
-pub trait EventListener {
+pub trait EventListener: Any {
     fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect>;
     fn is_active(&self) -> bool;
     fn get_owner(&self) -> Entity;
+
+    /// Downcast to Any for dynamic type checking
+    fn as_any_mut(&mut self) -> &mut dyn Any;
 }

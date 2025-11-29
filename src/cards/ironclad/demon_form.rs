@@ -237,7 +237,7 @@ mod tests {
         assert_eq!(strength_after_play, 0);
 
         // Simulate turn start event to trigger Demon Form effect
-        let turn_start_event = crate::battle::events::BattleEvent::TurnStart { entity: crate::battle::target::Entity::Player };
+        let turn_start_event = crate::battle::events::BattleEvent::StartOfPlayerTurn;
         battle.emit_event(turn_start_event);
 
         // Now player should have gained 2 Strength from Demon Form
@@ -268,7 +268,7 @@ mod tests {
         assert_eq!(strength_after_play, 0);
 
         // Simulate turn start event to trigger Demon Form+ effect
-        let turn_start_event = crate::battle::events::BattleEvent::TurnStart { entity: crate::battle::target::Entity::Player };
+        let turn_start_event = crate::battle::events::BattleEvent::StartOfPlayerTurn;
         battle.emit_event(turn_start_event);
 
         // Now player should have gained 3 Strength from Demon Form+
@@ -294,7 +294,7 @@ mod tests {
         let result = battle.play_card(0, Entity::Player);
         assert!(result.is_ok());
 
-        let turn_start_event = crate::battle::events::BattleEvent::TurnStart { entity: crate::battle::target::Entity::Player };
+        let turn_start_event = crate::battle::events::BattleEvent::StartOfPlayerTurn;
 
         // Simulate multiple turn starts
         for turn in 1..=3 {
@@ -367,13 +367,9 @@ impl DemonFormListener {
 impl EventListener for DemonFormListener {
     fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
         match event {
-            BattleEvent::TurnStart { entity } if *entity == self.source => {
-                if self.source == Entity::Player {
-                    // Return a GainStrength effect to be processed
-                    vec![Effect::GainStrength { amount: self.strength_per_turn }]
-                } else {
-                    vec![]
-                }
+            BattleEvent::StartOfPlayerTurn if self.source == Entity::Player => {
+                // Return a GainStrength effect to be processed
+                vec![Effect::GainStrength { amount: self.strength_per_turn }]
             }
             _ => vec![]
         }
@@ -385,5 +381,9 @@ impl EventListener for DemonFormListener {
 
     fn get_owner(&self) -> Entity {
         self.source
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
     }
 }
