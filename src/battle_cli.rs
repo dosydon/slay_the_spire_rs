@@ -964,6 +964,9 @@ impl BattleCli {
                 crate::game::effect::Effect::RemoveMetallicize { .. } => {
                     // Internal effect, not displayed to user
                 }
+                crate::game::effect::Effect::GainArtifact { amount } => {
+                    parts.push(format!("Gain {} Artifact", amount));
+                }
             }
         }
         

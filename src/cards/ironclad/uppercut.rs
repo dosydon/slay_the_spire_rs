@@ -180,4 +180,101 @@ mod tests {
         assert_eq!(enemy1_final_weak, enemy1_initial_weak); // No status effect
         assert_eq!(enemy2_final_weak, enemy2_initial_weak + 1); // 1 Weak applied
     }
+
+    #[test]
+    fn test_uppercut_with_artifact() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::enemies::enemy_enum::EnemyEnum;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::GremlinNob(GremlinNob::new(60)))];
+
+        // Create battle with Uppercut in hand
+        let deck = Deck::new(vec![uppercut()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Give enemy 2 Artifact charges
+        battle.get_enemies_mut()[0].battle_info.gain_artifact(2);
+
+        let enemy_initial_hp = battle.get_enemies()[0].get_current_hp();
+        let enemy_initial_artifact = battle.get_enemies()[0].battle_info.get_artifact();
+        let enemy_initial_weak = battle.get_enemies()[0].get_weak();
+        let enemy_initial_vulnerable = battle.get_enemies()[0].get_vulnerable();
+
+        // Verify enemy has 2 Artifact charges
+        assert_eq!(enemy_initial_artifact, 2);
+
+        // Play Uppercut targeting the enemy
+        let uppercut_idx = 0;
+        let result = battle.play_card(uppercut_idx, Entity::Enemy(0));
+        assert!(result.is_ok());
+
+        // Verify enemy took 13 damage (Artifact doesn't block damage)
+        let enemy_final_hp = battle.get_enemies()[0].get_current_hp();
+        assert_eq!(enemy_final_hp, enemy_initial_hp.saturating_sub(13));
+
+        // Verify enemy consumed 2 Artifact charges (one for Weak, one for Vulnerable)
+        let enemy_final_artifact = battle.get_enemies()[0].battle_info.get_artifact();
+        assert_eq!(enemy_final_artifact, 0);
+
+        // Verify enemy has NO Weak or Vulnerable (blocked by Artifact)
+        let enemy_final_weak = battle.get_enemies()[0].get_weak();
+        let enemy_final_vulnerable = battle.get_enemies()[0].get_vulnerable();
+        assert_eq!(enemy_final_weak, enemy_initial_weak);
+        assert_eq!(enemy_final_vulnerable, enemy_initial_vulnerable);
+    }
+
+    #[test]
+    fn test_uppercut_with_partial_artifact() {
+        use crate::battle::Battle;
+        use crate::battle::target::Entity;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::game::deck::Deck;
+        use crate::game::global_info::GlobalInfo;
+        use crate::enemies::enemy_enum::EnemyEnum;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::GremlinNob(GremlinNob::new(60)))];
+
+        // Create battle with Uppercut in hand
+        let deck = Deck::new(vec![uppercut()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Give enemy only 1 Artifact charge (not enough to block both debuffs)
+        battle.get_enemies_mut()[0].battle_info.gain_artifact(1);
+
+        let enemy_initial_hp = battle.get_enemies()[0].get_current_hp();
+        let enemy_initial_artifact = battle.get_enemies()[0].battle_info.get_artifact();
+        let enemy_initial_weak = battle.get_enemies()[0].get_weak();
+        let enemy_initial_vulnerable = battle.get_enemies()[0].get_vulnerable();
+
+        // Verify enemy has 1 Artifact charge
+        assert_eq!(enemy_initial_artifact, 1);
+
+        // Play Uppercut targeting the enemy
+        let uppercut_idx = 0;
+        let result = battle.play_card(uppercut_idx, Entity::Enemy(0));
+        assert!(result.is_ok());
+
+        // Verify enemy took 13 damage
+        let enemy_final_hp = battle.get_enemies()[0].get_current_hp();
+        assert_eq!(enemy_final_hp, enemy_initial_hp.saturating_sub(13));
+
+        // Verify enemy consumed the 1 Artifact charge
+        let enemy_final_artifact = battle.get_enemies()[0].battle_info.get_artifact();
+        assert_eq!(enemy_final_artifact, 0);
+
+        // Verify enemy has one debuff blocked and one applied
+        // The first debuff (Weak) is blocked by Artifact, the second (Vulnerable) is applied
+        let enemy_final_weak = battle.get_enemies()[0].get_weak();
+        let enemy_final_vulnerable = battle.get_enemies()[0].get_vulnerable();
+        assert_eq!(enemy_final_weak, enemy_initial_weak); // Blocked by Artifact
+        assert_eq!(enemy_final_vulnerable, enemy_initial_vulnerable + 1); // Applied
+    }
 }

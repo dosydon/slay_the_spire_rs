@@ -11,6 +11,7 @@ pub struct CharacterBattleInfo {
     pub frail_turns: u32,
     pub ritual: u32,
     pub rampage_damage: u32,
+    pub artifact: u32,  // Number of artifact charges (blocks debuffs)
     // Additional status effects can be added here
 }
 
@@ -28,6 +29,7 @@ impl CharacterBattleInfo {
             frail_turns: 0,
             ritual: 0,
             rampage_damage: 0,
+            artifact: 0,
         }
     }
 
@@ -44,6 +46,7 @@ impl CharacterBattleInfo {
             frail_turns: 0,
             ritual: 0,
             rampage_damage: 0,
+            artifact: 0,
         }
     }
 
@@ -233,6 +236,31 @@ impl CharacterBattleInfo {
     /// Lose dexterity (now allows negative values)
     pub fn lose_dexterity(&mut self, amount: u32) {
         self.dexterity -= amount as i32;
+    }
+
+    /// Gain artifact (prevents debuffs)
+    pub fn gain_artifact(&mut self, amount: u32) {
+        self.artifact += amount;
+    }
+
+    /// Get artifact charges
+    pub fn get_artifact(&self) -> u32 {
+        self.artifact
+    }
+
+    /// Check if has artifact
+    pub fn has_artifact(&self) -> bool {
+        self.artifact > 0
+    }
+
+    /// Consume one artifact charge (returns true if consumed, false if none available)
+    pub fn consume_artifact(&mut self) -> bool {
+        if self.artifact > 0 {
+            self.artifact -= 1;
+            true
+        } else {
+            false
+        }
     }
 
     #[allow(dead_code)]

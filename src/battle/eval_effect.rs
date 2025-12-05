@@ -47,10 +47,16 @@ impl Battle {
             },
             BaseEffect::ApplyVulnerable { target, duration } => {
                 match target {
-                    Entity::Player => self.player.battle_info.apply_vulnerable(*duration),
+                    Entity::Player => {
+                        if !self.player.battle_info.consume_artifact() {
+                            self.player.battle_info.apply_vulnerable(*duration);
+                        }
+                    },
                     Entity::Enemy(idx) => {
                         if *idx < self.enemies.len() {
-                            self.enemies[*idx].battle_info.apply_vulnerable(*duration);
+                            if !self.enemies[*idx].battle_info.consume_artifact() {
+                                self.enemies[*idx].battle_info.apply_vulnerable(*duration);
+                            }
                         }
                     },
                     Entity::None => {} // No target
@@ -60,16 +66,24 @@ impl Battle {
                 // Apply vulnerable to all enemies
                 for enemy_idx in 0..self.enemies.len() {
                     if self.enemies[enemy_idx].battle_info.is_alive() {
-                        self.enemies[enemy_idx].battle_info.apply_vulnerable(*duration);
+                        if !self.enemies[enemy_idx].battle_info.consume_artifact() {
+                            self.enemies[enemy_idx].battle_info.apply_vulnerable(*duration);
+                        }
                     }
                 }
             },
             BaseEffect::ApplyWeak { target, duration } => {
                 match target {
-                    Entity::Player => self.player.battle_info.apply_weak(*duration),
+                    Entity::Player => {
+                        if !self.player.battle_info.consume_artifact() {
+                            self.player.battle_info.apply_weak(*duration);
+                        }
+                    },
                     Entity::Enemy(idx) => {
                         if *idx < self.enemies.len() {
-                            self.enemies[*idx].battle_info.apply_weak(*duration);
+                            if !self.enemies[*idx].battle_info.consume_artifact() {
+                                self.enemies[*idx].battle_info.apply_weak(*duration);
+                            }
                         }
                     },
                     Entity::None => {} // No target
@@ -182,11 +196,15 @@ impl Battle {
             BaseEffect::ApplyFrail { target, duration } => {
                 match target {
                     Entity::Player => {
-                        self.player.battle_info.apply_frail(*duration);
+                        if !self.player.battle_info.consume_artifact() {
+                            self.player.battle_info.apply_frail(*duration);
+                        }
                     },
                     Entity::Enemy(idx) => {
                         if *idx < self.enemies.len() {
-                            self.enemies[*idx].battle_info.apply_frail(*duration);
+                            if !self.enemies[*idx].battle_info.consume_artifact() {
+                                self.enemies[*idx].battle_info.apply_frail(*duration);
+                            }
                         }
                     },
                     Entity::None => {} // No target
@@ -454,7 +472,9 @@ impl Battle {
             BaseEffect::ApplyWeakAll { duration } => {
                 // Apply Weak to all enemies
                 for enemy in &mut self.enemies {
-                    enemy.battle_info.apply_weak(*duration);
+                    if !enemy.battle_info.consume_artifact() {
+                        enemy.battle_info.apply_weak(*duration);
+                    }
                 }
             },
             BaseEffect::Ethereal { hand_index: _ } => {
@@ -748,6 +768,18 @@ impl Battle {
                             metallicize.deactivate();
                         }
                     }
+                }
+            },
+            BaseEffect::GainArtifact { source, amount } => {
+                // Gain artifact charges (prevents debuffs)
+                match source {
+                    Entity::Player => self.player.battle_info.gain_artifact(*amount),
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            self.enemies[*idx].battle_info.gain_artifact(*amount);
+                        }
+                    },
+                    Entity::None => {} // No source
                 }
             },
             BaseEffect::AddCardToHand { source: _, card } => {
@@ -1094,6 +1126,143 @@ mod tests {
             assert_eq!(card.get_cost(), 1);
             assert_eq!(card.get_card_type(), &CardType::Status);
         }
+    }
+
+    #[test]
+    fn test_artifact_blocks_vulnerable() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Give player 1 artifact
+        battle.player.battle_info.gain_artifact(1);
+        assert_eq!(battle.player.battle_info.get_artifact(), 1);
+
+        // Try to apply vulnerable to player
+        let vulnerable_effect = BaseEffect::ApplyVulnerable { target: Entity::Player, duration: 2 };
+        battle.eval_base_effect(&vulnerable_effect);
+
+        // Artifact should block vulnerable and be consumed
+        assert!(!battle.player.battle_info.is_vulnerable());
+        assert_eq!(battle.player.battle_info.get_vulnerable_turns(), 0);
+        assert_eq!(battle.player.battle_info.get_artifact(), 0); // Artifact consumed
+    }
+
+    #[test]
+    fn test_artifact_blocks_weak() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Give player 2 artifact charges
+        battle.player.battle_info.gain_artifact(2);
+        assert_eq!(battle.player.battle_info.get_artifact(), 2);
+
+        // Try to apply weak to player
+        let weak_effect = BaseEffect::ApplyWeak { target: Entity::Player, duration: 3 };
+        battle.eval_base_effect(&weak_effect);
+
+        // Artifact should block weak and consume 1 charge
+        assert!(!battle.player.battle_info.is_weak());
+        assert_eq!(battle.player.battle_info.get_weak_turns(), 0);
+        assert_eq!(battle.player.battle_info.get_artifact(), 1); // 1 charge remaining
+
+        // Try again - should block again
+        battle.eval_base_effect(&weak_effect);
+        assert!(!battle.player.battle_info.is_weak());
+        assert_eq!(battle.player.battle_info.get_artifact(), 0); // All charges consumed
+    }
+
+    #[test]
+    fn test_artifact_blocks_frail() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Give player artifact
+        battle.player.battle_info.gain_artifact(1);
+
+        // Try to apply frail to player
+        let frail_effect = BaseEffect::ApplyFrail { target: Entity::Player, duration: 2 };
+        battle.eval_base_effect(&frail_effect);
+
+        // Artifact should block frail
+        assert!(!battle.player.battle_info.is_frail());
+        assert_eq!(battle.player.battle_info.get_frail_turns(), 0);
+        assert_eq!(battle.player.battle_info.get_artifact(), 0);
+    }
+
+    #[test]
+    fn test_artifact_on_enemy() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Give enemy artifact
+        battle.enemies[0].battle_info.gain_artifact(1);
+        assert_eq!(battle.enemies[0].battle_info.get_artifact(), 1);
+
+        // Try to apply vulnerable to enemy
+        let vulnerable_effect = BaseEffect::ApplyVulnerable { target: Entity::Enemy(0), duration: 2 };
+        battle.eval_base_effect(&vulnerable_effect);
+
+        // Artifact should block vulnerable
+        assert!(!battle.enemies[0].battle_info.is_vulnerable());
+        assert_eq!(battle.enemies[0].battle_info.get_artifact(), 0);
+    }
+
+    #[test]
+    fn test_debuff_works_without_artifact() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // No artifact - debuff should apply normally
+        let vulnerable_effect = BaseEffect::ApplyVulnerable { target: Entity::Player, duration: 2 };
+        battle.eval_base_effect(&vulnerable_effect);
+
+        // Should be vulnerable
+        assert!(battle.player.battle_info.is_vulnerable());
+        assert_eq!(battle.player.battle_info.get_vulnerable_turns(), 2);
+    }
+
+    #[test]
+    fn test_gain_artifact_effect() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Player starts with no artifact
+        assert_eq!(battle.player.battle_info.get_artifact(), 0);
+
+        // Apply GainArtifact effect
+        let artifact_effect = BaseEffect::GainArtifact { source: Entity::Player, amount: 3 };
+        battle.eval_base_effect(&artifact_effect);
+
+        // Should have 3 artifact charges
+        assert_eq!(battle.player.battle_info.get_artifact(), 3);
+
+        // Apply another
+        battle.eval_base_effect(&artifact_effect);
+        assert_eq!(battle.player.battle_info.get_artifact(), 6);
     }
 }
 

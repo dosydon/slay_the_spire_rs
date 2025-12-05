@@ -103,6 +103,7 @@ pub enum Effect {
     WakeLagavulin { enemy_index: usize }, // Wake up Lagavulin from sleep state (transitions to stunned)
     TransitionLagavulinStunnedToAwake { enemy_index: usize }, // Transition Lagavulin from Stunned to Awake at start of turn
     RemoveMetallicize { enemy_index: usize }, // Remove Metallicize power from an enemy (used when Lagavulin wakes)
+    GainArtifact { amount: u32 }, // Gain artifact charges (prevents debuffs)
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -366,6 +367,10 @@ pub enum BaseEffect {
     RemoveMetallicize {
         enemy_index: usize,
     },
+    GainArtifact {
+        source: Entity,
+        amount: u32,
+    },
 }
 
 impl BaseEffect {
@@ -458,6 +463,7 @@ impl BaseEffect {
             Effect::WakeLagavulin { enemy_index } => BaseEffect::WakeLagavulin { enemy_index },
             Effect::TransitionLagavulinStunnedToAwake { enemy_index } => BaseEffect::TransitionLagavulinStunnedToAwake { enemy_index },
             Effect::RemoveMetallicize { enemy_index } => BaseEffect::RemoveMetallicize { enemy_index },
+            Effect::GainArtifact { amount } => BaseEffect::GainArtifact { source, amount },
         }
     }
 }
