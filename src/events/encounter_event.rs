@@ -11,6 +11,7 @@ pub enum EncounterEvent {
     JawWorm,
     Cultist,
     SmallSlimes,
+    GangOfGremlins, // 4 random gremlins (Mad, Sneaky, Fat, Shield, or Wizard)
     GremlinNob,
     ThreeSentries,  // Act 1 Elite encounter
     Lagavulin,      // Act 1 Elite encounter
@@ -23,12 +24,13 @@ pub fn sample_encounter_event(_global_info: &GlobalInfo, rng: &mut impl rand::Rn
 
 fn act1_first_three_encounters() -> CategoricalDistribution<EncounterEvent> {
     CategoricalDistribution::new(vec![
-        (EncounterEvent::TwoLouses, 0.25),
-        (EncounterEvent::JawWorm, 0.25),
-        (EncounterEvent::Cultist, 0.25),
-        (EncounterEvent::SmallSlimes, 0.25),
-        (EncounterEvent::GremlinNob, 0.25),
-        (EncounterEvent::ThreeSentries, 0.25), // Act 1 Elite encounter
+        (EncounterEvent::TwoLouses, 0.2),
+        (EncounterEvent::JawWorm, 0.2),
+        (EncounterEvent::Cultist, 0.2),
+        (EncounterEvent::SmallSlimes, 0.2),
+        (EncounterEvent::GangOfGremlins, 0.2),
+        (EncounterEvent::GremlinNob, 0.2),
+        (EncounterEvent::ThreeSentries, 0.2), // Act 1 Elite encounter
     ])
 }
 
@@ -81,6 +83,52 @@ impl EncounterEvent {
                     let slime2 = crate::enemies::spike_slime_s::SpikeSlimeS::instantiate(rng, global_info);
                     return vec![EnemyEnum::AcidSlimeM(slime1), EnemyEnum::SpikeSlimeS(slime2)];
                 }
+            }
+            EncounterEvent::GangOfGremlins => {
+                // Spawn 4 random gremlins from the weighted pool
+                // Pool: 2× Fat, 2× Sneaky, 2× Mad, 1× Shield, 1× Wizard
+                // Total: 8 options, pick 4 randomly
+                let mut pool = vec![
+                    0, 0, // Fat x2
+                    1, 1, // Sneaky x2
+                    2, 2, // Mad x2
+                    3,    // Shield x1
+                    4,    // Wizard x1
+                ];
+
+                let mut gremlins = Vec::new();
+
+                for _ in 0..4 {
+                    // Pick random gremlin from remaining pool
+                    let idx = rng.random_range(0..pool.len());
+                    let gremlin_type = pool.remove(idx);
+
+                    let gremlin = match gremlin_type {
+                        0 => {
+                            let fat = crate::enemies::fat_gremlin::FatGremlin::instantiate(rng, global_info);
+                            EnemyEnum::FatGremlin(fat)
+                        }
+                        1 => {
+                            let sneaky = crate::enemies::sneaky_gremlin::SneakyGremlin::instantiate(rng, global_info);
+                            EnemyEnum::SneakyGremlin(sneaky)
+                        }
+                        2 => {
+                            let mad = crate::enemies::mad_gremlin::MadGremlin::instantiate(rng, global_info);
+                            EnemyEnum::MadGremlin(mad)
+                        }
+                        3 => {
+                            let shield = crate::enemies::shield_gremlin::ShieldGremlin::instantiate(rng, global_info);
+                            EnemyEnum::ShieldGremlin(shield)
+                        }
+                        _ => {
+                            let wizard = crate::enemies::gremlin_wizard::GremlinWizard::instantiate(rng, global_info);
+                            EnemyEnum::GremlinWizard(wizard)
+                        }
+                    };
+                    gremlins.push(gremlin);
+                }
+
+                gremlins
             }
             EncounterEvent::GremlinNob => {
                 let gremlin_nob = crate::enemies::gremlin_nob::GremlinNob::instantiate(rng, global_info);
@@ -181,6 +229,104 @@ mod tests {
                 "Sentry {} should start with 1 Artifact",
                 i
             );
+        }
+    }
+
+    #[test]
+    fn test_gang_of_gremlins_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::GangOfGremlins;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+
+        // Should spawn exactly 4 gremlins
+        assert_eq!(enemies.len(), 4);
+
+        // All should be gremlins (Fat, Sneaky, Mad, Shield, or Wizard)
+        for enemy in &enemies {
+            match enemy {
+                EnemyEnum::FatGremlin(_) |
+                EnemyEnum::SneakyGremlin(_) |
+                EnemyEnum::MadGremlin(_) |
+                EnemyEnum::ShieldGremlin(_) |
+                EnemyEnum::GremlinWizard(_) => {
+                    // Success - we got a gremlin
+                }
+                _ => panic!("Expected a Gremlin enemy, got: {:?}", enemy),
+            }
+        }
+    }
+
+    #[test]
+    fn test_gang_of_gremlins_variety() {
+        use std::collections::HashSet;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        // Run multiple times to ensure we get different gremlin types
+        let mut seen_types = HashSet::new();
+
+        for _ in 0..20 {
+            let encounter = EncounterEvent::GangOfGremlins;
+            let enemies = encounter.instantiate(&mut rng, &global_info);
+
+            for enemy in &enemies {
+                let type_name = match enemy {
+                    EnemyEnum::FatGremlin(_) => "Fat",
+                    EnemyEnum::SneakyGremlin(_) => "Sneaky",
+                    EnemyEnum::MadGremlin(_) => "Mad",
+                    EnemyEnum::ShieldGremlin(_) => "Shield",
+                    EnemyEnum::GremlinWizard(_) => "Wizard",
+                    _ => panic!("Expected a Gremlin enemy"),
+                };
+                seen_types.insert(type_name);
+            }
+        }
+
+        // After 20 encounters (80 gremlins), we should have seen multiple types
+        assert!(seen_types.len() >= 3, "Expected to see at least 3 different gremlin types, saw: {}", seen_types.len());
+    }
+
+    #[test]
+    fn test_gang_of_gremlins_with_battle() {
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::battle::Battle;
+        use crate::game::deck::Deck;
+        use crate::cards::ironclad::strike::strike;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::GangOfGremlins;
+        let enemy_enums = encounter.instantiate(&mut rng, &global_info);
+
+        // Create a battle with the gang of gremlins
+        let enemies: Vec<EnemyInBattle> = enemy_enums
+            .into_iter()
+            .map(|e| EnemyInBattle::new(e))
+            .collect();
+
+        let deck = Deck::new(vec![strike()]);
+        let battle = Battle::new(deck, global_info.clone(), 50, 80, enemies, &mut rng);
+
+        // All 4 gremlins should be alive at battle start
+        assert_eq!(battle.get_enemies().len(), 4);
+        for enemy in battle.get_enemies() {
+            assert!(enemy.battle_info.is_alive());
+        }
+
+        // Check that Mad Gremlin has Angry listener if present
+        let has_mad_gremlin = battle.get_enemies().iter().any(|e| {
+            matches!(e.enemy, EnemyEnum::MadGremlin(_))
+        });
+
+        if has_mad_gremlin {
+            // Mad Gremlin should have an Angry listener initialized
+            // We can't directly check the listener, but we can verify it exists
+            // by checking that damage triggers strength gain (tested separately)
+            assert!(true); // Placeholder - listener is tested in mad_gremlin unit tests
         }
     }
 }

@@ -221,10 +221,11 @@ impl BattleCli {
         println!("2. Jaw Worm (single tough enemy)");
         println!("3. Cultist (ritual caster)");
         println!("4. Small Slimes (mixed slime encounter)");
-        println!("5. Gremlin Nob (elite with enrage)");
-        println!("6. Three Sentries (elite - 3 sentries with alternating moves)");
-        println!("7. Lagavulin (elite - sleeps then attacks)");
-        print!("Enter your choice (1-7): ");
+        println!("5. Gang of Gremlins (4 random gremlins - includes Wizard!)");
+        println!("6. Gremlin Nob (elite with enrage)");
+        println!("7. Three Sentries (elite - 3 sentries with alternating moves)");
+        println!("8. Lagavulin (elite - sleeps then attacks)");
+        print!("Enter your choice (1-8): ");
         io::stdout().flush().unwrap();
 
         let mut input = String::new();
@@ -235,9 +236,10 @@ impl BattleCli {
             "2" => EncounterEvent::JawWorm,
             "3" => EncounterEvent::Cultist,
             "4" => EncounterEvent::SmallSlimes,
-            "5" => EncounterEvent::GremlinNob,
-            "6" => EncounterEvent::ThreeSentries,
-            "7" => EncounterEvent::Lagavulin,
+            "5" => EncounterEvent::GangOfGremlins,
+            "6" => EncounterEvent::GremlinNob,
+            "7" => EncounterEvent::ThreeSentries,
+            "8" => EncounterEvent::Lagavulin,
             _ => {
                 println!("Invalid choice, defaulting to Two Louses");
                 EncounterEvent::TwoLouses
