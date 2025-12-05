@@ -335,6 +335,9 @@ impl BattleCli {
         if player.battle_info.get_strength() != 0 {
             println!("   💪 Strength: {}", player.battle_info.get_strength());
         }
+        if player.battle_info.get_artifact() > 0 {
+            println!("   ✨ Artifact: {} charges", player.battle_info.get_artifact());
+        }
         if player.battle_info.is_vulnerable() {
             println!("   🔻 Vulnerable: {} turns", player.battle_info.get_vulnerable_turns());
         }
@@ -361,6 +364,11 @@ impl BattleCli {
                 EnemyEnum::GremlinNob(_) => "Gremlin Nob",
                 EnemyEnum::Lagavulin(_) => "Lagavulin",
                 EnemyEnum::Sentry(_) => "Sentry",
+                EnemyEnum::FatGremlin(_) => "Fat Gremlin",
+                EnemyEnum::SneakyGremlin(_) => "Sneaky Gremlin",
+                EnemyEnum::MadGremlin(_) => "Mad Gremlin",
+                EnemyEnum::ShieldGremlin(_) => "Shield Gremlin",
+                EnemyEnum::GremlinWizard(_) => "Gremlin Wizard",
             };
             
             if enemy.battle_info.is_alive() {
@@ -380,6 +388,9 @@ impl BattleCli {
                 
                 if enemy.battle_info.get_strength() != 0 {
                     println!("   💪 Strength: {}", enemy.battle_info.get_strength());
+                }
+                if enemy.battle_info.get_artifact() > 0 {
+                    println!("   ✨ Artifact: {} charges", enemy.battle_info.get_artifact());
                 }
                 if enemy.battle_info.is_vulnerable() {
                     println!("   🔻 Vulnerable: {} turns", enemy.battle_info.get_vulnerable_turns());
@@ -479,6 +490,11 @@ impl BattleCli {
                                 EnemyEnum::GremlinNob(_) => "Gremlin Nob",
                                 EnemyEnum::Lagavulin(_) => "Lagavulin",
                                 EnemyEnum::Sentry(_) => "Sentry",
+                                EnemyEnum::FatGremlin(_) => "Fat Gremlin",
+                                EnemyEnum::SneakyGremlin(_) => "Sneaky Gremlin",
+                                EnemyEnum::MadGremlin(_) => "Mad Gremlin",
+                                EnemyEnum::ShieldGremlin(_) => "Shield Gremlin",
+                                EnemyEnum::GremlinWizard(_) => "Gremlin Wizard",
                             };
                             println!("      {}{}. Target {} {}", action_index, 
                                 char::from(b'a' + target_idx as u8), enemy_name, enemy_idx + 1);
@@ -966,6 +982,12 @@ impl BattleCli {
                 }
                 crate::game::effect::Effect::GainArtifact { amount } => {
                     parts.push(format!("Gain {} Artifact", amount));
+                }
+                crate::game::effect::Effect::GainDefenseRandomAlly { amount } => {
+                    parts.push(format!("🛡️ {} to random ally", amount));
+                }
+                crate::game::effect::Effect::ActivateAngry { amount } => {
+                    parts.push(format!("😤 Angry (Gain {} Strength when damaged)", amount));
                 }
             }
         }

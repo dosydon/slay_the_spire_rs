@@ -126,12 +126,12 @@ mod tests {
     fn test_two_louses_encounter() {
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        
+
         let encounter = EncounterEvent::TwoLouses;
         let enemies = encounter.instantiate(&mut rng, &global_info);
-        
+
         assert_eq!(enemies.len(), 2);
-        
+
         // Both should be louses (either red or green)
         for enemy in &enemies {
             match enemy {
@@ -140,6 +140,47 @@ mod tests {
                 }
                 _ => panic!("Expected RedLouse or GreenLouse enemy"),
             }
+        }
+    }
+
+    #[test]
+    fn test_three_sentries_start_with_artifact() {
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::battle::Battle;
+        use crate::game::deck::Deck;
+        use crate::cards::ironclad::strike::strike;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::ThreeSentries;
+        let enemy_enums = encounter.instantiate(&mut rng, &global_info);
+
+        // Should have exactly 3 Sentries
+        assert_eq!(enemy_enums.len(), 3);
+
+        // All should be Sentries
+        for enemy in &enemy_enums {
+            assert!(matches!(enemy, EnemyEnum::Sentry(_)));
+        }
+
+        // Create a battle to test artifact via listener
+        let enemies: Vec<EnemyInBattle> = enemy_enums
+            .into_iter()
+            .map(|e| EnemyInBattle::new(e))
+            .collect();
+
+        let deck = Deck::new(vec![strike()]);
+        let battle = Battle::new(deck, global_info.clone(), 50, 80, enemies, &mut rng);
+
+        // Each Sentry should have 1 Artifact after combat start
+        for i in 0..3 {
+            assert_eq!(
+                battle.get_enemies()[i].battle_info.get_artifact(),
+                1,
+                "Sentry {} should start with 1 Artifact",
+                i
+            );
         }
     }
 }

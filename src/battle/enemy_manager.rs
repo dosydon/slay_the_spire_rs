@@ -51,7 +51,28 @@ impl Battle {
                     self.event_listeners.push(Box::new(metallicize_listener));
                 }
                 EnemyEnum::Sentry(_) => {
-                    // Sentry has no special listeners
+                    // Sentry gets 1 Artifact at combat start
+                    let sentry_listener = crate::enemies::sentry::SentryListener::new(i);
+                    self.event_listeners.push(Box::new(sentry_listener));
+                }
+                EnemyEnum::FatGremlin(_) => {
+                    // Fat Gremlin has no special listeners
+                }
+                EnemyEnum::SneakyGremlin(_) => {
+                    // Sneaky Gremlin has no special listeners
+                }
+                EnemyEnum::MadGremlin(mad_gremlin) => {
+                    // Mad Gremlin gets an Angry listener at combat start
+                    use crate::enemies::mad_gremlin::AngryListener;
+                    let angry_amount = mad_gremlin.get_angry_stacks();
+                    let listener = AngryListener::new(Entity::Enemy(i), angry_amount);
+                    self.event_listeners.push(Box::new(listener));
+                }
+                EnemyEnum::ShieldGremlin(_) => {
+                    // Shield Gremlin has no special listeners
+                }
+                EnemyEnum::GremlinWizard(_) => {
+                    // Gremlin Wizard has no special listeners
                 }
             }
         }

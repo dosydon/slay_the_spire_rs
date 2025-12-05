@@ -1,4 +1,4 @@
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, gremlin_nob::{GremlinNob, GremlinNobMove}, lagavulin::{Lagavulin, LagavulinMove}, sentry::{Sentry, SentryMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, gremlin_nob::{GremlinNob, GremlinNobMove}, lagavulin::{Lagavulin, LagavulinMove}, sentry::{Sentry, SentryMove}, fat_gremlin::{FatGremlin, FatGremlinMove}, sneaky_gremlin::{SneakyGremlin, SneakyGremlinMove}, mad_gremlin::{MadGremlin, MadGremlinMove}, shield_gremlin::{ShieldGremlin, ShieldGremlinMove}, gremlin_wizard::{GremlinWizard, GremlinWizardMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
 
 #[derive(Debug)]
 pub enum EnemyEnum {
@@ -12,8 +12,13 @@ pub enum EnemyEnum {
     AcidSlimeM(AcidSlimeM),
     GremlinNob(GremlinNob),
     Lagavulin(Lagavulin),
-  Sentry(Sentry),
-      }
+    Sentry(Sentry),
+    FatGremlin(FatGremlin),
+    SneakyGremlin(SneakyGremlin),
+    MadGremlin(MadGremlin),
+    ShieldGremlin(ShieldGremlin),
+    GremlinWizard(GremlinWizard),
+}
 
 
 /// Enum to hold any enemy move type
@@ -29,8 +34,13 @@ pub enum EnemyMove {
     AcidSlimeM(AcidSlimeMMove),
     GremlinNob(GremlinNobMove),
     Lagavulin(LagavulinMove),
-  Sentry(SentryMove),
-  }
+    Sentry(SentryMove),
+    FatGremlin(FatGremlinMove),
+    SneakyGremlin(SneakyGremlinMove),
+    MadGremlin(MadGremlinMove),
+    ShieldGremlin(ShieldGremlinMove),
+    GremlinWizard(GremlinWizardMove),
+}
 
 
 impl EnemyEnum {
@@ -81,7 +91,27 @@ impl EnemyEnum {
                 let (selected_move, effects) = sentry.choose_move_and_effects(global_info, rng);
                 (EnemyMove::Sentry(selected_move), effects)
             }
+            EnemyEnum::FatGremlin(fat_gremlin) => {
+                let (selected_move, effects) = fat_gremlin.choose_move_and_effects(global_info, rng);
+                (EnemyMove::FatGremlin(selected_move), effects)
             }
+            EnemyEnum::SneakyGremlin(sneaky_gremlin) => {
+                let (selected_move, effects) = sneaky_gremlin.choose_move_and_effects(global_info, rng);
+                (EnemyMove::SneakyGremlin(selected_move), effects)
+            }
+            EnemyEnum::MadGremlin(mad_gremlin) => {
+                let (selected_move, effects) = mad_gremlin.choose_move_and_effects(global_info, rng);
+                (EnemyMove::MadGremlin(selected_move), effects)
+            }
+            EnemyEnum::ShieldGremlin(shield_gremlin) => {
+                let (selected_move, effects) = shield_gremlin.choose_move_and_effects(global_info, rng);
+                (EnemyMove::ShieldGremlin(selected_move), effects)
+            }
+            EnemyEnum::GremlinWizard(gremlin_wizard) => {
+                let (selected_move, effects) = gremlin_wizard.choose_move_and_effects(global_info, rng);
+                (EnemyMove::GremlinWizard(selected_move), effects)
+            }
+        }
     }
 
 
@@ -98,7 +128,12 @@ impl EnemyEnum {
             EnemyEnum::AcidSlimeM(acid_slime) => acid_slime.get_hp(),
             EnemyEnum::GremlinNob(gremlin_nob) => gremlin_nob.get_hp(),
             EnemyEnum::Lagavulin(lagavulin) => lagavulin.get_hp(),
-        EnemyEnum::Sentry(sentry) => sentry.get_hp(),
+            EnemyEnum::Sentry(sentry) => sentry.get_hp(),
+            EnemyEnum::FatGremlin(fat_gremlin) => fat_gremlin.get_hp(),
+            EnemyEnum::SneakyGremlin(sneaky_gremlin) => sneaky_gremlin.get_hp(),
+            EnemyEnum::MadGremlin(mad_gremlin) => mad_gremlin.get_hp(),
+            EnemyEnum::ShieldGremlin(shield_gremlin) => shield_gremlin.get_hp(),
+            EnemyEnum::GremlinWizard(gremlin_wizard) => gremlin_wizard.get_hp(),
         }
     }
 }

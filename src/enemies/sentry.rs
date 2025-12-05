@@ -1,4 +1,5 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}};
+use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, battle::{events::{BattleEvent, EventListener}, target::Entity}};
+use std::any::Any;
 
 #[derive(Copy, Debug, Clone, PartialEq)]
 pub enum SentryMove {
@@ -152,5 +153,185 @@ impl EnemyTrait for Sentry {
         let move_type = self.next_turn();
         let effects = self.get_move_effects(move_type);
         (move_type, effects)
+    }
+}
+
+/// Event listener for Sentry enemies
+/// Grants 1 Artifact at combat start
+pub struct SentryListener {
+    enemy_index: usize,
+    has_given_artifact: bool,
+}
+
+impl SentryListener {
+    pub fn new(enemy_index: usize) -> Self {
+        SentryListener {
+            enemy_index,
+            has_given_artifact: false,
+        }
+    }
+}
+
+impl EventListener for SentryListener {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+        match event {
+            BattleEvent::CombatStart { .. } if !self.has_given_artifact => {
+                self.has_given_artifact = true;
+                vec![Effect::GainArtifact { amount: 1 }]
+            }
+            _ => vec![],
+        }
+    }
+
+    fn is_active(&self) -> bool {
+        true
+    }
+
+    fn get_owner(&self) -> Entity {
+        Entity::Enemy(self.enemy_index)
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::battle::Battle;
+    use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::game::deck::Deck;
+    use crate::cards::ironclad::uppercut::uppercut;
+    use crate::enemies::enemy_enum::EnemyEnum;
+    use crate::battle::target::Entity;
+
+    #[test]
+    fn test_sentry_starts_with_artifact() {
+        use crate::game::deck::Deck;
+        use crate::cards::ironclad::strike::strike;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        // Create a Sentry in an actual battle to trigger the listener
+        let sentry = Sentry::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::Sentry(sentry))];
+
+        let deck = Deck::new(vec![strike()]);
+        let battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Verify Sentry starts with 1 Artifact after combat start event
+        assert_eq!(battle.get_enemies()[0].battle_info.get_artifact(), 1);
+    }
+
+    #[test]
+    fn test_sentry_artifact_blocks_uppercut_debuffs() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        // Create a Sentry enemy
+        let sentry = Sentry::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::Sentry(sentry))];
+
+        // Create battle with Uppercut in hand
+        let deck = Deck::new(vec![uppercut()]);
+        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Verify Sentry starts with 1 Artifact
+        let initial_artifact = battle.get_enemies()[0].battle_info.get_artifact();
+        assert_eq!(initial_artifact, 1, "Sentry should start with 1 Artifact");
+
+        let initial_hp = battle.get_enemies()[0].get_current_hp();
+        let initial_weak = battle.get_enemies()[0].get_weak();
+        let initial_vulnerable = battle.get_enemies()[0].get_vulnerable();
+
+        // Play Uppercut targeting the Sentry
+        let result = battle.play_card(0, Entity::Enemy(0));
+        assert!(result.is_ok());
+
+        // Verify Sentry took damage (Artifact doesn't block damage)
+        let final_hp = battle.get_enemies()[0].get_current_hp();
+        assert_eq!(final_hp, initial_hp.saturating_sub(13), "Sentry should take damage");
+
+        // Verify one Artifact charge was consumed (Uppercut applies Weak first)
+        let final_artifact = battle.get_enemies()[0].battle_info.get_artifact();
+        assert_eq!(final_artifact, 0, "Sentry should have consumed 1 Artifact");
+
+        // Verify first debuff (Weak) was blocked but second (Vulnerable) was applied
+        let final_weak = battle.get_enemies()[0].get_weak();
+        let final_vulnerable = battle.get_enemies()[0].get_vulnerable();
+        assert_eq!(final_weak, initial_weak, "Weak should be blocked by Artifact");
+        assert_eq!(final_vulnerable, initial_vulnerable + 1, "Vulnerable should be applied after Artifact consumed");
+    }
+
+    #[test]
+    fn test_sentry_group_all_have_artifact() {
+        use crate::game::deck::Deck;
+        use crate::cards::ironclad::strike::strike;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        // Create a group of 3 Sentries in a battle
+        let sentries = Sentry::create_sentry_group(&mut rng, global_info.ascention);
+        assert_eq!(sentries.len(), 3);
+
+        let enemies: Vec<EnemyInBattle> = sentries
+            .into_iter()
+            .map(|s| EnemyInBattle::new(EnemyEnum::Sentry(s)))
+            .collect();
+
+        let deck = Deck::new(vec![strike()]);
+        let battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+
+        // Each Sentry should have 1 Artifact after combat start event
+        for (i, _) in battle.get_enemies().iter().enumerate() {
+            assert_eq!(
+                battle.get_enemies()[i].battle_info.get_artifact(),
+                1,
+                "Sentry {} should start with 1 Artifact",
+                i
+            );
+        }
+    }
+
+    #[test]
+    fn test_sentry_listener() {
+        use crate::battle::events::BattleEvent;
+
+        // Create a SentryListener for enemy index 0
+        let mut listener = SentryListener::new(0);
+
+        // Initially hasn't given artifact
+        assert!(!listener.has_given_artifact);
+
+        // On CombatStart, should return GainArtifact effect
+        let combat_start_event = BattleEvent::CombatStart {
+            player: Entity::Player,
+        };
+        let effects = listener.on_event(&combat_start_event);
+
+        // Should return exactly one GainArtifact effect
+        assert_eq!(effects.len(), 1);
+        assert_eq!(effects[0], Effect::GainArtifact { amount: 1 });
+
+        // Should mark as having given artifact
+        assert!(listener.has_given_artifact);
+
+        // Subsequent CombatStart events should not grant artifact again
+        let effects2 = listener.on_event(&combat_start_event);
+        assert_eq!(effects2.len(), 0);
+
+        // Other events should not trigger anything
+        let other_event = BattleEvent::StartOfPlayerTurn;
+        let effects3 = listener.on_event(&other_event);
+        assert_eq!(effects3.len(), 0);
+
+        // Listener should be active
+        assert!(listener.is_active());
+
+        // Owner should be Enemy(0)
+        assert_eq!(listener.get_owner(), Entity::Enemy(0));
     }
 }

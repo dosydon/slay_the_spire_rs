@@ -8,9 +8,11 @@ pub struct EnemyInBattle {
 impl EnemyInBattle {
     pub fn new(enemy: EnemyEnum) -> Self {
         let hp = enemy.get_hp();
+        let battle_info = CharacterBattleInfo::new_enemy(hp);
+
         EnemyInBattle {
             enemy,
-            battle_info: CharacterBattleInfo::new_enemy(hp),
+            battle_info,
         }
     }
 

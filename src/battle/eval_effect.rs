@@ -782,6 +782,28 @@ impl Battle {
                     Entity::None => {} // No source
                 }
             },
+            BaseEffect::GainDefenseRandomAlly { source, amount } => {
+                // Grant block to a random ally (used by Shield Gremlin)
+                if let Entity::Enemy(source_idx) = source {
+                    // Find all alive allies (enemies excluding self)
+                    let alive_allies: Vec<usize> = self.enemies.iter().enumerate()
+                        .filter(|(idx, e)| *idx != *source_idx && e.battle_info.is_alive())
+                        .map(|(idx, _)| idx)
+                        .collect();
+
+                    if let Some(&random_ally_idx) = alive_allies.choose(&mut rand::rng()) {
+                        self.apply_block(Entity::Enemy(random_ally_idx), *amount);
+                    }
+                }
+            },
+            BaseEffect::ActivateAngry { source, amount } => {
+                // Activate Angry listener for Mad Gremlin
+                if let Entity::Enemy(_) = source {
+                    use crate::enemies::mad_gremlin::AngryListener;
+                    let listener = Box::new(AngryListener::new(*source, *amount));
+                    self.add_listener(listener);
+                }
+            },
             BaseEffect::AddCardToHand { source: _, card } => {
                 // Add card to hand
                 let card_reward_pool = crate::game::card_reward::CardRewardPool::new();

@@ -104,6 +104,8 @@ pub enum Effect {
     TransitionLagavulinStunnedToAwake { enemy_index: usize }, // Transition Lagavulin from Stunned to Awake at start of turn
     RemoveMetallicize { enemy_index: usize }, // Remove Metallicize power from an enemy (used when Lagavulin wakes)
     GainArtifact { amount: u32 }, // Gain artifact charges (prevents debuffs)
+    GainDefenseRandomAlly { amount: u32 }, // Grant defense to a random ally (used by Shield Gremlin)
+    ActivateAngry { amount: u32 }, // Activates Angry listener for this enemy (gains Strength when damaged)
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -371,6 +373,14 @@ pub enum BaseEffect {
         source: Entity,
         amount: u32,
     },
+    GainDefenseRandomAlly {
+        source: Entity,
+        amount: u32,
+    },
+    ActivateAngry {
+        source: Entity,
+        amount: u32,
+    },
 }
 
 impl BaseEffect {
@@ -464,6 +474,8 @@ impl BaseEffect {
             Effect::TransitionLagavulinStunnedToAwake { enemy_index } => BaseEffect::TransitionLagavulinStunnedToAwake { enemy_index },
             Effect::RemoveMetallicize { enemy_index } => BaseEffect::RemoveMetallicize { enemy_index },
             Effect::GainArtifact { amount } => BaseEffect::GainArtifact { source, amount },
+            Effect::GainDefenseRandomAlly { amount } => BaseEffect::GainDefenseRandomAlly { source, amount },
+            Effect::ActivateAngry { amount } => BaseEffect::ActivateAngry { source, amount },
         }
     }
 }
