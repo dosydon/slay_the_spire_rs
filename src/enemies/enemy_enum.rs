@@ -1,4 +1,4 @@
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, gremlin_nob::{GremlinNob, GremlinNobMove}, lagavulin::{Lagavulin, LagavulinMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, gremlin_nob::{GremlinNob, GremlinNobMove}, lagavulin::{Lagavulin, LagavulinMove}, sentry::{Sentry, SentryMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
 
 #[derive(Debug)]
 pub enum EnemyEnum {
@@ -12,7 +12,8 @@ pub enum EnemyEnum {
     AcidSlimeM(AcidSlimeM),
     GremlinNob(GremlinNob),
     Lagavulin(Lagavulin),
-}
+  Sentry(Sentry),
+      }
 
 
 /// Enum to hold any enemy move type
@@ -28,7 +29,8 @@ pub enum EnemyMove {
     AcidSlimeM(AcidSlimeMMove),
     GremlinNob(GremlinNobMove),
     Lagavulin(LagavulinMove),
-}
+  Sentry(SentryMove),
+  }
 
 
 impl EnemyEnum {
@@ -75,7 +77,11 @@ impl EnemyEnum {
                 let (selected_move, effects) = lagavulin.choose_move_and_effects(global_info, rng);
                 (EnemyMove::Lagavulin(selected_move), effects)
             }
-        }
+            EnemyEnum::Sentry(sentry) => {
+                let (selected_move, effects) = sentry.choose_move_and_effects(global_info, rng);
+                (EnemyMove::Sentry(selected_move), effects)
+            }
+            }
     }
 
 
@@ -92,6 +98,7 @@ impl EnemyEnum {
             EnemyEnum::AcidSlimeM(acid_slime) => acid_slime.get_hp(),
             EnemyEnum::GremlinNob(gremlin_nob) => gremlin_nob.get_hp(),
             EnemyEnum::Lagavulin(lagavulin) => lagavulin.get_hp(),
+        EnemyEnum::Sentry(sentry) => sentry.get_hp(),
         }
     }
 }

@@ -50,6 +50,9 @@ impl Battle {
                     let metallicize_listener = crate::cards::ironclad::metallicize::MetallicizeListener::new(Entity::Enemy(i), 8);
                     self.event_listeners.push(Box::new(metallicize_listener));
                 }
+                EnemyEnum::Sentry(_) => {
+                    // Sentry has no special listeners
+                }
             }
         }
     }

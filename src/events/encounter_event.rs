@@ -2,6 +2,8 @@ use crate::game::enemy::EnemyTrait;
 use crate::game::global_info::GlobalInfo;
 use crate::enemies::EnemyEnum;
 use crate::utils::CategoricalDistribution;
+use crate::enemies::sentry::Sentry;
+use crate::enemies::lagavulin::Lagavulin;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum EncounterEvent {
@@ -10,6 +12,8 @@ pub enum EncounterEvent {
     Cultist,
     SmallSlimes,
     GremlinNob,
+    ThreeSentries,  // Act 1 Elite encounter
+    Lagavulin,      // Act 1 Elite encounter
 }
 
 pub fn sample_encounter_event(_global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> EncounterEvent {
@@ -23,6 +27,8 @@ fn act1_first_three_encounters() -> CategoricalDistribution<EncounterEvent> {
         (EncounterEvent::JawWorm, 0.25),
         (EncounterEvent::Cultist, 0.25),
         (EncounterEvent::SmallSlimes, 0.25),
+        (EncounterEvent::GremlinNob, 0.25),
+        (EncounterEvent::ThreeSentries, 0.25), // Act 1 Elite encounter
     ])
 }
 
@@ -79,6 +85,15 @@ impl EncounterEvent {
             EncounterEvent::GremlinNob => {
                 let gremlin_nob = crate::enemies::gremlin_nob::GremlinNob::instantiate(rng, global_info);
                 vec![EnemyEnum::GremlinNob(gremlin_nob)]
+            }
+            EncounterEvent::ThreeSentries => {
+                // Create 3 Sentries with proper move patterns using the helper method
+                let sentries = Sentry::create_sentry_group(rng, global_info.ascention);
+                sentries.into_iter().map(|s| EnemyEnum::Sentry(s)).collect()
+            }
+            EncounterEvent::Lagavulin => {
+                let lagavulin = Lagavulin::instantiate(rng, global_info);
+                vec![EnemyEnum::Lagavulin(lagavulin)]
             }
         }
     }

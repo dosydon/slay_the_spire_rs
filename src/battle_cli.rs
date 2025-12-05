@@ -222,18 +222,22 @@ impl BattleCli {
         println!("3. Cultist (ritual caster)");
         println!("4. Small Slimes (mixed slime encounter)");
         println!("5. Gremlin Nob (elite with enrage)");
-        print!("Enter your choice (1-5): ");
+        println!("6. Three Sentries (elite - 3 sentries with alternating moves)");
+        println!("7. Lagavulin (elite - sleeps then attacks)");
+        print!("Enter your choice (1-7): ");
         io::stdout().flush().unwrap();
-        
+
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
-        
+
         match input.trim() {
             "1" => EncounterEvent::TwoLouses,
             "2" => EncounterEvent::JawWorm,
             "3" => EncounterEvent::Cultist,
             "4" => EncounterEvent::SmallSlimes,
             "5" => EncounterEvent::GremlinNob,
+            "6" => EncounterEvent::ThreeSentries,
+            "7" => EncounterEvent::Lagavulin,
             _ => {
                 println!("Invalid choice, defaulting to Two Louses");
                 EncounterEvent::TwoLouses
@@ -356,6 +360,7 @@ impl BattleCli {
                 EnemyEnum::AcidSlimeM(_) => "Acid Slime (M)",
                 EnemyEnum::GremlinNob(_) => "Gremlin Nob",
                 EnemyEnum::Lagavulin(_) => "Lagavulin",
+                EnemyEnum::Sentry(_) => "Sentry",
             };
             
             if enemy.battle_info.is_alive() {
@@ -473,6 +478,7 @@ impl BattleCli {
                                 EnemyEnum::AcidSlimeM(_) => "Acid Slime (M)",
                                 EnemyEnum::GremlinNob(_) => "Gremlin Nob",
                                 EnemyEnum::Lagavulin(_) => "Lagavulin",
+                                EnemyEnum::Sentry(_) => "Sentry",
                             };
                             println!("      {}{}. Target {} {}", action_index, 
                                 char::from(b'a' + target_idx as u8), enemy_name, enemy_idx + 1);
@@ -962,7 +968,7 @@ impl BattleCli {
         }
         
         if parts.is_empty() {
-            "Unknown Action".to_string()
+            "No OP".to_string()
         } else {
             parts.join(" ")
         }

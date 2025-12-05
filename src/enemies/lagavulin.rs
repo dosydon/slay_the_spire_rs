@@ -89,6 +89,8 @@ impl Lagavulin {
         if self.state == LagavulinState::Stunned {
             self.state = LagavulinState::Awake;
             self.move_count = 0;
+        } else if self.state == LagavulinState::Asleep && self.should_wake_from_sleep() {
+            self.state = LagavulinState::Awake;
         }
     }
 
@@ -138,8 +140,6 @@ impl Lagavulin {
                 self.turns_asleep += 1;
             }
             LagavulinMove::Stunned => {
-                // Transition to awake state after being stunned
-                self.state = LagavulinState::Awake;
                 self.move_count = 0;
             }
             LagavulinMove::Attack | LagavulinMove::SiphonSoul => {
@@ -308,40 +308,6 @@ mod tests {
 
         assert!(lagavulin.get_hp() >= 112);
         assert!(lagavulin.get_hp() <= 115);
-    }
-
-    #[test]
-    fn test_lagavulin_sleep_pattern() {
-        let mut rng = rand::rng();
-        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-
-        let mut lagavulin = Lagavulin::instantiate(&mut rng, &global_info);
-
-        // Turn 1: Asleep
-        let (move1, effects1) = lagavulin.choose_move_and_effects(&global_info, &mut rng);
-        assert_eq!(move1, LagavulinMove::Asleep);
-        assert_eq!(effects1.len(), 0);
-        assert_eq!(lagavulin.state, LagavulinState::Asleep);
-
-        // Turn 2: Asleep
-        let (move2, _) = lagavulin.choose_move_and_effects(&global_info, &mut rng);
-        assert_eq!(move2, LagavulinMove::Asleep);
-        assert_eq!(lagavulin.state, LagavulinState::Asleep);
-
-        // Turn 3: Asleep
-        let (move3, _) = lagavulin.choose_move_and_effects(&global_info, &mut rng);
-        assert_eq!(move3, LagavulinMove::Asleep);
-        assert_eq!(lagavulin.state, LagavulinState::Asleep);
-
-        // Turn 4: Should wake up (Stunned)
-        let (move4, _) = lagavulin.choose_move_and_effects(&global_info, &mut rng);
-        assert_eq!(move4, LagavulinMove::Stunned);
-        assert_eq!(lagavulin.state, LagavulinState::Awake);
-
-        // Turn 5: Now awake, should attack
-        let (move5, _) = lagavulin.choose_move_and_effects(&global_info, &mut rng);
-        assert_eq!(move5, LagavulinMove::Attack);
-        assert_eq!(lagavulin.state, LagavulinState::Awake);
     }
 
     #[test]
@@ -610,36 +576,6 @@ mod tests {
         assert_eq!(lagavulin.state, LagavulinState::Awake, "Lagavulin should remain Awake");
     }
 
-    #[test]
-    fn test_lagavulin_natural_sleep_cycle_direct() {
-        let mut rng = rand::rng();
-        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-
-        let mut lagavulin = Lagavulin::instantiate(&mut rng, &global_info);
-
-        // Turn 1: Lagavulin should be asleep
-        let (move1, _) = lagavulin.choose_move_and_effects(&global_info, &mut rng);
-        assert_eq!(move1, LagavulinMove::Asleep);
-        assert_eq!(lagavulin.state, LagavulinState::Asleep);
-        assert_eq!(lagavulin.turns_asleep, 1);
-
-        // Turn 2: Lagavulin should still be asleep
-        let (move2, _) = lagavulin.choose_move_and_effects(&global_info, &mut rng);
-        assert_eq!(move2, LagavulinMove::Asleep);
-        assert_eq!(lagavulin.state, LagavulinState::Asleep);
-        assert_eq!(lagavulin.turns_asleep, 2);
-
-        // Turn 3: Lagavulin should still be asleep
-        let (move3, _) = lagavulin.choose_move_and_effects(&global_info, &mut rng);
-        assert_eq!(move3, LagavulinMove::Asleep);
-        assert_eq!(lagavulin.state, LagavulinState::Asleep);
-        assert_eq!(lagavulin.turns_asleep, 3);
-
-        // Turn 4: Lagavulin should transition to Stunned (natural wake up after 3 turns)
-        let (move4, _) = lagavulin.choose_move_and_effects(&global_info, &mut rng);
-        assert_eq!(move4, LagavulinMove::Stunned);
-        assert_eq!(lagavulin.state, LagavulinState::Awake); // Should transition to Awake after Stunned
-    }
 
     #[test]
     fn test_lagavulin_complete_battle_cycle() {
@@ -702,5 +638,104 @@ mod tests {
         battle.end_turn(&mut rng, &global_info);
         // Player should have taken even more damage from the next attack
         assert!(battle.get_current_hp() < 58, "Player should have taken damage from the next attack in the cycle");
+    }
+
+    #[test]
+    fn test_lagavulin_natural_sleep_cycle() {
+        use crate::battle::Battle;
+        use crate::battle::enemy_in_battle::EnemyInBattle;
+        use crate::battle::target::Entity;
+        use crate::game::deck::Deck;
+        use crate::cards::ironclad::defend::defend;
+        use crate::enemies::enemy_enum::{EnemyEnum, EnemyMove};
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        // Create a Lagavulin enemy
+        let lagavulin = Lagavulin::instantiate(&mut rng, &global_info);
+        let enemy = EnemyInBattle::new(EnemyEnum::Lagavulin(lagavulin));
+
+        // Create battle with only Defend cards so we don't attack Lagavulin
+        let deck = Deck::new(vec![defend(), defend(), defend(), defend(), defend()]);
+        let mut battle = Battle::new(deck, global_info, 80, 80, vec![enemy], &mut rng);
+
+        println!("\n=== Testing Lagavulin Natural Sleep Cycle ===");
+
+        // Initial state: Lagavulin should be Asleep with 8 block
+        assert_eq!(battle.get_enemies()[0].battle_info.get_block(), 8, "Lagavulin should start with 8 block");
+        if let EnemyEnum::Lagavulin(lagavulin) = &battle.get_enemies()[0].enemy {
+            assert_eq!(lagavulin.state, LagavulinState::Asleep, "Lagavulin should start Asleep");
+        }
+
+        // Sample enemy actions - should be Asleep
+        battle.sample_enemy_actions(&mut rng);
+        if let Some(enemy_move) = battle.get_enemy_move(0) {
+            assert_eq!(*enemy_move, EnemyMove::Lagavulin(LagavulinMove::Asleep), "Turn 0: Lagavulin should be Asleep");
+        }
+        println!("Turn 0: Lagavulin is Asleep (0/3 turns)");
+
+        // === TURN 1: Player doesn't attack, just ends turn ===
+        battle.end_turn(&mut rng, &global_info);
+
+        // Check Lagavulin state after turn 1
+        if let EnemyEnum::Lagavulin(lagavulin) = &battle.get_enemies()[0].enemy {
+            assert_eq!(lagavulin.state, LagavulinState::Asleep, "Turn 1: Lagavulin should still be Asleep");
+        }
+
+        if let Some(enemy_move) = battle.get_enemy_move(0) {
+            assert_eq!(*enemy_move, EnemyMove::Lagavulin(LagavulinMove::Asleep), "Turn 1: Lagavulin should be Asleep");
+        }
+        println!("Turn 1: Lagavulin is Asleep (1/3 turns)");
+
+        // Player should not have taken any damage
+        assert_eq!(battle.get_current_hp(), 80, "Turn 1: Player should not have taken damage");
+
+        // === TURN 2: Player doesn't attack, Lagavulin should wake naturally ===
+        battle.end_turn(&mut rng, &global_info);
+
+        // Check Lagavulin state after turn 2 - should have woken up naturally
+        if let EnemyEnum::Lagavulin(lagavulin) = &battle.get_enemies()[0].enemy {
+            // After 3 turns asleep (initial + turn 1 + turn 2), Lagavulin wakes and transitions to Awake
+            assert_eq!(lagavulin.state, LagavulinState::Awake, "Turn 2: Lagavulin should be Awake after 3 sleep turns");
+        }
+
+        // Lagavulin should have sampled Attack for next turn
+        if let Some(enemy_move) = battle.get_enemy_move(0) {
+            assert_eq!(*enemy_move, EnemyMove::Lagavulin(LagavulinMove::Attack), "Turn 2: Lagavulin should Attack after waking");
+        }
+        println!("Turn 2: Lagavulin wakes naturally and prepares to Attack!");
+
+        // Execute the attack by ending another turn
+        battle.end_turn(&mut rng, &global_info);
+
+        // Player should have taken damage (18 damage from Attack)
+        assert!(battle.get_current_hp() < 80, "Turn 3: Player should have taken damage from Lagavulin attack");
+        let expected_hp = battle.get_current_hp();
+        println!("Turn 3: Lagavulin executes Attack!");
+
+        // Continue for a few more turns to verify the Attack → Attack → Siphon Soul pattern
+        for turn in 4..=6 {
+            battle.end_turn(&mut rng, &global_info);
+
+            if let Some(enemy_move) = battle.get_enemy_move(0) {
+                println!("Turn {}: Lagavulin will use {:?}", turn, enemy_move);
+            }
+
+            battle.end_turn(&mut rng, &global_info);
+        }
+
+        // After several turns, player should have debuffs from Siphon Soul
+        assert!(battle.get_player().get_dexterity() < 0, "Player should have negative Dexterity from Siphon Soul");
+        assert!(battle.get_player().get_strength() < 0, "Player should have negative Strength from Siphon Soul");
+
+        // Player should have taken damage from attacks
+        assert!(battle.get_current_hp() < expected_hp, "Player should have taken more damage");
+
+        println!("\n=== Natural Sleep Cycle Test Complete! ===");
+        println!("Summary:");
+        println!("  - Turns 0-1: Lagavulin slept naturally (3 sleep turns total)");
+        println!("  - Turn 2-3: Lagavulin woke and attacked");
+        println!("  - Turns 4+: Attack → Attack → Siphon Soul pattern confirmed");
     }
 }

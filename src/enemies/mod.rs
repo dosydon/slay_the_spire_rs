@@ -8,6 +8,7 @@ pub mod acid_slime_s;
 pub mod acid_slime_m;
 pub mod gremlin_nob;
 pub mod lagavulin;
+pub mod sentry;
 pub mod enemy_enum;
 
 pub use enemy_enum::EnemyEnum;
