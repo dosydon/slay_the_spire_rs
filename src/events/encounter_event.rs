@@ -12,6 +12,7 @@ pub enum EncounterEvent {
     Cultist,
     SmallSlimes,
     GangOfGremlins, // 4 random gremlins (Mad, Sneaky, Fat, Shield, or Wizard)
+    Looter,         // Single Looter that steals gold and escapes
     GremlinNob,
     ThreeSentries,  // Act 1 Elite encounter
     Lagavulin,      // Act 1 Elite encounter
@@ -142,6 +143,10 @@ impl EncounterEvent {
             EncounterEvent::Lagavulin => {
                 let lagavulin = Lagavulin::instantiate(rng, global_info);
                 vec![EnemyEnum::Lagavulin(lagavulin)]
+            }
+            EncounterEvent::Looter => {
+                let looter = crate::enemies::looter::Looter::instantiate(rng, global_info);
+                vec![EnemyEnum::Looter(looter)]
             }
         }
     }
@@ -327,6 +332,28 @@ mod tests {
             // We can't directly check the listener, but we can verify it exists
             // by checking that damage triggers strength gain (tested separately)
             assert!(true); // Placeholder - listener is tested in mad_gremlin unit tests
+        }
+    }
+
+    #[test]
+    fn test_looter_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::Looter;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+
+        // Should spawn exactly 1 Looter
+        assert_eq!(enemies.len(), 1);
+
+        // Should be a Looter
+        match &enemies[0] {
+            EnemyEnum::Looter(looter) => {
+                // Verify HP is in the correct range for ascension 0 (44-48)
+                let hp = looter.get_hp();
+                assert!(hp >= 44 && hp <= 48, "Looter HP {} should be in range 44-48", hp);
+            }
+            _ => panic!("Expected Looter enemy"),
         }
     }
 }

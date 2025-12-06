@@ -106,6 +106,8 @@ pub enum Effect {
     GainArtifact { amount: u32 }, // Gain artifact charges (prevents debuffs)
     GainDefenseRandomAlly { amount: u32 }, // Grant defense to a random ally (used by Shield Gremlin)
     ActivateAngry { amount: u32 }, // Activates Angry listener for this enemy (gains Strength when damaged)
+    StealGold { amount: u32 }, // Steal gold from the player (used by Looter)
+    EnemyEscape, // Enemy escapes from combat (used by Looter)
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -381,6 +383,13 @@ pub enum BaseEffect {
         source: Entity,
         amount: u32,
     },
+    StealGold {
+        source: Entity,
+        amount: u32,
+    },
+    EnemyEscape {
+        source: Entity,
+    },
 }
 
 impl BaseEffect {
@@ -476,6 +485,8 @@ impl BaseEffect {
             Effect::GainArtifact { amount } => BaseEffect::GainArtifact { source, amount },
             Effect::GainDefenseRandomAlly { amount } => BaseEffect::GainDefenseRandomAlly { source, amount },
             Effect::ActivateAngry { amount } => BaseEffect::ActivateAngry { source, amount },
+            Effect::StealGold { amount } => BaseEffect::StealGold { source, amount },
+            Effect::EnemyEscape => BaseEffect::EnemyEscape { source },
         }
     }
 }

@@ -12,6 +12,7 @@ pub struct CharacterBattleInfo {
     pub ritual: u32,
     pub rampage_damage: u32,
     pub artifact: u32,  // Number of artifact charges (blocks debuffs)
+    pub escaped: bool,  // Whether this enemy has escaped from combat
     // Additional status effects can be added here
 }
 
@@ -30,6 +31,7 @@ impl CharacterBattleInfo {
             ritual: 0,
             rampage_damage: 0,
             artifact: 0,
+            escaped: false,
         }
     }
 
@@ -47,6 +49,7 @@ impl CharacterBattleInfo {
             ritual: 0,
             rampage_damage: 0,
             artifact: 0,
+            escaped: false,
         }
     }
 
@@ -133,8 +136,14 @@ impl CharacterBattleInfo {
         }
     }
 
-    /// Check if character is alive
+    /// Check if character is alive (not dead and not escaped)
     pub fn is_alive(&self) -> bool {
+        self.current_hp > 0 && !self.escaped
+    }
+
+    /// Check if character is in combat (alive or escaped counts as "still present")
+    /// Use this for checking if an enemy should be displayed/targeted
+    pub fn is_in_combat(&self) -> bool {
         self.current_hp > 0
     }
 
@@ -261,6 +270,16 @@ impl CharacterBattleInfo {
         } else {
             false
         }
+    }
+
+    /// Mark this character as escaped from combat
+    pub fn mark_escaped(&mut self) {
+        self.escaped = true;
+    }
+
+    /// Check if this character has escaped
+    pub fn has_escaped(&self) -> bool {
+        self.escaped
     }
 
     #[allow(dead_code)]

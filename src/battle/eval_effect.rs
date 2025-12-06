@@ -804,6 +804,24 @@ impl Battle {
                     self.add_listener(listener);
                 }
             },
+            BaseEffect::StealGold { source: _, amount } => {
+                // Steal gold from the player (Looter mechanic)
+                // Track stolen gold - will be synced with Game state after battle
+                // If enemy is killed, gold is returned (not stolen at end)
+                // If enemy escapes, gold remains stolen
+                self.gold_stolen += amount;
+            },
+            BaseEffect::EnemyEscape { source } => {
+                // Enemy escapes from combat (Looter mechanic)
+                // Mark the enemy as escaped - removes from combat without counting as a kill
+                if let Entity::Enemy(idx) = source {
+                    if *idx < self.enemies.len() {
+                        self.enemies[*idx].battle_info.mark_escaped();
+                        // Note: Escaped enemies keep any stolen gold (gold system not yet implemented)
+                        // The escaped flag prevents the enemy from being targeted or acting
+                    }
+                }
+            },
             BaseEffect::AddCardToHand { source: _, card } => {
                 // Add card to hand
                 let card_reward_pool = crate::game::card_reward::CardRewardPool::new();

@@ -74,6 +74,9 @@ impl Battle {
                 EnemyEnum::GremlinWizard(_) => {
                     // Gremlin Wizard has no special listeners
                 }
+                EnemyEnum::Looter(_) => {
+                    // Looter has no special listeners
+                }
             }
         }
     }

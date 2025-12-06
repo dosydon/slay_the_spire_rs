@@ -49,6 +49,8 @@ pub struct Battle {
     /// Queue of effects to be processed
     effect_queue: Vec<BaseEffect>,
     pub(crate) battle_state: BattleState,
+    /// Gold stolen during battle (e.g., by Looter)
+    gold_stolen: u32,
 }
 
 impl Battle {
@@ -77,6 +79,7 @@ impl Battle {
             powers: Vec::new(),
             effect_queue: Vec::new(),
             battle_state: BattleState::PlayerTurn,
+            gold_stolen: 0,
         };
 
         // Initialize event listeners for enemies
@@ -156,7 +159,12 @@ impl Battle {
     pub fn get_enemies_mut(&mut self) -> &mut Vec<EnemyInBattle> {
         &mut self.enemies
     }
-    
+
+    /// Get total gold stolen during battle
+    pub fn get_gold_stolen(&self) -> u32 {
+        self.gold_stolen
+    }
+
     pub fn get_hand(&self) -> &Vec<Card> {
         self.cards.get_hand()
     }

@@ -222,10 +222,11 @@ impl BattleCli {
         println!("3. Cultist (ritual caster)");
         println!("4. Small Slimes (mixed slime encounter)");
         println!("5. Gang of Gremlins (4 random gremlins - includes Wizard!)");
-        println!("6. Gremlin Nob (elite with enrage)");
-        println!("7. Three Sentries (elite - 3 sentries with alternating moves)");
-        println!("8. Lagavulin (elite - sleeps then attacks)");
-        print!("Enter your choice (1-8): ");
+        println!("6. Looter (steals gold and escapes)");
+        println!("7. Gremlin Nob (elite with enrage)");
+        println!("8. Three Sentries (elite - 3 sentries with alternating moves)");
+        println!("9. Lagavulin (elite - sleeps then attacks)");
+        print!("Enter your choice (1-9): ");
         io::stdout().flush().unwrap();
 
         let mut input = String::new();
@@ -237,9 +238,10 @@ impl BattleCli {
             "3" => EncounterEvent::Cultist,
             "4" => EncounterEvent::SmallSlimes,
             "5" => EncounterEvent::GangOfGremlins,
-            "6" => EncounterEvent::GremlinNob,
-            "7" => EncounterEvent::ThreeSentries,
-            "8" => EncounterEvent::Lagavulin,
+            "6" => EncounterEvent::Looter,
+            "7" => EncounterEvent::GremlinNob,
+            "8" => EncounterEvent::ThreeSentries,
+            "9" => EncounterEvent::Lagavulin,
             _ => {
                 println!("Invalid choice, defaulting to Two Louses");
                 EncounterEvent::TwoLouses
@@ -371,8 +373,9 @@ impl BattleCli {
                 EnemyEnum::MadGremlin(_) => "Mad Gremlin",
                 EnemyEnum::ShieldGremlin(_) => "Shield Gremlin",
                 EnemyEnum::GremlinWizard(_) => "Gremlin Wizard",
+                EnemyEnum::Looter(_) => "Looter",
             };
-            
+
             if enemy.battle_info.is_alive() {
                 println!("👹 ENEMY {}: {} | HP {}/{} | Block {}", 
                     i + 1,
@@ -497,6 +500,7 @@ impl BattleCli {
                                 EnemyEnum::MadGremlin(_) => "Mad Gremlin",
                                 EnemyEnum::ShieldGremlin(_) => "Shield Gremlin",
                                 EnemyEnum::GremlinWizard(_) => "Gremlin Wizard",
+                                EnemyEnum::Looter(_) => "Looter",
                             };
                             println!("      {}{}. Target {} {}", action_index, 
                                 char::from(b'a' + target_idx as u8), enemy_name, enemy_idx + 1);
@@ -990,6 +994,12 @@ impl BattleCli {
                 }
                 crate::game::effect::Effect::ActivateAngry { amount } => {
                     parts.push(format!("😤 Angry (Gain {} Strength when damaged)", amount));
+                }
+                crate::game::effect::Effect::StealGold { amount } => {
+                    parts.push(format!("💰 Steal {} gold", amount));
+                }
+                crate::game::effect::Effect::EnemyEscape => {
+                    parts.push("💨 Escape".to_string());
                 }
             }
         }

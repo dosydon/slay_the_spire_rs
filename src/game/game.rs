@@ -49,6 +49,7 @@ pub struct Game {
     pub current_node_position: (u32, u32),
     pub player_hp: u32,
     pub player_max_hp: u32,
+    pub gold: u32,
     pub card_reward_options: Vec<crate::game::card::Card>,
     relics: Vec<crate::relics::Relic>,
     game_event_listeners: Vec<Box<dyn GameEventListener>>,
@@ -66,6 +67,7 @@ impl Game {
             current_node_position: start_node_position,
             player_hp: starting_hp,
             player_max_hp: max_hp,
+            gold: 99, // Starting gold (Ironclad starts with 99 gold)
             card_reward_options: Vec::new(),
             relics: Vec::new(),
             game_event_listeners: Vec::new(),
@@ -126,10 +128,23 @@ impl Game {
                     match battle.eval_action(battle_action, rng) {
                         Ok(BattleResult::Continued) => Ok(GameResult::Continue),
                         Ok(BattleResult::Won) => {
-                            // Battle won, sync HP back and clean up
-                            if let Some(battle) = &self.battle {
-                                self.set_player_hp(battle.get_final_player_hp());
-                            }
+                            // Battle won, sync HP and gold back
+                            // Extract values before modifying self
+                            let (final_hp, gold_to_lose) = if let Some(battle) = &self.battle {
+                                let hp = battle.get_final_player_hp();
+                                let enemies_escaped = battle.get_enemies().iter().any(|e| e.battle_info.has_escaped());
+                                let gold_lost = if enemies_escaped {
+                                    battle.get_gold_stolen()
+                                } else {
+                                    0 // Gold is returned if all enemies were killed
+                                };
+                                (hp, gold_lost)
+                            } else {
+                                (self.player_hp, 0)
+                            };
+
+                            self.set_player_hp(final_hp);
+                            self.gold = self.gold.saturating_sub(gold_to_lose);
                             self.battle = None;
                             self.global_info.current_floor += 1;
 
