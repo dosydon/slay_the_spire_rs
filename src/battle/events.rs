@@ -43,6 +43,9 @@ pub enum BattleEvent {
         card_type: crate::game::card_type::CardType,
         is_status_or_curse: bool,
     },
+    EnemyDeath {
+        enemy: Entity,
+    },
 }
 
 pub trait EventListener: Any {

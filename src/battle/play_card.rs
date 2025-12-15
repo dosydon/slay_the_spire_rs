@@ -23,6 +23,11 @@ impl Battle {
                 return Err(BattleError::CardNotPlayable);
             }
 
+            // Check if player is entangled and trying to play an Attack card
+            if self.player.battle_info.is_entangled() && card.get_card_type() == &CardType::Attack {
+                return Err(BattleError::CardNotPlayable);
+            }
+
             // Calculate modified cost considering active powers like Corruption
             let modified_cost = self.get_modified_cost(card);
 

@@ -1,6 +1,6 @@
 # Slay the Spire Monster Reference
 
-All data in this document is taken directly from [Monsters — Slay the Spire Wiki](https://slaythespire.wiki.gg/wiki/Monsters) (`oldid=11301`, downloaded locally via `curl` on this machine). It lists every normal-enemy encounter currently described on the wiki, organized exactly the way the page presents it so the game implementation can mirror encounter probabilities and compositions.
+All data in this document is taken directly from [Monsters — Slay the Spire Wiki](https://slaythespire.wiki.gg/wiki/Monsters) 
 
 ## Ascension Modifiers for Normal Enemies
 
@@ -424,43 +424,271 @@ This section provides comprehensive enemy data for implementation, including HP 
 
 ---
 
-#### Gremlin Nob (Elite)
+#### Fat Gremlin
 
 **Health:**
-- Base: 82-86 HP
-- Ascension 8+: 85-90 HP (Note: Elites use A8 for HP instead of A7)
-
-**Passive Ability:**
-- **Enrage**: Whenever you play a Skill card, gains Strength
-  - Base: +2 Strength per Skill
-  - Ascension 18+: +3 Strength per Skill
+- Base: 13-17 HP
+- Ascension 7+: 14-18 HP
 
 **Moves:**
-1. **Bellow** (Buff Intent) - Always used first turn
-   - Gains 2 Enrage (passive Strength gain when player uses Skills)
-   - Note: This is different from enrage triggering - it's setting up the passive
+1. **Smash** (Debuff/Attack Intent) - Only move
+   - Damage: 4
+   - Ascension 2+: 5 damage
+   - Applies 1 Weak
+   - Ascension 17+: Also applies 1 Frail
 
-2. **Skull Bash** (Debuff/Attack Intent)
+**Pattern:** Uses Smash every turn
+
+**Implementation Notes:**
+- Simplest Gremlin with predictable debuff pattern
+- Part of Gang of Gremlins encounter
+- Act 1 only
+- File: [fat_gremlin.rs](src/enemies/fat_gremlin.rs)
+
+---
+
+#### Sneaky Gremlin
+
+**Health:**
+- Base: 10-14 HP
+- Ascension 7+: 11-15 HP
+
+**Moves:**
+1. **Puncture** (Attack Intent) - Only move
+   - Damage: 9
+   - Ascension 2+: 10 damage
+
+**Pattern:** Uses Puncture every turn
+
+**Implementation Notes:**
+- Highest direct damage among basic Gremlins
+- Priority target in Gang of Gremlins
+- Act 1 only
+- File: [sneaky_gremlin.rs](src/enemies/sneaky_gremlin.rs)
+
+---
+
+#### Mad Gremlin
+
+**Health:**
+- Base: 20-24 HP
+- Ascension 7+: 21-25 HP
+
+**Passive Ability:**
+- **Angry**: Whenever this creature takes damage, gains Strength
+  - Base: +1 Strength per hit
+  - Ascension 17+: +2 Strength per hit
+
+**Moves:**
+1. **Scratch** (Attack Intent) - Only move
+   - Damage: 4
+   - Ascension 2+: 5 damage
+
+**Pattern:** Uses Scratch every turn
+
+**Implementation Notes:**
+- Scales with damage taken (avoid multi-hit attacks)
+- Becomes more dangerous the longer it survives
+- Act 1 only
+- File: [mad_gremlin.rs](src/enemies/mad_gremlin.rs)
+
+---
+
+#### Shield Gremlin
+
+**Health:**
+- Base: 12-15 HP
+- Ascension 7+: 13-17 HP
+
+**Moves:**
+1. **Protect** (Defend Intent) - Used when allies are alive
+   - Grants 7 Block to random ally
+   - Ascension 2+: 8 Block
+   - Ascension 17+: 11 Block
+
+2. **Shield Bash** (Attack Intent) - Used when alone
    - Damage: 6
-   - Ascension 3+: 8 damage
-   - Ascension 18+: 8 damage
-   - Applies 2 Vulnerable
+   - Ascension 2+: 8 damage
 
-3. **Bull Rush** (Attack Intent)
-   - Damage: 14
-   - Ascension 3+: 16 damage
-   - Ascension 18+: 16 damage
+**Pattern:** Protect while allies exist, Shield Bash when alone
+
+**Implementation Notes:**
+- Provides defensive support to other Gremlins
+- Lower priority target (focus damage dealers first)
+- Act 1 only
+- File: [shield_gremlin.rs](src/enemies/shield_gremlin.rs)
+
+---
+
+#### Gremlin Wizard
+
+**Health:**
+- Base: 21-25 HP
+- Ascension 7+: 22-26 HP
+
+**Moves:**
+1. **Charging** (Unknown Intent) - Preparation move
+   - Does nothing (charging up)
+
+2. **Ultimate Blast** (Attack Intent) - Powerful attack
+   - Damage: 25
+   - Ascension 2+: 30 damage
 
 **Pattern:**
-- Turn 1: Always Bellow
-- Base/A2-17: After Bellow
-  - 33% chance: Skull Bash
-  - 67% chance: Bull Rush
-  - Cannot use Bull Rush three consecutive times
-- Ascension 18+: Fixed pattern after Bellow
-  - Turn 2: Skull Bash
-  - Turn 3-4: Bull Rush (twice)
-  - Repeats: Skull Bash → Bull Rush → Bull Rush
+- First cycle: Charges twice, then Ultimate Blast
+- Subsequent cycles (normal): Charges 3 times, then blast (repeats)
+- Ascension 17+: After first blast, blasts every turn without charging
+
+**Implementation Notes:**
+- Extremely dangerous at A17+ after first blast
+- High priority target to kill before first blast
+- Acts 1 only (appears in Gang of Gremlins encounter)
+- File: [gremlin_wizard.rs](src/enemies/gremlin_wizard.rs)
+
+---
+
+### Gang of Gremlins Encounter
+
+The Gang of Gremlins is a multi-enemy encounter that spawns 4 gremlins randomly selected from a weighted pool.
+
+**Composition:**
+- 4 gremlins selected from weighted pool:
+  - 2× Fat Gremlin (25% chance each)
+  - 2× Sneaky Gremlin (25% chance each)
+  - 2× Mad Gremlin (25% chance each)
+  - 1× Shield Gremlin (12.5% chance)
+  - 1× Gremlin Wizard (12.5% chance)
+
+**Strategy Tips:**
+1. **Priority Targets:**
+   - **Gremlin Wizard** (if present): Kill before first Ultimate Blast
+   - **Sneaky Gremlin**: Highest direct damage (9-10)
+   - **Mad Gremlin**: Avoid multi-hit attacks, becomes stronger when damaged
+   - **Fat Gremlin**: Low priority, manageable damage with debuffs
+   - **Shield Gremlin**: Lowest priority, kill last
+
+2. **Tactics:**
+   - Focus fire on Wizard and Sneaky first
+   - Use AoE attacks carefully against Mad Gremlin (Angry passive)
+   - Shield Gremlin becomes less threatening as allies die
+   - At A17+, Wizard becomes extremely dangerous after first blast
+
+**Implementation:**
+- Randomly selects 4 gremlins without replacement from the weighted pool
+- All gremlins instantiated with proper HP ranges and ascension scaling
+- Mad Gremlin gets Angry listener at combat start
+- File: [encounter_event.rs](src/events/encounter_event.rs)
+
+---
+
+#### Looter
+
+**Health:**
+- Base: 44-48 HP
+- Ascension 7+: 46-50 HP
+
+**Special Mechanic:**
+- **Thievery**: Steals gold when attacking
+  - Base: 15 gold per attack
+  - Ascension 17+: 20 gold per attack
+  - Gold is returned if Looter is killed
+  - Gold is kept if Looter successfully escapes
+
+**Moves:**
+1. **Mug** (Attack Intent) - Turns 1-2
+   - Damage: 10
+   - Ascension 2+: 11 damage
+   - Steals gold (Thievery)
+
+2. **Lunge** (Attack Intent) - Random after turn 2
+   - Damage: 12
+   - Ascension 2+: 14 damage
+   - Steals gold (Thievery)
+
+3. **Smoke Bomb** (Defend Intent) - Random after turn 2
+   - Gains 6 Block
+   - Prepares to escape
+
+4. **Escape** (Unknown Intent) - After Smoke Bomb
+   - Flees with stolen gold
+   - Removes Looter from combat
+
+**Pattern:**
+- Turn 1: Mug
+- Turn 2: Mug
+- Turn 3+: Randomly Lunge or Smoke Bomb (50/50)
+- After Smoke Bomb: Escape on next turn
+
+**Strategy Tips:**
+- Kill quickly before it can escape
+- Each attack steals 15-20 gold
+- If it uses Smoke Bomb, it will escape next turn with your gold
+- Prioritize damage over defense to prevent escape
+
+**Implementation Notes:**
+- ✅ **FULLY IMPLEMENTED** - Playable as encounter option 6
+- Uses state tracking for turn count and smoke bomb usage
+- Gold stealing mechanics fully implemented with Game/Battle synchronization
+- Escape mechanic properly integrated (enemy marked as escaped, battle ends)
+- Gold is tracked during battle and synced to Game state on victory
+- If Looter escapes: gold is permanently lost
+- If Looter is killed: gold is automatically returned
+- Can appear solo (implemented) or in Exordium Thugs encounter (not implemented)
+- Act 1 only
+- File: [looter.rs](src/enemies/looter.rs)
+- Encounter: [encounter_event.rs](src/events/encounter_event.rs)
+- Demo: See [demo_looter.md](demo_looter.md)
+
+---
+
+#### Fungi Beast
+
+**Health:**
+- Base: 22-28 HP
+- Ascension 7+: 24-28 HP
+
+**Passive Ability:**
+- **Spore Cloud**: On death, applies 2 Vulnerable to the player
+  - No ascension scaling
+  - Triggers even if killed by reflected damage (e.g., Thorns)
+
+**Moves:**
+1. **Bite** (Attack Intent) - 60% base probability
+   - Damage: 6 (no ascension scaling)
+
+2. **Grow** (Buff Intent) - 40% base probability
+   - Gains Strength
+   - Base: +3 Strength
+   - Ascension 2+: +4 Strength
+   - Ascension 17+: +5 Strength
+
+**Pattern:**
+- Turn 1: 60% Bite, 40% Grow (weighted random)
+- Cannot use Bite three times in a row
+- Cannot use Grow twice in a row
+- Weighted selection: 60% Bite, 40% Grow (when both are available)
+
+**Strategy Tips:**
+- Low HP but can scale quickly with Grow
+- Each Grow significantly increases threat (especially A17+)
+- Kill quickly to minimize Strength stacking
+- Note that it will apply 2 Vulnerable when killed
+- Consider timing the kill when Vulnerable won't be as impactful
+
+**Implementation Notes:**
+- ✅ **FULLY IMPLEMENTED** with event listener pattern
+- Uses state tracking for last_move and consecutive_bites counter
+- Move pattern enforces both restrictions (no 3× Bite, no 2× Grow)
+- **Spore Cloud**: Implemented using `SporeCloudListener` that listens for `EnemyDeath` events
+  - Triggers when Fungi Beast dies and applies 2 Vulnerable to player
+  - Event-driven architecture ensures it works even from indirect damage (Thorns, etc.)
+- Added `EnemyDeath` battle event to the event system
+- Can appear solo in Act 1, in pairs (2 Fungi Beasts), or with other enemies
+- Also appears in Act 2 paired with Shelled Parasite
+- File: [fungi_beast.rs](src/enemies/fungi_beast.rs)
+- Listener: `SporeCloudListener` in same file
+
+---
 
 **Implementation Notes:**
 - Elite enemy with significantly higher HP
@@ -468,6 +696,83 @@ This section provides comprehensive enemy data for implementation, including HP 
 - Recommended strategy: Avoid Skills after turn 1, try to win by turn 3
 - Act 1 Elite encounter
 - File: [gremlin_nob.rs](src/enemies/gremlin_nob.rs)
+
+---
+
+#### Blue Slaver
+
+**Health:**
+- Base: 46-50 HP
+- Ascension 7+: 48-52 HP
+
+**Moves:**
+1. **Stab** (Attack Intent)
+   - Damage: 12
+   - Ascension 2+: 13 damage
+
+2. **Rake** (Debuff/Attack Intent)
+   - Damage: 7
+   - Ascension 2+: 8 damage
+   - Applies 1 Weak
+   - Ascension 17+: Applies 2 Weak
+
+**Pattern:**
+- 40% chance to use Rake
+- 60% chance to use Stab
+- Cannot use the same move 3 times in a row
+- Ascension 17+: Cannot use Rake twice consecutively
+
+**Implementation Notes:**
+- ✅ **FULLY IMPLEMENTED**
+- Probabilistic move selection with ascension-dependent constraints
+- Act 1 only (Hard Pool)
+- Can appear solo or in Exordium Thugs encounter
+- File: [blue_slaver.rs](src/enemies/blue_slaver.rs)
+
+---
+
+#### Red Slaver
+
+**Health:**
+- Base: 46-50 HP
+- Ascension 7+: 48-52 HP
+
+**Moves:**
+1. **Stab** (Attack Intent)
+   - Damage: 13
+   - Ascension 2+: 14 damage
+
+2. **Scrape** (Debuff/Attack Intent)
+   - Damage: 8
+   - Ascension 2+: 9 damage
+   - Applies 1 Vulnerable
+   - Ascension 17+: Applies 2 Vulnerable
+
+3. **Entangle** (Debuff Intent)
+   - Applies Entangled status (prevents Attack card plays for 1 turn)
+   - Can only be used once per combat
+
+**Pattern:**
+- **Turn 1**: Always Stab
+- **Before Entangle is used**:
+  - 25% chance per turn to use Entangle
+  - Base/A0-16: Follows "Scrape, Scrape, Stab" pattern
+  - Ascension 17+: Follows "Scrape, Stab" pattern (cannot use Scrape twice in a row)
+- **After Entangle is used**:
+  - 55% chance to use Scrape
+  - 45% chance to use Stab
+  - Cannot use Stab 3 times consecutively
+  - Cannot use Scrape 3 times consecutively
+
+**Implementation Notes:**
+- ✅ **FULLY IMPLEMENTED** including Entangled effect
+- Complex pattern with pre/post-Entangle phases
+- Entangle applies the Entangled status effect (prevents Attack card plays for 1 turn)
+- Entangled status decrements at end of turn like other debuffs
+- Can be blocked by Artifact
+- Act 1 only (Hard Pool)
+- Can appear solo or in Exordium Thugs encounter
+- File: [red_slaver.rs](src/enemies/red_slaver.rs)
 
 ---
 
@@ -1117,8 +1422,41 @@ Elite enemies have higher HP thresholds and appear at elite encounter nodes. Not
 ### Act 1 Elites
 
 #### Gremlin Nob
+**Health:**
+- Base: 82-86 HP
+- Ascension 8+: 85-90 HP (Note: Elites use A8 for HP instead of A7)
 
-See detailed entry in Act 1 Enemies section above.
+**Passive Ability:**
+- **Enrage**: Whenever you play a Skill card, gains Strength
+  - Base: +2 Strength per Skill
+  - Ascension 18+: +3 Strength per Skill
+
+**Moves:**
+1. **Bellow** (Buff Intent) - Always used first turn
+   - Gains 2 Enrage (passive Strength gain when player uses Skills)
+   - Note: This is different from enrage triggering - it's setting up the passive
+
+2. **Skull Bash** (Debuff/Attack Intent)
+   - Damage: 6
+   - Ascension 3+: 8 damage
+   - Ascension 18+: 8 damage
+   - Applies 2 Vulnerable
+
+3. **Bull Rush** (Attack Intent)
+   - Damage: 14
+   - Ascension 3+: 16 damage
+   - Ascension 18+: 16 damage
+
+**Pattern:**
+- Turn 1: Always Bellow
+- Base/A2-17: After Bellow
+  - 33% chance: Skull Bash
+  - 67% chance: Bull Rush
+  - Cannot use Bull Rush three consecutive times
+- Ascension 18+: Fixed pattern after Bellow
+  - Turn 2: Skull Bash
+  - Turn 3-4: Bull Rush (twice)
+  - Repeats: Skull Bash → Bull Rush → Bull Rush
 
 ---
 

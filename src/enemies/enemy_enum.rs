@@ -1,4 +1,4 @@
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, gremlin_nob::{GremlinNob, GremlinNobMove}, lagavulin::{Lagavulin, LagavulinMove}, sentry::{Sentry, SentryMove}, fat_gremlin::{FatGremlin, FatGremlinMove}, sneaky_gremlin::{SneakyGremlin, SneakyGremlinMove}, mad_gremlin::{MadGremlin, MadGremlinMove}, shield_gremlin::{ShieldGremlin, ShieldGremlinMove}, gremlin_wizard::{GremlinWizard, GremlinWizardMove}, looter::{Looter, LooterMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, gremlin_nob::{GremlinNob, GremlinNobMove}, lagavulin::{Lagavulin, LagavulinMove}, sentry::{Sentry, SentryMove}, fat_gremlin::{FatGremlin, FatGremlinMove}, sneaky_gremlin::{SneakyGremlin, SneakyGremlinMove}, mad_gremlin::{MadGremlin, MadGremlinMove}, shield_gremlin::{ShieldGremlin, ShieldGremlinMove}, gremlin_wizard::{GremlinWizard, GremlinWizardMove}, looter::{Looter, LooterMove}, fungi_beast::{FungiBeast, FungiBeastMove}, blue_slaver::{BlueSlaver, BlueSlaverMove}, red_slaver::{RedSlaver, RedSlaverMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
 
 #[derive(Debug)]
 pub enum EnemyEnum {
@@ -19,6 +19,9 @@ pub enum EnemyEnum {
     ShieldGremlin(ShieldGremlin),
     GremlinWizard(GremlinWizard),
     Looter(Looter),
+    FungiBeast(FungiBeast),
+    BlueSlaver(BlueSlaver),
+    RedSlaver(RedSlaver),
 }
 
 
@@ -42,6 +45,9 @@ pub enum EnemyMove {
     ShieldGremlin(ShieldGremlinMove),
     GremlinWizard(GremlinWizardMove),
     Looter(LooterMove),
+    FungiBeast(FungiBeastMove),
+    BlueSlaver(BlueSlaverMove),
+    RedSlaver(RedSlaverMove),
 }
 
 
@@ -117,6 +123,18 @@ impl EnemyEnum {
                 let (selected_move, effects) = looter.choose_move_and_effects(global_info, rng);
                 (EnemyMove::Looter(selected_move), effects)
             }
+            EnemyEnum::FungiBeast(fungi_beast) => {
+                let (selected_move, effects) = fungi_beast.choose_move_and_effects(global_info, rng);
+                (EnemyMove::FungiBeast(selected_move), effects)
+            }
+            EnemyEnum::BlueSlaver(blue_slaver) => {
+                let (selected_move, effects) = blue_slaver.choose_move_and_effects(global_info, rng);
+                (EnemyMove::BlueSlaver(selected_move), effects)
+            }
+            EnemyEnum::RedSlaver(red_slaver) => {
+                let (selected_move, effects) = red_slaver.choose_move_and_effects(global_info, rng);
+                (EnemyMove::RedSlaver(selected_move), effects)
+            }
         }
     }
 
@@ -141,6 +159,9 @@ impl EnemyEnum {
             EnemyEnum::ShieldGremlin(shield_gremlin) => shield_gremlin.get_hp(),
             EnemyEnum::GremlinWizard(gremlin_wizard) => gremlin_wizard.get_hp(),
             EnemyEnum::Looter(looter) => looter.get_hp(),
+            EnemyEnum::FungiBeast(fungi_beast) => fungi_beast.get_hp(),
+            EnemyEnum::BlueSlaver(blue_slaver) => blue_slaver.get_hp(),
+            EnemyEnum::RedSlaver(red_slaver) => red_slaver.get_hp(),
         }
     }
 }

@@ -35,6 +35,7 @@ pub enum Effect {
     ApplyVulnerableAll { duration: u32 },
     ApplyWeak { duration: u32 },
     ApplyFrail { duration: u32 },
+    ApplyEntangled { duration: u32 }, // Prevents Attack card plays
     GainStrength { amount: u32 },
     DoubleStrength, // Double current Strength
     LoseStrengthSelf (u32), // Self strength loss (targets source)
@@ -150,6 +151,10 @@ pub enum BaseEffect {
         duration: u32,
     },
     ApplyFrail {
+        target: Entity,
+        duration: u32,
+    },
+    ApplyEntangled {
         target: Entity,
         duration: u32,
     },
@@ -408,6 +413,7 @@ impl BaseEffect {
             Effect::ApplyVulnerableAll { duration } => BaseEffect::ApplyVulnerableAll { duration },
             Effect::ApplyWeak { duration } => BaseEffect::ApplyWeak { target, duration },
             Effect::ApplyFrail { duration } => BaseEffect::ApplyFrail { target, duration },
+            Effect::ApplyEntangled { duration } => BaseEffect::ApplyEntangled { target, duration },
             Effect::GainStrength { amount } => BaseEffect::GainStrength { source, amount },
             Effect::DoubleStrength => BaseEffect::DoubleStrength { source },
             Effect::LoseStrengthSelf(amount) => BaseEffect::LoseStrengthSelf { source, amount },

@@ -77,6 +77,17 @@ impl Battle {
                 EnemyEnum::Looter(_) => {
                     // Looter has no special listeners
                 }
+                EnemyEnum::FungiBeast(_) => {
+                    // Fungi Beast gets a Spore Cloud listener that triggers on death
+                    let spore_cloud_listener = crate::enemies::fungi_beast::SporeCloudListener::new(i);
+                    self.event_listeners.push(Box::new(spore_cloud_listener));
+                }
+                EnemyEnum::BlueSlaver(_) => {
+                    // Blue Slaver has no special listeners
+                }
+                EnemyEnum::RedSlaver(_) => {
+                    // Red Slaver has no special listeners
+                }
             }
         }
     }
@@ -183,5 +194,74 @@ mod tests {
         high_battle.apply_damage(Entity::Enemy(0), 6);
         let high_block = high_battle.enemies[0].battle_info.get_block();
         assert!(high_block >= 9 && high_block <= 12);
+    }
+
+    #[test]
+    fn test_fungi_beast_spore_cloud_on_death() {
+        use crate::enemies::fungi_beast::FungiBeast;
+        use crate::game::enemy::EnemyTrait;
+
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        // Create a Fungi Beast with low HP so we can kill it
+        let mut fungi = FungiBeast::instantiate(&mut rng, &global_info);
+        fungi.hp = 5; // Low HP for easy kill
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::FungiBeast(fungi))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Player should start with 0 Vulnerable
+        assert_eq!(battle.player.battle_info.get_vulnerable_turns(), 0);
+
+        // Deal enough damage to kill the Fungi Beast
+        battle.apply_damage(Entity::Enemy(0), 10);
+
+        // After killing Fungi Beast, player should have 2 Vulnerable from Spore Cloud
+        assert_eq!(battle.player.battle_info.get_vulnerable_turns(), 2);
+
+        // Enemy should be dead
+        assert!(!battle.enemies[0].battle_info.is_alive());
+    }
+
+    #[test]
+    fn test_two_fungi_beasts_spore_cloud_stacks() {
+        use crate::enemies::fungi_beast::FungiBeast;
+        use crate::game::enemy::EnemyTrait;
+
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        // Create two Fungi Beasts with low HP
+        let mut fungi1 = FungiBeast::instantiate(&mut rng, &global_info);
+        fungi1.hp = 5;
+        let mut fungi2 = FungiBeast::instantiate(&mut rng, &global_info);
+        fungi2.hp = 5;
+
+        let enemies = vec![
+            EnemyInBattle::new(EnemyEnum::FungiBeast(fungi1)),
+            EnemyInBattle::new(EnemyEnum::FungiBeast(fungi2)),
+        ];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Player should start with 0 Vulnerable
+        assert_eq!(battle.player.battle_info.get_vulnerable_turns(), 0);
+
+        // Kill the first Fungi Beast
+        battle.apply_damage(Entity::Enemy(0), 10);
+
+        // After killing first Fungi Beast, player should have 2 Vulnerable
+        assert_eq!(battle.player.battle_info.get_vulnerable_turns(), 2);
+
+        // Kill the second Fungi Beast
+        battle.apply_damage(Entity::Enemy(1), 10);
+
+        // After killing both, Vulnerable should stack to 4 turns (2 + 2)
+        assert_eq!(battle.player.battle_info.get_vulnerable_turns(), 4);
+
+        // Both enemies should be dead
+        assert!(!battle.enemies[0].battle_info.is_alive());
+        assert!(!battle.enemies[1].battle_info.is_alive());
     }
 }

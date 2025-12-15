@@ -210,6 +210,23 @@ impl Battle {
                     Entity::None => {} // No target
                 }
             },
+            BaseEffect::ApplyEntangled { target, duration } => {
+                match target {
+                    Entity::Player => {
+                        if !self.player.battle_info.consume_artifact() {
+                            self.player.battle_info.apply_entangled(*duration);
+                        }
+                    },
+                    Entity::Enemy(idx) => {
+                        if *idx < self.enemies.len() {
+                            if !self.enemies[*idx].battle_info.consume_artifact() {
+                                self.enemies[*idx].battle_info.apply_entangled(*duration);
+                            }
+                        }
+                    },
+                    Entity::None => {} // No target
+                }
+            },
             BaseEffect::AddSlimed { target, count } => {
                 match target {
                     Entity::Player => {
@@ -884,7 +901,7 @@ impl Battle {
             }
             Entity::None => 0, // No target, no damage dealt
         };
-        
+
         // Emit damage taken event if actual damage was dealt
         if actual_damage > 0 {
             let damage_event = BattleEvent::DamageTaken {
@@ -894,7 +911,17 @@ impl Battle {
             };
             self.emit_event(damage_event);
         }
-        
+
+        // Check if enemy died and emit death event
+        if let Entity::Enemy(idx) = target {
+            if idx < self.enemies.len() && !self.enemies[idx].battle_info.is_alive() {
+                let death_event = BattleEvent::EnemyDeath {
+                    enemy: target,
+                };
+                self.emit_event(death_event);
+            }
+        }
+
         actual_damage
     }
 
@@ -1239,6 +1266,92 @@ mod tests {
         assert!(!battle.player.battle_info.is_frail());
         assert_eq!(battle.player.battle_info.get_frail_turns(), 0);
         assert_eq!(battle.player.battle_info.get_artifact(), 0);
+    }
+
+    #[test]
+    fn test_artifact_blocks_entangled() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Give player artifact
+        battle.player.battle_info.gain_artifact(1);
+
+        // Try to apply entangled to player
+        let entangled_effect = BaseEffect::ApplyEntangled { target: Entity::Player, duration: 1 };
+        battle.eval_base_effect(&entangled_effect);
+
+        // Artifact should block entangled
+        assert!(!battle.player.battle_info.is_entangled());
+        assert_eq!(battle.player.battle_info.get_entangled_turns(), 0);
+        assert_eq!(battle.player.battle_info.get_artifact(), 0);
+    }
+
+    #[test]
+    fn test_entangled_prevents_attack_cards() {
+        use crate::cards::ironclad::strike::strike;
+        use crate::cards::ironclad::defend::defend;
+        use crate::game::deck::Deck;
+
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        // Create a deck with Strike (Attack) and Defend (Skill)
+        let deck = Deck::new(vec![strike(), defend()]);
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Player should start without entangled
+        assert!(!battle.player.battle_info.is_entangled());
+        assert_eq!(battle.player.battle_info.get_entangled_turns(), 0);
+
+        // Apply entangled to player
+        let entangled_effect = BaseEffect::ApplyEntangled { target: Entity::Player, duration: 1 };
+        battle.eval_base_effect(&entangled_effect);
+
+        // Player should now be entangled
+        assert!(battle.player.battle_info.is_entangled());
+        assert_eq!(battle.player.battle_info.get_entangled_turns(), 1);
+
+        // Try to play Strike (Attack card) - should fail with CardNotPlayable
+        let strike_result = battle.play_card(0, Entity::Enemy(0));
+        assert!(strike_result.is_err());
+        assert_eq!(strike_result.unwrap_err(), crate::battle::BattleError::CardNotPlayable);
+
+        // Try to play Defend (Skill card) - should succeed
+        let defend_result = battle.play_card(1, Entity::Enemy(0));
+        assert!(defend_result.is_ok());
+
+        // Player should have gained block from Defend (effects are queued but not yet executed)
+        // To verify the card was actually played, check that it's no longer in hand
+        assert_eq!(battle.cards.hand_size(), 1); // Only Strike should remain
+    }
+
+    #[test]
+    fn test_entangled_decrements_at_end_of_turn() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Apply entangled with 2 turns duration
+        battle.player.battle_info.apply_entangled(2);
+        assert_eq!(battle.player.battle_info.get_entangled_turns(), 2);
+
+        // End turn should decrement entangled
+        battle.player.battle_info.at_end_of_turn();
+        assert_eq!(battle.player.battle_info.get_entangled_turns(), 1);
+
+        // End turn again should decrement to 0
+        battle.player.battle_info.at_end_of_turn();
+        assert_eq!(battle.player.battle_info.get_entangled_turns(), 0);
+        assert!(!battle.player.battle_info.is_entangled());
     }
 
     #[test]

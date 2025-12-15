@@ -1,6 +1,6 @@
 use super::Battle;
 use crate::battle::{action::Action, target::Entity, BattleResult, BattleError};
-use crate::game::{effect::Effect, card::Card};
+use crate::game::{effect::Effect, card::Card, card_type::CardType};
 
 impl Battle {
     /// Evaluate a player action and return the battle result
@@ -204,11 +204,14 @@ impl Battle {
         // Check each card in hand
         let hand = self.cards.get_hand();
         for (card_index, card) in hand.iter().enumerate() {
-            // Check if card is playable and player has enough energy
-            if card.is_playable() && self.player.get_energy() >= card.get_cost() {
+            // Check if card is playable, player has enough energy, and card is not an Attack while Entangled
+            let is_attack_while_entangled = self.player.battle_info.is_entangled()
+                && card.get_card_type() == &CardType::Attack;
+
+            if card.is_playable() && self.player.get_energy() >= card.get_cost() && !is_attack_while_entangled {
                 // Determine valid targets for this card based on its type and effects
                 let valid_targets = self.get_valid_targets_for_card(card);
-                
+
                 // Add PlayCard action for each valid target
                 for target in valid_targets {
                     available_actions.push(Action::PlayCard(card_index, target));

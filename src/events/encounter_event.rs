@@ -13,6 +13,9 @@ pub enum EncounterEvent {
     SmallSlimes,
     GangOfGremlins, // 4 random gremlins (Mad, Sneaky, Fat, Shield, or Wizard)
     Looter,         // Single Looter that steals gold and escapes
+    TwoFungiBeasts, // Two Fungi Beasts with Spore Cloud
+    BlueSlaver,     // Single Blue Slaver (Act 1 Hard Pool)
+    RedSlaver,      // Single Red Slaver (Act 1 Hard Pool)
     GremlinNob,
     ThreeSentries,  // Act 1 Elite encounter
     Lagavulin,      // Act 1 Elite encounter
@@ -148,6 +151,19 @@ impl EncounterEvent {
                 let looter = crate::enemies::looter::Looter::instantiate(rng, global_info);
                 vec![EnemyEnum::Looter(looter)]
             }
+            EncounterEvent::TwoFungiBeasts => {
+                let fungi1 = crate::enemies::fungi_beast::FungiBeast::instantiate(rng, global_info);
+                let fungi2 = crate::enemies::fungi_beast::FungiBeast::instantiate(rng, global_info);
+                vec![EnemyEnum::FungiBeast(fungi1), EnemyEnum::FungiBeast(fungi2)]
+            }
+            EncounterEvent::BlueSlaver => {
+                let blue_slaver = crate::enemies::blue_slaver::BlueSlaver::instantiate(rng, global_info);
+                vec![EnemyEnum::BlueSlaver(blue_slaver)]
+            }
+            EncounterEvent::RedSlaver => {
+                let red_slaver = crate::enemies::red_slaver::RedSlaver::instantiate(rng, global_info);
+                vec![EnemyEnum::RedSlaver(red_slaver)]
+            }
         }
     }
 }
@@ -234,6 +250,44 @@ mod tests {
                 "Sentry {} should start with 1 Artifact",
                 i
             );
+        }
+    }
+
+    #[test]
+    fn test_blue_slaver_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::BlueSlaver;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+
+        assert_eq!(enemies.len(), 1);
+
+        match &enemies[0] {
+            EnemyEnum::BlueSlaver(slaver) => {
+                // Verify HP is in correct range for base ascension
+                assert!(slaver.get_hp() >= 46 && slaver.get_hp() <= 50);
+            }
+            _ => panic!("Expected BlueSlaver enemy"),
+        }
+    }
+
+    #[test]
+    fn test_red_slaver_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::RedSlaver;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+
+        assert_eq!(enemies.len(), 1);
+
+        match &enemies[0] {
+            EnemyEnum::RedSlaver(slaver) => {
+                // Verify HP is in correct range for base ascension
+                assert!(slaver.get_hp() >= 46 && slaver.get_hp() <= 50);
+            }
+            _ => panic!("Expected RedSlaver enemy"),
         }
     }
 
@@ -356,5 +410,30 @@ mod tests {
             _ => panic!("Expected Looter enemy"),
         }
     }
+
+    #[test]
+    fn test_two_fungi_beasts_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::TwoFungiBeasts;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+
+        // Should spawn exactly 2 Fungi Beasts
+        assert_eq!(enemies.len(), 2);
+
+        // Both should be Fungi Beasts
+        for enemy in &enemies {
+            match enemy {
+                EnemyEnum::FungiBeast(fungi) => {
+                    // Verify HP is in the correct range for ascension 0 (22-28)
+                    let hp = fungi.get_hp();
+                    assert!(hp >= 22 && hp <= 28, "Fungi Beast HP {} should be in range 22-28", hp);
+                }
+                _ => panic!("Expected Fungi Beast enemy"),
+            }
+        }
+    }
+
 }
 

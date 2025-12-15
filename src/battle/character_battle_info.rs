@@ -9,6 +9,7 @@ pub struct CharacterBattleInfo {
     pub dexterity: i32,
     pub weak_turns: u32,
     pub frail_turns: u32,
+    pub entangled_turns: u32,  // Number of turns unable to play Attack cards
     pub ritual: u32,
     pub rampage_damage: u32,
     pub artifact: u32,  // Number of artifact charges (blocks debuffs)
@@ -28,6 +29,7 @@ impl CharacterBattleInfo {
             dexterity: 0,
             weak_turns: 0,
             frail_turns: 0,
+            entangled_turns: 0,
             ritual: 0,
             rampage_damage: 0,
             artifact: 0,
@@ -46,6 +48,7 @@ impl CharacterBattleInfo {
             dexterity: 0,
             weak_turns: 0,
             frail_turns: 0,
+            entangled_turns: 0,
             ritual: 0,
             rampage_damage: 0,
             artifact: 0,
@@ -115,6 +118,11 @@ impl CharacterBattleInfo {
         self.frail_turns += turns;
     }
 
+    /// Apply entangled status (additive)
+    pub fn apply_entangled(&mut self, turns: u32) {
+        self.entangled_turns += turns;
+    }
+
     /// Start of turn - reset block and decrement status effects
     pub fn at_start_of_turn(&mut self) {
         self.block = 0;
@@ -133,6 +141,9 @@ impl CharacterBattleInfo {
         }
         if self.frail_turns > 0 {
             self.frail_turns -= 1;
+        }
+        if self.entangled_turns > 0 {
+            self.entangled_turns -= 1;
         }
     }
 
@@ -205,6 +216,16 @@ impl CharacterBattleInfo {
     /// Get frail turns remaining
     pub fn get_frail_turns(&self) -> u32 {
         self.frail_turns
+    }
+
+    /// Check if entangled
+    pub fn is_entangled(&self) -> bool {
+        self.entangled_turns > 0
+    }
+
+    /// Get entangled turns remaining
+    pub fn get_entangled_turns(&self) -> u32 {
+        self.entangled_turns
     }
 
     /// Gain strength

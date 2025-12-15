@@ -223,10 +223,13 @@ impl BattleCli {
         println!("4. Small Slimes (mixed slime encounter)");
         println!("5. Gang of Gremlins (4 random gremlins - includes Wizard!)");
         println!("6. Looter (steals gold and escapes)");
-        println!("7. Gremlin Nob (elite with enrage)");
-        println!("8. Three Sentries (elite - 3 sentries with alternating moves)");
-        println!("9. Lagavulin (elite - sleeps then attacks)");
-        print!("Enter your choice (1-9): ");
+        println!("7. Two Fungi Beasts (with Spore Cloud on death)");
+        println!("8. Blue Slaver (weak + stab attacks)");
+        println!("9. Red Slaver (vulnerable + entangle)");
+        println!("10. Gremlin Nob (elite with enrage)");
+        println!("11. Three Sentries (elite - 3 sentries with alternating moves)");
+        println!("12. Lagavulin (elite - sleeps then attacks)");
+        print!("Enter your choice (1-12): ");
         io::stdout().flush().unwrap();
 
         let mut input = String::new();
@@ -239,9 +242,12 @@ impl BattleCli {
             "4" => EncounterEvent::SmallSlimes,
             "5" => EncounterEvent::GangOfGremlins,
             "6" => EncounterEvent::Looter,
-            "7" => EncounterEvent::GremlinNob,
-            "8" => EncounterEvent::ThreeSentries,
-            "9" => EncounterEvent::Lagavulin,
+            "7" => EncounterEvent::TwoFungiBeasts,
+            "8" => EncounterEvent::BlueSlaver,
+            "9" => EncounterEvent::RedSlaver,
+            "10" => EncounterEvent::GremlinNob,
+            "11" => EncounterEvent::ThreeSentries,
+            "12" => EncounterEvent::Lagavulin,
             _ => {
                 println!("Invalid choice, defaulting to Two Louses");
                 EncounterEvent::TwoLouses
@@ -374,6 +380,9 @@ impl BattleCli {
                 EnemyEnum::ShieldGremlin(_) => "Shield Gremlin",
                 EnemyEnum::GremlinWizard(_) => "Gremlin Wizard",
                 EnemyEnum::Looter(_) => "Looter",
+                EnemyEnum::FungiBeast(_) => "Fungi Beast",
+                EnemyEnum::BlueSlaver(_) => "Blue Slaver",
+                EnemyEnum::RedSlaver(_) => "Red Slaver",
             };
 
             if enemy.battle_info.is_alive() {
@@ -501,6 +510,9 @@ impl BattleCli {
                                 EnemyEnum::ShieldGremlin(_) => "Shield Gremlin",
                                 EnemyEnum::GremlinWizard(_) => "Gremlin Wizard",
                                 EnemyEnum::Looter(_) => "Looter",
+                                EnemyEnum::FungiBeast(_) => "Fungi Beast",
+                                EnemyEnum::BlueSlaver(_) => "Blue Slaver",
+                                EnemyEnum::RedSlaver(_) => "Red Slaver",
                             };
                             println!("      {}{}. Target {} {}", action_index, 
                                 char::from(b'a' + target_idx as u8), enemy_name, enemy_idx + 1);
@@ -799,6 +811,9 @@ impl BattleCli {
                 }
                 crate::game::effect::Effect::ApplyFrail { duration } => {
                     parts.push(format!("🔻 Frail {}", duration));
+                }
+                crate::game::effect::Effect::ApplyEntangled { duration } => {
+                    parts.push(format!("🕸️ Entangled {}", duration));
                 }
                 crate::game::effect::Effect::AddSlimed(count) => {
                     parts.push(format!("🐛 +{} Slimed", count));
