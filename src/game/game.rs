@@ -43,8 +43,17 @@ pub enum GameError {
 }
 
 /// Result of a game action
+#[derive(Debug, Clone)]
+pub struct GameResult {
+    /// Game outcome after the action
+    pub outcome: GameOutcome,
+    /// Battle events that occurred during this action (if any)
+    pub battle_events: Vec<crate::battle::events::BattleEvent>,
+}
+
+/// Game outcome after an action
 #[derive(Debug, Clone, PartialEq)]
-pub enum GameResult {
+pub enum GameOutcome {
     /// Action completed, game continues
     Continue,
     /// Run completed successfully
@@ -149,44 +158,57 @@ impl Game {
                 // Delegate to battle if one is active
                 if let Some(battle) = &mut self.battle {
                     match battle.eval_action(battle_action, rng) {
-                        Ok(BattleResult::Continued) => Ok(GameResult::Continue),
-                        Ok(BattleResult::Won) => {
-                            // Battle won, sync HP and gold back
-                            // Extract values before modifying self
-                            let (final_hp, gold_to_lose) = if let Some(battle) = &self.battle {
-                                let hp = battle.get_final_player_hp();
-                                let enemies_escaped = battle.get_enemies().iter().any(|e| e.battle_info.has_escaped());
-                                let gold_lost = if enemies_escaped {
-                                    battle.get_gold_stolen()
-                                } else {
-                                    0 // Gold is returned if all enemies were killed
-                                };
-                                (hp, gold_lost)
-                            } else {
-                                (self.player_hp, 0)
+                        Ok(battle_result) => {
+                            // Collect events from the battle
+                            let battle_events = battle.take_battle_events();
+
+                            // Determine game outcome based on battle result
+                            let outcome = match battle_result {
+                                BattleResult::Continued => GameOutcome::Continue,
+                                BattleResult::Won => {
+                                    // Battle won, sync HP and gold back
+                                    // Extract values before modifying self
+                                    let (final_hp, gold_to_lose) = if let Some(battle) = &self.battle {
+                                        let hp = battle.get_final_player_hp();
+                                        let enemies_escaped = battle.get_enemies().iter().any(|e| e.battle_info.has_escaped());
+                                        let gold_lost = if enemies_escaped {
+                                            battle.get_gold_stolen()
+                                        } else {
+                                            0 // Gold is returned if all enemies were killed
+                                        };
+                                        (hp, gold_lost)
+                                    } else {
+                                        (self.player_hp, 0)
+                                    };
+
+                                    self.set_player_hp(final_hp);
+                                    self.gold = self.gold.saturating_sub(gold_to_lose);
+                                    self.battle = None;
+                                    self.global_info.current_floor += 1;
+
+                                    // Emit combat victory event for relic effects
+                                    self.emit_game_event(GameEvent::CombatVictory);
+
+                                    // Start card reward selection after victory
+                                    self.start_card_reward_selection(rng);
+
+                                    GameOutcome::Continue
+                                },
+                                BattleResult::Lost => {
+                                    // Battle lost, sync HP back and game over
+                                    if let Some(battle) = &self.battle {
+                                        self.set_player_hp(battle.get_final_player_hp());
+                                    }
+                                    self.battle = None;
+                                    self.state = GameState::OnMap; // For now, just return to map
+                                    GameOutcome::Defeat
+                                },
                             };
 
-                            self.set_player_hp(final_hp);
-                            self.gold = self.gold.saturating_sub(gold_to_lose);
-                            self.battle = None;
-                            self.global_info.current_floor += 1;
-
-                            // Emit combat victory event for relic effects
-                            self.emit_game_event(GameEvent::CombatVictory);
-
-                            // Start card reward selection after victory
-                            self.start_card_reward_selection(rng);
-
-                            Ok(GameResult::Continue)
-                        },
-                        Ok(BattleResult::Lost) => {
-                            // Battle lost, sync HP back and game over
-                            if let Some(battle) = &self.battle {
-                                self.set_player_hp(battle.get_final_player_hp());
-                            }
-                            self.battle = None;
-                            self.state = GameState::OnMap; // For now, just return to map
-                            Ok(GameResult::Defeat)
+                            Ok(GameResult {
+                                outcome,
+                                battle_events,
+                            })
                         },
                         Err(battle_error) => Err(GameError::Battle(battle_error)),
                     }
@@ -279,7 +301,7 @@ impl Game {
                     }
                 }
   
-                Ok(GameResult::Continue)
+                Ok(GameResult { outcome: GameOutcome::Continue, battle_events: Vec::new() })
             },
 
             GameAction::SelectCardReward(card_index) => {
@@ -301,7 +323,7 @@ impl Game {
                 // Return to map
                 self.state = GameState::OnMap;
 
-                Ok(GameResult::Continue)
+                Ok(GameResult { outcome: GameOutcome::Continue, battle_events: Vec::new() })
             },
 
             GameAction::ChooseEvent(choice_index) => {
@@ -327,12 +349,12 @@ impl Game {
 
                         // Event is complete, return to map
                         self.state = GameState::OnMap;
-                        Ok(GameResult::Continue)
+                        Ok(GameResult { outcome: GameOutcome::Continue, battle_events: Vec::new() })
                     },
                     EventOutcome::NextChoices(new_choices) => {
                         // Transition to next set of choices
                         self.state = GameState::InEvent(event, new_choices);
-                        Ok(GameResult::Continue)
+                        Ok(GameResult { outcome: GameOutcome::Continue, battle_events: Vec::new() })
                     },
                 }
             },
@@ -375,7 +397,7 @@ impl Game {
 
                 // Card upgrade is complete, return to map
                 self.state = GameState::OnMap;
-                Ok(GameResult::Continue)
+                Ok(GameResult { outcome: GameOutcome::Continue, battle_events: Vec::new() })
             },
 
             GameAction::RestSiteChoice(rest_site_action) => {
@@ -415,10 +437,10 @@ impl Game {
                         info!("Card upgrade option chosen - select a card to upgrade");
 
                         // Don't return to map yet - wait for card selection
-                        return Ok(GameResult::Continue);
+                        return Ok(GameResult { outcome: GameOutcome::Continue, battle_events: Vec::new() });
                     },
                 }
-                Ok(GameResult::Continue)
+                Ok(GameResult { outcome: GameOutcome::Continue, battle_events: Vec::new() })
             },
 
             GameAction::BuyCard(card_index) => {
@@ -455,7 +477,7 @@ impl Game {
                 // Update shop state
                 self.state = GameState::Shop(shop_state);
 
-                Ok(GameResult::Continue)
+                Ok(GameResult { outcome: GameOutcome::Continue, battle_events: Vec::new() })
             },
 
             GameAction::LeaveShop => {
@@ -465,7 +487,7 @@ impl Game {
                         // Leave shop and return to map
                         self.state = GameState::OnMap;
                         info!("Left shop, returning to map");
-                        Ok(GameResult::Continue)
+                        Ok(GameResult { outcome: GameOutcome::Continue, battle_events: Vec::new() })
                     },
                     _ => return Err(GameError::InvalidState),
                 }

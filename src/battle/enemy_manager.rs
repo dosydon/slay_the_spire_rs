@@ -3,6 +3,8 @@ use crate::enemies::enemy_enum::{EnemyEnum, EnemyMove};
 use crate::game::{effect::Effect, global_info::GlobalInfo};
 use crate::battle::target::Entity;
 use crate::enemies::red_louse::CurlUpListener;
+use crate::enemies::acid_slime_l::AcidSlimeLSplitListener;
+use crate::enemies::spike_slime_l::SpikeSlimeLSplitListener;
 
 impl Battle {
     /// Initialize event listeners for enemies based on their type
@@ -31,11 +33,21 @@ impl Battle {
                 EnemyEnum::SpikeSlimeM(_) => {
                     // Spike Slime (M) has no special listeners
                 }
+                EnemyEnum::SpikeSlimeL(_) => {
+                    // Spike Slime (L) gets a half-HP split listener
+                    let split_listener = SpikeSlimeLSplitListener::new(i);
+                    self.event_listeners.push(Box::new(split_listener));
+                }
                 EnemyEnum::AcidSlimeS(_) => {
                     // Acid Slime (S) has no special listeners
                 }
                 EnemyEnum::AcidSlimeM(_) => {
                     // Acid Slime (M) has no special listeners
+                }
+                EnemyEnum::AcidSlimeL(_) => {
+                    // Acid Slime (L) gets a half-HP split listener
+                    let split_listener = AcidSlimeLSplitListener::new(i);
+                    self.event_listeners.push(Box::new(split_listener));
                 }
                 EnemyEnum::GremlinNob(_) => {
                     // Gremlin Nob gets an enrage listener only AFTER it uses its first move (Bellow)

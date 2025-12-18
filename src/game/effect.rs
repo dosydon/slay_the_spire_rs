@@ -110,6 +110,7 @@ pub enum Effect {
     ActivateAngry { amount: u32 }, // Activates Angry listener for this enemy (gains Strength when damaged)
     StealGold { amount: u32 }, // Steal gold from the player (used by Looter)
     EnemyEscape, // Enemy escapes from combat (used by Looter)
+    SplitIntoMediumSlimes, // Split into 2 medium slimes (used by large slimes on death)
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -402,6 +403,9 @@ pub enum BaseEffect {
     EnemyEscape {
         source: Entity,
     },
+    SplitIntoMediumSlimes {
+        source: Entity,
+    },
 }
 
 impl BaseEffect {
@@ -501,6 +505,7 @@ impl BaseEffect {
             Effect::ActivateAngry { amount } => BaseEffect::ActivateAngry { source, amount },
             Effect::StealGold { amount } => BaseEffect::StealGold { source, amount },
             Effect::EnemyEscape => BaseEffect::EnemyEscape { source },
+            Effect::SplitIntoMediumSlimes => BaseEffect::SplitIntoMediumSlimes { source },
         }
     }
 }

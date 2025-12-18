@@ -3,6 +3,7 @@ use crate::game::effect::BaseEffect;
 use crate::battle::{target::Entity, events::BattleEvent};
 use crate::enemies::gremlin_nob::EnrageListener;
 use rand::prelude::IndexedRandom;
+use log::info;
 
 impl Battle {
     /// Apply a specific effect with its target
@@ -848,6 +849,35 @@ impl Battle {
                     }
                 }
             },
+            BaseEffect::SplitIntoMediumSlimes { source } => {
+                // Large slime splits into 2 medium slimes of the same type (at half HP)
+                if let Entity::Enemy(idx) = source {
+                    if *idx < self.enemies.len() {
+                        // Get the current HP of the large slime - this will be used for the spawned medium slimes
+                        let current_hp = self.enemies[*idx].battle_info.get_hp();
+
+                        // Create 2 medium slimes based on the large slime type, each with the large slime's current HP
+                        match &self.enemies[*idx].enemy {
+                            crate::enemies::enemy_enum::EnemyEnum::AcidSlimeL(_) => {
+                                // Create 2 Acid Slime M with the large slime's current HP
+                                self.spawn_medium_slimes_with_hp("acid", 2, current_hp);
+                            },
+                            crate::enemies::enemy_enum::EnemyEnum::SpikeSlimeL(_) => {
+                                // Create 2 Spike Slime M with the large slime's current HP
+                                self.spawn_medium_slimes_with_hp("spike", 2, current_hp);
+                            },
+                            _ => {
+                                // Other enemy types shouldn't use this effect
+                                eprintln!("Warning: SplitIntoMediumSlimes used on non-slime enemy type");
+                            }
+                        }
+
+                        // Mark the large slime as "dead" so it gets removed from the active enemies
+                        // This simulates the large slime being replaced by the medium slimes
+                        self.enemies[*idx].battle_info.set_current_hp(0);
+                    }
+                }
+            },
             BaseEffect::AddCardToHand { source: _, card } => {
                 // Add card to hand
                 let card_reward_pool = crate::game::card_reward::CardRewardPool::new();
@@ -921,13 +951,33 @@ impl Battle {
             self.emit_event(damage_event);
         }
 
-        // Check if enemy died and emit death event
+        // Check for half-HP split for large slimes (slimes split at half HP, not on death)
         if let Entity::Enemy(idx) = target {
-            if idx < self.enemies.len() && !self.enemies[idx].battle_info.is_alive() {
-                let death_event = BattleEvent::EnemyDeath {
-                    enemy: target,
-                };
-                self.emit_event(death_event);
+            if idx < self.enemies.len() {
+                // Check if this is a large slime and if HP is less than half for the first time
+                match &self.enemies[idx].enemy {
+                    crate::enemies::enemy_enum::EnemyEnum::AcidSlimeL(_) |
+                    crate::enemies::enemy_enum::EnemyEnum::SpikeSlimeL(_) => {
+                        let current_hp = self.enemies[idx].battle_info.get_hp();
+                        let max_hp = self.enemies[idx].enemy.get_hp();
+
+                        // Check if HP is less than half AND the slime is still alive (hasn't split yet)
+                        if current_hp < (max_hp / 2) && current_hp > 0 {
+                            info!("Large slime splitting at HP {} (max: {})", current_hp, max_hp);
+                            // Apply the split effect - this will replace the large slime with 2 medium slimes
+                            self.eval_base_effect(&BaseEffect::SplitIntoMediumSlimes { source: target });
+                        }
+                    }
+                    _ => {}
+                }
+
+                // Then check if enemy died (non-slime enemies)
+                if !self.enemies[idx].battle_info.is_alive() {
+                    let death_event = BattleEvent::EnemyDeath {
+                        enemy: target,
+                    };
+                    self.emit_event(death_event);
+                }
             }
         }
 
@@ -1432,6 +1482,37 @@ impl Battle {
     /// Queue an effect to be processed later
     pub(crate) fn queue_effect(&mut self, effect: BaseEffect) {
         self.effect_queue.push(effect);
+    }
+
+    /// Spawn medium slimes with specified HP
+    fn spawn_medium_slimes_with_hp(&mut self, slime_type: &str, count: u32, hp: u32) {
+        // Create new medium slimes with the specified HP
+
+        for _ in 0..count {
+            match slime_type {
+                "acid" => {
+                    let acid_slime_m = crate::enemies::acid_slime_m::AcidSlimeM::new(hp);
+                    let enemy_enum = crate::enemies::enemy_enum::EnemyEnum::AcidSlimeM(acid_slime_m);
+                    let enemy_in_battle = crate::battle::enemy_in_battle::EnemyInBattle::new(enemy_enum);
+                    self.enemies.push(enemy_in_battle);
+                },
+                "spike" => {
+                    let spike_slime_m = crate::enemies::spike_slime_m::SpikeSlimeM::new(hp);
+                    let enemy_enum = crate::enemies::enemy_enum::EnemyEnum::SpikeSlimeM(spike_slime_m);
+                    let enemy_in_battle = crate::battle::enemy_in_battle::EnemyInBattle::new(enemy_enum);
+                    self.enemies.push(enemy_in_battle);
+                },
+                _ => {
+                    eprintln!("Warning: Cannot spawn non-medium slime type: {}", slime_type);
+                }
+            }
+        }
+
+        // Emit enemy spawn event to notify UI systems
+        let spawn_event = BattleEvent::EnemySpawned {
+            new_enemy_count: self.enemies.len(),
+        };
+        self.emit_event(spawn_event);
     }
 
     /// Process all effects in the effect queue

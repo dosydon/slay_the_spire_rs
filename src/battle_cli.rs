@@ -222,14 +222,19 @@ impl BattleCli {
         println!("3. Cultist (ritual caster)");
         println!("4. Small Slimes (mixed slime encounter)");
         println!("5. Gang of Gremlins (4 random gremlins - includes Wizard!)");
-        println!("6. Looter (steals gold and escapes)");
-        println!("7. Two Fungi Beasts (with Spore Cloud on death)");
-        println!("8. Blue Slaver (weak + stab attacks)");
-        println!("9. Red Slaver (vulnerable + entangle)");
-        println!("10. Gremlin Nob (elite with enrage)");
-        println!("11. Three Sentries (elite - 3 sentries with alternating moves)");
-        println!("12. Lagavulin (elite - sleeps then attacks)");
-        print!("Enter your choice (1-12): ");
+        println!("6. Large Slime (Spike Slime L or Acid Slime L)");
+        println!("7. Swarm of Slimes (3 Spike S + 2 Acid S)");
+        println!("8. Three Louses (3 random louses)");
+        println!("9. Looter (steals gold and escapes)");
+        println!("10. Two Fungi Beasts (with Spore Cloud on death)");
+        println!("11. Blue Slaver (weak + stab attacks)");
+        println!("12. Red Slaver (vulnerable + entangle)");
+        println!("13. Exordium Thugs (Louse/Med Slime + Slaver/Cultist/Looter)");
+        println!("14. Exordium Wildlife (Fungi Beast/Jaw Worm + Louse/Med Slime)");
+        println!("15. Gremlin Nob (elite with enrage)");
+        println!("16. Three Sentries (elite - 3 sentries with alternating moves)");
+        println!("17. Lagavulin (elite - sleeps then attacks)");
+        print!("Enter your choice (1-17): ");
         io::stdout().flush().unwrap();
 
         let mut input = String::new();
@@ -241,13 +246,18 @@ impl BattleCli {
             "3" => EncounterEvent::Cultist,
             "4" => EncounterEvent::SmallSlimes,
             "5" => EncounterEvent::GangOfGremlins,
-            "6" => EncounterEvent::Looter,
-            "7" => EncounterEvent::TwoFungiBeasts,
-            "8" => EncounterEvent::BlueSlaver,
-            "9" => EncounterEvent::RedSlaver,
-            "10" => EncounterEvent::GremlinNob,
-            "11" => EncounterEvent::ThreeSentries,
-            "12" => EncounterEvent::Lagavulin,
+            "6" => EncounterEvent::LargeSlime,
+            "7" => EncounterEvent::SwarmOfSlimes,
+            "8" => EncounterEvent::ThreeLouses,
+            "9" => EncounterEvent::Looter,
+            "10" => EncounterEvent::TwoFungiBeasts,
+            "11" => EncounterEvent::BlueSlaver,
+            "12" => EncounterEvent::RedSlaver,
+            "13" => EncounterEvent::ExordiumThugs,
+            "14" => EncounterEvent::ExordiumWildlife,
+            "15" => EncounterEvent::GremlinNob,
+            "16" => EncounterEvent::ThreeSentries,
+            "17" => EncounterEvent::Lagavulin,
             _ => {
                 println!("Invalid choice, defaulting to Two Louses");
                 EncounterEvent::TwoLouses
@@ -369,8 +379,10 @@ impl BattleCli {
                 EnemyEnum::Cultist(_) => "Cultist",
                 EnemyEnum::SpikeSlimeS(_) => "Spike Slime (S)",
                 EnemyEnum::SpikeSlimeM(_) => "Spike Slime (M)",
+                EnemyEnum::SpikeSlimeL(_) => "Spike Slime (L)",
                 EnemyEnum::AcidSlimeS(_) => "Acid Slime (S)",
                 EnemyEnum::AcidSlimeM(_) => "Acid Slime (M)",
+                EnemyEnum::AcidSlimeL(_) => "Acid Slime (L)",
                 EnemyEnum::GremlinNob(_) => "Gremlin Nob",
                 EnemyEnum::Lagavulin(_) => "Lagavulin",
                 EnemyEnum::Sentry(_) => "Sentry",
@@ -499,8 +511,10 @@ impl BattleCli {
                                 EnemyEnum::Cultist(_) => "Cultist",
                                 EnemyEnum::SpikeSlimeS(_) => "Spike Slime (S)",
                                 EnemyEnum::SpikeSlimeM(_) => "Spike Slime (M)",
+                                EnemyEnum::SpikeSlimeL(_) => "Spike Slime (L)",
                                 EnemyEnum::AcidSlimeS(_) => "Acid Slime (S)",
                                 EnemyEnum::AcidSlimeM(_) => "Acid Slime (M)",
+                                EnemyEnum::AcidSlimeL(_) => "Acid Slime (L)",
                                 EnemyEnum::GremlinNob(_) => "Gremlin Nob",
                                 EnemyEnum::Lagavulin(_) => "Lagavulin",
                                 EnemyEnum::Sentry(_) => "Sentry",
@@ -1026,6 +1040,9 @@ impl BattleCli {
                 }
                 crate::game::effect::Effect::EnemyEscape => {
                     parts.push("💨 Escape".to_string());
+                }
+                crate::game::effect::Effect::SplitIntoMediumSlimes => {
+                    parts.push("🔄 Split into 2 medium slimes".to_string());
                 }
             }
         }

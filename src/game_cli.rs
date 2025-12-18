@@ -1,6 +1,6 @@
 use std::io::Write;
 use crate::game::{
-    game::{Game, GameState, GameResult, GameError},
+    game::{Game, GameState, GameResult, GameError, GameOutcome},
     action::GameAction,
     global_info::GlobalInfo,
     deck::Deck,
@@ -209,12 +209,12 @@ impl GameCli {
             };
 
             match self.game.eval_action(GameAction::ChoosePath(path_index), &mut self.rng) {
-                Ok(GameResult::Continue) => break,
-                Ok(GameResult::Victory) => {
+                Ok(GameResult { outcome: GameOutcome::Continue, battle_events: _ }) => break,
+                Ok(GameResult { outcome: GameOutcome::Victory, battle_events: _ }) => {
                     println!("\n🎉 VICTORY! You've completed the spire!");
                     return Ok(());
                 },
-                Ok(GameResult::Defeat) => {
+                Ok(GameResult { outcome: GameOutcome::Defeat, battle_events: _ }) => {
                     println!("\n💀 DEFEAT! Your journey ends here.");
                     return Ok(());
                 },
@@ -322,15 +322,15 @@ impl GameCli {
                 Ok(choice) if choice >= 1 && choice <= reward_options.len() => {
                     let card_index = choice - 1;
                     match self.game.eval_action(GameAction::SelectCardReward(card_index), &mut self.rng) {
-                        Ok(GameResult::Continue) => {
+                        Ok(GameResult { outcome: GameOutcome::Continue, battle_events: _ }) => {
                             println!("\n✅ Card added to your deck!");
                             break;
                         },
-                        Ok(GameResult::Victory) => {
+                        Ok(GameResult { outcome: GameOutcome::Victory, battle_events: _ }) => {
                             println!("\n🎉 VICTORY! You've completed the spire!");
                             return Ok(());
                         },
-                        Ok(GameResult::Defeat) => {
+                        Ok(GameResult { outcome: GameOutcome::Defeat, battle_events: _ }) => {
                             println!("\n💀 DEFEAT! Your journey ends here.");
                             return Ok(());
                         },
@@ -379,15 +379,15 @@ impl GameCli {
                 Ok(choice) if choice >= 1 && choice <= choices_len => {
                     let choice_index = choice - 1;
                     match self.game.eval_action(GameAction::ChooseEvent(choice_index), &mut self.rng) {
-                        Ok(GameResult::Continue) => {
+                        Ok(GameResult { outcome: GameOutcome::Continue, battle_events: _ }) => {
                             println!("\n✅ Event resolved!");
                             break;
                         },
-                        Ok(GameResult::Victory) => {
+                        Ok(GameResult { outcome: GameOutcome::Victory, battle_events: _ }) => {
                             println!("\n🎉 VICTORY! You've completed the spire!");
                             return Ok(());
                         },
-                        Ok(GameResult::Defeat) => {
+                        Ok(GameResult { outcome: GameOutcome::Defeat, battle_events: _ }) => {
                             println!("\n💀 DEFEAT! Your journey ends here.");
                             return Ok(());
                         },

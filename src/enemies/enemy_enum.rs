@@ -1,4 +1,4 @@
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, gremlin_nob::{GremlinNob, GremlinNobMove}, lagavulin::{Lagavulin, LagavulinMove}, sentry::{Sentry, SentryMove}, fat_gremlin::{FatGremlin, FatGremlinMove}, sneaky_gremlin::{SneakyGremlin, SneakyGremlinMove}, mad_gremlin::{MadGremlin, MadGremlinMove}, shield_gremlin::{ShieldGremlin, ShieldGremlinMove}, gremlin_wizard::{GremlinWizard, GremlinWizardMove}, looter::{Looter, LooterMove}, fungi_beast::{FungiBeast, FungiBeastMove}, blue_slaver::{BlueSlaver, BlueSlaverMove}, red_slaver::{RedSlaver, RedSlaverMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, spike_slime_l::{SpikeSlimeL, SpikeSlimeLMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, acid_slime_l::{AcidSlimeL, AcidSlimeLMove}, gremlin_nob::{GremlinNob, GremlinNobMove}, lagavulin::{Lagavulin, LagavulinMove}, sentry::{Sentry, SentryMove}, fat_gremlin::{FatGremlin, FatGremlinMove}, sneaky_gremlin::{SneakyGremlin, SneakyGremlinMove}, mad_gremlin::{MadGremlin, MadGremlinMove}, shield_gremlin::{ShieldGremlin, ShieldGremlinMove}, gremlin_wizard::{GremlinWizard, GremlinWizardMove}, looter::{Looter, LooterMove}, fungi_beast::{FungiBeast, FungiBeastMove}, blue_slaver::{BlueSlaver, BlueSlaverMove}, red_slaver::{RedSlaver, RedSlaverMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
 
 #[derive(Debug, Clone)]
 pub enum EnemyEnum {
@@ -8,8 +8,10 @@ pub enum EnemyEnum {
     Cultist(Cultist),
     SpikeSlimeS(SpikeSlimeS),
     SpikeSlimeM(SpikeSlimeM),
+    SpikeSlimeL(SpikeSlimeL),
     AcidSlimeS(AcidSlimeS),
     AcidSlimeM(AcidSlimeM),
+    AcidSlimeL(AcidSlimeL),
     GremlinNob(GremlinNob),
     Lagavulin(Lagavulin),
     Sentry(Sentry),
@@ -34,8 +36,10 @@ pub enum EnemyMove {
     Cultist(CultistMove),
     SpikeSlimeS(SpikeSlimeSMove),
     SpikeSlimeM(SpikeSlimeMMove),
+    SpikeSlimeL(SpikeSlimeLMove),
     AcidSlimeS(AcidSlimeSMove),
     AcidSlimeM(AcidSlimeMMove),
+    AcidSlimeL(AcidSlimeLMove),
     GremlinNob(GremlinNobMove),
     Lagavulin(LagavulinMove),
     Sentry(SentryMove),
@@ -79,6 +83,10 @@ impl EnemyEnum {
                 let (selected_move, effects) = spike_slime.choose_move_and_effects(global_info, rng);
                 (EnemyMove::SpikeSlimeM(selected_move), effects)
             }
+            EnemyEnum::SpikeSlimeL(spike_slime) => {
+                let (selected_move, effects) = spike_slime.choose_move_and_effects(global_info, rng);
+                (EnemyMove::SpikeSlimeL(selected_move), effects)
+            }
             EnemyEnum::AcidSlimeS(acid_slime) => {
                 let (selected_move, effects) = acid_slime.choose_move_and_effects(global_info, rng);
                 (EnemyMove::AcidSlimeS(selected_move), effects)
@@ -86,6 +94,10 @@ impl EnemyEnum {
             EnemyEnum::AcidSlimeM(acid_slime) => {
                 let (selected_move, effects) = acid_slime.choose_move_and_effects(global_info, rng);
                 (EnemyMove::AcidSlimeM(selected_move), effects)
+            }
+            EnemyEnum::AcidSlimeL(acid_slime) => {
+                let (selected_move, effects) = acid_slime.choose_move_and_effects(global_info, rng);
+                (EnemyMove::AcidSlimeL(selected_move), effects)
             }
             EnemyEnum::GremlinNob(gremlin_nob) => {
                 let (selected_move, effects) = gremlin_nob.choose_move_and_effects(global_info, rng);
@@ -148,8 +160,10 @@ impl EnemyEnum {
             EnemyEnum::Cultist(cultist) => cultist.get_hp(),
             EnemyEnum::SpikeSlimeS(spike_slime) => spike_slime.get_hp(),
             EnemyEnum::SpikeSlimeM(spike_slime) => spike_slime.get_hp(),
+            EnemyEnum::SpikeSlimeL(spike_slime) => spike_slime.get_hp(),
             EnemyEnum::AcidSlimeS(acid_slime) => acid_slime.get_hp(),
             EnemyEnum::AcidSlimeM(acid_slime) => acid_slime.get_hp(),
+            EnemyEnum::AcidSlimeL(acid_slime) => acid_slime.get_hp(),
             EnemyEnum::GremlinNob(gremlin_nob) => gremlin_nob.get_hp(),
             EnemyEnum::Lagavulin(lagavulin) => lagavulin.get_hp(),
             EnemyEnum::Sentry(sentry) => sentry.get_hp(),

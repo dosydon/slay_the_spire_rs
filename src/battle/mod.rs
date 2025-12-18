@@ -51,6 +51,8 @@ pub struct Battle {
     pub(crate) battle_state: BattleState,
     /// Gold stolen during battle (e.g., by Looter)
     gold_stolen: u32,
+    /// Events that occurred during the last action (for GUI to read)
+    pub battle_events: Vec<BattleEvent>,
 }
 
 impl Battle {
@@ -80,6 +82,7 @@ impl Battle {
             effect_queue: Vec::new(),
             battle_state: BattleState::PlayerTurn,
             gold_stolen: 0,
+            battle_events: Vec::new(),
         };
 
         // Initialize event listeners for enemies

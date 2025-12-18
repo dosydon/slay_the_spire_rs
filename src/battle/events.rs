@@ -1,7 +1,8 @@
 use crate::{battle::target::Entity, game::effect::Effect};
 use std::any::Any;
+use bevy::prelude::Event;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Event)]
 pub enum BattleEvent {
     DamageTaken {
         target: Entity,
@@ -45,6 +46,9 @@ pub enum BattleEvent {
     },
     EnemyDeath {
         enemy: Entity,
+    },
+    EnemySpawned {
+        new_enemy_count: usize, // Total enemy count after spawning
     },
 }
 

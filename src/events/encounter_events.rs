@@ -16,7 +16,7 @@ pub enum EncounterEvent {
 
     // Act 1 Hard Pool (After first 3 encounters)
     GangOfGremlins,  // 4 random gremlins (Mad, Sneaky, Fat, Shield, or Wizard)
-    // TODO: LargeSlime - Spike Slime (L) or Acid Slime (L) - not yet implemented
+    LargeSlime,      // Spike Slime (L) or Acid Slime (L)
     SwarmOfSlimes,   // 3× Spike Slime (S) + 2× Acid Slime (S)
     BlueSlaver,      // Single Blue Slaver
     RedSlaver,       // Single Red Slaver
@@ -67,7 +67,7 @@ fn act1_hard_pool() -> CategoricalDistribution<EncounterEvent> {
     // Weights from ENEMIES.md
     CategoricalDistribution::new(vec![
         (EncounterEvent::GangOfGremlins, 1.0),   // Weight: 1
-        // TODO: LargeSlime (weight 2.0) - not implemented yet (needs Large Slime enemies)
+        (EncounterEvent::LargeSlime, 2.0),       // Weight: 2
         (EncounterEvent::SwarmOfSlimes, 1.0),    // Weight: 1
         (EncounterEvent::BlueSlaver, 2.0),       // Weight: 2
         (EncounterEvent::RedSlaver, 1.0),        // Weight: 1
@@ -188,6 +188,16 @@ impl EncounterEvent {
                 }
 
                 gremlins
+            }
+            EncounterEvent::LargeSlime => {
+                // Spawn either Spike Slime (L) or Acid Slime (L) (50/50 chance)
+                if rng.random::<f64>() < 0.5 {
+                    let spike_slime_l = crate::enemies::spike_slime_l::SpikeSlimeL::instantiate(rng, global_info);
+                    vec![EnemyEnum::SpikeSlimeL(spike_slime_l)]
+                } else {
+                    let acid_slime_l = crate::enemies::acid_slime_l::AcidSlimeL::instantiate(rng, global_info);
+                    vec![EnemyEnum::AcidSlimeL(acid_slime_l)]
+                }
             }
             EncounterEvent::GremlinNob => {
                 let gremlin_nob = crate::enemies::gremlin_nob::GremlinNob::instantiate(rng, global_info);
@@ -653,6 +663,29 @@ mod tests {
 
         assert_eq!(spike_count, 3, "Should have exactly 3 Spike Slimes (S)");
         assert_eq!(acid_count, 2, "Should have exactly 2 Acid Slimes (S)");
+    }
+
+    #[test]
+    fn test_large_slime_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::LargeSlime;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+
+        // Should spawn exactly 1 large slime
+        assert_eq!(enemies.len(), 1);
+
+        // Should be either Spike Slime (L) or Acid Slime (L)
+        match &enemies[0] {
+            EnemyEnum::SpikeSlimeL(slime) => {
+                assert!(slime.get_hp() >= 64 && slime.get_hp() <= 70, "Spike Slime (L) HP should be 64-70");
+            }
+            EnemyEnum::AcidSlimeL(slime) => {
+                assert!(slime.get_hp() >= 65 && slime.get_hp() <= 69, "Acid Slime (L) HP should be 65-69");
+            }
+            _ => panic!("Expected SpikeSlimeL or AcidSlimeL"),
+        }
     }
 
     #[test]
