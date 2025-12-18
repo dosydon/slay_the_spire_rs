@@ -4,8 +4,8 @@ use crate::game::{
     action::GameAction,
     global_info::GlobalInfo,
     deck::Deck,
-    map::{NodeType, test_map_large},
 };
+use crate::map::{NodeType, test_map_large, MapNode, Map};
 use crate::cards::ironclad::starter_deck::starter_deck;
 use crate::cards::implemented_cards_deck::*;
 use crate::battle_cli::BattleCli;
@@ -108,9 +108,33 @@ impl GameCli {
                         break;
                     }
                 },
-                GameState::CardRewardSelection => {
+                GameState::RestSite => {
+                    if let Err(e) = self.handle_rest_site_phase() {
+                        println!("Error during rest site phase: {:?}", e);
+                        break;
+                    }
+                },
+                GameState::CardRewardSelection(_) => {
                     if let Err(e) = self.handle_card_reward_selection() {
                         println!("Error during card reward selection: {:?}", e);
+                        break;
+                    }
+                },
+                GameState::InEvent(_, _) => {
+                    if let Err(e) = self.handle_event_phase() {
+                        println!("Error during event phase: {:?}", e);
+                        break;
+                    }
+                },
+                GameState::SelectUpgradeFromDeck => {
+                    if let Err(e) = self.handle_card_upgrade_selection() {
+                        println!("Error during card upgrade selection: {:?}", e);
+                        break;
+                    }
+                },
+                GameState::Shop(_) => {
+                    if let Err(e) = self.handle_shop_phase() {
+                        println!("Error during shop phase: {:?}", e);
                         break;
                     }
                 },
@@ -326,6 +350,124 @@ impl GameCli {
         Ok(())
     }
 
+    /// Handle event phase - let player make choices in SLS Events
+    fn handle_event_phase(&mut self) -> Result<(), GameError> {
+        let event = self.game.get_current_event().unwrap();
+        let choices = self.game.get_current_event_choices().to_vec();
+
+        println!("\n{}", "=".repeat(60));
+        println!("🎭 EVENT PHASE");
+        println!("{}", "=".repeat(60));
+        println!("\n{}", event.get_description());
+        println!("\nWhat would you like to do?");
+
+        for (i, choice) in choices.iter().enumerate() {
+            println!("  {}. {}", i + 1, choice.text);
+        }
+
+        loop {
+            let choices_len = choices.len();
+            print!("\nEnter your choice (1-{}): ", choices_len);
+            use std::io::Write;
+            std::io::stdout().flush().unwrap();
+
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input).unwrap();
+            let input = input.trim();
+
+            match input.parse::<usize>() {
+                Ok(choice) if choice >= 1 && choice <= choices_len => {
+                    let choice_index = choice - 1;
+                    match self.game.eval_action(GameAction::ChooseEvent(choice_index), &mut self.rng) {
+                        Ok(GameResult::Continue) => {
+                            println!("\n✅ Event resolved!");
+                            break;
+                        },
+                        Ok(GameResult::Victory) => {
+                            println!("\n🎉 VICTORY! You've completed the spire!");
+                            return Ok(());
+                        },
+                        Ok(GameResult::Defeat) => {
+                            println!("\n💀 DEFEAT! Your journey ends here.");
+                            return Ok(());
+                        },
+                        Err(e) => {
+                            println!("Invalid choice: {:?}. Please try again.", e);
+                            continue;
+                        }
+                    }
+                },
+                _ => {
+                    println!("Invalid choice. Please enter a number between 1 and {}.", choices_len);
+                    continue;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Handle rest site phase
+    fn handle_rest_site_phase(&mut self) -> Result<(), GameError> {
+        use crate::game::action::{GameAction, RestSiteAction};
+
+        println!("\n{}", "=".repeat(60));
+        println!("🏕️ REST SITE");
+        println!("{}", "=".repeat(60));
+        println!("\nYou've found a peaceful campfire. Take time to recover and prepare.");
+        println!("Current HP: {}/{}", self.game.player_hp, self.game.player_max_hp);
+        println!("Current Gold: {}", self.game.gold);
+        println!("\nWhat would you like to do?");
+        println!("  1. Rest and Heal (30% of max HP, minimum 15)");
+        println!("  2. Smith (Upgrade a card from your deck)");
+        println!("  3. Purge (Remove a card from your deck)");
+        println!(" 4. Recruit (Obtain 15 gold)");
+
+        loop {
+            print!("\nEnter your choice (1-4): ");
+            use std::io::Write;
+            std::io::stdout().flush().unwrap();
+
+            let mut input = String::new();
+            if let Err(e) = std::io::stdin().read_line(&mut input) {
+                println!("Error reading input: {}", e);
+                return Err(GameError::InvalidChoice);
+            }
+
+            match input.trim().parse::<usize>() {
+                Ok(choice) => {
+                    let rest_site_action = match choice {
+                        1 => RestSiteAction::Rest,
+                        2 => RestSiteAction::Upgrade,
+                        3 => RestSiteAction::Remove,
+                        4 => RestSiteAction::ObtainGold,
+                        _ => {
+                            println!("Invalid choice! Please enter 1, 2, 3, or 4.");
+                            continue;
+                        }
+                    };
+
+                    let action = GameAction::RestSiteChoice(rest_site_action);
+                    match self.game.eval_action(action, &mut rand::rng()) {
+                        Ok(_) => {
+                            println!("\nRest site action completed!");
+                            self.display_game_state();
+                            return Ok(());
+                        },
+                        Err(e) => {
+                            println!("Error during rest site action: {:?}", e);
+                            return Err(e);
+                        }
+                    }
+                },
+                Err(_) => {
+                    println!("Invalid input! Please enter a number.");
+                    continue;
+                }
+            }
+        }
+    }
+
     /// Display current game state
     fn display_game_state(&self) {
         println!("\n{}", "=".repeat(60));
@@ -399,7 +541,7 @@ impl GameCli {
     }
 
     /// Display nodes on a single floor
-    fn display_floor_nodes(&self, nodes: &[&crate::game::map::MapNode], current_node_position: (u32, u32)) {
+    fn display_floor_nodes(&self, nodes: &[&MapNode], current_node_position: (u32, u32)) {
         // Find the maximum position to determine the width of the floor
         let max_position = nodes.iter().map(|n| n.position).max().unwrap_or(0);
 
@@ -449,7 +591,7 @@ impl GameCli {
     }
 
     /// Display connections between floors using proper horizontal lines between positions
-    fn display_floor_connections(&self, current_floor_nodes: &[&crate::game::map::MapNode], map: &crate::game::map::Map, current_floor: u32) {
+    fn display_floor_connections(&self, current_floor_nodes: &[&MapNode], map: &Map, current_floor: u32) {
         // Find the maximum position to determine the width
         let max_position = current_floor_nodes.iter().map(|n| n.position).max().unwrap_or(0);
 
@@ -540,21 +682,177 @@ impl GameCli {
     }
 
     /// Get icon for node type
-    fn get_node_icon(&self, node_type: &crate::game::map::NodeType, is_current: bool) -> &'static str {
+    fn get_node_icon(&self, node_type: &NodeType, is_current: bool) -> &'static str {
         if is_current {
             return "🟢";
         }
 
         match node_type {
-            crate::game::map::NodeType::Start => "🏠",
-            crate::game::map::NodeType::Combat => "⚔️",
-            crate::game::map::NodeType::Elite => "👹",
-            crate::game::map::NodeType::Boss => "🐉",
-            crate::game::map::NodeType::RestSite => "🔥",
-            crate::game::map::NodeType::Shop => "🏪",
-            crate::game::map::NodeType::Event => "❓",
-            crate::game::map::NodeType::Treasure => "💰",
+            NodeType::Start => "🏠",
+            NodeType::Combat => "⚔️",
+            NodeType::Elite => "👹",
+            NodeType::Boss => "🐉",
+            NodeType::RestSite => "🔥",
+            NodeType::Shop => "🏪",
+            NodeType::Event => "❓",
+            NodeType::Treasure => "💰",
         }
+    }
+
+    /// Format card type for display
+    fn format_card_type(card_type: &crate::game::card_type::CardType) -> String {
+        match card_type {
+            crate::game::card_type::CardType::Attack => "⚔️ Attack".to_string(),
+            crate::game::card_type::CardType::Skill => "🛡️ Skill".to_string(),
+            crate::game::card_type::CardType::Power => "✨ Power".to_string(),
+            crate::game::card_type::CardType::Status => "📄 Status".to_string(),
+        }
+    }
+
+    /// Handle card upgrade selection phase
+    fn handle_card_upgrade_selection(&mut self) -> Result<(), GameError> {
+        use crate::game::action::GameAction;
+
+        println!("\n{}", "=".repeat(60));
+        println!("⚒️ CARD UPGRADE");
+        println!("{}", "=".repeat(60));
+        println!("\nSelect a card from your deck to upgrade:");
+
+        let upgradeable_cards = self.game.get_upgradeable_cards();
+
+        if upgradeable_cards.is_empty() {
+            println!("\n❌ No cards available for upgrade! All cards are already upgraded.");
+            println!("Returning to map...");
+            self.game.state = GameState::OnMap;
+            return Ok(());
+        }
+
+        // Display upgradeable cards
+        for (i, (deck_index, card)) in upgradeable_cards.iter().enumerate() {
+            println!("  {}: {} (Cost: {}) - {}",
+                i + 1,
+                card.get_name(),
+                card.get_cost(),
+                Self::format_card_type(card.get_card_type())
+            );
+        }
+
+        println!("\nEnter card number to upgrade (1-{}), or 0 to cancel:", upgradeable_cards.len());
+
+        loop {
+            print!("Your choice: ");
+            use std::io::Write;
+            std::io::stdout().flush().unwrap();
+
+            let mut input = String::new();
+            if let Err(e) = std::io::stdin().read_line(&mut input) {
+                println!("Error reading input: {}", e);
+                return Err(GameError::InvalidChoice);
+            }
+
+            match input.trim().parse::<usize>() {
+                Ok(0) => {
+                    println!("Cancelled card upgrade.");
+                    self.game.state = GameState::OnMap;
+                    return Ok(());
+                },
+                Ok(choice) if choice >= 1 && choice <= upgradeable_cards.len() => {
+                    let (deck_index, card) = &upgradeable_cards[choice - 1];
+                    let old_name = card.get_name();
+
+                    println!("\nUpgrading {}...", old_name);
+
+                    let action = GameAction::SelectCardToUpgrade(*deck_index);
+                    match self.game.eval_action(action, &mut self.rng) {
+                        Ok(_) => {
+                            // Get the upgraded card name
+                            if let Some(upgraded_card) = self.game.deck.get_card(*deck_index) {
+                                println!("✅ Successfully upgraded '{}' to '{}'!", old_name, upgraded_card.get_name());
+                            }
+                            self.display_game_state();
+                            return Ok(());
+                        },
+                        Err(e) => {
+                            println!("Error during card upgrade: {:?}", e);
+                            return Err(e);
+                        }
+                    }
+                },
+                Ok(_) => {
+                    println!("Invalid choice! Please enter a number between 1 and {}, or 0 to cancel.", upgradeable_cards.len());
+                },
+                Err(_) => {
+                    println!("Invalid input! Please enter a number.");
+                }
+            }
+        }
+    }
+
+    /// Handle shop phase
+    fn handle_shop_phase(&mut self) -> Result<(), GameError> {
+        println!("\n🏪 SHOP");
+        println!("Gold: {} 💰", self.game.gold);
+        println!();
+
+        let shop_state = match self.game.get_shop_state() {
+            Some(state) => state.clone(),
+            None => return Err(GameError::InvalidState),
+        };
+
+        println!("Cards for sale:");
+        for (i, card) in shop_state.cards_for_sale.iter().enumerate() {
+            let price = shop_state.get_card_price(i).unwrap_or(0);
+            println!("  {}: {} ({}) - {} gold", i + 1, card.get_name(), card.get_cost(), price);
+        }
+
+        println!("\nOptions:");
+        println!("  1-{}: Buy card", shop_state.card_count());
+        println!("  {}: Leave shop", shop_state.card_count() + 1);
+
+        loop {
+            print!("\nEnter your choice: ");
+            std::io::stdout().flush().unwrap();
+
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input).unwrap();
+
+            match input.trim().parse::<usize>() {
+                Ok(choice) => {
+                    if choice == 0 || choice > shop_state.card_count() + 1 {
+                        println!("Invalid choice. Please try again.");
+                        continue;
+                    }
+
+                    if choice == shop_state.card_count() + 1 {
+                        // Leave shop
+                        self.game.eval_action(GameAction::LeaveShop, &mut rand::rng())?;
+                        break;
+                    } else {
+                        // Buy card
+                        let card_index = choice - 1;
+                        match self.game.eval_action(
+                            GameAction::BuyCard(card_index),
+                            &mut rand::rng()
+                        ) {
+                            Ok(_) => {
+                                println!("Card purchased successfully!");
+                                break;
+                            },
+                            Err(e) => {
+                                println!("Error purchasing card: {:?}", e);
+                                continue;
+                            }
+                        }
+                    }
+                },
+                Err(_) => {
+                    println!("Invalid input. Please enter a number.");
+                    continue;
+                }
+            }
+        }
+
+        Ok(())
     }
 }
 

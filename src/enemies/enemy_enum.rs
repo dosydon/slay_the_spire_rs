@@ -1,6 +1,6 @@
 use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, gremlin_nob::{GremlinNob, GremlinNobMove}, lagavulin::{Lagavulin, LagavulinMove}, sentry::{Sentry, SentryMove}, fat_gremlin::{FatGremlin, FatGremlinMove}, sneaky_gremlin::{SneakyGremlin, SneakyGremlinMove}, mad_gremlin::{MadGremlin, MadGremlinMove}, shield_gremlin::{ShieldGremlin, ShieldGremlinMove}, gremlin_wizard::{GremlinWizard, GremlinWizardMove}, looter::{Looter, LooterMove}, fungi_beast::{FungiBeast, FungiBeastMove}, blue_slaver::{BlueSlaver, BlueSlaverMove}, red_slaver::{RedSlaver, RedSlaverMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum EnemyEnum {
     RedLouse(RedLouse),
     GreenLouse(GreenLouse),

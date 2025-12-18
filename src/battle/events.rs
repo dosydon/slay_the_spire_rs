@@ -48,7 +48,7 @@ pub enum BattleEvent {
     },
 }
 
-pub trait EventListener: Any {
+pub trait EventListener: Any + Send + Sync {
     fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect>;
     fn is_active(&self) -> bool;
     fn get_owner(&self) -> Entity;

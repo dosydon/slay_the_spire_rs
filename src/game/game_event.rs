@@ -8,7 +8,7 @@ pub enum GameEvent {
     RelicObtained,
 }
 
-pub trait GameEventListener {
+pub trait GameEventListener: Send + Sync {
     fn on_game_event(&mut self, event: &GameEvent) -> Vec<Effect>;
     fn is_active(&self) -> bool;
 }

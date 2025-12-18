@@ -26,6 +26,7 @@ pub enum Effect {
     },
     AttackToTargetWithBlock, // Deal damage equal to player's Block
     AttackToTargetWithScaling { base_damage: u32, scaling: u32 }, // Scaling damage attack (Rampage)
+    PerfectedStrike { base_damage: u32, damage_per_strike: u32 }, // Deal damage + bonus per Strike card in deck
     AttackAllEnemies {
         amount: u32,
         num_attacks: u32,
@@ -134,6 +135,12 @@ pub enum BaseEffect {
         target: Entity,
         base_damage: u32,
         scaling: u32,
+    },
+    PerfectedStrike {
+        source: Entity,
+        target: Entity,
+        base_damage: u32,
+        damage_per_strike: u32,
     },
     GainDefense {
         source: Entity,
@@ -408,6 +415,7 @@ impl BaseEffect {
             }
             Effect::AttackToTargetWithBlock => BaseEffect::AttackToTargetWithBlock { source, target },
             Effect::AttackToTargetWithScaling { base_damage, scaling } => BaseEffect::AttackToTargetWithScaling { source, target, base_damage, scaling },
+            Effect::PerfectedStrike { base_damage, damage_per_strike } => BaseEffect::PerfectedStrike { source, target, base_damage, damage_per_strike },
             Effect::GainDefense { amount } => BaseEffect::GainDefense { source, amount },
             Effect::ApplyVulnerable { duration } => BaseEffect::ApplyVulnerable { target, duration },
             Effect::ApplyVulnerableAll { duration } => BaseEffect::ApplyVulnerableAll { duration },

@@ -6,7 +6,7 @@ use crate::cards::implemented_cards_deck::create_implemented_cards_deck;
 use crate::enemies::enemy_enum::EnemyEnum;
 use crate::battle::enemy_in_battle::EnemyInBattle;
 use crate::game::global_info::GlobalInfo;
-use crate::events::encounter_event::EncounterEvent;
+use crate::events::encounter_events::EncounterEvent;
 use crate::game::card::Card;
 
 // Import all Ironclad card creation functions
@@ -749,16 +749,27 @@ impl BattleCli {
             match effect {
                 crate::game::effect::Effect::AttackToTarget { amount, .. } => {
                     let calculated_damage = self.battle.calculate_incoming_damage(
-                        Entity::Enemy(enemy_index), 
-                        Entity::Player, 
+                        Entity::Enemy(enemy_index),
+                        Entity::Player,
                         *amount
                     );
-                    
+
                     if calculated_damage != *amount {
                         parts.push(format!("🗡️ {} → {}", amount, calculated_damage));
                     } else {
                         parts.push(format!("🗡️ {}", amount));
                     }
+                }
+                crate::game::effect::Effect::PerfectedStrike { base_damage, damage_per_strike } => {
+                    let strike_count = self.battle.count_strike_cards_in_deck();
+                    let total_damage = base_damage + (damage_per_strike * strike_count);
+                    let calculated_damage = self.battle.calculate_incoming_damage(
+                        Entity::Enemy(enemy_index),
+                        Entity::Player,
+                        total_damage
+                    );
+
+                    parts.push(format!("🗡️ {} ({} strikes) → {}", base_damage, strike_count, calculated_damage));
                 }
                 crate::game::effect::Effect::AttackAllEnemies { amount, .. } => {
                     let calculated_damage = self.battle.calculate_incoming_damage(

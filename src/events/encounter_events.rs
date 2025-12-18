@@ -4,44 +4,99 @@ use crate::enemies::EnemyEnum;
 use crate::utils::CategoricalDistribution;
 use crate::enemies::sentry::Sentry;
 use crate::enemies::lagavulin::Lagavulin;
+use crate::events::SLSEvent;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum EncounterEvent {
-    TwoLouses,
-    JawWorm,
-    Cultist,
-    SmallSlimes,
-    GangOfGremlins, // 4 random gremlins (Mad, Sneaky, Fat, Shield, or Wizard)
-    Looter,         // Single Looter that steals gold and escapes
-    TwoFungiBeasts, // Two Fungi Beasts with Spore Cloud
-    BlueSlaver,     // Single Blue Slaver (Act 1 Hard Pool)
-    RedSlaver,      // Single Red Slaver (Act 1 Hard Pool)
-    GremlinNob,
-    ThreeSentries,  // Act 1 Elite encounter
-    Lagavulin,      // Act 1 Elite encounter
+    // Act 1 Easy Pool (First 3 encounters)
+    TwoLouses,      // Two Louses (Red or Green)
+    JawWorm,        // Single Jaw Worm
+    Cultist,        // Single Cultist
+    SmallSlimes,    // Spike Slime M + Acid Slime S OR Acid Slime M + Spike Slime S
+
+    // Act 1 Hard Pool (After first 3 encounters)
+    GangOfGremlins,  // 4 random gremlins (Mad, Sneaky, Fat, Shield, or Wizard)
+    // TODO: LargeSlime - Spike Slime (L) or Acid Slime (L) - not yet implemented
+    SwarmOfSlimes,   // 3× Spike Slime (S) + 2× Acid Slime (S)
+    BlueSlaver,      // Single Blue Slaver
+    RedSlaver,       // Single Red Slaver
+    ThreeLouses,     // Three Louses (each can be Red or Green)
+    TwoFungiBeasts,  // Two Fungi Beasts with Spore Cloud
+    ExordiumThugs,   // Two-enemy fight: (Louse/Med Slime) + (Slaver/Cultist/Looter)
+    ExordiumWildlife,// Two-enemy fight: (Fungi Beast/Jaw Worm) + (Louse/Med Slime)
+    Looter,          // Single Looter that steals gold and escapes
+
+    // Act 1 Elite Encounters
+    GremlinNob,      // Act 1 Elite - Gremlin Nob
+    ThreeSentries,   // Act 1 Elite - 3 Sentries
+    Lagavulin,       // Act 1 Elite - Lagavulin
 }
 
-pub fn sample_encounter_event(_global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> EncounterEvent {
-    // For simplicity, we only implement Act 1 first three encounters sampling here
-    act1_first_three_encounters().sample_owned(rng)
+pub fn sample_encounter_event(global_info: &GlobalInfo, event_history: &[SLSEvent], rng: &mut impl rand::Rng) -> EncounterEvent {
+    // Count only encounter events in the history
+    let encounter_count = event_history.iter().filter(|event| {
+        matches!(event, SLSEvent::EncounterEvent(_))
+    }).count();
+
+    // For the first three enemy encounters, sample from easy pool
+    if encounter_count < 3 {
+        act1_easy_pool().sample_owned(rng)
+    } else {
+        // After first three encounters, sample from the full Act 1 pool (excluding elites)
+        act1_hard_pool().sample_owned(rng)
+    }
 }
 
-fn act1_first_three_encounters() -> CategoricalDistribution<EncounterEvent> {
+/// Sample an elite encounter from the Act 1 elite pool
+pub fn sample_elite_encounter(_global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> EncounterEvent {
+    act1_elite_encounters().sample_owned(rng)
+}
+
+fn act1_easy_pool() -> CategoricalDistribution<EncounterEvent> {
+    // Easy encounters for first three enemy encounters (no elites)
     CategoricalDistribution::new(vec![
         (EncounterEvent::TwoLouses, 0.2),
         (EncounterEvent::JawWorm, 0.2),
         (EncounterEvent::Cultist, 0.2),
         (EncounterEvent::SmallSlimes, 0.2),
-        (EncounterEvent::GangOfGremlins, 0.2),
-        (EncounterEvent::GremlinNob, 0.2),
-        (EncounterEvent::ThreeSentries, 0.2), // Act 1 Elite encounter
+    ])
+}
+
+fn act1_hard_pool() -> CategoricalDistribution<EncounterEvent> {
+    // Act 1 Hard Pool - Remaining Combat Encounters (after first 3)
+    // Weights from ENEMIES.md
+    CategoricalDistribution::new(vec![
+        (EncounterEvent::GangOfGremlins, 1.0),   // Weight: 1
+        // TODO: LargeSlime (weight 2.0) - not implemented yet (needs Large Slime enemies)
+        (EncounterEvent::SwarmOfSlimes, 1.0),    // Weight: 1
+        (EncounterEvent::BlueSlaver, 2.0),       // Weight: 2
+        (EncounterEvent::RedSlaver, 1.0),        // Weight: 1
+        (EncounterEvent::ThreeLouses, 2.0),      // Weight: 2
+        (EncounterEvent::TwoFungiBeasts, 2.0),   // Weight: 2
+        (EncounterEvent::ExordiumThugs, 1.5),    // Weight: 1.5
+        (EncounterEvent::ExordiumWildlife, 1.5), // Weight: 1.5
+        (EncounterEvent::Looter, 2.0),           // Weight: 2
+    ])
+}
+
+fn act1_elite_encounters() -> CategoricalDistribution<EncounterEvent> {
+    // Act 1 elite encounter pool
+    CategoricalDistribution::new(vec![
+        (EncounterEvent::ThreeSentries, 0.57), // 57% chance
+        (EncounterEvent::Lagavulin, 0.43),     // 43% chance
     ])
 }
 
 impl EncounterEvent {
     /// Get a random encounter event from the Act 1 first three encounters pool
     pub fn get_act1_first_three_encounter(rng: &mut impl rand::Rng) -> EncounterEvent {
-        let distribution = act1_first_three_encounters();
+        let distribution = act1_easy_pool();
+        distribution.sample_owned(rng)
+    }
+
+    /// Get a random elite encounter from the Act 1 elite pool
+    pub fn get_act1_elite_encounter(rng: &mut impl rand::Rng) -> EncounterEvent {
+        let distribution = act1_elite_encounters();
         distribution.sample_owned(rng)
     }
 
@@ -163,6 +218,121 @@ impl EncounterEvent {
             EncounterEvent::RedSlaver => {
                 let red_slaver = crate::enemies::red_slaver::RedSlaver::instantiate(rng, global_info);
                 vec![EnemyEnum::RedSlaver(red_slaver)]
+            }
+            EncounterEvent::ThreeLouses => {
+                // Three Louses; each slot rolls Red or Green independently (50/50)
+                let mut louses = Vec::new();
+                for _ in 0..3 {
+                    if rng.random::<f64>() < 0.5 {
+                        let red_louse = crate::enemies::red_louse::RedLouse::instantiate(rng, global_info);
+                        louses.push(EnemyEnum::RedLouse(red_louse));
+                    } else {
+                        let green_louse = crate::enemies::green_louse::GreenLouse::instantiate(rng, global_info);
+                        louses.push(EnemyEnum::GreenLouse(green_louse));
+                    }
+                }
+                louses
+            }
+            EncounterEvent::SwarmOfSlimes => {
+                // 3× Spike Slime (S) + 2× Acid Slime (S)
+                let mut slimes = Vec::new();
+                for _ in 0..3 {
+                    let spike_slime_s = crate::enemies::spike_slime_s::SpikeSlimeS::instantiate(rng, global_info);
+                    slimes.push(EnemyEnum::SpikeSlimeS(spike_slime_s));
+                }
+                for _ in 0..2 {
+                    let acid_slime_s = crate::enemies::acid_slime_s::AcidSlimeS::instantiate(rng, global_info);
+                    slimes.push(EnemyEnum::AcidSlimeS(acid_slime_s));
+                }
+                slimes
+            }
+            EncounterEvent::ExordiumThugs => {
+                // Two-enemy fight: first enemy is a Louse (any color) or Medium Slime (any type)
+                // second enemy is a Slaver (any color), Cultist, or Looter
+                let mut enemies = Vec::new();
+
+                // First enemy: Louse or Medium Slime (equal chance)
+                if rng.random::<f64>() < 0.5 {
+                    // Louse (Red or Green)
+                    if rng.random::<f64>() < 0.5 {
+                        let red_louse = crate::enemies::red_louse::RedLouse::instantiate(rng, global_info);
+                        enemies.push(EnemyEnum::RedLouse(red_louse));
+                    } else {
+                        let green_louse = crate::enemies::green_louse::GreenLouse::instantiate(rng, global_info);
+                        enemies.push(EnemyEnum::GreenLouse(green_louse));
+                    }
+                } else {
+                    // Medium Slime (Spike or Acid)
+                    if rng.random::<f64>() < 0.5 {
+                        let spike_slime_m = crate::enemies::spike_slime_m::SpikeSlimeM::instantiate(rng, global_info);
+                        enemies.push(EnemyEnum::SpikeSlimeM(spike_slime_m));
+                    } else {
+                        let acid_slime_m = crate::enemies::acid_slime_m::AcidSlimeM::instantiate(rng, global_info);
+                        enemies.push(EnemyEnum::AcidSlimeM(acid_slime_m));
+                    }
+                }
+
+                // Second enemy: Slaver, Cultist, or Looter (equal chance)
+                let choice = rng.random_range(0..3);
+                match choice {
+                    0 => {
+                        // Slaver (Blue or Red)
+                        if rng.random::<f64>() < 0.5 {
+                            let blue_slaver = crate::enemies::blue_slaver::BlueSlaver::instantiate(rng, global_info);
+                            enemies.push(EnemyEnum::BlueSlaver(blue_slaver));
+                        } else {
+                            let red_slaver = crate::enemies::red_slaver::RedSlaver::instantiate(rng, global_info);
+                            enemies.push(EnemyEnum::RedSlaver(red_slaver));
+                        }
+                    }
+                    1 => {
+                        let cultist = crate::enemies::cultist::Cultist::instantiate(rng, global_info);
+                        enemies.push(EnemyEnum::Cultist(cultist));
+                    }
+                    _ => {
+                        let looter = crate::enemies::looter::Looter::instantiate(rng, global_info);
+                        enemies.push(EnemyEnum::Looter(looter));
+                    }
+                }
+
+                enemies
+            }
+            EncounterEvent::ExordiumWildlife => {
+                // Two-enemy fight: first enemy is a Fungi Beast or Jaw Worm
+                // second enemy is a Louse (any color) or Medium Slime (any type)
+                let mut enemies = Vec::new();
+
+                // First enemy: Fungi Beast or Jaw Worm (equal chance)
+                if rng.random::<f64>() < 0.5 {
+                    let fungi_beast = crate::enemies::fungi_beast::FungiBeast::instantiate(rng, global_info);
+                    enemies.push(EnemyEnum::FungiBeast(fungi_beast));
+                } else {
+                    let jaw_worm = crate::enemies::jaw_worm::JawWorm::instantiate(rng, global_info);
+                    enemies.push(EnemyEnum::JawWorm(jaw_worm));
+                }
+
+                // Second enemy: Louse or Medium Slime (equal chance)
+                if rng.random::<f64>() < 0.5 {
+                    // Louse (Red or Green)
+                    if rng.random::<f64>() < 0.5 {
+                        let red_louse = crate::enemies::red_louse::RedLouse::instantiate(rng, global_info);
+                        enemies.push(EnemyEnum::RedLouse(red_louse));
+                    } else {
+                        let green_louse = crate::enemies::green_louse::GreenLouse::instantiate(rng, global_info);
+                        enemies.push(EnemyEnum::GreenLouse(green_louse));
+                    }
+                } else {
+                    // Medium Slime (Spike or Acid)
+                    if rng.random::<f64>() < 0.5 {
+                        let spike_slime_m = crate::enemies::spike_slime_m::SpikeSlimeM::instantiate(rng, global_info);
+                        enemies.push(EnemyEnum::SpikeSlimeM(spike_slime_m));
+                    } else {
+                        let acid_slime_m = crate::enemies::acid_slime_m::AcidSlimeM::instantiate(rng, global_info);
+                        enemies.push(EnemyEnum::AcidSlimeM(acid_slime_m));
+                    }
+                }
+
+                enemies
             }
         }
     }
@@ -432,6 +602,115 @@ mod tests {
                 }
                 _ => panic!("Expected Fungi Beast enemy"),
             }
+        }
+    }
+
+    #[test]
+    fn test_three_louses_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::ThreeLouses;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+
+        // Should spawn exactly 3 louses
+        assert_eq!(enemies.len(), 3);
+
+        // All should be louses (Red or Green)
+        for enemy in &enemies {
+            match enemy {
+                EnemyEnum::RedLouse(_) | EnemyEnum::GreenLouse(_) => {
+                    // Success
+                }
+                _ => panic!("Expected RedLouse or GreenLouse"),
+            }
+        }
+    }
+
+    // TODO: test_large_slime_encounter - Not implemented yet (Large Slimes not created)
+
+    #[test]
+    fn test_swarm_of_slimes_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::SwarmOfSlimes;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+
+        // Should spawn exactly 5 slimes (3 Spike S + 2 Acid S)
+        assert_eq!(enemies.len(), 5);
+
+        let mut spike_count = 0;
+        let mut acid_count = 0;
+
+        for enemy in &enemies {
+            match enemy {
+                EnemyEnum::SpikeSlimeS(_) => spike_count += 1,
+                EnemyEnum::AcidSlimeS(_) => acid_count += 1,
+                _ => panic!("Expected SpikeSlimeS or AcidSlimeS"),
+            }
+        }
+
+        assert_eq!(spike_count, 3, "Should have exactly 3 Spike Slimes (S)");
+        assert_eq!(acid_count, 2, "Should have exactly 2 Acid Slimes (S)");
+    }
+
+    #[test]
+    fn test_exordium_thugs_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::ExordiumThugs;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+
+        // Should spawn exactly 2 enemies
+        assert_eq!(enemies.len(), 2);
+
+        // First enemy should be Louse or Medium Slime
+        match &enemies[0] {
+            EnemyEnum::RedLouse(_) | EnemyEnum::GreenLouse(_) |
+            EnemyEnum::SpikeSlimeM(_) | EnemyEnum::AcidSlimeM(_) => {
+                // Success
+            }
+            _ => panic!("First enemy should be Louse or Medium Slime"),
+        }
+
+        // Second enemy should be Slaver, Cultist, or Looter
+        match &enemies[1] {
+            EnemyEnum::BlueSlaver(_) | EnemyEnum::RedSlaver(_) |
+            EnemyEnum::Cultist(_) | EnemyEnum::Looter(_) => {
+                // Success
+            }
+            _ => panic!("Second enemy should be Slaver, Cultist, or Looter"),
+        }
+    }
+
+    #[test]
+    fn test_exordium_wildlife_encounter() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        let encounter = EncounterEvent::ExordiumWildlife;
+        let enemies = encounter.instantiate(&mut rng, &global_info);
+
+        // Should spawn exactly 2 enemies
+        assert_eq!(enemies.len(), 2);
+
+        // First enemy should be Fungi Beast or Jaw Worm
+        match &enemies[0] {
+            EnemyEnum::FungiBeast(_) | EnemyEnum::JawWorm(_) => {
+                // Success
+            }
+            _ => panic!("First enemy should be Fungi Beast or Jaw Worm"),
+        }
+
+        // Second enemy should be Louse or Medium Slime
+        match &enemies[1] {
+            EnemyEnum::RedLouse(_) | EnemyEnum::GreenLouse(_) |
+            EnemyEnum::SpikeSlimeM(_) | EnemyEnum::AcidSlimeM(_) => {
+                // Success
+            }
+            _ => panic!("Second enemy should be Louse or Medium Slime"),
         }
     }
 

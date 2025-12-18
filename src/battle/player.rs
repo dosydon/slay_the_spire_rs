@@ -1,6 +1,6 @@
 use super::character_battle_info::CharacterBattleInfo;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Player {
     pub battle_info: CharacterBattleInfo,
 }

@@ -1,5 +1,6 @@
 use crate::{enemies::enemy_enum::EnemyEnum, battle::character_battle_info::CharacterBattleInfo};
 
+#[derive(Clone)]
 pub struct EnemyInBattle {
     pub enemy: EnemyEnum,
     pub battle_info: CharacterBattleInfo,
@@ -37,5 +38,31 @@ impl EnemyInBattle {
     /// Get vulnerable turns
     pub fn get_vulnerable(&self) -> u32 {
         self.battle_info.get_vulnerable_turns()
+    }
+
+    /// Get enemy name
+    pub fn get_name(&self) -> String {
+        match &self.enemy {
+            EnemyEnum::RedLouse(_) => "Red Louse".to_string(),
+            EnemyEnum::GreenLouse(_) => "Green Louse".to_string(),
+            EnemyEnum::JawWorm(_) => "Jaw Worm".to_string(),
+            EnemyEnum::Cultist(_) => "Cultist".to_string(),
+            EnemyEnum::SpikeSlimeS(_) => "Spike Slime (S)".to_string(),
+            EnemyEnum::SpikeSlimeM(_) => "Spike Slime (M)".to_string(),
+            EnemyEnum::AcidSlimeS(_) => "Acid Slime (S)".to_string(),
+            EnemyEnum::AcidSlimeM(_) => "Acid Slime (M)".to_string(),
+            EnemyEnum::GremlinNob(_) => "Gremlin Nob".to_string(),
+            EnemyEnum::Lagavulin(_) => "Lagavulin".to_string(),
+            EnemyEnum::Sentry(_) => "Sentry".to_string(),
+            EnemyEnum::FatGremlin(_) => "Fat Gremlin".to_string(),
+            EnemyEnum::SneakyGremlin(_) => "Sneaky Gremlin".to_string(),
+            EnemyEnum::MadGremlin(_) => "Mad Gremlin".to_string(),
+            EnemyEnum::ShieldGremlin(_) => "Shield Gremlin".to_string(),
+            EnemyEnum::GremlinWizard(_) => "Gremlin Wizard".to_string(),
+            EnemyEnum::Looter(_) => "Looter".to_string(),
+            EnemyEnum::FungiBeast(_) => "Fungi Beast".to_string(),
+            EnemyEnum::BlueSlaver(_) => "Blue Slaver".to_string(),
+            EnemyEnum::RedSlaver(_) => "Red Slaver".to_string(),
+        }
     }
 }

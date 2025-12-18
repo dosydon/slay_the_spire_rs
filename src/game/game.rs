@@ -1,15 +1,26 @@
-use crate::game::{global_info::GlobalInfo, action::GameAction, deck::Deck, map::{Map, MapError}, card_reward::CardRewardPool, game_event::{GameEvent, GameEventListener}};
+use crate::{events::SLSEvent, game::{action::{GameAction, RestSiteAction}, card_reward::CardRewardPool, deck::Deck, game_event::{GameEvent, GameEventListener}, global_info::GlobalInfo}};
+use crate::map::{Map, MapError, NodeType, MapNode};
 use crate::battle::{Battle, BattleResult, BattleError, enemy_in_battle::EnemyInBattle};
+use crate::events::map_events::{MapEvent, EventChoice, EventOutcome};
+use log::{info, debug};
 
 /// The overall state of the game
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum GameState {
     /// Player is currently in a battle
     InBattle,
     /// Player is on the map choosing their next path
     OnMap,
     /// Player is selecting a card reward from 3 options
-    CardRewardSelection,
+    CardRewardSelection(Vec<crate::game::card::Card>),
+    /// Player is in an SLS Event making choices
+    InEvent(MapEvent, Vec<EventChoice>),
+    /// Player is at a rest site
+    RestSite,
+    /// Player is selecting a card from their deck to upgrade
+    SelectUpgradeFromDeck,
+    /// Player is in a shop
+    Shop(crate::game::shop::ShopState),
 }
 
 /// Errors that can occur during game actions
@@ -25,6 +36,8 @@ pub enum GameError {
     InvalidCardIndex,
     /// Invalid choice index
     InvalidChoice,
+    /// Not enough gold to purchase
+    NotEnoughGold,
     /// No active battle
     NoBattle,
 }
@@ -50,9 +63,9 @@ pub struct Game {
     pub player_hp: u32,
     pub player_max_hp: u32,
     pub gold: u32,
-    pub card_reward_options: Vec<crate::game::card::Card>,
     relics: Vec<crate::relics::Relic>,
     game_event_listeners: Vec<Box<dyn GameEventListener>>,
+    event_history: Vec<SLSEvent>,
 }
 
 impl Game {
@@ -68,9 +81,9 @@ impl Game {
             player_hp: starting_hp,
             player_max_hp: max_hp,
             gold: 99, // Starting gold (Ironclad starts with 99 gold)
-            card_reward_options: Vec::new(),
             relics: Vec::new(),
             game_event_listeners: Vec::new(),
+            event_history: Vec::new(),
         }
     }
 
@@ -88,6 +101,16 @@ impl Game {
         if let Some(listener) = relic.to_game_event_listener() {
             self.add_game_event_listener(listener);
         }
+    }
+
+    /// Get the length of the event history
+    pub fn get_event_history_len(&self) -> usize {
+        self.event_history.len()
+    }
+
+    /// Get a reference to the event history
+    pub fn get_event_history(&self) -> &Vec<SLSEvent> {
+        &self.event_history
     }
 
     /// Emit a game event to all active listeners and apply their effects
@@ -196,8 +219,10 @@ impl Game {
                 // Check what type of encounter this is
                 if let Some(node) = self.get_current_node() {
                     match node.node_type {
-                        crate::game::map::NodeType::Combat => {
-                            let event = crate::events::encounter_event::sample_encounter_event(&self.global_info, rng);
+                        NodeType::Combat => {
+                            let event = crate::events::encounter_events::sample_encounter_event(&self.global_info, &self.event_history, rng);
+                            self.event_history.push(SLSEvent::EncounterEvent(event));
+
                             let enemy_enums = event.instantiate(rng, &self.global_info);
                             let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
                             
@@ -206,20 +231,24 @@ impl Game {
                             self.battle = Some(battle);
                             self.state = GameState::InBattle;
                         },
-                        crate::game::map::NodeType::Elite => {
-                            // Elite encounters - spawn GremlinNob
-                            let event = crate::events::encounter_event::EncounterEvent::GremlinNob;
+                        NodeType::Elite => {
+                            // Elite encounters - sample from elite pool
+                            let event = crate::events::encounter_events::sample_elite_encounter(&self.global_info, rng);
+                            self.event_history.push(SLSEvent::EncounterEvent(event));
+
                             let enemy_enums = event.instantiate(rng, &self.global_info);
                             let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
-                            
+
                             // Start a battle
                             let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
                             self.battle = Some(battle);
                             self.state = GameState::InBattle;
                         },
-                        crate::game::map::NodeType::Boss => {
+                        NodeType::Boss => {
                             // Boss encounters - for now use regular encounters (TODO: implement boss)
-                            let event = crate::events::encounter_event::sample_encounter_event(&self.global_info, rng);
+                            let event = crate::events::encounter_events::sample_encounter_event(&self.global_info, &self.event_history, rng);
+                            self.event_history.push(SLSEvent::EncounterEvent(event));
+
                             let enemy_enums = event.instantiate(rng, &self.global_info);
                             let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
                             
@@ -227,10 +256,25 @@ impl Game {
                             let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
                             self.battle = Some(battle);
                             self.state = GameState::InBattle;
+                        },
+                        NodeType::Event => {
+                            // SLS Event - sample and start an event
+                            let event = crate::events::map_events::sample_sls_event(&self.global_info, rng);
+                            self.event_history.push(SLSEvent::MapEvent(event));
+
+                            self.start_event(event);
+                        },
+                        NodeType::RestSite => {
+                            // Rest site - enter rest site state
+                            self.state = GameState::RestSite;
+                        },
+                        NodeType::Shop => {
+                            // Shop - enter shop state with 5 cards for sale
+                            self.start_shop(rng);
                         },
                         _ => {
                             // Other encounter types - for now just stay on map
-                            // Future: implement events, shops, rest sites, etc.
+                            // Future: implement treasure rooms, etc.
                         }
                     }
                 }
@@ -240,24 +284,191 @@ impl Game {
 
             GameAction::SelectCardReward(card_index) => {
                 // Only valid when in CardRewardSelection state
-                if !matches!(self.state, GameState::CardRewardSelection) {
-                    return Err(GameError::InvalidState);
-                }
+                let reward_options = match &self.state {
+                    GameState::CardRewardSelection(options) => options.clone(),
+                    _ => return Err(GameError::InvalidState),
+                };
 
                 // Validate card index
-                if card_index >= self.card_reward_options.len() {
+                if card_index >= reward_options.len() {
                     return Err(GameError::InvalidCardIndex);
                 }
 
                 // Add selected card to deck
-                let selected_card = self.card_reward_options.remove(card_index);
+                let selected_card = reward_options[card_index].clone();
                 self.deck.add_card(selected_card);
 
-                // Clear remaining options and return to map
-                self.card_reward_options.clear();
+                // Return to map
                 self.state = GameState::OnMap;
 
                 Ok(GameResult::Continue)
+            },
+
+            GameAction::ChooseEvent(choice_index) => {
+                // Only valid when in event state
+                let (event, mut choices) = match &self.state {
+                    GameState::InEvent(event, choices) => (event.clone(), choices.clone()),
+                    _ => return Err(GameError::InvalidState),
+                };
+
+                // Validate choice index
+                if choice_index >= choices.len() {
+                    return Err(GameError::InvalidChoice);
+                }
+
+                // Process the chosen outcome
+                let choice = choices.remove(choice_index);
+                match choice.outcome {
+                    EventOutcome::Effects(effects) => {
+                        // Apply all effects from the event choice
+                        for effect in effects {
+                            self.apply_event_effect(effect);
+                        }
+
+                        // Event is complete, return to map
+                        self.state = GameState::OnMap;
+                        Ok(GameResult::Continue)
+                    },
+                    EventOutcome::NextChoices(new_choices) => {
+                        // Transition to next set of choices
+                        self.state = GameState::InEvent(event, new_choices);
+                        Ok(GameResult::Continue)
+                    },
+                }
+            },
+
+            GameAction::SelectCardToUpgrade(card_index) => {
+                // Only valid when in SelectUpgradeFromDeck state
+                if !matches!(self.state, GameState::SelectUpgradeFromDeck) {
+                    return Err(GameError::InvalidState);
+                }
+
+                // Validate card index
+                if card_index >= self.deck.size() {
+                    return Err(GameError::InvalidCardIndex);
+                }
+
+                // Get the card to upgrade
+                let card_to_upgrade = self.deck.get_card(card_index).cloned();
+                if let Some(card) = card_to_upgrade {
+                    // Check if card is already upgraded
+                    if card.is_upgraded() {
+                        info!("Card '{}' is already upgraded", card.get_name());
+                        return Err(GameError::InvalidCardIndex); // Or create a new error type
+                    }
+
+                    // Get names before upgrade
+                    let old_name = card.get_name();
+
+                    // Upgrade the card
+                    let upgraded_card = card.upgrade();
+                    let new_name = upgraded_card.get_name();
+
+                    // Remove the old card and add the upgraded version at the same position
+                    self.deck.remove_card(card_index);
+                    self.deck.insert_card(card_index, upgraded_card);
+
+                    info!("Upgraded '{}' to '{}'", old_name, new_name);
+                } else {
+                    return Err(GameError::InvalidCardIndex);
+                }
+
+                // Card upgrade is complete, return to map
+                self.state = GameState::OnMap;
+                Ok(GameResult::Continue)
+            },
+
+            GameAction::RestSiteChoice(rest_site_action) => {
+                // Only valid when in RestSite state
+                if !matches!(self.state, GameState::RestSite) {
+                    return Err(GameError::InvalidState);
+                }
+
+                match rest_site_action {
+                    RestSiteAction::Rest => {
+                        // Heal 30% of max HP (minimum 15)
+                        let heal_amount = ((self.player_max_hp as f32 * 0.3) as u32).max(15);
+                        self.player_hp = (self.player_hp + heal_amount).min(self.player_max_hp);
+                        info!("Player rested and healed {} HP", heal_amount);
+
+                        // Rest site is complete, return to map
+                        self.state = GameState::OnMap;
+                    },
+                    RestSiteAction::ObtainGold => {
+                        // Obtain 15 gold
+                        self.gold += 15;
+                        info!("Player obtained 15 gold");
+
+                        // Rest site is complete, return to map
+                        self.state = GameState::OnMap;
+                    },
+                    RestSiteAction::Remove => {
+                        // TODO: Implement card removal UI and logic
+                        info!("Card removal option chosen (not implemented)");
+
+                        // Rest site is complete, return to map
+                        self.state = GameState::OnMap;
+                    },
+                    RestSiteAction::Upgrade => {
+                        // Start card upgrade selection - don't return to map yet
+                        self.state = GameState::SelectUpgradeFromDeck;
+                        info!("Card upgrade option chosen - select a card to upgrade");
+
+                        // Don't return to map yet - wait for card selection
+                        return Ok(GameResult::Continue);
+                    },
+                }
+                Ok(GameResult::Continue)
+            },
+
+            GameAction::BuyCard(card_index) => {
+                // Only valid when in Shop state
+                let mut shop_state = match &self.state {
+                    GameState::Shop(shop_state) => shop_state.clone(),
+                    _ => return Err(GameError::InvalidState),
+                };
+
+                // Validate card index
+                if card_index >= shop_state.card_count() {
+                    return Err(GameError::InvalidCardIndex);
+                }
+
+                // Get card and price
+                let card_price = shop_state.get_card_price(card_index)
+                    .ok_or(GameError::InvalidCardIndex)?;
+
+                // Check if player has enough gold
+                if self.gold < card_price {
+                    return Err(GameError::NotEnoughGold);
+                }
+
+                // Purchase the card
+                let purchased_card = shop_state.purchase_card(card_index)
+                    .ok_or(GameError::InvalidCardIndex)?;
+
+                // Deduct gold and add card to deck
+                self.gold -= card_price;
+                self.deck.add_card(purchased_card);
+
+                info!("Purchased card for {} gold. Remaining gold: {}", card_price, self.gold);
+
+                // Update shop state
+                self.state = GameState::Shop(shop_state);
+
+                Ok(GameResult::Continue)
+            },
+
+            GameAction::LeaveShop => {
+                // Only valid when in Shop state
+                match &self.state {
+                    GameState::Shop(_) => {
+                        // Leave shop and return to map
+                        self.state = GameState::OnMap;
+                        info!("Left shop, returning to map");
+                        Ok(GameResult::Continue)
+                    },
+                    _ => return Err(GameError::InvalidState),
+                }
             },
         }
     }
@@ -279,7 +490,7 @@ impl Game {
     }
     
     /// Get the current map node
-    pub fn get_current_node(&self) -> Option<&crate::game::map::MapNode> {
+    pub fn get_current_node(&self) -> Option<&MapNode> {
         self.map.get_node(self.current_node_position)
     }
     
@@ -325,13 +536,95 @@ impl Game {
     /// Start card reward selection - generates 3 random card options
     pub fn start_card_reward_selection(&mut self, rng: &mut impl rand::Rng) {
         let card_pool = CardRewardPool::new();
-        self.card_reward_options = card_pool.generate_reward_options(rng);
-        self.state = GameState::CardRewardSelection;
+        let reward_options = card_pool.generate_reward_options(rng);
+        info!("Generated {} card reward options", reward_options.len());
+        for (i, card) in reward_options.iter().enumerate() {
+            debug!("  Option {}: {} (Cost: {})", i + 1, card.get_name(), card.get_cost());
+        }
+        self.state = GameState::CardRewardSelection(reward_options);
     }
 
     /// Get the current card reward options (only valid in CardRewardSelection state)
     pub fn get_card_reward_options(&self) -> &[crate::game::card::Card] {
-        &self.card_reward_options
+        match &self.state {
+            GameState::CardRewardSelection(options) => options,
+            _ => &[],
+        }
+    }
+
+    /// Start an SLS Event
+    pub fn start_event(&mut self, event: MapEvent) {
+        let choices = event.get_choices();
+        self.state = GameState::InEvent(event, choices);
+        info!("Started event: {}", event.get_description());
+    }
+
+    /// Get the current event (only valid in InEvent state)
+    pub fn get_current_event(&self) -> Option<&MapEvent> {
+        match &self.state {
+            GameState::InEvent(event, _) => Some(event),
+            _ => None,
+        }
+    }
+
+    /// Get the current event choices (only valid in InEvent state)
+    pub fn get_current_event_choices(&self) -> &[EventChoice] {
+        match &self.state {
+            GameState::InEvent(_, choices) => choices,
+            _ => &[],
+        }
+    }
+
+    /// Start shop visit with 5 random cards for sale
+    pub fn start_shop(&mut self, rng: &mut impl rand::Rng) {
+        let shop_state = crate::game::shop::ShopState::new(5, rng);
+        info!("Started shop with {} cards for sale", shop_state.card_count());
+        for (i, card) in shop_state.cards_for_sale.iter().enumerate() {
+            if let Some(price) = shop_state.get_card_price(i) {
+                debug!("  Card {}: {} - Cost: {}, Price: {} gold", i + 1, card.get_name(), card.get_cost(), price);
+            }
+        }
+        self.state = GameState::Shop(shop_state);
+    }
+
+    /// Get the current shop state (only valid in Shop state)
+    pub fn get_shop_state(&self) -> Option<&crate::game::shop::ShopState> {
+        match &self.state {
+            GameState::Shop(shop_state) => Some(shop_state),
+            _ => None,
+        }
+    }
+
+    /// Apply a single event effect to the player/game
+    fn apply_event_effect(&mut self, effect: crate::game::effect::Effect) {
+        use crate::game::effect::Effect;
+
+        match effect {
+            Effect::Heal(amount) => {
+                // Handle special case: amount 0 means heal 1/3 of max HP
+                let heal_amount = if amount == 0 {
+                    self.player_max_hp / 3
+                } else {
+                    amount
+                };
+                self.player_hp = (self.player_hp + heal_amount).min(self.player_max_hp);
+                info!("Healed {} HP", heal_amount);
+            },
+            Effect::HealAndIncreaseMaxHp(amount) => {
+                self.player_hp = (self.player_hp + amount).min(self.player_max_hp + amount);
+                self.player_max_hp += amount;
+                info!("Gained {} Max HP and healed to full", amount);
+            },
+            Effect::LoseHp(amount) => {
+                self.player_hp = self.player_hp.saturating_sub(amount);
+                info!("Lost {} HP", amount);
+            },
+            // TODO: Implement other event effects as needed
+            // For now, most effects are logged but not implemented
+            _ => {
+                info!("Event effect not yet implemented: {:?}", effect);
+            }
+        }
     }
 
     /// Choose a node from available options based on path choice (0-based index)
@@ -354,13 +647,34 @@ impl Game {
 
         Ok(nodes_with_positions[chosen_index].0)
     }
+
+    /// Get a list of upgradeable cards from the deck with their indices
+    /// Returns a vector of (deck_index, card) tuples
+    pub fn get_upgradeable_cards(&self) -> Vec<(usize, crate::game::card::Card)> {
+        let mut upgradeable = Vec::new();
+
+        for (index, card) in self.deck.get_cards().iter().enumerate() {
+            // Only include cards that are not already upgraded
+            if !card.is_upgraded() {
+                upgradeable.push((index, card.clone()));
+            }
+        }
+
+        upgradeable
+    }
+
+    /// Check if the deck has any upgradeable cards
+    pub fn has_upgradeable_cards(&self) -> bool {
+        self.deck.get_cards().iter().any(|card| !card.is_upgraded())
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{cards::ironclad::starter_deck::starter_deck, battle::action::Action};
-    use crate::game::map::{Map, MapNode, NodeType};
+    use crate::map::{Map, MapNode, NodeType};
+    use crate::events::map_events::MapEvent;
 
     /// Create a simple test map: Start -> Combat -> Boss
     fn create_test_map() -> (Map, (u32, u32)) {
@@ -564,14 +878,14 @@ mod tests {
         let mut rng = rand::rng();
 
         // Initially should not be in card reward selection
-        assert!(!matches!(game.get_state(), GameState::CardRewardSelection));
+        assert!(!matches!(game.get_state(), GameState::CardRewardSelection(_)));
         assert!(game.get_card_reward_options().is_empty());
 
         // Start card reward selection
         game.start_card_reward_selection(&mut rng);
 
         // Should now be in card reward selection state
-        assert!(matches!(game.get_state(), GameState::CardRewardSelection));
+        assert!(matches!(game.get_state(), GameState::CardRewardSelection(_)));
         assert_eq!(game.get_card_reward_options().len(), 3);
 
         // Verify all reward options are valid cards
@@ -685,5 +999,334 @@ mod tests {
             assert!(!card_names.contains(&name), "Found duplicate card: {}", name);
             card_names.push(name);
         }
+    }
+
+    #[test]
+    fn test_start_event() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
+
+        // Start an event
+        game.start_event(MapEvent::BigFish);
+
+        // Should now be in event state
+        assert!(matches!(game.get_state(), GameState::InEvent(_, _)));
+
+        // Should have current event set
+        assert!(game.get_current_event().is_some());
+        assert_eq!(game.get_current_event().unwrap(), &MapEvent::BigFish);
+
+        // Should have choices available
+        let choices = game.get_current_event_choices();
+        assert_eq!(choices.len(), 3); // Big Fish has 3 choices
+
+        // Check choice texts
+        let choice_texts: Vec<String> = choices.iter().map(|c| c.text.clone()).collect();
+        assert!(choice_texts.contains(&"Banana".to_string()));
+        assert!(choice_texts.contains(&"Donut".to_string()));
+        assert!(choice_texts.contains(&"Box".to_string()));
+    }
+
+    #[test]
+    fn test_choose_event_banana() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
+        let mut rng = rand::rng();
+
+        // Start an event
+        game.start_event(MapEvent::BigFish);
+
+        let initial_hp = game.get_player_hp();
+        let initial_max_hp = game.get_player_max_hp();
+
+        // Choose Banana (should be first choice)
+        let result = game.eval_action(GameAction::ChooseEvent(0), &mut rng);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), GameResult::Continue);
+
+        // Should return to map state
+        assert_eq!(game.get_state(), &GameState::OnMap);
+
+        // Should have gained 5 Max HP and healed to full
+        assert_eq!(game.get_player_max_hp(), initial_max_hp + 5);
+        assert_eq!(game.get_player_hp(), initial_max_hp + 5);
+
+        // Event should be cleared
+        assert!(game.get_current_event().is_none());
+        assert!(game.get_current_event_choices().is_empty());
+    }
+
+    #[test]
+    fn test_choose_event_donut() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 60, 90); // Start with low HP
+        let mut rng = rand::rng();
+
+        // Start an event
+        game.start_event(MapEvent::BigFish);
+
+        let initial_hp = game.get_player_hp();
+        let initial_max_hp = game.get_player_max_hp();
+
+        // Choose Donut (should be second choice)
+        let result = game.eval_action(GameAction::ChooseEvent(1), &mut rng);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), GameResult::Continue);
+
+        // Should return to map state
+        assert_eq!(game.get_state(), &GameState::OnMap);
+
+        // Should have healed 1/3 of Max HP (90 / 3 = 30)
+        assert_eq!(game.get_player_max_hp(), initial_max_hp); // Max HP unchanged
+        assert_eq!(game.get_player_hp(), initial_hp + 30);
+
+        // Event should be cleared
+        assert!(game.get_current_event().is_none());
+        assert!(game.get_current_event_choices().is_empty());
+    }
+
+    #[test]
+    fn test_choose_event_invalid_state() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
+        let mut rng = rand::rng();
+
+        // Try to choose event without being in event state
+        let result = game.eval_action(GameAction::ChooseEvent(0), &mut rng);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), GameError::InvalidState);
+    }
+
+    #[test]
+    fn test_choose_event_invalid_index() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
+        let mut rng = rand::rng();
+
+        // Start an event
+        game.start_event(MapEvent::BigFish);
+
+        // Try to choose invalid index
+        let result = game.eval_action(GameAction::ChooseEvent(5), &mut rng);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), GameError::InvalidChoice);
+
+        // Try to choose index equal to length
+        let result = game.eval_action(GameAction::ChooseEvent(3), &mut rng);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), GameError::InvalidChoice);
+    }
+
+    #[test]
+    fn test_event_node_triggers_event() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let mut rng = rand::rng();
+
+        // Create a map with an event node
+        let mut map = Map::new();
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        let event_node = MapNode::new(1, 0, NodeType::Event);
+        map.add_node(start_node);
+        map.add_node(event_node);
+        map.add_edge((0, 0), (1, 0)).unwrap();
+
+        let mut game = Game::new(deck, global_info, map, (0, 0), 80, 80);
+
+        // Move to event node
+        let result = game.eval_action(GameAction::ChoosePath(0), &mut rng);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), GameResult::Continue);
+
+        // Should now be in event state
+        assert!(matches!(game.get_state(), GameState::InEvent(_, _)));
+
+        // Should have BigFish event started
+        assert!(game.get_current_event().is_some());
+        assert_eq!(game.get_current_event().unwrap(), &MapEvent::BigFish);
+
+        // Should have choices available
+        let choices = game.get_current_event_choices();
+        assert_eq!(choices.len(), 3);
+
+        // Should be at the event node position
+        assert_eq!(game.current_node_position, (1, 0));
+    }
+
+    #[test]
+    fn test_rest_site_upgrade_starts_selection_state() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
+        let mut rng = rand::rng();
+
+        // Move to rest site first
+        let mut rest_map = Map::new();
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        let rest_node = MapNode::new(1, 0, NodeType::RestSite);
+        rest_map.add_node(start_node);
+        rest_map.add_node(rest_node);
+        rest_map.add_edge((0, 0), (1, 0)).unwrap();
+
+        let deck = starter_deck();
+        let mut game = Game::new(deck, global_info, rest_map, (0, 0), 80, 80);
+        game.eval_action(GameAction::ChoosePath(0), &mut rng).unwrap();
+
+        // Choose upgrade at rest site
+        let result = game.eval_action(GameAction::RestSiteChoice(RestSiteAction::Upgrade), &mut rng);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), GameResult::Continue);
+
+        // Should now be in upgrade selection state
+        assert_eq!(game.get_state(), &GameState::SelectUpgradeFromDeck);
+    }
+
+    #[test]
+    fn test_select_card_to_upgrade_valid() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
+        let mut rng = rand::rng();
+
+        // Set to upgrade selection state
+        game.state = GameState::SelectUpgradeFromDeck;
+
+        // Get initial deck size and cards
+        let initial_deck_size = game.deck.size();
+        let upgradeable_cards = game.get_upgradeable_cards();
+        assert!(!upgradeable_cards.is_empty(), "Should have upgradeable cards");
+
+        // Find a Strike card to upgrade (they definitely change name when upgraded)
+        let (card_index, original_card) = upgradeable_cards.iter()
+            .find(|(_, card)| card.get_name() == "Strike")
+            .expect("Should find a Strike card to upgrade")
+            .clone();
+        let original_name = original_card.get_name();
+        assert_eq!(original_name, "Strike");
+
+        // Upgrade the card
+        let result = game.eval_action(GameAction::SelectCardToUpgrade(card_index), &mut rng);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), GameResult::Continue);
+
+        // Should return to map state
+        assert_eq!(game.get_state(), &GameState::OnMap);
+
+        // Deck size should remain the same
+        assert_eq!(game.deck.size(), initial_deck_size);
+
+        // Card should now be upgraded
+        let upgraded_card = game.deck.get_card(card_index).unwrap();
+        assert_ne!(upgraded_card.get_name(), original_name);
+        assert!(upgraded_card.is_upgraded());
+        assert_eq!(upgraded_card.get_name(), "Strike+");
+    }
+
+    #[test]
+    fn test_select_card_to_upgrade_invalid_state() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
+        let mut rng = rand::rng();
+
+        // Try to upgrade card without being in upgrade selection state
+        let result = game.eval_action(GameAction::SelectCardToUpgrade(0), &mut rng);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), GameError::InvalidState);
+    }
+
+    #[test]
+    fn test_select_card_to_upgrade_invalid_index() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
+        let mut rng = rand::rng();
+
+        // Set to upgrade selection state
+        game.state = GameState::SelectUpgradeFromDeck;
+
+        // Try to upgrade with invalid index
+        let result = game.eval_action(GameAction::SelectCardToUpgrade(999), &mut rng);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), GameError::InvalidCardIndex);
+    }
+
+    #[test]
+    fn test_get_upgradeable_cards() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
+
+        // Get upgradeable cards
+        let upgradeable = game.get_upgradeable_cards();
+
+        // Should have some upgradeable cards
+        assert!(!upgradeable.is_empty());
+
+        // All returned cards should not be upgraded
+        for (index, card) in &upgradeable {
+            assert!(!card.is_upgraded());
+            // Check that the index is valid
+            assert!(*index < game.deck.size());
+        }
+
+        // Check that deck card at returned index matches the card
+        for (deck_index, card) in &upgradeable {
+            let deck_card = game.deck.get_card(*deck_index).unwrap();
+            assert_eq!(deck_card.get_card_enum(), card.get_card_enum());
+            assert_eq!(deck_card.get_name(), card.get_name());
+        }
+    }
+
+    #[test]
+    fn test_has_upgradeable_cards() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
+
+        // Starter deck should have upgradeable cards
+        assert!(game.has_upgradeable_cards());
+
+        // Get upgradeable cards to verify
+        let upgradeable = game.get_upgradeable_cards();
+        assert_eq!(game.has_upgradeable_cards(), !upgradeable.is_empty());
+    }
+
+    #[test]
+    fn test_already_upgraded_card_cannot_be_upgraded() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, start_node_position, 80, 80);
+        let mut rng = rand::rng();
+
+        // Add an already upgraded card to the deck
+        let upgraded_strike = crate::cards::ironclad::strike::strike_upgraded();
+        game.deck.add_card(upgraded_strike);
+        let upgraded_card_index = game.deck.size() - 1;
+
+        // Set to upgrade selection state
+        game.state = GameState::SelectUpgradeFromDeck;
+
+        // Try to upgrade the already upgraded card
+        let result = game.eval_action(GameAction::SelectCardToUpgrade(upgraded_card_index), &mut rng);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), GameError::InvalidCardIndex);
     }
 }

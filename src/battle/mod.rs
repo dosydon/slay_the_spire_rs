@@ -165,8 +165,53 @@ impl Battle {
         self.gold_stolen
     }
 
+    /// Get global info
+    pub fn get_global_info(&self) -> &GlobalInfo {
+        &self.global_info
+    }
+
     pub fn get_hand(&self) -> &Vec<Card> {
         self.cards.get_hand()
+    }
+
+    /// Count the number of Strike cards in the entire deck (draw pile + hand + discard pile)
+    /// Strike cards include: Strike, PerfectedStrike, PommelStrike, TwinStrike, WildStrike, SwiftStrike
+    pub fn count_strike_cards_in_deck(&self) -> u32 {
+        use crate::game::card_enum::CardEnum;
+
+        let strike_cards = [
+            CardEnum::Strike,
+            CardEnum::PerfectedStrike,
+            CardEnum::PommelStrike,
+            CardEnum::TwinStrike,
+            CardEnum::WildStrike,
+            CardEnum::SwiftStrike,
+        ];
+
+        let mut count = 0;
+
+        // Count in hand
+        for card in self.cards.get_hand() {
+            if strike_cards.contains(&card.get_card_enum()) {
+                count += 1;
+            }
+        }
+
+        // Count in draw pile (deck)
+        for card in self.cards.get_deck().get_cards() {
+            if strike_cards.contains(&card.get_card_enum()) {
+                count += 1;
+            }
+        }
+
+        // Count in discard pile
+        for card in self.cards.get_discard_pile() {
+            if strike_cards.contains(&card.get_card_enum()) {
+                count += 1;
+            }
+        }
+
+        count
     }
 
     /// Add a card to hand (for testing purposes)
@@ -187,6 +232,21 @@ impl Battle {
     /// Get the deck (for testing purposes)
     pub fn get_deck(&self) -> &crate::game::deck::Deck {
         self.cards.get_deck()
+    }
+
+    /// Get the number of cards in the draw pile
+    pub fn get_draw_pile_count(&self) -> usize {
+        self.cards.deck_size()
+    }
+
+    /// Get the number of cards in the discard pile
+    pub fn get_discard_pile_count(&self) -> usize {
+        self.cards.discard_pile_size()
+    }
+
+    /// Get the number of cards in the exhaust pile
+    pub fn get_exhaust_pile_count(&self) -> usize {
+        self.cards.exhausted_size()
     }
 
     /// Get all powers played during this battle

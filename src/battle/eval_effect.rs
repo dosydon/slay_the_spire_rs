@@ -30,6 +30,15 @@ impl Battle {
                 // Increase rampage scaling for next use
                 self.player.battle_info.increase_rampage_damage(*scaling);
             },
+            BaseEffect::PerfectedStrike { source, target, base_damage, damage_per_strike } => {
+                // Count Strike cards in deck (draw pile + hand + discard pile)
+                let strike_count = self.count_strike_cards_in_deck();
+
+                // Calculate total damage: base + (bonus per Strike card × number of Strikes)
+                let total_damage = base_damage + (damage_per_strike * strike_count);
+                let incoming_damage = self.calculate_incoming_damage_with_multiplier(*source, *target, total_damage, 1);
+                self.apply_damage(*target, incoming_damage);
+            },
             BaseEffect::AttackAllEnemies { source, amount, num_attacks } => {
                 for _ in 0..*num_attacks {
                     for enemy_idx in 0..self.enemies.len() {

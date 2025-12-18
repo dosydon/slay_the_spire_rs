@@ -19,6 +19,7 @@ struct Args {
 }
 
 fn main() {
+    env_logger::init();
     let args = Args::parse();
 
     println!("⚔️  Slay the Spire - Battle Simulator");

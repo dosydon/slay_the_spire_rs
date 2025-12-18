@@ -1,12 +1,14 @@
-cargo-features = ["edition2024"]
 [package]
 name = "slay_the_spire"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
-rand = "0.9.1"
-clap = { version = "4.4", features = ["derive"] }
+rand.workspace = true
+clap.workspace = true
+bevy = { workspace = true, features = ["bevy_ui", "bevy_render", "bevy_core_pipeline", "bevy_text", "bevy_sprite", "bevy_winit", "bevy_window", "x11", "png", "default_font"] }
+log.workspace = true
+env_logger.workspace = true
 
 [[bin]]
 name = "game"

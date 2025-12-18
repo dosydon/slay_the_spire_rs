@@ -23,6 +23,10 @@ impl Deck {
         self.cards.push(card);
     }
 
+    pub fn insert_card(&mut self, index: usize, card: Card) {
+        self.cards.insert(index, card);
+    }
+
     pub fn remove_card(&mut self, index: usize) -> Option<Card> {
         if index < self.cards.len() {
             Some(self.cards.remove(index))
@@ -57,5 +61,15 @@ impl Deck {
     /// Put a card on top of the deck
     pub fn put_card_on_top(&mut self, card: Card) {
         self.cards.insert(0, card);
+    }
+
+    /// Get a reference to all cards in the deck
+    pub fn get_cards(&self) -> &Vec<Card> {
+        &self.cards
+    }
+
+    /// Get a reference to a specific card by index
+    pub fn get_card(&self, index: usize) -> Option<&Card> {
+        self.cards.get(index)
     }
 }

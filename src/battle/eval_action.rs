@@ -537,7 +537,8 @@ mod tests {
     #[test]
     fn test_burning_blood_relic_heals_at_end_of_combat() {
         use crate::cards::ironclad::strike::strike;
-        use crate::game::{game::Game, game_event::GameEvent, map::{Map, MapNode, NodeType}};
+        use crate::game::{game::Game, game_event::GameEvent};
+        use crate::map::{Map, MapNode, NodeType};
         use crate::relics::Relic;
 
         // Create a deck with high-damage cards to defeat enemy quickly
