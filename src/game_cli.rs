@@ -36,7 +36,7 @@ impl GameCli {
         let map = test_map_large();
         let start_node = (0, 0); // Start position based on test_map_large 0-indexing
 
-        let mut game = Game::new(deck, global_info, map, start_node, 80, 80);
+        let mut game = Game::new(deck, global_info, map, 80, 80);
 
         // Add Burning Blood relic to the game
         game.add_relic(crate::relics::Relic::BurningBlood);
@@ -114,7 +114,13 @@ impl GameCli {
                         break;
                     }
                 },
-                GameState::CardRewardSelection(_) => {
+                GameState::Reward(_) => {
+                    if let Err(e) = self.handle_reward_phase() {
+                        println!("Error during reward phase: {:?}", e);
+                        break;
+                    }
+                },
+                GameState::CardRewardSelection(_, _) => {
                     if let Err(e) = self.handle_card_reward_selection() {
                         println!("Error during card reward selection: {:?}", e);
                         break;
@@ -209,12 +215,12 @@ impl GameCli {
             };
 
             match self.game.eval_action(GameAction::ChoosePath(path_index), &mut self.rng) {
-                Ok(GameResult { outcome: GameOutcome::Continue, battle_events: _ }) => break,
-                Ok(GameResult { outcome: GameOutcome::Victory, battle_events: _ }) => {
+                Ok(GameResult { outcome: GameOutcome::Continue, game_events: _ }) => break,
+                Ok(GameResult { outcome: GameOutcome::Victory, game_events: _ }) => {
                     println!("\n🎉 VICTORY! You've completed the spire!");
                     return Ok(());
                 },
-                Ok(GameResult { outcome: GameOutcome::Defeat, battle_events: _ }) => {
+                Ok(GameResult { outcome: GameOutcome::Defeat, game_events: _ }) => {
                     println!("\n💀 DEFEAT! Your journey ends here.");
                     return Ok(());
                 },
@@ -250,7 +256,12 @@ impl GameCli {
                 self.game.global_info.current_floor += 1;
 
                 // Trigger card reward selection through the Game's proper method
-                self.game.start_card_reward_selection(&mut self.rng);
+                let cli_reward_state = crate::game::game::RewardState {
+                    gold_reward: 0,
+                    card_selection_available: true,
+                    gold_claimed: false,
+                };
+                self.game.start_card_reward_selection(&mut self.rng, cli_reward_state);
             } else if player_hp == 0 {
                 println!("\n💀 Battle Lost! Game Over.");
                 return Ok(());
@@ -260,6 +271,81 @@ impl GameCli {
         }
 
         Ok(())
+    }
+
+    /// Handle reward phase after combat
+    fn handle_reward_phase(&mut self) -> Result<(), GameError> {
+        println!("\n=== Combat Rewards ===");
+
+        // Get reward state
+        let reward_state = match self.game.get_state() {
+            GameState::Reward(reward) => reward.clone(),
+            _ => return Err(GameError::InvalidState),
+        };
+
+        // Display available rewards
+        println!("\nAvailable rewards:");
+        println!("  [1] {} Gold{}", reward_state.gold_reward,
+            if reward_state.gold_claimed { " (Already claimed)" } else { "" });
+
+        if reward_state.card_selection_available {
+            println!("  [2] Card Selection");
+        }
+        println!("  [3] Skip remaining rewards and continue");
+
+        loop {
+            println!("\nChoose a reward (enter number):");
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input).expect("Failed to read line");
+
+            let choice: Result<usize, _> = input.trim().parse();
+
+            match choice {
+                Ok(1) => {
+                    if reward_state.gold_claimed {
+                        println!("Gold already claimed!");
+                        continue;
+                    }
+
+                    match self.game.eval_action(GameAction::ClaimGold, &mut self.rng) {
+                        Ok(_) => {
+                            println!("✓ Claimed {} gold!", reward_state.gold_reward);
+                            return Ok(());
+                        },
+                        Err(e) => {
+                            println!("Error claiming gold: {:?}", e);
+                            return Err(e);
+                        }
+                    }
+                },
+                Ok(2) if reward_state.card_selection_available => {
+                    match self.game.eval_action(GameAction::RequestCardSelection, &mut self.rng) {
+                        Ok(_) => {
+                            return Ok(());
+                        },
+                        Err(e) => {
+                            println!("Error requesting card selection: {:?}", e);
+                            return Err(e);
+                        }
+                    }
+                },
+                Ok(3) => {
+                    match self.game.eval_action(GameAction::SkipRewards, &mut self.rng) {
+                        Ok(_) => {
+                            println!("Skipped remaining rewards.");
+                            return Ok(());
+                        },
+                        Err(e) => {
+                            println!("Error skipping rewards: {:?}", e);
+                            return Err(e);
+                        }
+                    }
+                },
+                _ => {
+                    println!("Invalid choice. Please try again.");
+                }
+            }
+        }
     }
 
     /// Handle card reward selection phase
@@ -322,15 +408,15 @@ impl GameCli {
                 Ok(choice) if choice >= 1 && choice <= reward_options.len() => {
                     let card_index = choice - 1;
                     match self.game.eval_action(GameAction::SelectCardReward(card_index), &mut self.rng) {
-                        Ok(GameResult { outcome: GameOutcome::Continue, battle_events: _ }) => {
+                        Ok(GameResult { outcome: GameOutcome::Continue, game_events: _ }) => {
                             println!("\n✅ Card added to your deck!");
                             break;
                         },
-                        Ok(GameResult { outcome: GameOutcome::Victory, battle_events: _ }) => {
+                        Ok(GameResult { outcome: GameOutcome::Victory, game_events: _ }) => {
                             println!("\n🎉 VICTORY! You've completed the spire!");
                             return Ok(());
                         },
-                        Ok(GameResult { outcome: GameOutcome::Defeat, battle_events: _ }) => {
+                        Ok(GameResult { outcome: GameOutcome::Defeat, game_events: _ }) => {
                             println!("\n💀 DEFEAT! Your journey ends here.");
                             return Ok(());
                         },
@@ -379,15 +465,15 @@ impl GameCli {
                 Ok(choice) if choice >= 1 && choice <= choices_len => {
                     let choice_index = choice - 1;
                     match self.game.eval_action(GameAction::ChooseEvent(choice_index), &mut self.rng) {
-                        Ok(GameResult { outcome: GameOutcome::Continue, battle_events: _ }) => {
+                        Ok(GameResult { outcome: GameOutcome::Continue, game_events: _ }) => {
                             println!("\n✅ Event resolved!");
                             break;
                         },
-                        Ok(GameResult { outcome: GameOutcome::Victory, battle_events: _ }) => {
+                        Ok(GameResult { outcome: GameOutcome::Victory, game_events: _ }) => {
                             println!("\n🎉 VICTORY! You've completed the spire!");
                             return Ok(());
                         },
-                        Ok(GameResult { outcome: GameOutcome::Defeat, battle_events: _ }) => {
+                        Ok(GameResult { outcome: GameOutcome::Defeat, game_events: _ }) => {
                             println!("\n💀 DEFEAT! Your journey ends here.");
                             return Ok(());
                         },

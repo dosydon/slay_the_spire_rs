@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Sword Boomerang - Common Attack Card
 /// Cost: 1
@@ -10,7 +10,7 @@ pub fn sword_boomerang() -> Card {
             num_attacks: 3,
             strength_multiplier: 1,
         },
-    ], false, true)
+    ], false, true, Rarity::Common)
 }
 
 /// Sword Boomerang+ (Upgraded)
@@ -23,7 +23,7 @@ pub fn sword_boomerang_upgraded() -> Card {
             num_attacks: 3,
             strength_multiplier: 1,
         },
-    ], true, true)
+    ], true, true, Rarity::Common)
 }
 
 #[cfg(test)]

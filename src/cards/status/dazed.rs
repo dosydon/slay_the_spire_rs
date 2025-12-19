@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Condition};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Condition, card::Rarity};
 
 /// Dazed - Status Card
 /// Cost: -
@@ -11,6 +11,7 @@ pub fn dazed() -> Card {
         vec![],
         false, // not upgraded
         Condition::False, // Cannot be played
+        Rarity::Basic
     )
 }
 

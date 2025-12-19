@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 pub fn feed() -> Card {
     Card::new(
@@ -12,6 +12,7 @@ pub fn feed() -> Card {
         ],
         false, // not upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 
@@ -27,6 +28,7 @@ pub fn feed_upgraded() -> Card {
         ],
         true,  // upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 

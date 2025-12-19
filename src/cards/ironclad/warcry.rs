@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 
 /// Warcry - Draw 1 cards. Put 1 card on top of draw pile
 pub fn warcry() -> Card {
@@ -9,6 +9,7 @@ pub fn warcry() -> Card {
         vec![Effect::DrawCard { count: 1 }, Effect::EnterSelectCardInHandToPutOnDeck],
         false, // not upgraded
         Condition::True,
+        Rarity::Uncommon,
     )
 }
 
@@ -21,6 +22,7 @@ pub fn warcry_upgraded() -> Card {
         vec![Effect::DrawCard { count: 2 }, Effect::EnterSelectCardInHandToPutOnDeck],
         true,  // upgraded
         Condition::True,
+        Rarity::Uncommon,
     )
 }
 

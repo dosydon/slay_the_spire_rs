@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 
 /// Infernal Blade - Uncommon Skill Card
 /// Cost: 1 (0 when upgraded)
@@ -14,6 +14,7 @@ pub fn infernal_blade() -> Card {
         ],
         false, // not upgraded
         Condition::True,
+        Rarity::Common,
     )
 }
 
@@ -31,6 +32,7 @@ pub fn infernal_blade_upgraded() -> Card {
         ],
         true,  // upgraded
         Condition::True,
+        Rarity::Common,
     )
 }
 

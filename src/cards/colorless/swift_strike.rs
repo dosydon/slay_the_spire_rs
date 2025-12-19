@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Swift Strike - Colorless Attack Card
 /// Cost: 0 (0 when upgraded)
@@ -11,6 +11,7 @@ pub fn swift_strike() -> Card {
         vec![Effect::AttackToTarget { amount: 7, num_attacks: 1, strength_multiplier: 0 }],
         false, // not upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 
@@ -22,6 +23,7 @@ pub fn swift_strike_upgraded() -> Card {
         vec![Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 0 }],
         true,  // upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 

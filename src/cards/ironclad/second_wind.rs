@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::Rarity};
 
 /// Second Wind - Uncommon Skill Card
 /// Cost: 1
@@ -11,6 +11,7 @@ pub fn second_wind() -> Card {
         vec![Effect::ExhaustNonAttackCardsFromHand { block_per_card: 5 }],
         false, // not upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 
@@ -25,6 +26,7 @@ pub fn second_wind_upgraded() -> Card {
         vec![Effect::ExhaustNonAttackCardsFromHand { block_per_card: 8 }],
         true,  // upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 

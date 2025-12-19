@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 /// Metallicize Listener
@@ -55,13 +55,13 @@ impl EventListener for MetallicizeListener {
 pub fn metallicize() -> Card {
     Card::new_with_condition(CardEnum::Metallicize, 1, CardType::Power, vec![
         Effect::ActivateMetallicize { amount: 3 },
-    ], false, Condition::True)
+    ], false, Condition::True, Rarity::Uncommon)
 }
 
 pub fn metallicize_upgraded() -> Card {
     Card::new_with_condition(CardEnum::Metallicize, 1, CardType::Power, vec![
         Effect::ActivateMetallicize { amount: 4 },
-    ], true, Condition::True)
+    ], true, Condition::True, Rarity::Uncommon)
 }
 
 #[cfg(test)]

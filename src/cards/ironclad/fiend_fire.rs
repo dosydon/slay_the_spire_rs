@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 use crate::battle::target::Entity;
 
 pub fn fiend_fire() -> Card {
@@ -12,6 +12,7 @@ pub fn fiend_fire() -> Card {
         ],
         false, // not upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 
@@ -26,6 +27,7 @@ pub fn fiend_fire_upgraded() -> Card {
         ],
         true,  // upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 

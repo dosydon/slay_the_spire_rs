@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Offering - Rare Skill Card
 /// Cost: 0
@@ -9,7 +9,8 @@ pub fn offering() -> Card {
         Effect::GainEnergy { amount: 2 },
         Effect::DrawCard { count: 3 },
         Effect::Exhaust,
-    ], false, true)
+    ], false, true,
+        Rarity::Rare)
 }
 
 /// Offering+ (Upgraded)
@@ -21,7 +22,8 @@ pub fn offering_upgraded() -> Card {
         Effect::GainEnergy { amount: 2 },
         Effect::DrawCard { count: 5 },
         Effect::Exhaust,
-    ], true, true)
+    ], true, true,
+        Rarity::Rare)
 }
 
 #[cfg(test)]

@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Armaments - Gain 5 Block. Upgrade a card in your hand for the rest of combat.
 pub fn armaments() -> Card {
@@ -9,7 +9,7 @@ pub fn armaments() -> Card {
         vec![Effect::GainDefense { amount: 5 }, Effect::EnterSelectCardInHand],
         false, // not upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 /// Armaments+ (Upgraded version) - Gain 5 Block. Upgrade ALL cards in your hand for the rest of combat.
@@ -21,7 +21,7 @@ pub fn armaments_upgraded() -> Card {
         vec![Effect::GainDefense { amount: 5 }, Effect::UpgradeAllCardsInHand],
         true,  // upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

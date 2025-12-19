@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 
 /// Spot Weakness - Uncommon Skill Card
 /// Cost: 1 (1 when upgraded)
@@ -13,6 +13,7 @@ pub fn spot_weakness() -> Card {
         ],
         false, // not upgraded
         Condition::EnemyIsAttacking,
+        Rarity::Uncommon,
     )
 }
 
@@ -29,6 +30,7 @@ pub fn spot_weakness_upgraded() -> Card {
         ],
         true,  // upgraded
         Condition::EnemyIsAttacking,
+        Rarity::Uncommon,
     )
 }
 

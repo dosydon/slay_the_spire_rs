@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 
 /// Whirlwind - Uncommon Attack Card
 /// Cost: 0 (X-cost - spends all available energy)
@@ -13,6 +13,7 @@ pub fn whirlwind() -> Card {
         ],
         false, // not upgraded
         Condition::True,
+        Rarity::Uncommon
     )
 }
 
@@ -29,6 +30,7 @@ pub fn whirlwind_upgraded() -> Card {
         ],
         true,  // upgraded
         Condition::True,
+        Rarity::Uncommon
     )
 }
 

@@ -1,17 +1,17 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 pub fn ghostly_armor() -> Card {
     Card::new(CardEnum::GhostlyArmor, 1, CardType::Skill, vec![
         Effect::GainDefense { amount: 10 }
         // Note: Ethereal is a card property, not an effect that needs to be in effects list
         // The card should be marked as ethereal via card properties
-    ], false, true)
+    ], false, true, Rarity::Uncommon)
 }
 
 pub fn ghostly_armor_upgraded() -> Card {
     Card::new(CardEnum::GhostlyArmor, 1, CardType::Skill, vec![
         Effect::GainDefense { amount: 13 }
-    ], true, true)
+    ], true, true, Rarity::Uncommon)
 }
 
 #[cfg(test)]

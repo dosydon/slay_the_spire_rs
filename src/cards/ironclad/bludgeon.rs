@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Bludgeon - Rare Attack Card
 /// Cost: 3
@@ -10,20 +10,20 @@ pub fn bludgeon() -> Card {
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], false, true)
+    ], false, true, Rarity::Rare)
 }
 
 /// Bludgeon+ (Upgraded)
 /// Cost: 2
 /// Effect: Deal 42 damage
 pub fn bludgeon_upgraded() -> Card {
-    Card::new(CardEnum::Bludgeon, 3, CardType::Attack, vec![
+    Card::new(CardEnum::Bludgeon, 2, CardType::Attack, vec![
         Effect::AttackToTarget {
             amount: 42,
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], true, true)
+    ], true, true, Rarity::Rare)
 }
 
 #[cfg(test)]

@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::Rarity};
 
 /// Body Slam - Deal damage equal to your Block
 pub fn body_slam() -> Card {
@@ -9,6 +9,7 @@ pub fn body_slam() -> Card {
         vec![Effect::AttackToTargetWithBlock],
         false, // not upgraded
         true,  // playable
+        Rarity::Common,
     )
 }
 
@@ -21,6 +22,7 @@ pub fn body_slam_upgraded() -> Card {
         vec![Effect::AttackToTargetWithBlock],
         true,  // upgraded
         true,  // playable
+        Rarity::Common,
     )
 }
 

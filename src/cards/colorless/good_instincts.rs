@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Good Instincts - Colorless Skill Card
 /// Cost: 0 (0 when upgraded)
@@ -11,6 +11,7 @@ pub fn good_instincts() -> Card {
         vec![Effect::GainDefense { amount: 6 }],
         false, // not upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 
@@ -22,6 +23,7 @@ pub fn good_instincts_upgraded() -> Card {
         vec![Effect::GainDefense { amount: 9 }],
         true,  // upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 

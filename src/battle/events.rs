@@ -1,8 +1,7 @@
 use crate::{battle::target::Entity, game::effect::Effect};
 use std::any::Any;
-use bevy::prelude::Event;
 
-#[derive(Debug, Clone, PartialEq, Event)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum BattleEvent {
     DamageTaken {
         target: Entity,

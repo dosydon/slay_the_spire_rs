@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::Rarity};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 /// Rupture Listener
@@ -53,6 +53,7 @@ pub fn rupture() -> Card {
         vec![Effect::ActivateRupture],
         false, // not upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 
@@ -67,6 +68,7 @@ pub fn rupture_upgraded() -> Card {
         vec![Effect::ActivateRupture],
         true,  // upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 

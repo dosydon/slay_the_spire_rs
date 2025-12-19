@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, effect::Condition};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, effect::Condition, card::Rarity};
 
 /// Sentinel - Uncommon Skill Card
 /// Cost: 1 (0 when upgraded)
@@ -16,6 +16,7 @@ pub fn sentinel() -> Card {
         vec![
             Effect::GainEnergy { amount: 2 },
         ],
+        Rarity::Uncommon,
     )
 }
 
@@ -35,6 +36,7 @@ pub fn sentinel_upgraded() -> Card {
         vec![
             Effect::GainEnergy { amount: 3 },
         ],
+        Rarity::Uncommon,
     )
 }
 

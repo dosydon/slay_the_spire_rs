@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 
 /// Anger - Deal 6 damage. Add a copy of this card to your discard pile.
 pub fn anger() -> Card {
@@ -12,6 +12,7 @@ pub fn anger() -> Card {
         ],
         false, // not upgraded
         Condition::True,
+        Rarity::Common,
     )
 }
 
@@ -27,6 +28,7 @@ pub fn anger_upgraded() -> Card {
         ],
         true,  // upgraded
         Condition::True,
+        Rarity::Common,
     )
 }
 

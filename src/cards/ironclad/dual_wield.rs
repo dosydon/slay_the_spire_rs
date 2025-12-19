@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Dual Wield - Duplicate a card in your hand into the discard pile
 pub fn dual_wield() -> Card {
@@ -9,7 +9,7 @@ pub fn dual_wield() -> Card {
         vec![Effect::EnterSelectCardToDuplicate { copies: 1 }],
         false, // not upgraded
         Condition::True,
-    )
+        Rarity::Common)
 }
 
 /// Dual Wield+ (Upgraded version) - Duplicate a card in your hand twice into the discard pile
@@ -21,7 +21,7 @@ pub fn dual_wield_upgraded() -> Card {
         vec![Effect::EnterSelectCardToDuplicate { copies: 2 }],
         true,  // upgraded
         Condition::True,
-    )
+        Rarity::Common)
 }
 
 #[cfg(test)]

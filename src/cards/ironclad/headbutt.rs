@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::Effect, card_type::CardType, card_enum::CardEnum};
 
 /// Headbutt - Deal 9 damage. Put a card from discard pile on top of draw pile
 pub fn headbutt() -> Card {
@@ -9,7 +9,7 @@ pub fn headbutt() -> Card {
         vec![Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 0 }, Effect::EnterSelectCardInDiscard],
         false, // not upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 /// Headbutt+ (upgraded version)
@@ -21,7 +21,7 @@ pub fn headbutt_upgraded() -> Card {
         vec![Effect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 0 }, Effect::EnterSelectCardInDiscard],
         true,  // upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

@@ -1,4 +1,5 @@
 use crate::game::effect::Effect;
+use crate::battle::events::BattleEvent;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum GameEvent {
@@ -6,6 +7,7 @@ pub enum GameEvent {
     CombatStart,
     CardObtained,
     RelicObtained,
+    Battle(BattleEvent),
 }
 
 pub trait GameEventListener: Send + Sync {

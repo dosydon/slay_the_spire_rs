@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 
 /// Corruption - Power Card
 /// Cost: 3 (2 when upgraded)
@@ -6,13 +6,13 @@ use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, 
 pub fn corruption() -> Card {
     Card::new_with_condition(CardEnum::Corruption, 3, CardType::Power, vec![
         Effect::ActivateCorruption,
-    ], false, Condition::True)
+    ], false, Condition::True, Rarity::Rare)
 }
 
 pub fn corruption_upgraded() -> Card {
     Card::new_with_condition(CardEnum::Corruption, 2, CardType::Power, vec![
         Effect::ActivateCorruption,
-    ], true, Condition::True)
+    ], true, Condition::True, Rarity::Rare)
 }
 
 #[cfg(test)]

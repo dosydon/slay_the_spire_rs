@@ -1,10 +1,10 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, card_type::CardType, card_enum::CardEnum};
 
 pub fn wound() -> Card {
     Card::new(CardEnum::Wound, 0, CardType::Status, vec![
         // Wound is a pure status card with no effects
         // It's unplayable and should be automatically exhausted
-    ], false, false)
+    ], false, false, Rarity::Basic)
 }
 
 // Wound cannot be upgraded in the base game

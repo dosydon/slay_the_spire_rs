@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Impervious - Rare Skill Card
 /// Cost: 2
@@ -7,7 +7,7 @@ pub fn impervious() -> Card {
     Card::new(CardEnum::Impervious, 2, CardType::Skill, vec![
         Effect::GainDefense { amount: 30 },
         Effect::Exhaust,
-    ], false, true)
+    ], false, true, Rarity::Rare)
 }
 
 /// Impervious+ (Upgraded)
@@ -17,7 +17,7 @@ pub fn impervious_upgraded() -> Card {
     Card::new(CardEnum::Impervious, 2, CardType::Skill, vec![
         Effect::GainDefense { amount: 40 },
         Effect::Exhaust,
-    ], true, true)
+    ], true, true, Rarity::Rare)
 }
 
 #[cfg(test)]

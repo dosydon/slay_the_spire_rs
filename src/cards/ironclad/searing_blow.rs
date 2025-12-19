@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Calculate Searing Blow damage using quadratic progression
 /// Formula: damage = n(n+7)/2 + 12 where n is upgrade level
@@ -31,6 +31,7 @@ fn searing_blow_with_level(upgrade_level: u32) -> Card {
         ],
         upgrade_level,
         true,  // playable
+        Rarity::Uncommon,
     )
 }
 

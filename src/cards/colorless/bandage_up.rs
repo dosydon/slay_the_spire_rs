@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Bandage Up - Colorless Skill Card
 /// Cost: 0 (0 when upgraded)
@@ -14,6 +14,7 @@ pub fn bandage_up() -> Card {
         ],
         false, // not upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 
@@ -28,6 +29,7 @@ pub fn bandage_up_upgraded() -> Card {
         ],
         true,  // upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 

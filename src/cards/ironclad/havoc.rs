@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::Effect, card_type::CardType, card_enum::CardEnum};
 
 /// Havoc - Play top card of draw pile. Exhaust it
 pub fn havoc() -> Card {
@@ -9,7 +9,7 @@ pub fn havoc() -> Card {
         vec![Effect::PlayTopCardAndExhaust],
         false, // not upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 /// Havoc+ (upgraded version)
@@ -21,7 +21,7 @@ pub fn havoc_upgraded() -> Card {
         vec![Effect::PlayTopCardAndExhaust],
         true,  // upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

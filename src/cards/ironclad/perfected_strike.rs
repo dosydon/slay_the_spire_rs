@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Perfected Strike: Deal 6 damage. Deals an additional 2 damage for ALL Strike cards in your deck.
 pub fn perfected_strike() -> Card {
@@ -7,7 +7,7 @@ pub fn perfected_strike() -> Card {
             base_damage: 6,
             damage_per_strike: 2,
         }
-    ], false, true)
+    ], false, true, Rarity::Common)
 }
 
 /// Perfected Strike+: Deal 10 damage. Deals an additional 3 damage for ALL Strike cards in your deck.
@@ -17,7 +17,7 @@ pub fn perfected_strike_upgraded() -> Card {
             base_damage: 10,
             damage_per_strike: 3,
         }
-    ], true, true)
+    ], true, true, Rarity::Common)
 }
 
 #[cfg(test)]

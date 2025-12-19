@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Entrench - Skill Card
 /// Cost: 2
@@ -6,7 +6,8 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 pub fn entrench() -> Card {
     Card::new(CardEnum::Entrench, 2, CardType::Skill, vec![
         Effect::DoubleBlock,
-    ], false, true)
+    ], false, true,
+        Rarity::Common)
 }
 
 /// Entrench+ (Upgraded)
@@ -15,7 +16,8 @@ pub fn entrench() -> Card {
 pub fn entrench_upgraded() -> Card {
     Card::new(CardEnum::Entrench, 1, CardType::Skill, vec![
         Effect::DoubleBlock,
-    ], true, true)
+    ], true, true,
+        Rarity::Common)
 }
 
 #[cfg(test)]

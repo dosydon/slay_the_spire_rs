@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Limit Break - Rare Skill Card
 /// Effect: Double your Strength. Exhaust.
@@ -13,7 +13,7 @@ pub fn limit_break() -> Card {
         ],
         false, // not upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 /// Limit Break+ (Upgraded version)
@@ -30,7 +30,7 @@ pub fn limit_break_upgraded() -> Card {
         ],
         true,  // upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

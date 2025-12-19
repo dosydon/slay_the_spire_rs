@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 use crate::battle::{target::Entity, events::BattleEvent, events::EventListener};
 
 pub fn fire_breathing() -> Card {
@@ -11,6 +11,7 @@ pub fn fire_breathing() -> Card {
         ],
         false, // not upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 
@@ -24,6 +25,7 @@ pub fn fire_breathing_upgraded() -> Card {
         ],
         true,  // upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 

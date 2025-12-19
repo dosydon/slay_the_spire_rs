@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Disarm - Skill Card
 /// Cost: 1
@@ -6,7 +6,8 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 pub fn disarm() -> Card {
     Card::new(CardEnum::Disarm, 1, CardType::Skill, vec![
         Effect::LoseStrengthTarget(2),
-    ], false, true)
+    ], false, true,
+        Rarity::Uncommon)
 }
 
 /// Disarm+ (Upgraded)
@@ -15,7 +16,8 @@ pub fn disarm() -> Card {
 pub fn disarm_upgraded() -> Card {
     Card::new(CardEnum::Disarm, 1, CardType::Skill, vec![
         Effect::LoseStrengthTarget(3),
-    ], true, true)
+    ], true, true,
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

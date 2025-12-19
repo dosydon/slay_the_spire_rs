@@ -1,15 +1,15 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 
 pub fn inflame() -> Card {
     Card::new_with_condition(CardEnum::Inflame, 1, CardType::Power, vec![
         Effect::GainStrength { amount: 2 },        // Gain 2 Strength permanently for this combat
-    ], false, Condition::True)
+    ], false, Condition::True, Rarity::Uncommon)
 }
 
 pub fn inflame_upgraded() -> Card {
     Card::new_with_condition(CardEnum::Inflame, 1, CardType::Power, vec![
         Effect::GainStrength { amount: 3 },        // Gain 3 Strength permanently for this combat (+1)
-    ], true, Condition::True)
+    ], true, Condition::True, Rarity::Uncommon)
 }
 
 #[cfg(test)]

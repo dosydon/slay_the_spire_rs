@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::{Card, Rarity}, card_type::CardType, card_enum::CardEnum, effect::Effect};
 
 pub fn power_through() -> Card {
     Card::new(
@@ -12,7 +12,7 @@ pub fn power_through() -> Card {
         ],
         false, // not upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 pub fn power_through_upgraded() -> Card {
@@ -27,7 +27,7 @@ pub fn power_through_upgraded() -> Card {
         ],
         true,  // upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

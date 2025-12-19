@@ -1,9 +1,9 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::{Card, Rarity}, card_type::CardType, card_enum::CardEnum, effect::Effect};
 
 pub fn slimed() -> Card {
     Card::new(CardEnum::Slimed, 1, CardType::Status, vec![
         Effect::Exhaust
-    ], false, true)
+    ], false, true, Rarity::Basic)
 }
 
 #[cfg(test)]

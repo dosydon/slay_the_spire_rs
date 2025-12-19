@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::Rarity};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 /// Burn Listener
@@ -47,7 +47,7 @@ impl EventListener for BurnListener {
 pub fn burn() -> Card {
     Card::new(CardEnum::Burn, 0, CardType::Status, vec![
         Effect::ActivateBurn { damage: 2 }, // Activate Burn listener for end-of-turn damage
-    ], false, false) // not upgraded, not playable
+    ], false, false, Rarity::Basic) // not upgraded, not playable
 }
 
 #[cfg(test)]

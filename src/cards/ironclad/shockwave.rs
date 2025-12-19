@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Shockwave - Skill Card
 /// Cost: 2
@@ -7,7 +7,7 @@ pub fn shockwave() -> Card {
     Card::new(CardEnum::Shockwave, 2, CardType::Skill, vec![
         Effect::ApplyWeakAll { duration: 3 },
         Effect::ApplyVulnerableAll { duration: 3 },
-    ], false, true)
+    ], false, true, Rarity::Uncommon)
 }
 
 /// Shockwave+ (Upgraded)
@@ -17,7 +17,7 @@ pub fn shockwave_upgraded() -> Card {
     Card::new(CardEnum::Shockwave, 2, CardType::Skill, vec![
         Effect::ApplyWeakAll { duration: 3 },
         Effect::ApplyVulnerableAll { duration: 3 },
-    ], true, true)
+    ], true, true, Rarity::Uncommon)
 }
 
 #[cfg(test)]

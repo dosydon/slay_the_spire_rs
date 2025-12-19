@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::Effect, card_type::CardType, card_enum::CardEnum};
 
 /// True Grit - Gain 7 Block. Exhaust 1 card from hand
 pub fn true_grit() -> Card {
@@ -9,7 +9,7 @@ pub fn true_grit() -> Card {
         vec![Effect::GainDefense { amount: 7 }, Effect::EnterSelectCardInHand],
         false, // not upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 /// True Grit+ (upgraded version)
@@ -21,7 +21,7 @@ pub fn true_grit_upgraded() -> Card {
         vec![Effect::GainDefense { amount: 9 }, Effect::EnterSelectCardInHand],
         true,  // upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

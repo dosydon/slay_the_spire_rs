@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Dropkick - Deal 5 damage. If enemy Vulnerable: gain 1 Energy, draw 1 card
 pub fn dropkick() -> Card {
@@ -19,7 +19,7 @@ pub fn dropkick() -> Card {
         ],
         false, // not upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 /// Dropkick+ (upgraded version)
@@ -41,7 +41,7 @@ pub fn dropkick_upgraded() -> Card {
         ],
         true,  // upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

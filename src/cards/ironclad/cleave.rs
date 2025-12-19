@@ -1,15 +1,15 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 pub fn cleave() -> Card {
     Card::new(CardEnum::Cleave, 1, CardType::Attack, vec![
         Effect::AttackAllEnemies { amount: 8, num_attacks: 1 }
-    ], false, true)
+    ], false, true, Rarity::Common)
 }
 
 pub fn cleave_upgraded() -> Card {
     Card::new(CardEnum::Cleave, 1, CardType::Attack, vec![
         Effect::AttackAllEnemies { amount: 11, num_attacks: 1 }
-    ], true, true)
+    ], true, true, Rarity::Common)
 }
 
 #[cfg(test)]

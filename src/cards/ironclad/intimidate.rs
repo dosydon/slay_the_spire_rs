@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Intimidate - Apply 1 Weak to all enemies. Exhaust.
 pub fn intimidate() -> Card {
@@ -9,7 +9,7 @@ pub fn intimidate() -> Card {
         vec![Effect::ApplyWeakAll { duration: 1 }, Effect::Exhaust],
         false, // not upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 /// Intimidate+ (Upgraded version) - Apply 2 Weak to all enemies
@@ -21,7 +21,7 @@ pub fn intimidate_upgraded() -> Card {
         vec![Effect::ApplyWeakAll { duration: 2 }, Effect::Exhaust],
         true,  // upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

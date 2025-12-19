@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 /// Rage - Uncommon Skill Card
@@ -14,7 +14,7 @@ pub fn rage() -> Card {
         ],
         false, // not upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 /// Rage+ (Upgraded version)
@@ -30,7 +30,7 @@ pub fn rage_upgraded() -> Card {
         ],
         true,  // upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

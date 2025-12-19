@@ -14,6 +14,18 @@ pub enum GameAction {
     /// Determines what type of encounter comes next
     ChoosePath(usize),
 
+    /// Claim gold reward from combat
+    /// Only valid when in Reward state with unclaimed gold
+    ClaimGold,
+
+    /// Request card selection (transitions from Reward state to CardRewardSelection state)
+    /// Only valid when in Reward state with card_selection_available = true
+    RequestCardSelection,
+
+    /// Skip all remaining rewards and return to map
+    /// Only valid when in Reward state
+    SkipRewards,
+
     /// Select a card reward (0, 1, or 2)
     /// Only valid when in CardRewardSelection state
     SelectCardReward(usize),

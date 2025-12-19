@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Carnage - Uncommon Attack Card
 /// Cost: 2
@@ -11,7 +11,7 @@ pub fn carnage() -> Card {
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], false, true, true)
+    ], false, true, true, Rarity::Rare)
 }
 
 /// Carnage+ (Upgraded)
@@ -25,7 +25,7 @@ pub fn carnage_upgraded() -> Card {
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], true, true, true)
+    ], true, true, true, Rarity::Rare)
 }
 
 #[cfg(test)]

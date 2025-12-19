@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Seeing Red - Gain 2 Energy. Exhaust.
 pub fn seeing_red() -> Card {
@@ -9,7 +9,7 @@ pub fn seeing_red() -> Card {
         vec![Effect::GainEnergy { amount: 2 }, Effect::Exhaust],
         false, // not upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 /// Seeing Red+ (Upgraded version) - Costs 0
@@ -21,7 +21,7 @@ pub fn seeing_red_upgraded() -> Card {
         vec![Effect::GainEnergy { amount: 2 }, Effect::Exhaust],
         true,  // upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

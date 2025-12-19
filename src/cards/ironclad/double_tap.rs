@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 pub fn double_tap() -> Card {
@@ -12,6 +12,7 @@ pub fn double_tap() -> Card {
         ],
         false, // not upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 
@@ -26,6 +27,7 @@ pub fn double_tap_upgraded() -> Card {
         ],
         true,  // upgraded
         true,  // playable
+        Rarity::Uncommon
     )
 }
 

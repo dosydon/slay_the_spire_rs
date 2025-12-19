@@ -550,10 +550,11 @@ mod tests {
         let mut map = Map::new();
         let start_node = MapNode::new(0, 0, NodeType::Start);
         map.add_node(start_node);
+        map.set_starting_position((0, 0)).unwrap();
         let start_node_position = (0, 0);
 
         // Create game with Burning Blood relic
-        let mut game = Game::new(deck, global_info, map, start_node_position, 50, 80);
+        let mut game = Game::new(deck, global_info, map, 50, 80);
         if let Some(relic) = Relic::BurningBlood.to_game_event_listener() {
             game.add_game_event_listener(relic);
         }

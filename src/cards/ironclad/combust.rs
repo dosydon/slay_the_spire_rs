@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 /// Combust Power Listener
@@ -54,7 +54,8 @@ impl EventListener for CombustListener {
 pub fn combust() -> Card {
     Card::new(CardEnum::Combust, 1, CardType::Power, vec![
         Effect::ActivateCombust(5),
-    ], false, true)
+    ], false, true,
+        Rarity::Common)
 }
 
 /// Combust+ (Upgraded)
@@ -63,7 +64,8 @@ pub fn combust() -> Card {
 pub fn combust_upgraded() -> Card {
     Card::new(CardEnum::Combust, 1, CardType::Power, vec![
         Effect::ActivateCombust(7),
-    ], true, true)
+    ], true, true,
+        Rarity::Common)
 }
 
 #[cfg(test)]

@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 /// Uppercut - Attack Card
 /// Cost: 2
@@ -12,7 +12,7 @@ pub fn uppercut() -> Card {
         },
         Effect::ApplyWeak { duration: 1 },
         Effect::ApplyVulnerable { duration: 1 },
-    ], false, true)
+    ], false, true, Rarity::Uncommon)
 }
 
 /// Uppercut+ (Upgraded)
@@ -27,7 +27,7 @@ pub fn uppercut_upgraded() -> Card {
         },
         Effect::ApplyWeak { duration: 2 },
         Effect::ApplyVulnerable { duration: 2 },
-    ], true, true)
+    ], true, true, Rarity::Uncommon)
 }
 
 #[cfg(test)]

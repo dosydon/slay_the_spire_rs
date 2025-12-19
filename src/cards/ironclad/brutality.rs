@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 /// Brutality Power Listener
@@ -49,7 +49,7 @@ impl EventListener for BrutalityListener {
 pub fn brutality() -> Card {
     Card::new(CardEnum::Brutality, 0, CardType::Power, vec![
         Effect::ActivateBrutality,
-    ], false, true)
+    ], false, true, Rarity::Rare)
 }
 
 /// Brutality+ (Upgraded)
@@ -58,7 +58,7 @@ pub fn brutality() -> Card {
 pub fn brutality_upgraded() -> Card {
     Card::new(CardEnum::Brutality, 0, CardType::Power, vec![
         Effect::ActivateBrutality,
-    ], true, true)
+    ], true, true, Rarity::Rare)
 }
 
 #[cfg(test)]

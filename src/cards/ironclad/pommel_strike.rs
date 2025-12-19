@@ -1,17 +1,17 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 pub fn pommel_strike() -> Card {
     Card::new(CardEnum::PommelStrike, 1, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 },
         Effect::DrawCard { count: 1 }
-    ], false, true)
+    ], false, true, Rarity::Common)
 }
 
 pub fn pommel_strike_upgraded() -> Card {
     Card::new(CardEnum::PommelStrike, 1, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
         Effect::DrawCard { count: 2 }
-    ], true, true)
+    ], true, true, Rarity::Common)
 }
 
 #[cfg(test)]

@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 
 /// Evolve - Uncommon Power Card
 /// Cost: 1 (0 when upgraded)
@@ -13,6 +13,7 @@ pub fn evolve() -> Card {
         ],
         false, // not upgraded
         Condition::True,
+        Rarity::Uncommon
     )
 }
 
@@ -29,6 +30,7 @@ pub fn evolve_upgraded() -> Card {
         ],
         true,  // upgraded
         Condition::True,
+        Rarity::Uncommon
     )
 }
 

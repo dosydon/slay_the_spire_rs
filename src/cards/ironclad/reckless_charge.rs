@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::{Card, Rarity}, card_type::CardType, card_enum::CardEnum, effect::Effect};
 
 /// Reckless Charge - Common Attack Card
 /// Cost: 0
@@ -14,7 +14,7 @@ pub fn reckless_charge() -> Card {
         ],
         false, // not upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 /// Reckless Charge+ (Upgraded version)
@@ -31,7 +31,7 @@ pub fn reckless_charge_upgraded() -> Card {
         ],
         true,  // upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

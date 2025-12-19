@@ -1,17 +1,17 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 pub fn shrug_it_off() -> Card {
     Card::new(CardEnum::ShrugItOff, 1, CardType::Skill, vec![
         Effect::GainDefense { amount: 8 },
         Effect::DrawCard { count: 1 }
-    ], false, true)
+    ], false, true, Rarity::Common)
 }
 
 pub fn shrug_it_off_upgraded() -> Card {
     Card::new(CardEnum::ShrugItOff, 1, CardType::Skill, vec![
         Effect::GainDefense { amount: 11 },
         Effect::DrawCard { count: 1 }
-    ], true, true)
+    ], true, true, Rarity::Common)
 }
 
 #[cfg(test)]

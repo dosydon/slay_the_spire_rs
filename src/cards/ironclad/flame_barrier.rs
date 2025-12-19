@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 /// Flame Barrier Listener
@@ -55,14 +55,14 @@ pub fn flame_barrier() -> Card {
     Card::new_with_condition(CardEnum::FlameBarrier, 2, CardType::Skill, vec![
         Effect::GainDefense { amount: 12 },
         Effect::ActivateFlameBarrier { damage: 4 },
-    ], false, Condition::True)
+    ], false, Condition::True, Rarity::Uncommon)
 }
 
 pub fn flame_barrier_upgraded() -> Card {
     Card::new_with_condition(CardEnum::FlameBarrier, 2, CardType::Skill, vec![
         Effect::GainDefense { amount: 16 },
         Effect::ActivateFlameBarrier { damage: 6 },
-    ], true, Condition::True)
+    ], true, Condition::True, Rarity::Uncommon)
 }
 
 #[cfg(test)]

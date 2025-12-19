@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Clash - Deal 14 damage. Can only be played if hand is all Attacks
 pub fn clash() -> Card {
@@ -9,7 +9,7 @@ pub fn clash() -> Card {
         vec![Effect::AttackToTarget { amount: 14, num_attacks: 1, strength_multiplier: 1 }],
         false, // not upgraded
         Condition::HandAllAttacks,
-    )
+        Rarity::Uncommon)
 }
 
 /// Clash+ (upgraded version)
@@ -21,7 +21,7 @@ pub fn clash_upgraded() -> Card {
         vec![Effect::AttackToTarget { amount: 18, num_attacks: 1, strength_multiplier: 1 }],
         true,  // upgraded
         Condition::HandAllAttacks,
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

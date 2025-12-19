@@ -10,6 +10,8 @@ pub struct Map {
     /// Adjacency list representation: (floor, position) -> list of connected (floor, position)
     /// Order is preserved to maintain consistent path choices
     adjacency_list: HashMap<(u32, u32), Vec<(u32, u32)>>,
+    /// Starting position on the map (typically the Start node)
+    starting_position: Option<(u32, u32)>,
 }
 
 impl Map {
@@ -18,6 +20,7 @@ impl Map {
         Map {
             nodes: HashMap::new(),
             adjacency_list: HashMap::new(),
+            starting_position: None,
         }
     }
 
@@ -76,6 +79,21 @@ impl Map {
     /// Get the adjacency list
     pub fn get_adjacency_list(&self) -> &HashMap<(u32, u32), Vec<(u32, u32)>> {
         &self.adjacency_list
+    }
+
+    /// Set the starting position
+    /// Returns an error if the node doesn't exist
+    pub fn set_starting_position(&mut self, node_id: (u32, u32)) -> Result<(), MapError> {
+        if !self.nodes.contains_key(&node_id) {
+            return Err(MapError::InvalidNode);
+        }
+        self.starting_position = Some(node_id);
+        Ok(())
+    }
+
+    /// Get the starting position
+    pub fn get_starting_position(&self) -> Option<(u32, u32)> {
+        self.starting_position
     }
 }
 
@@ -156,5 +174,29 @@ mod tests {
         // Try to add edge to non-existent node
         let result = map.add_edge((0, 0), (9, 9));
         assert_eq!(result, Err(MapError::InvalidNode));
+    }
+
+    #[test]
+    fn test_starting_position() {
+        let mut map = Map::new();
+
+        // Initially no starting position
+        assert_eq!(map.get_starting_position(), None);
+
+        // Add a start node
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        map.add_node(start_node);
+
+        // Set starting position
+        let result = map.set_starting_position((0, 0));
+        assert!(result.is_ok());
+        assert_eq!(map.get_starting_position(), Some((0, 0)));
+
+        // Try to set starting position to non-existent node
+        let result = map.set_starting_position((9, 9));
+        assert_eq!(result, Err(MapError::InvalidNode));
+
+        // Starting position should remain unchanged
+        assert_eq!(map.get_starting_position(), Some((0, 0)));
     }
 }

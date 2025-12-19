@@ -1,15 +1,15 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
 
 pub fn twin_strike() -> Card {
     Card::new(CardEnum::TwinStrike, 1, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 5, num_attacks: 2, strength_multiplier: 1 }
-    ], false, true)
+    ], false, true, Rarity::Common)
 }
 
 pub fn twin_strike_upgraded() -> Card {
     Card::new(CardEnum::TwinStrike, 1, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 7, num_attacks: 2, strength_multiplier: 1 }
-    ], true, true)
+    ], true, true, Rarity::Common)
 }
 
 #[cfg(test)]

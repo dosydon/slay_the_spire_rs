@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 use crate::battle::{target::Entity, events::BattleEvent, events::EventListener};
 
 /// Demon Form - Rare Power Card
@@ -14,6 +14,7 @@ pub fn demon_form() -> Card {
         ],
         false, // not upgraded
         Condition::True,
+        Rarity::Rare
     )
 }
 
@@ -30,6 +31,7 @@ pub fn demon_form_upgraded() -> Card {
         ],
         true,  // upgraded
         Condition::True,
+        Rarity::Rare
     )
 }
 

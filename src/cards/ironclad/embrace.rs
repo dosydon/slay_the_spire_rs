@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 /// Embrace Power Listener
@@ -46,13 +46,13 @@ impl EventListener for EmbraceListener {
 pub fn embrace() -> Card {
     Card::new_with_condition(CardEnum::Embrace, 2, CardType::Power, vec![
         Effect::ActivateEmbrace,
-    ], false, Condition::True)
+    ], false, Condition::True, Rarity::Rare)
 }
 
 pub fn embrace_upgraded() -> Card {
     Card::new_with_condition(CardEnum::Embrace, 1, CardType::Power, vec![
         Effect::ActivateEmbrace,
-    ], true, Condition::True)
+    ], true, Condition::True, Rarity::Rare)
 }
 
 #[cfg(test)]

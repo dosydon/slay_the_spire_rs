@@ -11,7 +11,7 @@ pub fn juggernaut() -> Card {
         ],
         false, // not upgraded
         true,  // playable
-    )
+    ,\n        Rarity::Uncommon)
 }
 
 pub fn juggernaut_upgraded() -> Card {
@@ -24,7 +24,7 @@ pub fn juggernaut_upgraded() -> Card {
         ],
         true,  // upgraded
         true,  // playable
-    )
+    ,\n        Rarity::Uncommon)
 }
 
 pub struct JuggernautListener {

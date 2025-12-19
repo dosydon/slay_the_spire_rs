@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Immolate - Rare Attack Card
 /// Cost: 2 (2 when upgraded)
@@ -14,7 +14,7 @@ pub fn immolate() -> Card {
         ],
         false, // not upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 /// Immolate+ (Upgraded version)
@@ -31,7 +31,7 @@ pub fn immolate_upgraded() -> Card {
         ],
         true,  // upgraded
         Condition::True,
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

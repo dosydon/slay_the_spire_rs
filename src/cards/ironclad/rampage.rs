@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity}, effect::Effect, card_type::CardType, card_enum::CardEnum};
 
 /// Rampage - Uncommon Attack Card
 /// Cost: 1
@@ -16,7 +16,7 @@ pub fn rampage() -> Card {
         ],
         false, // not upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 /// Rampage+ (Upgraded version)
@@ -35,7 +35,7 @@ pub fn rampage_upgraded() -> Card {
         ],
         true,  // upgraded
         true,  // playable
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]

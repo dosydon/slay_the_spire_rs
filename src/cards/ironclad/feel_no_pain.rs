@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::{Card, Rarity}, card_type::CardType, card_enum::CardEnum, effect::Effect};
 use crate::battle::events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 
@@ -56,7 +56,7 @@ pub fn feel_no_pain() -> Card {
         vec![Effect::ActivateFeelNoPain { block_per_exhaust: 3 }],
         false,
         true,
-    )
+        Rarity::Uncommon)
 }
 
 /// Feel No Pain+ (Upgraded)
@@ -70,7 +70,7 @@ pub fn feel_no_pain_upgraded() -> Card {
         vec![Effect::ActivateFeelNoPain { block_per_exhaust: 4 }],
         true,
         true,
-    )
+        Rarity::Uncommon)
 }
 
 #[cfg(test)]
