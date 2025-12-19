@@ -1,104 +1,9 @@
-use crate::{events::SLSEvent, game::{action::{GameAction, RestSiteAction}, card_reward::CardRewardPool, deck::Deck, game_event::{GameEvent, GameEventListener}, global_info::GlobalInfo}};
+use crate::{events::SLSEvent, game::{action::{GameAction, RestSiteAction}, card_reward::CardRewardPool, deck::Deck, game_event::{GameEvent, GameEventListener}, global_info::GlobalInfo, game_result::{GameResult, GameOutcome}, game_state::GameState, reward_state::RewardState}};
 use crate::map::{Map, MapError, NodeType, MapNode};
 use crate::battle::{Battle, BattleResult, BattleError, enemy_in_battle::EnemyInBattle};
 use crate::events::map_events::{MapEvent, EventChoice, EventOutcome};
 use log::{info, debug};
 
-/// Reward state after combat, containing various reward types
-#[derive(Debug, Clone, PartialEq)]
-pub struct RewardState {
-    /// Gold reward earned from combat
-    pub gold_reward: u32,
-    /// Whether card selection reward is available (true after most combats)
-    pub card_selection_available: bool,
-    /// Whether the gold has been claimed
-    pub gold_claimed: bool,
-    /// Optional potion reward (40% chance in normal/elite combats)
-    pub potion_reward: Option<crate::game::potion::Potion>,
-    /// Whether the potion has been claimed
-    pub potion_claimed: bool,
-}
-
-impl RewardState {
-    /// Create a new reward state for normal combat (10-20 gold, card selection available, 40% potion chance)
-    pub fn new_normal_combat(rng: &mut impl rand::Rng) -> Self {
-        RewardState {
-            gold_reward: rng.random_range(10..=20),
-            card_selection_available: true,
-            gold_claimed: false,
-            potion_reward: Self::roll_potion_drop(rng, 0.4),
-            potion_claimed: false,
-        }
-    }
-
-    /// Create a new reward state for elite combat (25-35 gold, card selection available, 40% potion chance)
-    pub fn new_elite_combat(rng: &mut impl rand::Rng) -> Self {
-        RewardState {
-            gold_reward: rng.random_range(25..=35),
-            card_selection_available: true,
-            gold_claimed: false,
-            potion_reward: Self::roll_potion_drop(rng, 0.4),
-            potion_claimed: false,
-        }
-    }
-
-    /// Create a new reward state for boss combat (95-105 gold, card selection available, no potion)
-    pub fn new_boss_combat(rng: &mut impl rand::Rng) -> Self {
-        RewardState {
-            gold_reward: rng.random_range(95..=105),
-            card_selection_available: true,
-            gold_claimed: false,
-            potion_reward: None, // Boss combats don't drop potions
-            potion_claimed: false,
-        }
-    }
-
-    /// Roll for a potion drop with the given probability
-    /// Returns Some(Potion) if successful, None otherwise
-    fn roll_potion_drop(rng: &mut impl rand::Rng, drop_chance: f64) -> Option<crate::game::potion::Potion> {
-        // Check if potion drops
-        if rng.random::<f64>() >= drop_chance {
-            return None;
-        }
-
-        // Determine potion rarity
-        // Common: 75%, Uncommon: 20%, Rare: 5%
-        let roll = rng.random::<f64>();
-
-        // For now, we only have StrengthPotion implemented (Common)
-        // TODO: Add more potions and implement proper rarity distribution
-        if roll < 0.75 {
-            // Common potion
-            Some(crate::game::potion::Potion::StrengthPotion)
-        } else {
-            // Uncommon/Rare - for now also return StrengthPotion
-            // Will be replaced when more potions are implemented
-            Some(crate::game::potion::Potion::StrengthPotion)
-        }
-    }
-}
-
-/// The overall state of the game
-#[derive(Debug, Clone, PartialEq)]
-pub enum GameState {
-    /// Player is currently in a battle
-    InBattle,
-    /// Player is on the map choosing their next path
-    OnMap,
-    /// Player is viewing rewards after combat (gold, card selection)
-    Reward(RewardState),
-    /// Player is selecting a card reward from 3 options
-    /// Includes the original reward state to restore after selection
-    CardRewardSelection(Vec<crate::game::card::Card>, RewardState),
-    /// Player is in an SLS Event making choices
-    InEvent(MapEvent, Vec<EventChoice>),
-    /// Player is at a rest site
-    RestSite,
-    /// Player is selecting a card from their deck to upgrade
-    SelectUpgradeFromDeck,
-    /// Player is in a shop
-    Shop(crate::game::shop::ShopState),
-}
 
 /// Errors that can occur during game actions
 #[derive(Debug, Clone, PartialEq)]
@@ -119,26 +24,6 @@ pub enum GameError {
     NoBattle,
 }
 
-/// Result of a game action
-#[derive(Debug, Clone)]
-pub struct GameResult {
-    /// Game outcome after the action
-    pub outcome: GameOutcome,
-    /// Game events that occurred during this action (if any)
-    pub game_events: Vec<GameEvent>,
-}
-
-/// Game outcome after an action
-#[derive(Debug, Clone, PartialEq)]
-pub enum GameOutcome {
-    /// Action completed, game continues
-    Continue,
-    /// Run completed successfully
-    Victory,
-    /// Run ended in defeat
-    Defeat,
-}
-
 pub struct Game {
     pub global_info: GlobalInfo,
     pub state: GameState,
@@ -151,6 +36,7 @@ pub struct Game {
     pub gold: u32,
     pub potions: crate::game::potion::PotionInventory,
     pub potion_pool: crate::game::potion::PotionPool,
+    card_reward_pool: CardRewardPool,
     relics: Vec<crate::relics::Relic>,
     game_event_listeners: Vec<Box<dyn GameEventListener>>,
     event_history: Vec<SLSEvent>,
@@ -175,6 +61,7 @@ impl Game {
             gold: 99, // Starting gold (Ironclad starts with 99 gold)
             potions: crate::game::potion::PotionInventory::default(),
             potion_pool: crate::game::potion::PotionPool::default(),
+            card_reward_pool: CardRewardPool::new(),
             relics: Vec::new(),
             game_event_listeners: Vec::new(),
             event_history: Vec::new(),
@@ -244,30 +131,27 @@ impl Game {
                 if let Some(battle) = &mut self.battle {
                     match battle.eval_action(battle_action, rng) {
                         Ok(battle_result) => {
-                            // Collect events from the battle
-                            let battle_events = battle.take_battle_events();
+                            // Extract battle events from the result
+                            let battle_events = match &battle_result {
+                                BattleResult::Continued(events) |
+                                BattleResult::Won(events) |
+                                BattleResult::Lost(events) => events.clone(),
+                            };
 
                             // Determine game outcome based on battle result
                             let outcome = match battle_result {
-                                BattleResult::Continued => GameOutcome::Continue,
-                                BattleResult::Won => {
-                                    // Battle won, sync HP and gold back
-                                    // Extract values before modifying self
-                                    let (final_hp, gold_to_lose) = if let Some(battle) = &self.battle {
-                                        let hp = battle.get_final_player_hp();
-                                        let enemies_escaped = battle.get_enemies().iter().any(|e| e.battle_info.has_escaped());
-                                        let gold_lost = if enemies_escaped {
-                                            battle.get_gold_stolen()
-                                        } else {
-                                            0 // Gold is returned if all enemies were killed
-                                        };
-                                        (hp, gold_lost)
-                                    } else {
-                                        (self.player_hp, 0)
-                                    };
+                                BattleResult::Continued(_) => GameOutcome::Continue,
+                                BattleResult::Won(_) => {
+                                    // Battle won, sync player state back (HP, gold, potions)
+                                    if let Some(battle) = &self.battle {
+                                        let final_state = battle.get_final_player_run_state(self.gold, self.relics.clone());
+                                        self.set_player_hp(final_state.current_hp);
+                                        self.player_max_hp = final_state.max_hp;
+                                        self.gold = final_state.gold;
+                                        self.potions = final_state.potions;
+                                        // Note: relics remain unchanged as they are static during battle
+                                    }
 
-                                    self.set_player_hp(final_hp);
-                                    self.gold = self.gold.saturating_sub(gold_to_lose);
                                     self.battle = None;
                                     self.global_info.current_floor += 1;
 
@@ -280,10 +164,14 @@ impl Game {
 
                                     GameOutcome::Continue
                                 },
-                                BattleResult::Lost => {
-                                    // Battle lost, sync HP back and game over
+                                BattleResult::Lost(_) => {
+                                    // Battle lost, sync player state back
                                     if let Some(battle) = &self.battle {
-                                        self.set_player_hp(battle.get_final_player_hp());
+                                        let final_state = battle.get_final_player_run_state(self.gold, self.relics.clone());
+                                        self.set_player_hp(final_state.current_hp);
+                                        self.player_max_hp = final_state.max_hp;
+                                        self.gold = final_state.gold;
+                                        self.potions = final_state.potions;
                                     }
                                     self.battle = None;
                                     self.state = GameState::OnMap; // For now, just return to map
@@ -338,9 +226,18 @@ impl Game {
 
                             let enemy_enums = event.instantiate(rng, &self.global_info);
                             let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
-                            
+
+                            // Create player state for battle
+                            let player_state = crate::game::PlayerRunState::new_with_relics_and_potions(
+                                self.player_hp,
+                                self.player_max_hp,
+                                self.gold,
+                                self.relics.clone(),
+                                self.potions.clone(),
+                            );
+
                             // Start a battle
-                            let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
+                            let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, player_state, enemies, rng);
                             self.battle = Some(battle);
                             self.state = GameState::InBattle;
                         },
@@ -352,8 +249,17 @@ impl Game {
                             let enemy_enums = event.instantiate(rng, &self.global_info);
                             let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
 
+                            // Create player state for battle
+                            let player_state = crate::game::PlayerRunState::new_with_relics_and_potions(
+                                self.player_hp,
+                                self.player_max_hp,
+                                self.gold,
+                                self.relics.clone(),
+                                self.potions.clone(),
+                            );
+
                             // Start a battle
-                            let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
+                            let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, player_state, enemies, rng);
                             self.battle = Some(battle);
                             self.state = GameState::InBattle;
                         },
@@ -364,9 +270,18 @@ impl Game {
 
                             let enemy_enums = event.instantiate(rng, &self.global_info);
                             let enemies = enemy_enums.into_iter().map(|enemy| EnemyInBattle::new(enemy)).collect();
-                            
+
+                            // Create player state for battle
+                            let player_state = crate::game::PlayerRunState::new_with_relics_and_potions(
+                                self.player_hp,
+                                self.player_max_hp,
+                                self.gold,
+                                self.relics.clone(),
+                                self.potions.clone(),
+                            );
+
                             // Start a battle
-                            let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, self.player_hp, self.player_max_hp, enemies, rng);
+                            let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, player_state, enemies, rng);
                             self.battle = Some(battle);
                             self.state = GameState::InBattle;
                         },
@@ -763,9 +678,9 @@ impl Game {
     }
 
     /// Start card reward selection - generates 3 random card options
+    /// Uses the persistent card_reward_pool to maintain rare offset across the run
     pub fn start_card_reward_selection(&mut self, rng: &mut impl rand::Rng, reward_state: RewardState) {
-        let mut card_pool = CardRewardPool::new();
-        let reward_options = card_pool.generate_reward_options(rng);
+        let reward_options = self.card_reward_pool.generate_reward_options(rng);
         info!("Generated {} card reward options", reward_options.len());
         for (i, card) in reward_options.iter().enumerate() {
             debug!("  Option {}: {} (Cost: {})", i + 1, card.get_name(), card.get_cost());

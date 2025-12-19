@@ -11,20 +11,20 @@ impl Battle {
 
         // Validate action based on current battle state
         match &self.battle_state {
-            crate::battle::battle_action::BattleState::PlayerTurn => {
+            crate::battle::battle_state::BattleState::PlayerTurn => {
                 match action {
                     BattleAction::SelectCardInHand(_) => return Err(BattleError::InvalidAction),
                     _ => {}
                 }
             }
-            crate::battle::battle_action::BattleState::SelectCardInHand => {
+            crate::battle::battle_state::BattleState::SelectCardInHand => {
                 match action {
                     BattleAction::PlayCard(_, _) => return Err(BattleError::InvalidAction),
                     BattleAction::EndTurn => return Err(BattleError::InvalidAction),
                     _ => {}
                 }
             }
-            crate::battle::battle_action::BattleState::SelectCardInDiscard => {
+            crate::battle::battle_state::BattleState::SelectCardInDiscard => {
                 match action {
                     BattleAction::PlayCard(_, _) => return Err(BattleError::InvalidAction),
                     BattleAction::EndTurn => return Err(BattleError::InvalidAction),
@@ -32,7 +32,7 @@ impl Battle {
                     _ => {}
                 }
             }
-            crate::battle::battle_action::BattleState::SelectCardInHandToPutOnDeck => {
+            crate::battle::battle_state::BattleState::SelectCardInHandToPutOnDeck => {
                 match action {
                     BattleAction::PlayCard(_, _) => return Err(BattleError::InvalidAction),
                     BattleAction::EndTurn => return Err(BattleError::InvalidAction),
@@ -40,7 +40,7 @@ impl Battle {
                     _ => {}
                 }
             }
-            crate::battle::battle_action::BattleState::SelectCardToDuplicate { .. } => {
+            crate::battle::battle_state::BattleState::SelectCardToDuplicate { .. } => {
                 match action {
                     BattleAction::PlayCard(_, _) => return Err(BattleError::InvalidAction),
                     BattleAction::EndTurn => return Err(BattleError::InvalidAction),
@@ -49,7 +49,7 @@ impl Battle {
                     _ => {}
                 }
             }
-            crate::battle::battle_action::BattleState::SelectCardInExhaust => {
+            crate::battle::battle_state::BattleState::SelectCardInExhaust => {
                 match action {
                     BattleAction::PlayCard(_, _) => return Err(BattleError::InvalidAction),
                     BattleAction::EndTurn => return Err(BattleError::InvalidAction),
@@ -102,7 +102,7 @@ impl Battle {
 
                 // Check which state we're in to determine behavior
                 match &self.battle_state {
-                    crate::battle::battle_action::BattleState::SelectCardInHand => {
+                    crate::battle::battle_state::BattleState::SelectCardInHand => {
                         // Get the selected card and upgrade it
                         let hand = self.cards.get_hand();
                         let card = &hand[card_index];
@@ -115,7 +115,7 @@ impl Battle {
                             self.cards.replace_card_in_hand(card_index, upgraded_card);
                         }
                     }
-                    crate::battle::battle_action::BattleState::SelectCardInHandToPutOnDeck => {
+                    crate::battle::battle_state::BattleState::SelectCardInHandToPutOnDeck => {
                         // Get the selected card from hand and put it on top of draw pile
                         if let Some(card_to_move) = self.cards.remove_card_from_hand(card_index) {
                             // Put on top of draw pile
@@ -128,7 +128,7 @@ impl Battle {
                 }
 
                 // Return to player turn state
-                self.battle_state = crate::battle::battle_action::BattleState::PlayerTurn;
+                self.battle_state = crate::battle::battle_state::BattleState::PlayerTurn;
             }
             BattleAction::SelectCardInDiscard(card_index) => {
                 if card_index >= self.cards.discard_pile_size() {
@@ -142,7 +142,7 @@ impl Battle {
                 }
 
                 // Return to player turn state
-                self.battle_state = crate::battle::battle_action::BattleState::PlayerTurn;
+                self.battle_state = crate::battle::battle_state::BattleState::PlayerTurn;
             }
             BattleAction::SelectCardToDuplicate(card_index) => {
                 if card_index >= self.cards.hand_size() {
@@ -150,7 +150,7 @@ impl Battle {
                 }
 
                 // Get the number of copies from the current battle state
-                if let crate::battle::battle_action::BattleState::SelectCardToDuplicate { copies } = &self.battle_state {
+                if let crate::battle::battle_state::BattleState::SelectCardToDuplicate { copies } = &self.battle_state {
                     // Get the selected card from hand
                     let hand = self.cards.get_hand();
                     let card_to_duplicate = hand[card_index].clone();
@@ -162,11 +162,11 @@ impl Battle {
                 }
 
                 // Return to player turn state
-                self.battle_state = crate::battle::battle_action::BattleState::PlayerTurn;
+                self.battle_state = crate::battle::battle_state::BattleState::PlayerTurn;
             }
             BattleAction::SelectCardInExhaust(card_index) => {
                 // Check if we're in the SelectCardInExhaust state
-                if !matches!(self.battle_state, crate::battle::battle_action::BattleState::SelectCardInExhaust) {
+                if !matches!(self.battle_state, crate::battle::battle_state::BattleState::SelectCardInExhaust) {
                     return Err(BattleError::InvalidAction);
                 }
 
@@ -182,17 +182,18 @@ impl Battle {
                 self.cards.add_card_to_hand(card);
 
                 // Return to player turn state
-                self.battle_state = crate::battle::battle_action::BattleState::PlayerTurn;
+                self.battle_state = crate::battle::battle_state::BattleState::PlayerTurn;
             }
         }
         
         // Check if battle is over after the action
+        let battle_events = self.take_battle_events();
         if !self.player.is_alive() {
-            Ok(BattleResult::Lost)
+            Ok(BattleResult::Lost(battle_events))
         } else if self.enemies.iter().all(|e| !e.battle_info.is_alive()) {
-            Ok(BattleResult::Won)
+            Ok(BattleResult::Won(battle_events))
         } else {
-            Ok(BattleResult::Continued)
+            Ok(BattleResult::Continued(battle_events))
         }
     }
 
@@ -345,7 +346,7 @@ mod tests {
             // Play the Strike card targeting enemy 0
             let action = BattleAction::PlayCard(idx, Entity::Enemy(0));
             let result = battle.eval_action(action, &mut rng);
-            assert!(matches!(result, Ok(BattleResult::Continued)));
+            assert!(matches!(result, Ok(BattleResult::Continued(_))));
             
             // Check that energy was spent and enemy took damage
             assert!(battle.player.get_energy() < initial_energy);

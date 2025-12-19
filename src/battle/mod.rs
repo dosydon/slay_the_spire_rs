@@ -2,12 +2,15 @@ pub mod battle_action;
 pub mod character_battle_info;
 pub mod target;
 pub mod battle_events;
+pub mod battle_result;
 pub mod player;
 pub mod deck_hand_pile;
 pub mod enemy_in_battle;
+pub mod battle_state;
 
 // Re-export commonly used types for easier access
 pub use target::Entity;
+pub use battle_result::BattleResult;
 mod turn_flow;
 mod eval_action;
 mod play_card;
@@ -15,9 +18,9 @@ mod eval_effect;
 mod enemy_manager;
 mod listener_manager;
 
-use crate::{enemies::enemy_enum::EnemyMove, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, global_info::GlobalInfo}, relics::Relic};
+use crate::{enemies::enemy_enum::EnemyMove, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, global_info::GlobalInfo, player_run_state::PlayerRunState}, relics::Relic};
 use self::{battle_events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
-use crate::battle::battle_action::BattleState;
+use crate::battle::battle_state::BattleState;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BattleError {
@@ -28,15 +31,8 @@ pub enum BattleError {
     GameAlreadyOver,
     CardNotPlayable,
     CardNotInDiscardPile,
+    PotionNotInInventory(usize)
 }
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum BattleResult {
-    Continued,
-    Won,
-    Lost,
-}
-
 
 pub struct Battle {
     player: Player,
@@ -61,34 +57,30 @@ pub struct Battle {
 }
 
 impl Battle {
-    pub fn new(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, rng: &mut impl rand::Rng) -> Self {
-        Self::new_with_relics(deck, global_info, initial_hp, max_hp, enemies, Vec::new(), rng)
-    }
-
-    /// Create a new battle with optional relics
-    pub fn new_with_relics(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, relics: Vec<crate::relics::Relic>, rng: &mut impl rand::Rng) -> Self {
+    /// Create a new battle with PlayerRunState
+    pub fn new(deck: Deck, global_info: GlobalInfo, player_state: PlayerRunState, enemies: Vec<EnemyInBattle>, rng: &mut impl rand::Rng) -> Self {
         let cards = DeckHandPile::new(deck);
         let enemy_count = enemies.len();
 
         // Convert relics to event listeners
-        let event_listeners: Vec<_> = relics.into_iter()
-            .filter_map(|relic| relic.to_battle_event_listener())
+        let event_listeners: Vec<_> = player_state.relics.iter()
+            .filter_map(|relic| relic.clone().to_battle_event_listener())
             .collect();
 
         let mut battle = Battle {
-            player: Player::new(initial_hp, max_hp, 3),
+            player: Player::new(player_state.current_hp, player_state.max_hp, 3),
             enemies,
             cards,
             event_listeners,
             global_info,
             enemy_actions: vec![None; enemy_count],
-            relics: Vec::new(),
+            relics: player_state.relics,
             powers: Vec::new(),
             effect_queue: Vec::new(),
             battle_state: BattleState::PlayerTurn,
             gold_stolen: 0,
             battle_events: Vec::new(),
-            potions: crate::game::potion::PotionInventory::default(),
+            potions: player_state.potions,
         };
 
         // Initialize event listeners for enemies
@@ -103,18 +95,30 @@ impl Battle {
         battle
     }
 
-    /// Create a new battle with deck shuffling
-    pub fn new_with_shuffle(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, rng: &mut impl rand::Rng) -> Self {
-        Self::new_with_shuffle_and_relics(deck, global_info, initial_hp, max_hp, enemies, Vec::new(), rng)
+    /// Deprecated: Use Battle::new with PlayerRunState instead
+    #[deprecated(note = "Use Battle::new with PlayerRunState instead")]
+    pub fn new_with_relics(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, relics: Vec<crate::relics::Relic>, rng: &mut impl rand::Rng) -> Self {
+        let player_state = PlayerRunState::new_with_relics(initial_hp, max_hp, 0, relics);
+        Self::new(deck, global_info, player_state, enemies, rng)
     }
 
-    /// Create a new battle with deck shuffling and relics
+    /// Create a new battle with deck shuffling
+    pub fn new_with_shuffle(mut deck: Deck, global_info: GlobalInfo, player_state: PlayerRunState, enemies: Vec<EnemyInBattle>, rng: &mut impl rand::Rng) -> Self {
+        // Shuffle the deck first
+        deck.shuffle(rng);
+
+        // Then call the main constructor
+        Self::new(deck, global_info, player_state, enemies, rng)
+    }
+
+    /// Deprecated: Use Battle::new_with_shuffle with PlayerRunState instead
+    #[deprecated(note = "Use Battle::new_with_shuffle with PlayerRunState instead")]
     pub fn new_with_shuffle_and_relics(mut deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, relics: Vec<crate::relics::Relic>, rng: &mut impl rand::Rng) -> Self {
         // Shuffle the deck first
         deck.shuffle(rng);
 
-        // Then call the constructor with relics
-        Self::new_with_relics(deck, global_info, initial_hp, max_hp, enemies, relics, rng)
+        let player_state = PlayerRunState::new_with_relics(initial_hp, max_hp, 0, relics);
+        Self::new(deck, global_info, player_state, enemies, rng)
     }
 
     pub fn set_relics(self, relics: Vec<Relic>) -> Self {
@@ -127,6 +131,22 @@ impl Battle {
     /// Get the final HP after battle for syncing back to Game
     pub fn get_final_player_hp(&self) -> u32 {
         self.player.battle_info.get_hp()
+    }
+
+    /// Extract the final player run state after battle
+    /// This includes updated HP, gold (after stolen gold), and potions
+    /// Relics are NOT updated as they remain static during battle
+    pub fn get_final_player_run_state(&self, original_gold: u32, original_relics: Vec<Relic>) -> PlayerRunState {
+        let final_hp = self.player.battle_info.get_hp();
+        let final_gold = original_gold.saturating_sub(self.gold_stolen);
+
+        PlayerRunState::new_with_relics_and_potions(
+            final_hp,
+            self.player.battle_info.get_max_hp(),
+            final_gold,
+            original_relics,
+            self.potions.clone(),
+        )
     }
 
     /// Get the current battle state
@@ -292,7 +312,7 @@ impl Battle {
     pub fn use_potion(&mut self, slot_index: usize, target: Option<Entity>) -> Result<(), BattleError> {
         // Get the potion from inventory
         let potion = self.potions.use_potion(slot_index)
-            .ok_or(BattleError::InvalidAction)?;
+            .ok_or(BattleError::PotionNotInInventory(slot_index))?;
 
         // Get the effects
         let (default_target, effects) = potion.get_effects();
@@ -387,7 +407,8 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
         assert_eq!(battle.player.battle_info.get_hp(), 80);
         assert_eq!(battle.player.get_block(), 0);
         assert_eq!(battle.player.get_energy(), 3);
@@ -406,7 +427,8 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Initially no potions
         assert_eq!(battle.get_potions().potion_count(), 0);
@@ -436,7 +458,8 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Try to use potion from empty slot
         let result = battle.use_potion(0, None);
@@ -459,7 +482,8 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Add a strength potion
         assert!(battle.get_potions_mut().add_potion(Potion::StrengthPotion));
@@ -474,7 +498,7 @@ mod tests {
         // Execute the UsePotion action
         let result = battle.eval_action(BattleAction::UsePotion(0, None), &mut rng);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), BattleResult::Continued);
+        assert!(matches!(result.unwrap(), BattleResult::Continued(_)));
 
         // Player should now have 2 strength
         assert_eq!(battle.player.battle_info.get_strength(), 2);

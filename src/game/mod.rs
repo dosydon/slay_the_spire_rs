@@ -9,5 +9,15 @@ pub mod game;
 pub mod action;
 pub mod card_reward;
 pub mod game_event;
+pub mod game_result;
+pub mod game_state;
+pub mod reward_state;
 pub mod shop;
 pub mod potion;
+pub mod player_run_state;
+
+// Re-export commonly used types for easier access
+pub use game_state::GameState;
+pub use game_result::{GameResult, GameOutcome};
+pub use reward_state::RewardState;
+pub use player_run_state::PlayerRunState;

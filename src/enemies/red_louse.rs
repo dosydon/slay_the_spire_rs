@@ -569,7 +569,7 @@ mod tests {
         println!("Playing first Strike targeting enemy");
         let action = BattleAction::PlayCard(0, Entity::Enemy(0));
         let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
-        assert_eq!(result, BattleResult::Continued);
+        assert!(matches!(result, BattleResult::Continued(_)));
         println!("After first Strike - Enemy HP: {}, Player Energy: {}", 
             battle.get_enemies()[0].battle_info.get_hp(), battle.get_player().get_energy());
         
@@ -581,7 +581,7 @@ mod tests {
         println!("Playing second Strike targeting enemy");
         let action = BattleAction::PlayCard(0, Entity::Enemy(0));
         let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
-        assert_eq!(result, BattleResult::Continued);
+        assert!(matches!(result, BattleResult::Continued(_)));
         println!("After second Strike - Enemy HP: {}, Player Energy: {}", 
             battle.get_enemies()[0].battle_info.get_hp(), battle.get_player().get_energy());
         
@@ -589,7 +589,7 @@ mod tests {
         println!("Playing one Defend");
         let action = BattleAction::PlayCard(1, Entity::Player);
         let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
-        assert_eq!(result, BattleResult::Continued);
+        assert!(matches!(result, BattleResult::Continued(_)));
         println!("After Defend - Player Block: {}, Player Energy: {}", 
             battle.get_player().get_block(), battle.get_player().get_energy());
         
@@ -641,7 +641,7 @@ mod tests {
         let action = BattleAction::PlayCard(0, Entity::Enemy(0));
         let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
         // Enemy might die from this strike, so it could be Won or Continued
-        assert!(matches!(result, BattleResult::Won | BattleResult::Continued));
+        assert!(matches!(result, BattleResult::Won(_) | BattleResult::Continued(_)));
         println!("Turn 2 Player: 1 Strike played, result: {:?}", result);
         
         // === TURN 2: ENEMY ===

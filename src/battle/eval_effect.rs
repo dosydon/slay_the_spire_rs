@@ -528,19 +528,19 @@ impl Battle {
             },
             BaseEffect::EnterSelectCardInHand => {
                 // Transition to SelectCardInHand state
-                self.battle_state = crate::battle::battle_action::BattleState::SelectCardInHand;
+                self.battle_state = crate::battle::battle_state::BattleState::SelectCardInHand;
             },
             BaseEffect::EnterSelectCardInHandToPutOnDeck => {
                 // Transition to SelectCardInHandToPutOnDeck state
-                self.battle_state = crate::battle::battle_action::BattleState::SelectCardInHandToPutOnDeck;
+                self.battle_state = crate::battle::battle_state::BattleState::SelectCardInHandToPutOnDeck;
             },
             BaseEffect::EnterSelectCardToDuplicate { copies } => {
                 // Transition to SelectCardToDuplicate state
-                self.battle_state = crate::battle::battle_action::BattleState::SelectCardToDuplicate { copies: *copies };
+                self.battle_state = crate::battle::battle_state::BattleState::SelectCardToDuplicate { copies: *copies };
             },
             BaseEffect::EnterSelectCardInExhaust => {
                 // Transition to SelectCardInExhaust state
-                self.battle_state = crate::battle::battle_action::BattleState::SelectCardInExhaust;
+                self.battle_state = crate::battle::battle_state::BattleState::SelectCardInExhaust;
             },
             BaseEffect::PlayTopCard { source: _, target } => {
                 // Take the top card from draw pile and play it
@@ -588,7 +588,7 @@ impl Battle {
             },
             BaseEffect::EnterSelectCardInDiscard => {
                 // Transition to SelectCardInDiscard state
-                self.battle_state = crate::battle::battle_action::BattleState::SelectCardInDiscard;
+                self.battle_state = crate::battle::battle_state::BattleState::SelectCardInDiscard;
             },
             BaseEffect::ConditionalEffect { condition, effect, source, target } => {
                 // Check if the condition is met before applying the effect
