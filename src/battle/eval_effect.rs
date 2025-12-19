@@ -1,6 +1,6 @@
 use super::Battle;
 use crate::game::effect::BaseEffect;
-use crate::battle::{target::Entity, events::BattleEvent};
+use crate::battle::{target::Entity, battle_events::BattleEvent};
 use crate::enemies::gremlin_nob::EnrageListener;
 use rand::prelude::IndexedRandom;
 use log::info;
@@ -528,19 +528,19 @@ impl Battle {
             },
             BaseEffect::EnterSelectCardInHand => {
                 // Transition to SelectCardInHand state
-                self.battle_state = crate::battle::action::BattleState::SelectCardInHand;
+                self.battle_state = crate::battle::battle_action::BattleState::SelectCardInHand;
             },
             BaseEffect::EnterSelectCardInHandToPutOnDeck => {
                 // Transition to SelectCardInHandToPutOnDeck state
-                self.battle_state = crate::battle::action::BattleState::SelectCardInHandToPutOnDeck;
+                self.battle_state = crate::battle::battle_action::BattleState::SelectCardInHandToPutOnDeck;
             },
             BaseEffect::EnterSelectCardToDuplicate { copies } => {
                 // Transition to SelectCardToDuplicate state
-                self.battle_state = crate::battle::action::BattleState::SelectCardToDuplicate { copies: *copies };
+                self.battle_state = crate::battle::battle_action::BattleState::SelectCardToDuplicate { copies: *copies };
             },
             BaseEffect::EnterSelectCardInExhaust => {
                 // Transition to SelectCardInExhaust state
-                self.battle_state = crate::battle::action::BattleState::SelectCardInExhaust;
+                self.battle_state = crate::battle::battle_action::BattleState::SelectCardInExhaust;
             },
             BaseEffect::PlayTopCard { source: _, target } => {
                 // Take the top card from draw pile and play it
@@ -588,7 +588,7 @@ impl Battle {
             },
             BaseEffect::EnterSelectCardInDiscard => {
                 // Transition to SelectCardInDiscard state
-                self.battle_state = crate::battle::action::BattleState::SelectCardInDiscard;
+                self.battle_state = crate::battle::battle_action::BattleState::SelectCardInDiscard;
             },
             BaseEffect::ConditionalEffect { condition, effect, source, target } => {
                 // Check if the condition is met before applying the effect
@@ -1032,7 +1032,7 @@ mod tests {
     #[test]
     fn test_attack_all_enemies_effect() {
         use crate::cards::ironclad::cleave::cleave;
-        use crate::battle::action::Action;
+        use crate::battle::battle_action::BattleAction;
         
         let mut deck_cards = vec![cleave()];
         for _ in 0..4 {
@@ -1064,7 +1064,7 @@ mod tests {
         assert!(cleave_idx.is_some(), "Cleave card should be in hand");
         
         // Play Cleave targeting Entity::None (hits all enemies)
-        let action = Action::PlayCard(cleave_idx.unwrap(), Entity::None);
+        let action = BattleAction::PlayCard(cleave_idx.unwrap(), Entity::None);
         let result = battle.eval_action(action, &mut rng);
         assert!(matches!(result, Ok(_)));
         

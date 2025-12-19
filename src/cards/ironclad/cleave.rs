@@ -54,7 +54,7 @@ mod tests {
 
     #[test]
     fn test_cleave_battle_integration() {
-        use crate::battle::{Battle, enemy_in_battle::EnemyInBattle, action::Action, target::Entity};
+        use crate::battle::{Battle, enemy_in_battle::EnemyInBattle, battle_action::BattleAction, target::Entity};
         use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
         use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
 
@@ -94,7 +94,7 @@ mod tests {
         assert!(cleave_idx.is_some(), "Cleave card should be in hand");
         
         // Play Cleave targeting Entity::None (hits all enemies)
-        let action = Action::PlayCard(cleave_idx.unwrap(), Entity::None);
+        let action = BattleAction::PlayCard(cleave_idx.unwrap(), Entity::None);
         let result = battle.eval_action(action, &mut rng);
         assert!(matches!(result, Ok(_)), "Playing Cleave should succeed");
         
@@ -121,7 +121,7 @@ mod tests {
 
     #[test]
     fn test_cleave_with_strength() {
-        use crate::battle::{Battle, enemy_in_battle::EnemyInBattle, action::Action, target::Entity};
+        use crate::battle::{Battle, enemy_in_battle::EnemyInBattle, battle_action::BattleAction, target::Entity};
         use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
         use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
 
@@ -158,7 +158,7 @@ mod tests {
         let cleave_idx = hand.iter().position(|card| card.get_name() == "Cleave");
         assert!(cleave_idx.is_some(), "Cleave card should be in hand");
         
-        let action = Action::PlayCard(cleave_idx.unwrap(), Entity::None);
+        let action = BattleAction::PlayCard(cleave_idx.unwrap(), Entity::None);
         let result = battle.eval_action(action, &mut rng);
         assert!(matches!(result, Ok(_)));
         
@@ -171,7 +171,7 @@ mod tests {
 
     #[test]
     fn test_cleave_with_vulnerable_enemies() {
-        use crate::battle::{Battle, enemy_in_battle::EnemyInBattle, action::Action, target::Entity};
+        use crate::battle::{Battle, enemy_in_battle::EnemyInBattle, battle_action::BattleAction, target::Entity};
         use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
         use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait, effect::BaseEffect};
 
@@ -212,7 +212,7 @@ mod tests {
         let cleave_idx = hand.iter().position(|card| card.get_name() == "Cleave");
         assert!(cleave_idx.is_some(), "Cleave card should be in hand");
         
-        let action = Action::PlayCard(cleave_idx.unwrap(), Entity::None);
+        let action = BattleAction::PlayCard(cleave_idx.unwrap(), Entity::None);
         let result = battle.eval_action(action, &mut rng);
         assert!(matches!(result, Ok(_)));
         
@@ -225,7 +225,7 @@ mod tests {
 
     #[test]
     fn test_cleave_skips_dead_enemies() {
-        use crate::battle::{Battle, enemy_in_battle::EnemyInBattle, action::Action, target::Entity};
+        use crate::battle::{Battle, enemy_in_battle::EnemyInBattle, battle_action::BattleAction, target::Entity};
         use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
         use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
 
@@ -272,7 +272,7 @@ mod tests {
         let cleave_idx = hand.iter().position(|card| card.get_name() == "Cleave");
         assert!(cleave_idx.is_some(), "Cleave card should be in hand");
         
-        let action = Action::PlayCard(cleave_idx.unwrap(), Entity::None);
+        let action = BattleAction::PlayCard(cleave_idx.unwrap(), Entity::None);
         let result = battle.eval_action(action, &mut rng);
         assert!(matches!(result, Ok(_)));
         

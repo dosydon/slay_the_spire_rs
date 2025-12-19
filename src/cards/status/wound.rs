@@ -12,7 +12,7 @@ pub fn wound() -> Card {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::battle::{Battle, action::Action, target::Entity, BattleError};
+    use crate::battle::{Battle, battle_action::BattleAction, target::Entity, BattleError};
     use crate::game::enemy::EnemyTrait;
     use crate::game::global_info::GlobalInfo;
     use crate::game::deck::Deck;
@@ -34,7 +34,7 @@ mod tests {
         battle.at_start_of_player_turn(&mut rng);
 
         // Try to play the wound card - it should be in hand at index 0
-        let action = Action::PlayCard(0, Entity::Player);
+        let action = BattleAction::PlayCard(0, Entity::Player);
         let result = battle.eval_action(action, &mut rng);
 
         // The action should fail with CardNotPlayable error
@@ -49,7 +49,7 @@ mod tests {
         let available_actions = battle.list_available_actions();
         let wound_actions: Vec<_> = available_actions.iter()
             .filter(|action| {
-                if let Action::PlayCard(idx, _) = action {
+                if let BattleAction::PlayCard(idx, _) = action {
                     *idx == 0  // wound card index
                 } else {
                     false

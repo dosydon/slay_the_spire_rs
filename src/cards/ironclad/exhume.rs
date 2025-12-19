@@ -63,7 +63,7 @@ mod integration_tests {
     use crate::battle::Battle;
     use crate::battle::target::Entity;
     use crate::battle::enemy_in_battle::EnemyInBattle;
-    use crate::battle::action::{Action, BattleState};
+    use crate::battle::battle_action::{BattleAction, BattleState};
     use crate::game::deck::Deck;
     use crate::game::global_info::GlobalInfo;
     use crate::game::enemy::EnemyTrait;
@@ -102,7 +102,7 @@ mod integration_tests {
         assert_eq!(battle.get_battle_state(), BattleState::SelectCardInExhaust);
 
         // Select Seeing Red from exhaust pile
-        let result = battle.eval_action(Action::SelectCardInExhaust(0), &mut rng);
+        let result = battle.eval_action(BattleAction::SelectCardInExhaust(0), &mut rng);
         assert!(result.is_ok());
 
         // Verify Seeing Red is now back in hand
@@ -178,7 +178,7 @@ mod integration_tests {
         assert_eq!(battle.get_battle_state(), BattleState::SelectCardInExhaust);
 
         // Select Seeing Red from exhaust pile
-        let result = battle.eval_action(Action::SelectCardInExhaust(0), &mut rng);
+        let result = battle.eval_action(BattleAction::SelectCardInExhaust(0), &mut rng);
         assert!(result.is_ok());
 
         // Verify Seeing Red is now back in hand

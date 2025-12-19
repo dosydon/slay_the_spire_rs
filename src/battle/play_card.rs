@@ -1,5 +1,5 @@
 use super::Battle;
-use crate::battle::{target::Entity, BattleError, events::BattleEvent};
+use crate::battle::{target::Entity, BattleError, battle_events::BattleEvent};
 use crate::game::{effect::BaseEffect, card_type::CardType};
 
 impl Battle {

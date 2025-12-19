@@ -4,12 +4,12 @@ pub fn bash() -> Card {
     Card::new_with_condition(CardEnum::Bash, 2, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
         Effect::ApplyVulnerable { duration: 2 }
-    ], false, Condition::True, Rarity::Common)
+    ], false, Condition::True, Rarity::Basic)
 }
 
 pub fn bash_upgraded() -> Card {
     Card::new_with_condition(CardEnum::Bash, 2, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 }, // +2 damage
         Effect::ApplyVulnerable { duration: 3 } // +1 vulnerable duration
-    ], true, Condition::True, Rarity::Common)
+    ], true, Condition::True, Rarity::Basic)
 }

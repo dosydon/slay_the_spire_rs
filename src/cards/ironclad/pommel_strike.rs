@@ -79,7 +79,7 @@ mod tests {
 mod integration_tests {
     use super::*;
     use crate::battle::Battle;
-    use crate::battle::action::Action;
+    use crate::battle::battle_action::BattleAction;
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
     use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
     use crate::battle::enemy_in_battle::EnemyInBattle;
@@ -112,7 +112,7 @@ mod integration_tests {
         assert!(pommel_strike_idx.is_some(), "PommelStrike card should be in hand");
 
         // Play PommelStrike targeting the enemy using eval_action
-        let action = Action::PlayCard(pommel_strike_idx.unwrap(), Entity::Enemy(0));
+        let action = BattleAction::PlayCard(pommel_strike_idx.unwrap(), Entity::Enemy(0));
         let result = battle.eval_action(action, &mut rng);
         assert!(result.is_ok());
 
@@ -152,7 +152,7 @@ mod integration_tests {
         assert!(pommel_strike_idx.is_some(), "PommelStrike+ card should be in hand");
 
         // Play upgraded PommelStrike targeting the enemy using eval_action
-        let action = Action::PlayCard(pommel_strike_idx.unwrap(), Entity::Enemy(0));
+        let action = BattleAction::PlayCard(pommel_strike_idx.unwrap(), Entity::Enemy(0));
         let result = battle.eval_action(action, &mut rng);
         assert!(result.is_ok());
 

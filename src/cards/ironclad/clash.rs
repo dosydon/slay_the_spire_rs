@@ -9,7 +9,7 @@ pub fn clash() -> Card {
         vec![Effect::AttackToTarget { amount: 14, num_attacks: 1, strength_multiplier: 1 }],
         false, // not upgraded
         Condition::HandAllAttacks,
-        Rarity::Uncommon)
+        Rarity::Common)
 }
 
 /// Clash+ (upgraded version)
@@ -21,7 +21,7 @@ pub fn clash_upgraded() -> Card {
         vec![Effect::AttackToTarget { amount: 18, num_attacks: 1, strength_multiplier: 1 }],
         true,  // upgraded
         Condition::HandAllAttacks,
-        Rarity::Uncommon)
+        Rarity::Common)
 }
 
 #[cfg(test)]

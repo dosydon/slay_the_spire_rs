@@ -28,7 +28,7 @@ pub fn offering_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
-    use crate::battle::action::Action;
+    use crate::battle::battle_action::BattleAction;
 
     use super::*;
 
@@ -125,7 +125,7 @@ mod tests {
 
         // Play Offering+ targeting the player
         let offering_idx = 0;
-        battle.eval_action(Action::PlayCard(offering_idx, Entity::None), &mut rng).unwrap();
+        battle.eval_action(BattleAction::PlayCard(offering_idx, Entity::None), &mut rng).unwrap();
 
         // Verify player lost 4 HP (upgraded version)
         let hp_after_offering = battle.get_player().battle_info.get_current_hp();

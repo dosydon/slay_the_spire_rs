@@ -1,5 +1,5 @@
 use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
-use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
+use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Embrace Power Listener
 /// Whenever a card is exhausted, draw 1 card
@@ -208,7 +208,7 @@ mod tests {
         use crate::game::deck::Deck;
         use crate::game::global_info::GlobalInfo;
         use crate::game::enemy::EnemyTrait;
-        use crate::battle::action::Action;
+        use crate::battle::battle_action::BattleAction;
         use crate::enemies::red_louse::RedLouse;
         use crate::enemies::enemy_enum::EnemyEnum;
         use crate::cards::ironclad::strike::strike;
@@ -241,7 +241,7 @@ mod tests {
         assert_eq!(initial_hand_size, 2);
 
         // Process end of turn using public eval_action method
-        let result = battle.eval_action(Action::EndTurn, &mut rng);
+        let result = battle.eval_action(BattleAction::EndTurn, &mut rng);
         assert!(result.is_ok());
 
         // Verify Carnage was exhausted (should be in exhausted pile)

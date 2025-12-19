@@ -101,7 +101,7 @@ mod tests {
         assert_eq!(final_hand_size, initial_hand_size, "Should draw 1 card but play 1 (net 0 change)");
 
         // Check that battle entered SelectCardInHandToPutOnDeck state
-        assert!(matches!(battle.battle_state, crate::battle::action::BattleState::SelectCardInHandToPutOnDeck));
+        assert!(matches!(battle.battle_state, crate::battle::battle_action::BattleState::SelectCardInHandToPutOnDeck));
 
         // Should have cards in hand to select from
         assert!(battle.cards.hand_size() > 0, "Should have cards in hand to select");
@@ -138,7 +138,7 @@ mod tests {
         assert!(result.is_ok(), "Warcry should be playable");
 
         // Should be in SelectCardInHandToPutOnDeck state
-        assert!(matches!(battle.battle_state, crate::battle::action::BattleState::SelectCardInHandToPutOnDeck));
+        assert!(matches!(battle.battle_state, crate::battle::battle_action::BattleState::SelectCardInHandToPutOnDeck));
 
         // Get the current top of draw pile before selection
         let initial_top_card = battle.cards.peek_top_card();
@@ -147,7 +147,7 @@ mod tests {
         let card_to_select_name = battle.cards.get_hand()[0].get_name().to_string();
 
         // Select the first card in hand to put on top of draw pile
-        let select_result = battle.eval_action(crate::battle::action::Action::SelectCardInHand(0), &mut rng);
+        let select_result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardInHand(0), &mut rng);
         assert!(select_result.is_ok(), "Should be able to select a card");
 
         // Check that the selected card is now on top of draw pile
@@ -159,7 +159,7 @@ mod tests {
                   "Top card should be the selected card");
 
         // Should be back to PlayerTurn state
-        assert!(matches!(battle.battle_state, crate::battle::action::BattleState::PlayerTurn));
+        assert!(matches!(battle.battle_state, crate::battle::battle_action::BattleState::PlayerTurn));
     }
 
     #[test]

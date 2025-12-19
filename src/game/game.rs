@@ -901,7 +901,7 @@ impl Game {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{cards::ironclad::starter_deck::starter_deck, battle::action::Action};
+    use crate::{cards::ironclad::starter_deck::starter_deck, battle::battle_action::BattleAction};
     use crate::map::{Map, MapNode, NodeType};
     use crate::events::map_events::MapEvent;
 
@@ -974,7 +974,7 @@ mod tests {
         game.eval_action(GameAction::ChoosePath(1), &mut rng).unwrap();
         
         // Try to end turn (battle action)
-        let battle_action = GameAction::Battle(Action::EndTurn);
+        let battle_action = GameAction::Battle(BattleAction::EndTurn);
         let result = game.eval_action(battle_action, &mut rng);
         
         // Should succeed as a valid battle action
@@ -990,7 +990,7 @@ mod tests {
         let mut rng = rand::rng();
         
         // Try battle action without starting battle
-        let battle_action = GameAction::Battle(Action::EndTurn);
+        let battle_action = GameAction::Battle(BattleAction::EndTurn);
         let result = game.eval_action(battle_action, &mut rng);
         
         // Should fail with NoBattle error
@@ -1022,7 +1022,7 @@ mod tests {
         
         // Simulate taking damage in battle by ending turn (enemy will attack)
         let initial_game_hp = game.get_player_hp();
-        game.eval_action(GameAction::Battle(Action::EndTurn), &mut rng).unwrap();
+        game.eval_action(GameAction::Battle(BattleAction::EndTurn), &mut rng).unwrap();
         
         // Check if HP was affected during battle
         if let Some(battle) = game.get_battle() {

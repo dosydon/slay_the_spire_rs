@@ -1,5 +1,5 @@
 use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
-use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
+use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Flame Barrier Listener
 /// When player takes damage from enemy attacks this turn, deal damage back

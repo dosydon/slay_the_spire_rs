@@ -1,5 +1,5 @@
 use crate::game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo};
-use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
+use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 #[derive(Clone, Debug)]
 pub struct MadGremlin {

@@ -1,5 +1,5 @@
 use crate::game::{card::{Card, Rarity}, card_type::CardType, card_enum::CardEnum, effect::Effect};
-use crate::battle::events::{BattleEvent, EventListener};
+use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 
 /// Event listener for Feel No Pain power

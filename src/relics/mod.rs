@@ -23,7 +23,7 @@ impl Relic {
     }
 
     /// Convert this relic to a battle event listener
-    pub fn to_battle_event_listener(self) -> Option<Box<dyn crate::battle::events::EventListener>> {
+    pub fn to_battle_event_listener(self) -> Option<Box<dyn crate::battle::battle_events::EventListener>> {
         match self {
             Relic::Anchor => Some(Box::new(AnchorRelic::new(crate::battle::target::Entity::Player))),
             Relic::BloodVial => Some(Box::new(BloodVialRelic::new(crate::battle::target::Entity::Player))),

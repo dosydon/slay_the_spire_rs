@@ -41,7 +41,7 @@ impl Battle {
         self.player.battle_info.at_end_of_turn();
 
         // Emit end-of-turn event for player
-        let end_turn_event = super::events::BattleEvent::EndOfTurn {
+        let end_turn_event = super::battle_events::BattleEvent::EndOfTurn {
             entity: super::target::Entity::Player,
         };
         self.emit_event(end_turn_event);
@@ -55,7 +55,7 @@ impl Battle {
                 self.cards.exhaust_card_from_hand(i);
 
                 // Emit CardExhausted event
-                let exhaust_event = super::events::BattleEvent::CardExhausted {
+                let exhaust_event = super::battle_events::BattleEvent::CardExhausted {
                     source: super::target::Entity::Player,
                 };
                 self.emit_event(exhaust_event);
@@ -80,7 +80,7 @@ impl Battle {
             .collect();
 
         for i in alive_enemy_indices {
-            let start_turn_event = super::events::BattleEvent::StartOfEnemyTurn {
+            let start_turn_event = super::battle_events::BattleEvent::StartOfEnemyTurn {
                 enemy_index: i,
             };
             self.emit_event(start_turn_event);
@@ -112,7 +112,7 @@ impl Battle {
 
         // Then emit end-of-turn events for each alive enemy
         for i in alive_enemy_indices {
-            let end_turn_event = super::events::BattleEvent::EndOfTurn {
+            let end_turn_event = super::battle_events::BattleEvent::EndOfTurn {
                 entity: super::target::Entity::Enemy(i),
             };
             self.emit_event(end_turn_event);

@@ -1,5 +1,5 @@
 use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
-use crate::battle::{target::Entity, events::BattleEvent, events::EventListener};
+use crate::battle::{target::Entity, battle_events::BattleEvent, battle_events::EventListener};
 
 pub fn fire_breathing() -> Card {
     Card::new(

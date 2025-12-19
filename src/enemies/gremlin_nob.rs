@@ -1,5 +1,5 @@
 use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
-use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
+use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 #[derive(Clone, Debug)]
 pub struct GremlinNob {
@@ -530,7 +530,7 @@ mod tests {
         battle.eval_base_effect(&activate_enrage_effect);
         
         // Now test that the EnrageListener works
-        use crate::battle::events::BattleEvent;
+        use crate::battle::battle_events::BattleEvent;
         let skill_event = BattleEvent::SkillCardPlayed {
             source: Entity::Player,
         };
@@ -618,7 +618,7 @@ mod tests {
 
     #[test]
     fn test_gremlin_nob_enrage_mechanic() {
-        use crate::battle::{Battle, enemy_in_battle::EnemyInBattle, events::BattleEvent, target::Entity};
+        use crate::battle::{Battle, enemy_in_battle::EnemyInBattle, battle_events::BattleEvent, target::Entity};
         use crate::enemies::EnemyEnum;
         use crate::cards::ironclad::starter_deck::starter_deck;
         use crate::game::{enemy::EnemyTrait, effect::BaseEffect};

@@ -1,7 +1,7 @@
 //! Global game actions that can be performed throughout the entire game
 
 use bevy::prelude::Event;
-use crate::battle::action::Action as BattleAction;
+use crate::battle::battle_action::BattleAction as BattleAction;
 
 /// High-level game actions that encompass the entire game flow
 #[derive(Debug, Clone, PartialEq, Event)]

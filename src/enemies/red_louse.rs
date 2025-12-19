@@ -1,5 +1,5 @@
 use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
-use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
+use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 #[derive(Clone, Debug)]
 pub struct RedLouse {
@@ -524,7 +524,7 @@ mod tests {
 
     #[test]
     fn test_red_louse_two_turn_battle_fixed_hand() {
-        use crate::{battle::Battle, battle::action::Action, battle::target::Entity, game::deck::Deck, battle::BattleResult};
+        use crate::{battle::Battle, battle::battle_action::BattleAction, battle::target::Entity, game::deck::Deck, battle::BattleResult};
         use crate::cards::ironclad::{strike::strike, defend::defend, bash::bash};
         
         // Create a deck with specific card order for initial hand
@@ -567,7 +567,7 @@ mod tests {
         
         // Play first Strike (card index 0, targeting enemy)
         println!("Playing first Strike targeting enemy");
-        let action = Action::PlayCard(0, Entity::Enemy(0));
+        let action = BattleAction::PlayCard(0, Entity::Enemy(0));
         let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
         assert_eq!(result, BattleResult::Continued);
         println!("After first Strike - Enemy HP: {}, Player Energy: {}", 
@@ -579,7 +579,7 @@ mod tests {
         
         // Play second Strike (now at index 0 since first was removed, targeting enemy) 
         println!("Playing second Strike targeting enemy");
-        let action = Action::PlayCard(0, Entity::Enemy(0));
+        let action = BattleAction::PlayCard(0, Entity::Enemy(0));
         let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
         assert_eq!(result, BattleResult::Continued);
         println!("After second Strike - Enemy HP: {}, Player Energy: {}", 
@@ -587,7 +587,7 @@ mod tests {
         
         // Play one Defend to use remaining energy (now at index 1, targeting self)
         println!("Playing one Defend");
-        let action = Action::PlayCard(1, Entity::Player);
+        let action = BattleAction::PlayCard(1, Entity::Player);
         let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
         assert_eq!(result, BattleResult::Continued);
         println!("After Defend - Player Block: {}, Player Energy: {}", 
@@ -638,7 +638,7 @@ mod tests {
         println!("Cards in hand: {}", cards_in_hand);
         
         println!("Playing Strike (cost: 1)");
-        let action = Action::PlayCard(0, Entity::Enemy(0));
+        let action = BattleAction::PlayCard(0, Entity::Enemy(0));
         let result = battle.eval_action(action, &mut rng).expect("Action should succeed");
         // Enemy might die from this strike, so it could be Won or Continued
         assert!(matches!(result, BattleResult::Won | BattleResult::Continued));

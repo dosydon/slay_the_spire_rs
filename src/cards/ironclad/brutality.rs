@@ -1,5 +1,5 @@
 use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
-use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
+use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Brutality Power Listener
 /// At the start of your turn, lose 1 HP and draw 1 card

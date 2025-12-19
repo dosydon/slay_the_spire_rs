@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, battle::{events::{BattleEvent, EventListener}, target::Entity}};
+use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, battle::{battle_events::{BattleEvent, EventListener}, target::Entity}};
 use std::any::Any;
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -298,7 +298,7 @@ mod tests {
 
     #[test]
     fn test_sentry_listener() {
-        use crate::battle::events::BattleEvent;
+        use crate::battle::battle_events::BattleEvent;
 
         // Create a SentryListener for enemy index 0
         let mut listener = SentryListener::new(0);

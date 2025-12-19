@@ -1,7 +1,7 @@
-pub mod action;
+pub mod battle_action;
 pub mod character_battle_info;
 pub mod target;
-pub mod events;
+pub mod battle_events;
 pub mod player;
 pub mod deck_hand_pile;
 pub mod enemy_in_battle;
@@ -16,8 +16,8 @@ mod enemy_manager;
 mod listener_manager;
 
 use crate::{enemies::enemy_enum::EnemyMove, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, global_info::GlobalInfo}, relics::Relic};
-use self::{events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
-use crate::battle::action::BattleState;
+use self::{battle_events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
+use crate::battle::battle_action::BattleState;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BattleError {
@@ -452,7 +452,7 @@ mod tests {
     #[test]
     fn test_use_potion_action() {
         use crate::game::potion::Potion;
-        use crate::battle::action::Action;
+        use crate::battle::battle_action::BattleAction;
 
         let deck = starter_deck();
         let mut rng = rand::rng();
@@ -466,13 +466,13 @@ mod tests {
 
         // Verify UsePotion action is in available actions
         let available = battle.list_available_actions();
-        assert!(available.iter().any(|a| matches!(a, Action::UsePotion(0, None))));
+        assert!(available.iter().any(|a| matches!(a, BattleAction::UsePotion(0, None))));
 
         // Player should have 0 strength initially
         assert_eq!(battle.player.battle_info.get_strength(), 0);
 
         // Execute the UsePotion action
-        let result = battle.eval_action(Action::UsePotion(0, None), &mut rng);
+        let result = battle.eval_action(BattleAction::UsePotion(0, None), &mut rng);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), BattleResult::Continued);
 
@@ -484,6 +484,6 @@ mod tests {
 
         // UsePotion action should no longer be in available actions
         let available = battle.list_available_actions();
-        assert!(!available.iter().any(|a| matches!(a, Action::UsePotion(_, _))));
+        assert!(!available.iter().any(|a| matches!(a, BattleAction::UsePotion(_, _))));
     }
 }

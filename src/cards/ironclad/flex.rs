@@ -1,5 +1,5 @@
 use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
-use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
+use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 pub fn flex() -> Card {
     Card::new_with_condition(CardEnum::Flex, 0, CardType::Skill, vec![

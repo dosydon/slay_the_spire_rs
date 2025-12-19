@@ -17,7 +17,7 @@ pub fn thunderclap_upgraded() -> Card {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::battle::{Battle, action::Action, target::Entity};
+    use crate::battle::{Battle, battle_action::BattleAction, target::Entity};
     use crate::game::global_info::GlobalInfo;
     use crate::game::deck::Deck;
     use crate::game::enemy::EnemyTrait;
@@ -56,7 +56,7 @@ mod tests {
                 "All enemies should start with 0 vulnerable, got: {:?}", initial_vulnerable);
 
         // Play thunderclap (target doesn't matter for ApplyVulnerableAll)
-        let action = Action::PlayCard(0, Entity::Enemy(0));
+        let action = BattleAction::PlayCard(0, Entity::Enemy(0));
         let result = battle.eval_action(action, &mut rng);
         assert!(result.is_ok(), "Thunderclap should play successfully");
 
@@ -93,7 +93,7 @@ mod tests {
             .map(|enemy| enemy.battle_info.get_hp())
             .collect();
 
-        let action2 = Action::PlayCard(0, Entity::Enemy(0));
+        let action2 = BattleAction::PlayCard(0, Entity::Enemy(0));
         battle2.eval_action(action2, &mut rng).unwrap();
 
         let hp_after: Vec<u32> = battle2.get_enemies()
@@ -135,7 +135,7 @@ mod tests {
                 "All enemies should start with 0 vulnerable, got: {:?}", initial_vulnerable);
 
         // Play thunderclap+ (target doesn't matter for ApplyVulnerableAll)
-        let action = Action::PlayCard(0, Entity::Enemy(0));
+        let action = BattleAction::PlayCard(0, Entity::Enemy(0));
         let result = battle.eval_action(action, &mut rng);
         assert!(result.is_ok(), "Thunderclap+ should play successfully");
 

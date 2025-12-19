@@ -2,7 +2,7 @@ use crate::game::enemy::EnemyTrait;
 use crate::game::global_info::GlobalInfo;
 use crate::game::effect::Effect;
 use crate::utils::CategoricalDistribution;
-use crate::battle::events::{BattleEvent, EventListener};
+use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 
 /// Lagavulin - Act 1 Elite Enemy

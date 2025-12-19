@@ -1,5 +1,5 @@
 use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
-use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
+use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Combust Power Listener
 /// At the end of your turn, deal 6 damage to ALL enemies.
@@ -228,7 +228,7 @@ mod tests {
         use crate::game::deck::Deck;
         use crate::game::global_info::GlobalInfo;
         use crate::game::enemy::EnemyTrait;
-        use crate::battle::action::Action;
+        use crate::battle::battle_action::BattleAction;
         use crate::enemies::cultist::Cultist;
         use crate::enemies::enemy_enum::EnemyEnum;
 
@@ -256,7 +256,7 @@ mod tests {
         assert_eq!(powers[0].get_name(), "Combust");
 
         // End turn to trigger Combust effect (lose 1 HP and damage enemies)
-        let result = battle.eval_action(Action::EndTurn, &mut rng);
+        let result = battle.eval_action(BattleAction::EndTurn, &mut rng);
         assert!(result.is_ok());
 
         // Verify player lost 1 HP from Combust only (Cultist uses Incantation first turn, no damage)

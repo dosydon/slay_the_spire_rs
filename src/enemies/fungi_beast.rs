@@ -1,7 +1,7 @@
 use crate::game::enemy::EnemyTrait;
 use crate::game::effect::Effect;
 use crate::game::global_info::GlobalInfo;
-use crate::battle::events::{BattleEvent, EventListener};
+use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 use std::any::Any;
 

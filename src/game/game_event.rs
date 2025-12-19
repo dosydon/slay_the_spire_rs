@@ -1,5 +1,5 @@
 use crate::game::effect::Effect;
-use crate::battle::events::BattleEvent;
+use crate::battle::battle_events::BattleEvent;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum GameEvent {

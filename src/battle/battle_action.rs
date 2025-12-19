@@ -11,7 +11,7 @@ pub enum BattleState {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Action {
+pub enum BattleAction {
     PlayCard(usize, Entity), // Play a card from hand by its index with a target
     SelectCardInHand(usize), // Select a card from hand for upgrade effects
     SelectCardInDiscard(usize), // Select a card from discard pile

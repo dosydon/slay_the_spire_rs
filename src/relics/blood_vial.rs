@@ -1,4 +1,4 @@
-use crate::battle::events::{BattleEvent, EventListener};
+use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 use crate::game::effect::Effect;
 

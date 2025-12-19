@@ -11,7 +11,7 @@ pub fn carnage() -> Card {
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], false, true, true, Rarity::Rare)
+    ], false, true, true, Rarity::Uncommon)
 }
 
 /// Carnage+ (Upgraded)
@@ -25,7 +25,7 @@ pub fn carnage_upgraded() -> Card {
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], true, true, true, Rarity::Rare)
+    ], true, true, true, Rarity::Uncommon)
 }
 
 #[cfg(test)]

@@ -74,7 +74,6 @@ impl CardRewardPool {
             CardEnum::Rupture,
             CardEnum::DualWield,
             CardEnum::DoubleTap,
-            CardEnum::Feed,
             CardEnum::Reaper,
             CardEnum::FiendFire,
             CardEnum::FireBreathing,
@@ -110,11 +109,11 @@ impl CardRewardPool {
             CardEnum::GoodInstincts,
             CardEnum::BandageUp,
             CardEnum::DeepBreath,
+            CardEnum::Carnage,
         ];
 
         // Ironclad Rare Cards
         let rare_pool = vec![
-            CardEnum::Carnage,
             CardEnum::Corruption,
             CardEnum::Immolate,
             CardEnum::Embrace,
@@ -124,6 +123,7 @@ impl CardRewardPool {
             CardEnum::Intimidate,
             CardEnum::Hemokinesis,
             CardEnum::Rampage,
+            CardEnum::Feed,
         ];
 
         Self {

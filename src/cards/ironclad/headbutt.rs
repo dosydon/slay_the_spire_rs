@@ -103,7 +103,7 @@ mod tests {
         assert!(final_enemy_hp < initial_enemy_hp, "Enemy should have taken damage");
 
         // Check that battle entered SelectCardInDiscard state
-        assert!(matches!(battle.battle_state, crate::battle::action::BattleState::SelectCardInDiscard));
+        assert!(matches!(battle.battle_state, crate::battle::battle_action::BattleState::SelectCardInDiscard));
 
         // Should have cards in discard to select from
         if initial_discard_size > 0 {

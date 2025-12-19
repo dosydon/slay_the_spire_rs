@@ -1,5 +1,5 @@
 use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
-use crate::battle::{target::Entity, events::BattleEvent, events::EventListener};
+use crate::battle::{target::Entity, battle_events::BattleEvent, battle_events::EventListener};
 
 /// Demon Form - Rare Power Card
 /// Cost: 3 (2 when upgraded)
@@ -239,7 +239,7 @@ mod tests {
         assert_eq!(strength_after_play, 0);
 
         // Simulate turn start event to trigger Demon Form effect
-        let turn_start_event = crate::battle::events::BattleEvent::StartOfPlayerTurn;
+        let turn_start_event = crate::battle::battle_events::BattleEvent::StartOfPlayerTurn;
         battle.emit_event(turn_start_event);
 
         // Now player should have gained 2 Strength from Demon Form
@@ -270,7 +270,7 @@ mod tests {
         assert_eq!(strength_after_play, 0);
 
         // Simulate turn start event to trigger Demon Form+ effect
-        let turn_start_event = crate::battle::events::BattleEvent::StartOfPlayerTurn;
+        let turn_start_event = crate::battle::battle_events::BattleEvent::StartOfPlayerTurn;
         battle.emit_event(turn_start_event);
 
         // Now player should have gained 3 Strength from Demon Form+
@@ -296,7 +296,7 @@ mod tests {
         let result = battle.play_card(0, Entity::Player);
         assert!(result.is_ok());
 
-        let turn_start_event = crate::battle::events::BattleEvent::StartOfPlayerTurn;
+        let turn_start_event = crate::battle::battle_events::BattleEvent::StartOfPlayerTurn;
 
         // Simulate multiple turn starts
         for turn in 1..=3 {
