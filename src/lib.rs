@@ -4,7 +4,5 @@ pub mod enemies;
 pub mod events;
 pub mod utils;
 pub mod battle;
-pub mod battle_cli;
-pub mod game_cli;
 pub mod relics;
 pub mod map;

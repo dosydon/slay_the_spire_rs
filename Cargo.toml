@@ -9,11 +9,3 @@ clap.workspace = true
 bevy = { workspace = true, features = ["bevy_ui", "bevy_render", "bevy_core_pipeline", "bevy_text", "bevy_sprite", "bevy_winit", "bevy_window", "x11", "png", "default_font"] }
 log.workspace = true
 env_logger.workspace = true
-
-[[bin]]
-name = "game"
-path = "src/bin/game.rs"
-
-[[bin]]
-name = "battle"
-path = "src/bin/battle.rs"
