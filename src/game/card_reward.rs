@@ -1,264 +1,291 @@
 use crate::game::{card::Card, card_enum::CardEnum};
+use crate::utils::categorical_distribution::CategoricalDistribution;
 
-/// Card rarity for reward pools
+/// Types of combat encounters for determining reward rarity
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum CardRarity {
+pub enum CombatType {
+    Normal,
+    Elite,
+    Boss,
+}
+
+/// Card rarity for categorizing cards
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum Rarity {
     Common,
     Uncommon,
     Rare,
 }
 
-/// Card entry with weight for reward generation
-#[derive(Debug, Clone)]
-struct CardEntry {
-    card_enum: CardEnum,
-    rarity: CardRarity,
-    weight: f32,
-}
-
 /// Card reward pool for generating random card rewards
+/// Uses uniform distribution within each rarity tier and implements offset system
+/// based on the actual Slay the Spire mechanics
 pub struct CardRewardPool {
-    /// All available cards for rewards with their weights
-    available_cards: Vec<CardEntry>,
+    /// Common cards - drawn with equal probability
+    common_pool: Vec<CardEnum>,
+    /// Uncommon cards - drawn with equal probability
+    uncommon_pool: Vec<CardEnum>,
+    /// Rare cards - drawn with equal probability
+    rare_pool: Vec<CardEnum>,
+    /// Rare card offset: starts at -5%, increases by 1% per common card rolled,
+    /// resets to -5% when rare card is rolled. Capped at +40%.
+    /// Negative offset decreases rare chance, positive offset decreases common chance.
+    rare_offset_percent: i32,
 }
 
 impl CardRewardPool {
     /// Create a new card reward pool with all currently implemented cards
+    /// Offset starts at -5% as per Slay the Spire mechanics
     pub fn new() -> Self {
-        let mut available_cards = Vec::new();
-
-        // Ironclad Common Cards (weight: ~75% total pool)
+        // Ironclad Common Cards
         // These are the most frequently appearing rewards
         // Excluding basic cards (Strike, Defend) which should never be rewards
-        let common_cards = vec![
-            (CardEnum::Bash, 8.0),                 // Attack + Vulnerable
-            (CardEnum::Cleave, 8.0),               // Attack all enemies
-            (CardEnum::Clothesline, 8.0),         // Attack + Weak
-            (CardEnum::Flex, 8.0),                 // Gain Strength
-            (CardEnum::HeavyBlade, 8.0),          // High damage attack
-            (CardEnum::IronWave, 8.0),            // Attack + Block
-            (CardEnum::PerfectedStrike, 8.0),     // Strike synergy
-            (CardEnum::PommelStrike, 8.0),        // Attack + Draw
-            (CardEnum::ShrugItOff, 8.0),          // Block + Strength
-            (CardEnum::Thunderclap, 8.0),         // Attack + Weak all
-            (CardEnum::TwinStrike, 8.0),          // Attack twice
-            (CardEnum::WildStrike, 8.0),          // Attack + Shuffle Wound
-            (CardEnum::Anger, 8.0),               // Add Anger cards to draw pile
-            (CardEnum::BodySlam, 8.0),            // Damage equal to Block
-            (CardEnum::Combust, 8.0),             // Take damage, AoE damage on turn end
-            (CardEnum::Dropkick, 8.0),            // Attack + Energy if enemy Vulnerable
-            (CardEnum::Entrench, 8.0),            // Double Block
-            (CardEnum::Havoc, 8.0),               // Play random Attack from draw pile
-            (CardEnum::Headbutt, 8.0),            // Attack + Move card to top of draw pile
-            (CardEnum::TrueGrit, 8.0),            // Block + add temporary Block card
-            (CardEnum::Warcry, 8.0),              // Shuffle non-Attack cards into draw pile
-            (CardEnum::RecklessCharge, 8.0),      // Add Vulnerable to self, draw card
-            (CardEnum::SearingBlow, 8.0),         // Upgradeable attack
-            (CardEnum::SeverSoul, 8.0),           // Attack + Exhaust + Energy
-            (CardEnum::SpotWeakness, 8.0),        // High damage if enemy not Weak
-            (CardEnum::Pummel, 8.0),              // Attack multiple times
-            (CardEnum::InfernalBlade, 8.0),       // Low cost attack, channel Hot Feet
-            (CardEnum::Evolve, 8.0),              // Transform cards in draw pile
-            (CardEnum::Sentinel, 8.0),            // Block + retain
-            (CardEnum::Whirlwind, 8.0),           // Multi-hit attack scaling with energy
-            (CardEnum::SecondWind, 8.0),          // Exhaust damage cards, gain Block
-            (CardEnum::Rupture, 8.0),             // Take damage, gain Strength
-            (CardEnum::DualWield, 8.0),           // Duplicate attacks in hand
-            (CardEnum::DoubleTap, 8.0),           // First card played twice
-            (CardEnum::Feed, 8.0),                // Exhaust enemy card, heal
-            (CardEnum::Reaper, 8.0),              // Lifesteal attack
-            (CardEnum::FiendFire, 8.0),           // Exhaust attacks for damage
-            (CardEnum::FireBreathing, 8.0),       // Passive damage when taking damage
+        let common_pool = vec![
+            CardEnum::Cleave,
+            CardEnum::Clothesline,
+            CardEnum::Flex,
+            CardEnum::HeavyBlade,
+            CardEnum::IronWave,
+            CardEnum::PerfectedStrike,
+            CardEnum::PommelStrike,
+            CardEnum::ShrugItOff,
+            CardEnum::Thunderclap,
+            CardEnum::TwinStrike,
+            CardEnum::WildStrike,
+            CardEnum::Anger,
+            CardEnum::BodySlam,
+            CardEnum::Combust,
+            CardEnum::Dropkick,
+            CardEnum::Entrench,
+            CardEnum::Havoc,
+            CardEnum::Headbutt,
+            CardEnum::TrueGrit,
+            CardEnum::Warcry,
+            CardEnum::RecklessCharge,
+            CardEnum::SearingBlow,
+            CardEnum::SeverSoul,
+            CardEnum::SpotWeakness,
+            CardEnum::Pummel,
+            CardEnum::InfernalBlade,
+            CardEnum::Evolve,
+            CardEnum::Sentinel,
+            CardEnum::Whirlwind,
+            CardEnum::SecondWind,
+            CardEnum::Rupture,
+            CardEnum::DualWield,
+            CardEnum::DoubleTap,
+            CardEnum::Feed,
+            CardEnum::Reaper,
+            CardEnum::FiendFire,
+            CardEnum::FireBreathing,
+            CardEnum::SwordBoomerang,
         ];
 
-        // Ironclad Uncommon Cards (weight: ~20% total pool)
-        // These appear less frequently than commons but more than rares
-        let uncommon_cards = vec![
-            (CardEnum::Armaments, 4.0),            // Gain Block, optionally Upgrade all cards in hand
-            (CardEnum::Bludgeon, 4.0),             // Attack scaling with Strength
-            (CardEnum::Disarm, 4.0),               // Weak + discard cards from hand
-            (CardEnum::GhostlyArmor, 4.0),         // Ethereal Block
-            (CardEnum::Impervious, 4.0),           // Massive Block
-            (CardEnum::PowerThrough, 4.0),         // Add temporary cards to hand, Block
-            (CardEnum::Shockwave, 4.0),            // Weak all enemies
-            (CardEnum::Uppercut, 4.0),             // Attack + Weak + draw
-            (CardEnum::SeeingRed, 4.0),            // Energy + draw
-            (CardEnum::FlameBarrier, 4.0),         // Block + passive damage
-            (CardEnum::Metallicize, 4.0),          // Gain Plated Armor
-            (CardEnum::Rage, 4.0),                 // Add Rage cards to deck
-            (CardEnum::LimitBreak, 4.0),           // Gain Strength equal to max HP
-            (CardEnum::DemonForm, 4.0),            // Power that increases Demon Form stacks
-            (CardEnum::Exhume, 4.0),               // Revive exhausted card
-            (CardEnum::FeelNoPain, 4.0),           // Add Block when taking damage
-            (CardEnum::SwordBoomerang, 4.0),       // Attack multiple times
-            (CardEnum::Clash, 4.0),                // High damage if only Attack cards in hand
+        // Ironclad Uncommon Cards + Colorless Cards
+        let uncommon_pool = vec![
+            // Ironclad Uncommon
+            CardEnum::Armaments,
+            CardEnum::Bludgeon,
+            CardEnum::Disarm,
+            CardEnum::GhostlyArmor,
+            CardEnum::Impervious,
+            CardEnum::PowerThrough,
+            CardEnum::Shockwave,
+            CardEnum::Uppercut,
+            CardEnum::SeeingRed,
+            CardEnum::FlameBarrier,
+            CardEnum::Metallicize,
+            CardEnum::Rage,
+            CardEnum::LimitBreak,
+            CardEnum::DemonForm,
+            CardEnum::Exhume,
+            CardEnum::FeelNoPain,
+            CardEnum::Clash,
+            // Colorless Cards
+            CardEnum::SwiftStrike,
+            CardEnum::Finesse,
+            CardEnum::FlashOfSteel,
+            CardEnum::Blind,
+            CardEnum::Trip,
+            CardEnum::GoodInstincts,
+            CardEnum::BandageUp,
+            CardEnum::DeepBreath,
         ];
 
-        // Ironclad Rare Cards (weight: ~5% total pool)
-        // These are the rarest and most powerful rewards
-        let rare_cards = vec![
-            (CardEnum::Carnage, 2.0),              // Massively powerful single-use attack
-            (CardEnum::Corruption, 2.0),           // Powers become free, skills Exhaust
-            (CardEnum::Immolate, 2.0),             // High damage AoE attack
-            (CardEnum::Embrace, 2.0),              // Chaos power that randomizes effects
-            (CardEnum::Inflame, 2.0),              // High Strength gain
-            (CardEnum::Brutality, 2.0),            // Lose max HP, gain energy every turn
-            (CardEnum::Offering, 2.0),             // Sacrifice HP for massive energy gain
-            (CardEnum::Intimidate, 2.0),           // Apply Weak to all enemies, draw cards
-            (CardEnum::Hemokinesis, 2.0),         // Pay HP for damage
-            (CardEnum::Rampage, 2.0),              // Scalable multi-hit attack
+        // Ironclad Rare Cards
+        let rare_pool = vec![
+            CardEnum::Carnage,
+            CardEnum::Corruption,
+            CardEnum::Immolate,
+            CardEnum::Embrace,
+            CardEnum::Inflame,
+            CardEnum::Brutality,
+            CardEnum::Offering,
+            CardEnum::Intimidate,
+            CardEnum::Hemokinesis,
+            CardEnum::Rampage,
         ];
 
-        // Add all cards with their weights
-        for (card_enum, weight) in common_cards {
-            available_cards.push(CardEntry {
-                card_enum,
-                rarity: CardRarity::Common,
-                weight,
-            });
+        Self {
+            common_pool,
+            uncommon_pool,
+            rare_pool,
+            rare_offset_percent: -5, // Start at -5% as per game mechanics
         }
-
-        for (card_enum, weight) in uncommon_cards {
-            available_cards.push(CardEntry {
-                card_enum,
-                rarity: CardRarity::Uncommon,
-                weight,
-            });
-        }
-
-        for (card_enum, weight) in rare_cards {
-            available_cards.push(CardEntry {
-                card_enum,
-                rarity: CardRarity::Rare,
-                weight,
-            });
-        }
-
-        // Colorless Cards (these can appear as rewards for any character)
-        // Weighted as uncommon-rarity cards, roughly 5% of total reward pool
-        let colorless_cards = vec![
-            (CardEnum::SwiftStrike, 3.0),          // Cheap attack
-            (CardEnum::Finesse, 3.0),              // Block + Draw
-            (CardEnum::FlashOfSteel, 3.0),        // Draw + play Attack from draw pile
-            (CardEnum::Blind, 3.0),               // Apply Weak
-            (CardEnum::Trip, 3.0),                // Vulnerable + Draw
-            (CardEnum::GoodInstincts, 3.0),       // Gain Plated Armor + Draw
-            (CardEnum::BandageUp, 3.0),           // Heal
-            (CardEnum::DeepBreath, 3.0),          // Draw more cards if hand empty
-        ];
-
-        for (card_enum, weight) in colorless_cards {
-            available_cards.push(CardEntry {
-                card_enum,
-                rarity: CardRarity::Uncommon, // Colorless are treated as uncommon
-                weight,
-            });
-        }
-
-        Self { available_cards }
     }
 
     /// Get the number of cards in the reward pool
     pub fn pool_size(&self) -> usize {
-        self.available_cards.len()
+        self.common_pool.len() + self.uncommon_pool.len() + self.rare_pool.len()
     }
 
-    /// Get cards by rarity
-    pub fn get_cards_by_rarity(&self, rarity: CardRarity) -> Vec<CardEnum> {
-        self.available_cards
-            .iter()
-            .filter(|entry| entry.rarity == rarity)
-            .map(|entry| entry.card_enum)
-            .collect()
+    /// Get cards by rarity as CardEnum vectors
+    pub fn get_common_cards(&self) -> Vec<CardEnum> {
+        self.common_pool.clone()
     }
 
-    /// Get rarity distribution as percentages
-    pub fn get_rarity_distribution(&self) -> (f32, f32, f32) {
-        let total_weight: f32 = self.available_cards.iter().map(|entry| entry.weight).sum();
-
-        let common_weight: f32 = self.available_cards
-            .iter()
-            .filter(|entry| entry.rarity == CardRarity::Common)
-            .map(|entry| entry.weight)
-            .sum();
-
-        let uncommon_weight: f32 = self.available_cards
-            .iter()
-            .filter(|entry| entry.rarity == CardRarity::Uncommon)
-            .map(|entry| entry.weight)
-            .sum();
-
-        let rare_weight: f32 = self.available_cards
-            .iter()
-            .filter(|entry| entry.rarity == CardRarity::Rare)
-            .map(|entry| entry.weight)
-            .sum();
-
-        (
-            (common_weight / total_weight) * 100.0,
-            (uncommon_weight / total_weight) * 100.0,
-            (rare_weight / total_weight) * 100.0,
-        )
+    pub fn get_uncommon_cards(&self) -> Vec<CardEnum> {
+        self.uncommon_pool.clone()
     }
 
-    /// Generate a single random card reward using weighted selection
-    pub fn generate_single_reward(&self, rng: &mut impl rand::Rng) -> Option<Card> {
-        let total_weight: f32 = self.available_cards.iter().map(|entry| entry.weight).sum();
-        let random_value = rng.random_range(0.0..total_weight);
-        let mut cumulative_weight = 0.0;
+    pub fn get_rare_cards(&self) -> Vec<CardEnum> {
+        self.rare_pool.clone()
+    }
 
-        if let Some(selected_entry) = self.available_cards.iter().find(|entry| {
-            cumulative_weight += entry.weight;
-            random_value <= cumulative_weight
-        }) {
-            self.try_create_card_from_enum(selected_entry.card_enum)
-        } else {
-            None
+    /// Get the current rare offset percentage
+    pub fn get_rare_offset(&self) -> i32 {
+        self.rare_offset_percent
+    }
+
+    /// Reset the rare offset to -5% (initial value)
+    pub fn reset_rare_offset(&mut self) {
+        self.rare_offset_percent = -5;
+    }
+
+    /// Calculate adjusted rarity probabilities based on offset
+    /// Base probabilities are adjusted by the offset:
+    /// - Negative offset: decreases rare chance (increases common)
+    /// - Positive offset: decreases common chance (increases rare)
+    /// Uncommon stays constant, and total always sums to 100%
+    fn get_adjusted_probabilities(&self, combat_type: CombatType) -> (f64, f64, f64) {
+        let (base_common, base_uncommon, base_rare) = match combat_type {
+            CombatType::Normal => (60.0, 37.0, 3.0),
+            CombatType::Elite => (50.0, 40.0, 10.0),
+            CombatType::Boss => (0.0, 0.0, 100.0), // Boss is always 100% rare, unaffected by offset
+        };
+
+        // Boss combat ignores offset
+        if combat_type == CombatType::Boss {
+            return (base_common, base_uncommon, base_rare);
         }
+
+        let offset = self.rare_offset_percent as f64;
+
+        // Apply offset: negative decreases rare (increases common), positive increases rare (decreases common)
+        let adjusted_rare = (base_rare + offset).max(0.0);
+        let adjusted_common = (base_common - offset).max(0.0);
+        let adjusted_uncommon = base_uncommon; // Uncommon stays constant
+
+        // Normalize to ensure they sum to 100
+        let total = adjusted_common + adjusted_uncommon + adjusted_rare;
+        let norm_common = (adjusted_common / total) * 100.0;
+        let norm_uncommon = (adjusted_uncommon / total) * 100.0;
+        let norm_rare = (adjusted_rare / total) * 100.0;
+
+        (norm_common, norm_uncommon, norm_rare)
     }
 
-    /// Generate 3 random card reward options using weighted selection
-    pub fn generate_reward_options(&self, rng: &mut impl rand::Rng) -> Vec<Card> {
-        let mut options = Vec::new();
-        let mut used_card_enums = Vec::new();
+    /// Generate a single random card reward using rarity selection then uniform sampling
+    /// Implements offset system: starts at -5%, increases by 1% per common card,
+    /// resets to -5% when rare card is drawn. Capped at +40%.
+    ///
+    /// Normal Combat base: 60% Common, 37% Uncommon, 3% Rare
+    /// Elite Combat base: 50% Common, 40% Uncommon, 10% Rare
+    /// Boss Combat: 100% Rare (unaffected by offset)
+    pub fn generate_single_reward(&mut self, rng: &mut impl rand::Rng, combat_type: CombatType) -> Option<Card> {
+        // Get adjusted probabilities based on offset
+        let (common_prob, uncommon_prob, rare_prob) = self.get_adjusted_probabilities(combat_type);
 
-        // Create weighted distribution for card selection
-        let total_weight: f32 = self.available_cards.iter().map(|entry| entry.weight).sum();
+        // Build categorical distribution only with non-empty pools
+        let mut rarity_options = Vec::new();
+        if !self.common_pool.is_empty() && common_prob > 0.0 {
+            rarity_options.push((Rarity::Common, common_prob));
+        }
+        if !self.uncommon_pool.is_empty() && uncommon_prob > 0.0 {
+            rarity_options.push((Rarity::Uncommon, uncommon_prob));
+        }
+        if !self.rare_pool.is_empty() && rare_prob > 0.0 {
+            rarity_options.push((Rarity::Rare, rare_prob));
+        }
 
-        // Generate 3 unique cards using weighted selection
-        while options.len() < 3 && used_card_enums.len() < self.available_cards.len() {
-            let random_value = rng.random_range(0.0..total_weight);
-            let mut cumulative_weight = 0.0;
+        if rarity_options.is_empty() {
+            return None;
+        }
 
-            // Select card based on weight
-            let selected_entry = self.available_cards.iter().find(|entry| {
-                cumulative_weight += entry.weight;
-                random_value <= cumulative_weight
-            }).unwrap_or(&self.available_cards[0]);
+        // Create categorical distribution for rarity sampling
+        let rarity_dist = CategoricalDistribution::new(rarity_options);
 
-            // Ensure we don't have duplicate options
-            if !used_card_enums.contains(&selected_entry.card_enum) {
-                used_card_enums.push(selected_entry.card_enum);
+        // Sample rarity
+        let sampled_rarity = *rarity_dist.sample(rng);
 
-                // Check if the card is implemented before creating it
-                if let Some(card) = self.try_create_card_from_enum(selected_entry.card_enum) {
-                    options.push(card);
-                }
+        // Get the appropriate pool
+        let pool = match sampled_rarity {
+            Rarity::Common => &self.common_pool,
+            Rarity::Uncommon => &self.uncommon_pool,
+            Rarity::Rare => &self.rare_pool,
+        };
+
+        if pool.is_empty() {
+            return None;
+        }
+
+        // Draw uniformly from the selected pool
+        let card_dist = CategoricalDistribution::uniform(pool.clone());
+        let selected_card_enum = card_dist.sample_owned(rng);
+
+        // Update offset based on what was drawn
+        match sampled_rarity {
+            Rarity::Common => {
+                // Increase offset by 1% per common card (capped at +40%)
+                self.rare_offset_percent = (self.rare_offset_percent + 1).min(40);
+            },
+            Rarity::Rare => {
+                // Reset offset to -5% when rare card is drawn
+                self.rare_offset_percent = -5;
+            },
+            Rarity::Uncommon => {
+                // Uncommon cards don't affect offset
             }
         }
 
-        // If we couldn't get 3 unique cards, pad with available cards (allowing duplicates)
+        self.try_create_card_from_enum(selected_card_enum)
+    }
+
+    /// Generate 3 random card reward options using rarity selection then uniform sampling
+    pub fn generate_reward_options(&mut self, rng: &mut impl rand::Rng) -> Vec<Card> {
+        // Default to Normal combat type for standard card rewards
+        self.generate_reward_options_with_combat_type(rng, CombatType::Normal)
+    }
+
+    /// Generate 3 random card reward options for specific combat type
+    /// Note: Each card draw shares the same pity counter, so drawing 3 cards
+    /// will increment the pity counter by up to 3 (unless a rare is drawn)
+    pub fn generate_reward_options_with_combat_type(&mut self, rng: &mut impl rand::Rng, combat_type: CombatType) -> Vec<Card> {
+        let mut options = Vec::new();
+        let mut used_card_enums = Vec::new();
+
+        // Generate 3 unique cards using rarity-based selection
         while options.len() < 3 {
-            let random_value = rng.random_range(0.0..total_weight);
-            let mut cumulative_weight = 0.0;
+            let card_option = self.generate_single_reward(rng, combat_type);
 
-            let selected_entry = self.available_cards.iter().find(|entry| {
-                cumulative_weight += entry.weight;
-                random_value <= cumulative_weight
-            }).unwrap_or(&self.available_cards[0]);
+            if let Some(card) = card_option {
+                let card_enum = card.get_card_enum();
 
-            if let Some(card) = self.try_create_card_from_enum(selected_entry.card_enum) {
-                options.push(card);
+                // Ensure we don't have duplicate options
+                if !used_card_enums.contains(&card_enum) {
+                    used_card_enums.push(card_enum);
+                    options.push(card);
+                }
             }
         }
 
@@ -393,32 +420,120 @@ mod tests {
     #[test]
     fn test_card_reward_pool_creation() {
         let pool = CardRewardPool::new();
-        assert!(!pool.available_cards.is_empty());
         assert!(pool.pool_size() >= 50); // Should have many Ironclad cards + colorless
+        assert!(!pool.get_common_cards().is_empty());
+        assert!(!pool.get_uncommon_cards().is_empty());
+        assert!(!pool.get_rare_cards().is_empty());
     }
 
     #[test]
-    fn test_rarity_distribution() {
+    fn test_pool_sizes() {
         let pool = CardRewardPool::new();
-        let (common_pct, uncommon_pct, rare_pct) = pool.get_rarity_distribution();
 
-        // Check that we have a reasonable distribution
-        assert!(common_pct > 70.0, "Common cards should be > 70%: {:.1}%", common_pct);
-        assert!(uncommon_pct > 15.0, "Uncommon cards should be > 15%: {:.1}%", uncommon_pct);
-        assert!(rare_pct > 2.0, "Rare cards should be > 2%: {:.1}%", rare_pct);
+        let common_count = pool.get_common_cards().len();
+        let uncommon_count = pool.get_uncommon_cards().len();
+        let rare_count = pool.get_rare_cards().len();
 
-        // Should roughly sum to 100%
-        let total = common_pct + uncommon_pct + rare_pct;
-        assert!((total - 100.0).abs() < 0.1, "Distribution should sum to 100%: {:.1}%", total);
+        // Check that we have reasonable pool sizes
+        assert!(common_count > 30, "Should have many common cards: {}", common_count);
+        assert!(uncommon_count > 15, "Should have many uncommon cards: {}", uncommon_count);
+        assert!(rare_count >= 10, "Should have rare cards: {}", rare_count);
+    }
+
+    #[test]
+    fn test_offset_system_initialization() {
+        let pool = CardRewardPool::new();
+        // Initial offset should be -5%
+        assert_eq!(pool.get_rare_offset(), -5);
+    }
+
+    #[test]
+    fn test_offset_increases_with_common_cards() {
+        let mut pool = CardRewardPool::new();
+        let mut rng = StdRng::seed_from_u64(12345);
+
+        // Draw cards until we get a common (might take a few tries due to RNG)
+        let initial_offset = pool.get_rare_offset();
+
+        // Manually set offset to test increment
+        pool.rare_offset_percent = 0;
+
+        // Force a common draw by creating a pool with only common cards
+        let mut test_pool = CardRewardPool::new();
+        test_pool.uncommon_pool.clear();
+        test_pool.rare_pool.clear();
+        test_pool.rare_offset_percent = 0;
+
+        let _ = test_pool.generate_single_reward(&mut rng, CombatType::Normal);
+
+        // Offset should have increased by 1
+        assert_eq!(test_pool.get_rare_offset(), 1);
+    }
+
+    #[test]
+    fn test_offset_resets_on_rare_card() {
+        let mut pool = CardRewardPool::new();
+        let mut rng = StdRng::seed_from_u64(999);
+
+        // Set offset to a high value
+        pool.rare_offset_percent = 30;
+
+        // Force a rare draw by using boss combat
+        let _ = pool.generate_single_reward(&mut rng, CombatType::Boss);
+
+        // Offset should reset to -5
+        assert_eq!(pool.get_rare_offset(), -5);
+    }
+
+    #[test]
+    fn test_offset_capped_at_40() {
+        let mut pool = CardRewardPool::new();
+        pool.rare_offset_percent = 39;
+
+        let mut rng = StdRng::seed_from_u64(42);
+
+        // Manually increment offset - simulating drawing common cards
+        // Since we can't reliably force common draws without clearing pools,
+        // we'll directly test the cap logic
+        pool.rare_offset_percent = 40;
+
+        // Create a pool with only common cards
+        pool.uncommon_pool.clear();
+        pool.rare_pool.clear();
+
+        let _ = pool.generate_single_reward(&mut rng, CombatType::Normal);
+
+        // Offset should stay at 40 (capped)
+        assert_eq!(pool.get_rare_offset(), 40);
+    }
+
+    #[test]
+    fn test_adjusted_probabilities_with_offset() {
+        let mut pool = CardRewardPool::new();
+
+        // At -5% offset, rare chance should be lower than base
+        let (common, uncommon, rare) = pool.get_adjusted_probabilities(CombatType::Normal);
+        assert!(rare < 3.0, "Rare chance should be less than 3% at -5 offset");
+        assert!(common > 60.0, "Common chance should be higher than 60% at -5 offset");
+
+        // At +10% offset, rare chance should be higher than base
+        pool.rare_offset_percent = 10;
+        let (common, uncommon, rare) = pool.get_adjusted_probabilities(CombatType::Normal);
+        assert!(rare > 3.0, "Rare chance should be more than 3% at +10 offset: {}", rare);
+        assert!(common < 60.0, "Common chance should be less than 60% at +10 offset: {}", common);
+
+        // Probabilities should always sum to 100
+        let sum = common + uncommon + rare;
+        assert!((sum - 100.0).abs() < 0.01, "Probabilities should sum to 100: {}", sum);
     }
 
     #[test]
     fn test_cards_by_rarity() {
         let pool = CardRewardPool::new();
 
-        let common_cards = pool.get_cards_by_rarity(CardRarity::Common);
-        let uncommon_cards = pool.get_cards_by_rarity(CardRarity::Uncommon);
-        let rare_cards = pool.get_cards_by_rarity(CardRarity::Rare);
+        let common_cards = pool.get_common_cards();
+        let uncommon_cards = pool.get_uncommon_cards();
+        let rare_cards = pool.get_rare_cards();
 
         // Should have cards of each rarity
         assert!(!common_cards.is_empty(), "Should have common cards");
@@ -432,7 +547,7 @@ mod tests {
 
     #[test]
     fn test_generate_reward_options() {
-        let pool = CardRewardPool::new();
+        let mut pool = CardRewardPool::new();
         let mut rng = StdRng::seed_from_u64(42);
 
         let options = pool.generate_reward_options(&mut rng);
@@ -447,7 +562,7 @@ mod tests {
 
     #[test]
     fn test_generate_multiple_times() {
-        let pool = CardRewardPool::new();
+        let mut pool = CardRewardPool::new();
         let mut rng = StdRng::seed_from_u64(42);
 
         // Generate rewards multiple times to ensure randomness
@@ -460,7 +575,7 @@ mod tests {
 
     #[test]
     fn test_no_duplicates_in_single_reward() {
-        let pool = CardRewardPool::new();
+        let mut pool = CardRewardPool::new();
         let mut rng = StdRng::seed_from_u64(42);
 
         let options = pool.generate_reward_options(&mut rng);
@@ -475,9 +590,37 @@ mod tests {
     }
 
     #[test]
+    fn test_uniform_distribution_within_rarity() {
+        // Test that cards within the same rarity tier are drawn uniformly
+        let mut pool = CardRewardPool::new();
+        let mut rng = StdRng::seed_from_u64(999);
+
+        // Force boss combat to only draw from rare pool
+        let mut rare_card_counts = std::collections::HashMap::new();
+
+        for _ in 0..100 {
+            if let Some(card) = pool.generate_single_reward(&mut rng, CombatType::Boss) {
+                let name = card.get_name();
+                *rare_card_counts.entry(name).or_insert(0) += 1;
+            }
+        }
+
+        // Should have drawn multiple different rare cards
+        assert!(rare_card_counts.len() > 5, "Should draw various rare cards");
+
+        // No single card should dominate (would indicate non-uniform distribution)
+        for (name, count) in &rare_card_counts {
+            assert!(*count < 50, "Card {} drawn {} times - distribution not uniform", name, count);
+        }
+    }
+
+    #[test]
     fn test_no_basic_cards_in_pool() {
         let pool = CardRewardPool::new();
-        let all_card_enums: Vec<CardEnum> = pool.available_cards.iter().map(|entry| entry.card_enum).collect();
+        let mut all_card_enums = Vec::new();
+        all_card_enums.extend(pool.get_common_cards());
+        all_card_enums.extend(pool.get_uncommon_cards());
+        all_card_enums.extend(pool.get_rare_cards());
 
         // Basic cards should never be in reward pool
         assert!(!all_card_enums.contains(&CardEnum::Strike), "Strike should not be in reward pool");

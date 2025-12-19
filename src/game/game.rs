@@ -13,33 +13,67 @@ pub struct RewardState {
     pub card_selection_available: bool,
     /// Whether the gold has been claimed
     pub gold_claimed: bool,
+    /// Optional potion reward (40% chance in normal/elite combats)
+    pub potion_reward: Option<crate::game::potion::Potion>,
+    /// Whether the potion has been claimed
+    pub potion_claimed: bool,
 }
 
 impl RewardState {
-    /// Create a new reward state for normal combat (10-20 gold, card selection available)
+    /// Create a new reward state for normal combat (10-20 gold, card selection available, 40% potion chance)
     pub fn new_normal_combat(rng: &mut impl rand::Rng) -> Self {
         RewardState {
             gold_reward: rng.random_range(10..=20),
             card_selection_available: true,
             gold_claimed: false,
+            potion_reward: Self::roll_potion_drop(rng, 0.4),
+            potion_claimed: false,
         }
     }
 
-    /// Create a new reward state for elite combat (25-35 gold, card selection available)
+    /// Create a new reward state for elite combat (25-35 gold, card selection available, 40% potion chance)
     pub fn new_elite_combat(rng: &mut impl rand::Rng) -> Self {
         RewardState {
             gold_reward: rng.random_range(25..=35),
             card_selection_available: true,
             gold_claimed: false,
+            potion_reward: Self::roll_potion_drop(rng, 0.4),
+            potion_claimed: false,
         }
     }
 
-    /// Create a new reward state for boss combat (95-105 gold, card selection available)
+    /// Create a new reward state for boss combat (95-105 gold, card selection available, no potion)
     pub fn new_boss_combat(rng: &mut impl rand::Rng) -> Self {
         RewardState {
             gold_reward: rng.random_range(95..=105),
             card_selection_available: true,
             gold_claimed: false,
+            potion_reward: None, // Boss combats don't drop potions
+            potion_claimed: false,
+        }
+    }
+
+    /// Roll for a potion drop with the given probability
+    /// Returns Some(Potion) if successful, None otherwise
+    fn roll_potion_drop(rng: &mut impl rand::Rng, drop_chance: f64) -> Option<crate::game::potion::Potion> {
+        // Check if potion drops
+        if rng.random::<f64>() >= drop_chance {
+            return None;
+        }
+
+        // Determine potion rarity
+        // Common: 75%, Uncommon: 20%, Rare: 5%
+        let roll = rng.random::<f64>();
+
+        // For now, we only have StrengthPotion implemented (Common)
+        // TODO: Add more potions and implement proper rarity distribution
+        if roll < 0.75 {
+            // Common potion
+            Some(crate::game::potion::Potion::StrengthPotion)
+        } else {
+            // Uncommon/Rare - for now also return StrengthPotion
+            // Will be replaced when more potions are implemented
+            Some(crate::game::potion::Potion::StrengthPotion)
         }
     }
 }
@@ -115,6 +149,8 @@ pub struct Game {
     pub player_hp: u32,
     pub player_max_hp: u32,
     pub gold: u32,
+    pub potions: crate::game::potion::PotionInventory,
+    pub potion_pool: crate::game::potion::PotionPool,
     relics: Vec<crate::relics::Relic>,
     game_event_listeners: Vec<Box<dyn GameEventListener>>,
     event_history: Vec<SLSEvent>,
@@ -137,6 +173,8 @@ impl Game {
             player_hp: starting_hp,
             player_max_hp: max_hp,
             gold: 99, // Starting gold (Ironclad starts with 99 gold)
+            potions: crate::game::potion::PotionInventory::default(),
+            potion_pool: crate::game::potion::PotionPool::default(),
             relics: Vec::new(),
             game_event_listeners: Vec::new(),
             event_history: Vec::new(),
@@ -374,6 +412,36 @@ impl Game {
                 self.state = GameState::Reward(reward_state);
 
                 Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
+            },
+
+            GameAction::ClaimPotion => {
+                // Only valid when in Reward state with unclaimed potion
+                let mut reward_state = match &self.state {
+                    GameState::Reward(reward) if !reward.potion_claimed && reward.potion_reward.is_some() => reward.clone(),
+                    GameState::Reward(_) => return Err(GameError::InvalidState), // No potion or already claimed
+                    _ => return Err(GameError::InvalidState),
+                };
+
+                // Get the potion and add it to player's inventory
+                if let Some(potion) = reward_state.potion_reward {
+                    if self.potions.is_full() {
+                        // Inventory is full - player needs to discard or skip
+                        // For now, just skip claiming (could add a discard potion action later)
+                        info!("Potion inventory full, cannot claim potion");
+                        return Err(GameError::InvalidState);
+                    }
+
+                    self.potions.add_potion(potion);
+                    info!("Claimed {} from combat reward", potion.name());
+
+                    // Mark potion as claimed
+                    reward_state.potion_claimed = true;
+                    self.state = GameState::Reward(reward_state);
+
+                    Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
+                } else {
+                    Err(GameError::InvalidState)
+                }
             },
 
             GameAction::RequestCardSelection => {
@@ -658,20 +726,45 @@ impl Game {
     }
 
     /// Create a reward state based on the current node type
-    fn create_reward_state_for_current_node(&self, rng: &mut impl rand::Rng) -> RewardState {
+    fn create_reward_state_for_current_node(&mut self, rng: &mut impl rand::Rng) -> RewardState {
         // Get the current node from the map
         let node = self.map.get_node(self.current_node_position);
 
-        match node.map(|n| &n.node_type) {
-            Some(NodeType::Elite) => RewardState::new_elite_combat(rng),
-            Some(NodeType::Boss) => RewardState::new_boss_combat(rng),
-            Some(NodeType::Combat) | _ => RewardState::new_normal_combat(rng),
+        // Roll for potion drop using the potion pool
+        let potion_drop = match node.map(|n| &n.node_type) {
+            Some(NodeType::Elite) => {
+                // Elite combat: 40% base drop chance + increases
+                Some(self.potion_pool.roll_potion_drop(rng))
+            }
+            Some(NodeType::Boss) => {
+                // Boss combat: no potion drops
+                None
+            }
+            Some(NodeType::Combat) | _ => {
+                // Normal combat: 40% base drop chance + increases
+                Some(self.potion_pool.roll_potion_drop(rng))
+            }
+        };
+
+        // Determine gold reward and card selection based on node type
+        let (gold_reward, card_selection_available) = match node.map(|n| &n.node_type) {
+            Some(NodeType::Elite) => (rng.random_range(25..=35), true),
+            Some(NodeType::Boss) => (rng.random_range(95..=105), true),
+            Some(NodeType::Combat) | _ => (rng.random_range(10..=20), true),
+        };
+
+        RewardState {
+            gold_reward,
+            card_selection_available,
+            gold_claimed: false,
+            potion_reward: potion_drop.flatten(), // Convert Option<Option<Potion>> to Option<Potion>
+            potion_claimed: false,
         }
     }
 
     /// Start card reward selection - generates 3 random card options
     pub fn start_card_reward_selection(&mut self, rng: &mut impl rand::Rng, reward_state: RewardState) {
-        let card_pool = CardRewardPool::new();
+        let mut card_pool = CardRewardPool::new();
         let reward_options = card_pool.generate_reward_options(rng);
         info!("Generated {} card reward options", reward_options.len());
         for (i, card) in reward_options.iter().enumerate() {
@@ -1018,7 +1111,7 @@ mod tests {
         let mut rng = rand::rng();
 
         // Initially should not be in card reward selection
-        assert!(!matches!(game.get_state(), GameState::CardRewardSelection(_)));
+        assert!(!matches!(game.get_state(), GameState::CardRewardSelection(..)));
         assert!(game.get_card_reward_options().is_empty());
 
         // Start card reward selection with dummy reward state
@@ -1026,6 +1119,8 @@ mod tests {
             gold_reward: 0,
             card_selection_available: true,
             gold_claimed: false,
+            potion_reward: None,
+            potion_claimed: false,
         };
         game.start_card_reward_selection(&mut rng, test_reward_state);
 
@@ -1053,6 +1148,8 @@ mod tests {
             gold_reward: 0,
             card_selection_available: true,
             gold_claimed: false,
+            potion_reward: None,
+            potion_claimed: false,
         };
         game.start_card_reward_selection(&mut rng, test_reward_state);
         let initial_deck_size = game.deck.size();
@@ -1100,6 +1197,8 @@ mod tests {
             gold_reward: 0,
             card_selection_available: true,
             gold_claimed: false,
+            potion_reward: None,
+            potion_claimed: false,
         };
         game.start_card_reward_selection(&mut rng, test_reward_state);
 
@@ -1123,11 +1222,18 @@ mod tests {
         let mut rng = rand::rng();
 
         // Generate card rewards multiple times
-        game.start_card_reward_selection(&mut rng);
+        let test_reward_state = RewardState {
+            gold_reward: 0,
+            card_selection_available: true,
+            gold_claimed: false,
+            potion_reward: None,
+            potion_claimed: false,
+        };
+        game.start_card_reward_selection(&mut rng, test_reward_state.clone());
         let first_options = game.get_card_reward_options().to_vec();
         game.state = GameState::OnMap; // Reset state
 
-        game.start_card_reward_selection(&mut rng);
+        game.start_card_reward_selection(&mut rng, test_reward_state);
         let second_options = game.get_card_reward_options().to_vec();
 
         // Should have different options (most likely due to randomness)
@@ -1148,6 +1254,8 @@ mod tests {
             gold_reward: 0,
             card_selection_available: true,
             gold_claimed: false,
+            potion_reward: None,
+            potion_claimed: false,
         };
         game.start_card_reward_selection(&mut rng, test_reward_state);
         let reward_options = game.get_card_reward_options();
@@ -1490,5 +1598,139 @@ mod tests {
         let result = game.eval_action(GameAction::SelectCardToUpgrade(upgraded_card_index), &mut rng);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), GameError::InvalidCardIndex);
+    }
+
+    #[test]
+    fn test_potion_pool_initialization() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let game = Game::new(deck, global_info, map, 80, 80);
+
+        // Check that potion pool is initialized correctly
+        assert_eq!(game.potion_pool.get_combats_since_drop(), 0);
+        assert_eq!(game.potion_pool.get_current_drop_chance(), 0.4);
+    }
+
+    #[test]
+    fn test_reward_state_creation_with_potion_pool() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let mut rng = rand::rng();
+
+        // Create reward state for current node
+        let reward_state = game.create_reward_state_for_current_node(&mut rng);
+
+        // Check basic structure
+        assert!(!reward_state.gold_claimed);
+        assert!(!reward_state.potion_claimed);
+        assert!(reward_state.card_selection_available);
+
+        // Gold should be in expected range for normal combat
+        assert!(reward_state.gold_reward >= 10 && reward_state.gold_reward <= 20);
+
+        // Potion might be None or Some depending on RNG, but it should be valid
+        if let Some(potion) = reward_state.potion_reward {
+            assert_eq!(potion.name(), "Strength Potion"); // Only potion currently implemented
+        }
+    }
+
+    #[test]
+    fn test_potion_pool_progression() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let mut rng = rand::rng();
+
+        // Manually set counter to test progression
+        game.potion_pool.reset_drop_counter();
+        assert_eq!(game.potion_pool.get_current_drop_chance(), 0.4);
+
+        // Simulate no drops for several combats
+        game.potion_pool.set_combats_since_drop(1);
+        assert!((game.potion_pool.get_current_drop_chance() - 0.5).abs() < f64::EPSILON);
+
+        game.potion_pool.set_combats_since_drop(2);
+        assert!((game.potion_pool.get_current_drop_chance() - 0.6).abs() < f64::EPSILON);
+
+        // Should cap at 100%
+        game.potion_pool.set_combats_since_drop(10);
+        assert_eq!(game.potion_pool.get_current_drop_chance(), 1.0);
+    }
+
+    #[test]
+    fn test_claim_potion_action() {
+        use crate::game::potion::Potion;
+
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let mut rng = rand::rng();
+
+        // Set up a reward state with an unclaimed potion
+        let reward_state = RewardState {
+            gold_reward: 15,
+            card_selection_available: true,
+            gold_claimed: false,
+            potion_reward: Some(Potion::StrengthPotion),
+            potion_claimed: false,
+        };
+        game.state = GameState::Reward(reward_state);
+
+        // Initially no potions in inventory
+        assert_eq!(game.potions.potion_count(), 0);
+
+        // Claim the potion
+        let result = game.eval_action(GameAction::ClaimPotion, &mut rng);
+        assert!(result.is_ok());
+
+        // Should now have one potion
+        assert_eq!(game.potions.potion_count(), 1);
+        assert_eq!(game.potions.get_potion(0), Some(Potion::StrengthPotion));
+
+        // Potion should be marked as claimed
+        if let GameState::Reward(reward) = &game.state {
+            assert!(reward.potion_claimed);
+        }
+
+        // Trying to claim again should fail
+        let result = game.eval_action(GameAction::ClaimPotion, &mut rng);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_claim_potion_full_inventory() {
+        use crate::game::potion::Potion;
+
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, start_node_position) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let mut rng = rand::rng();
+
+        // Fill up the potion inventory
+        for _ in 0..3 {
+            game.potions.add_potion(Potion::StrengthPotion);
+        }
+        assert!(game.potions.is_full());
+
+        // Set up a reward state with an unclaimed potion
+        let reward_state = RewardState {
+            gold_reward: 15,
+            card_selection_available: true,
+            gold_claimed: false,
+            potion_reward: Some(Potion::StrengthPotion),
+            potion_claimed: false,
+        };
+        game.state = GameState::Reward(reward_state);
+
+        // Trying to claim potion should fail when inventory is full
+        let result = game.eval_action(GameAction::ClaimPotion, &mut rng);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), GameError::InvalidState);
     }
 }

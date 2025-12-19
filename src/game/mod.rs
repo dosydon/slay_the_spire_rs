@@ -10,3 +10,4 @@ pub mod action;
 pub mod card_reward;
 pub mod game_event;
 pub mod shop;
+pub mod potion;

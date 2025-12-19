@@ -18,6 +18,10 @@ pub enum GameAction {
     /// Only valid when in Reward state with unclaimed gold
     ClaimGold,
 
+    /// Claim potion reward from combat
+    /// Only valid when in Reward state with unclaimed potion
+    ClaimPotion,
+
     /// Request card selection (transitions from Reward state to CardRewardSelection state)
     /// Only valid when in Reward state with card_selection_available = true
     RequestCardSelection,

@@ -81,6 +81,10 @@ impl Battle {
 
                 self.play_card(idx, target)?;
             }
+            Action::UsePotion(slot_index, target) => {
+                // Use the potion from the specified slot
+                self.use_potion(slot_index, target)?;
+            }
             Action::EndTurn => {
                 self.at_end_of_player_turn();
 
@@ -218,10 +222,28 @@ impl Battle {
                 }
             }
         }
-        
+
+        // Add UsePotion actions for each filled potion slot
+        let potions = self.get_potions();
+        for (slot_index, potion) in potions.get_all_potions() {
+            let (default_target, _effects) = potion.get_effects();
+
+            // If potion has a default target, add action with None (will use default)
+            if default_target.is_some() {
+                available_actions.push(Action::UsePotion(slot_index, None));
+            } else {
+                // Potion requires target selection - add action for each valid enemy
+                for (enemy_index, enemy) in self.enemies.iter().enumerate() {
+                    if enemy.battle_info.is_alive() {
+                        available_actions.push(Action::UsePotion(slot_index, Some(Entity::Enemy(enemy_index))));
+                    }
+                }
+            }
+        }
+
         // EndTurn is always available when battle is not over
         available_actions.push(Action::EndTurn);
-        
+
         available_actions
     }
     

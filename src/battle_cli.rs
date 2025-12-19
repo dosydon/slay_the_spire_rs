@@ -461,6 +461,7 @@ impl BattleCli {
 
         // Group actions by type for better display
         let mut card_actions = Vec::new();
+        let mut potion_actions = Vec::new();
         let mut end_turn_action = None;
 
         for action in &actions {
@@ -483,6 +484,9 @@ impl BattleCli {
                 Action::SelectCardInExhaust(card_idx) => {
                     println!("   {}. Select card {} from exhaust pile", action_index, card_idx + 1);
                     action_index += 1;
+                },
+                Action::UsePotion(slot_idx, target) => {
+                    potion_actions.push((*slot_idx, *target));
                 },
                 Action::EndTurn => {
                     end_turn_action = Some(action_index);
@@ -537,7 +541,58 @@ impl BattleCli {
                 action_index += 1;
             }
         }
-        
+
+        // Display potion actions grouped by potion
+        if !potion_actions.is_empty() {
+            println!("\n   🧪 Potions:");
+            let potions = self.battle.get_potions();
+            for (slot_idx, potion) in potions.get_all_potions() {
+                let potion_targets: Vec<_> = potion_actions.iter()
+                    .filter(|(idx, _)| *idx == slot_idx)
+                    .map(|(_, target)| *target)
+                    .collect();
+
+                if !potion_targets.is_empty() {
+                    println!("   {}. Use {} - {}", action_index, potion.name(), potion.description());
+                    for (target_idx, target) in potion_targets.iter().enumerate() {
+                        match target {
+                            Some(Entity::Player) => println!("      {}a. Target yourself", action_index),
+                            Some(Entity::Enemy(enemy_idx)) => {
+                                let enemy_name = match &self.battle.get_enemies()[*enemy_idx].enemy {
+                                    EnemyEnum::RedLouse(_) => "Red Louse",
+                                    EnemyEnum::GreenLouse(_) => "Green Louse",
+                                    EnemyEnum::JawWorm(_) => "Jaw Worm",
+                                    EnemyEnum::Cultist(_) => "Cultist",
+                                    EnemyEnum::SpikeSlimeS(_) => "Spike Slime (S)",
+                                    EnemyEnum::SpikeSlimeM(_) => "Spike Slime (M)",
+                                    EnemyEnum::SpikeSlimeL(_) => "Spike Slime (L)",
+                                    EnemyEnum::AcidSlimeS(_) => "Acid Slime (S)",
+                                    EnemyEnum::AcidSlimeM(_) => "Acid Slime (M)",
+                                    EnemyEnum::AcidSlimeL(_) => "Acid Slime (L)",
+                                    EnemyEnum::GremlinNob(_) => "Gremlin Nob",
+                                    EnemyEnum::Lagavulin(_) => "Lagavulin",
+                                    EnemyEnum::Sentry(_) => "Sentry",
+                                    EnemyEnum::FatGremlin(_) => "Fat Gremlin",
+                                    EnemyEnum::SneakyGremlin(_) => "Sneaky Gremlin",
+                                    EnemyEnum::MadGremlin(_) => "Mad Gremlin",
+                                    EnemyEnum::ShieldGremlin(_) => "Shield Gremlin",
+                                    EnemyEnum::GremlinWizard(_) => "Gremlin Wizard",
+                                    EnemyEnum::Looter(_) => "Looter",
+                                    EnemyEnum::FungiBeast(_) => "Fungi Beast",
+                                    EnemyEnum::BlueSlaver(_) => "Blue Slaver",
+                                    EnemyEnum::RedSlaver(_) => "Red Slaver",
+                                };
+                                println!("      {}{}. Target {} {}", action_index,
+                                    char::from(b'a' + target_idx as u8), enemy_name, enemy_idx + 1);
+                            },
+                            None | Some(Entity::None) => {} // No target needed or invalid
+                        }
+                    }
+                    action_index += 1;
+                }
+            }
+        }
+
         // Display end turn action
         if let Some(_) = end_turn_action {
             println!("   {}. End Turn", action_index);

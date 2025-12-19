@@ -5,6 +5,9 @@ pub mod events;
 pub mod player;
 pub mod deck_hand_pile;
 pub mod enemy_in_battle;
+
+// Re-export commonly used types for easier access
+pub use target::Entity;
 mod turn_flow;
 mod eval_action;
 mod play_card;
@@ -13,7 +16,7 @@ mod enemy_manager;
 mod listener_manager;
 
 use crate::{enemies::enemy_enum::EnemyMove, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, global_info::GlobalInfo}, relics::Relic};
-use self::{target::Entity, events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
+use self::{events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
 use crate::battle::action::BattleState;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -53,6 +56,8 @@ pub struct Battle {
     gold_stolen: u32,
     /// Events that occurred during the last action (for GUI to read)
     pub battle_events: Vec<BattleEvent>,
+    /// Potion inventory for the player
+    potions: crate::game::potion::PotionInventory,
 }
 
 impl Battle {
@@ -83,6 +88,7 @@ impl Battle {
             battle_state: BattleState::PlayerTurn,
             gold_stolen: 0,
             battle_events: Vec::new(),
+            potions: crate::game::potion::PotionInventory::default(),
         };
 
         // Initialize event listeners for enemies
@@ -270,7 +276,41 @@ impl Battle {
             card.get_cost()
         }
     }
-    
+
+    /// Get reference to the potion inventory
+    pub fn get_potions(&self) -> &crate::game::potion::PotionInventory {
+        &self.potions
+    }
+
+    /// Get mutable reference to the potion inventory
+    pub fn get_potions_mut(&mut self) -> &mut crate::game::potion::PotionInventory {
+        &mut self.potions
+    }
+
+    /// Use a potion at the specified slot index
+    /// Returns an error if the slot is empty or the potion cannot be used
+    pub fn use_potion(&mut self, slot_index: usize, target: Option<Entity>) -> Result<(), BattleError> {
+        // Get the potion from inventory
+        let potion = self.potions.use_potion(slot_index)
+            .ok_or(BattleError::InvalidAction)?;
+
+        // Get the effects
+        let (default_target, effects) = potion.get_effects();
+
+        // Determine the actual target
+        let actual_target = target.or(default_target)
+            .ok_or(BattleError::InvalidAction)?;
+
+        // Apply all effects (potions are used by the player)
+        for effect in effects {
+            self.queue_effect(BaseEffect::from_effect(effect, Entity::Player, actual_target));
+        }
+
+        self.process_effect_queue();
+
+        Ok(())
+    }
+
     pub fn is_battle_over(&self) -> bool {
         !self.player.is_alive() || self.enemies.iter().all(|e| !e.battle_info.is_alive())
     }
@@ -352,8 +392,98 @@ mod tests {
         assert_eq!(battle.player.get_block(), 0);
         assert_eq!(battle.player.get_energy(), 3);
         assert!(!battle.enemies.is_empty());
-        
+
         println!("{:?}", battle.cards.get_deck());
         println!("{:?}", battle.cards.get_hand());
+    }
+
+    #[test]
+    fn test_potion_usage() {
+        use crate::game::potion::Potion;
+
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Initially no potions
+        assert_eq!(battle.get_potions().potion_count(), 0);
+
+        // Add a strength potion
+        assert!(battle.get_potions_mut().add_potion(Potion::StrengthPotion));
+        assert_eq!(battle.get_potions().potion_count(), 1);
+
+        // Player should have 0 strength initially
+        assert_eq!(battle.player.battle_info.get_strength(), 0);
+
+        // Use the potion (StrengthPotion targets player automatically)
+        let result = battle.use_potion(0, None);
+        assert!(result.is_ok());
+
+        // Player should now have 2 strength
+        assert_eq!(battle.player.battle_info.get_strength(), 2);
+
+        // Potion should be consumed
+        assert_eq!(battle.get_potions().potion_count(), 0);
+    }
+
+    #[test]
+    fn test_potion_usage_invalid_slot() {
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Try to use potion from empty slot
+        let result = battle.use_potion(0, None);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), BattleError::InvalidAction);
+
+        // Try to use potion from invalid slot index
+        let result = battle.use_potion(10, None);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), BattleError::InvalidAction);
+    }
+
+    #[test]
+    fn test_use_potion_action() {
+        use crate::game::potion::Potion;
+        use crate::battle::action::Action;
+
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+
+        // Add a strength potion
+        assert!(battle.get_potions_mut().add_potion(Potion::StrengthPotion));
+
+        // Verify UsePotion action is in available actions
+        let available = battle.list_available_actions();
+        assert!(available.iter().any(|a| matches!(a, Action::UsePotion(0, None))));
+
+        // Player should have 0 strength initially
+        assert_eq!(battle.player.battle_info.get_strength(), 0);
+
+        // Execute the UsePotion action
+        let result = battle.eval_action(Action::UsePotion(0, None), &mut rng);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), BattleResult::Continued);
+
+        // Player should now have 2 strength
+        assert_eq!(battle.player.battle_info.get_strength(), 2);
+
+        // Potion should be consumed
+        assert_eq!(battle.get_potions().potion_count(), 0);
+
+        // UsePotion action should no longer be in available actions
+        let available = battle.list_available_actions();
+        assert!(!available.iter().any(|a| matches!(a, Action::UsePotion(_, _))));
     }
 }

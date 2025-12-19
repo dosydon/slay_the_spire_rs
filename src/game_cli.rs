@@ -260,6 +260,8 @@ impl GameCli {
                     gold_reward: 0,
                     card_selection_available: true,
                     gold_claimed: false,
+                    potion_reward: None,
+                    potion_claimed: false,
                 };
                 self.game.start_card_reward_selection(&mut self.rng, cli_reward_state);
             } else if player_hp == 0 {
