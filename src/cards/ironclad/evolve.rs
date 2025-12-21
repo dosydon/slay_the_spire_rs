@@ -36,6 +36,8 @@ pub fn evolve_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -121,7 +123,7 @@ mod tests {
             crate::cards::ironclad::strike::strike(),
             crate::cards::ironclad::defend::defend(),
         ]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial hand size
         let initial_hand_size = battle.cards.hand_size();
@@ -164,7 +166,7 @@ mod tests {
             crate::cards::ironclad::strike::strike(),
             crate::cards::ironclad::defend::defend(),
         ]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial hand size and energy
         let initial_hand_size = battle.cards.hand_size();
@@ -204,7 +206,7 @@ mod tests {
 
         // Create battle with Evolve in hand
         let deck = Deck::new(vec![evolve()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player 0 energy
         battle.get_player_mut().battle_info.energy = 0;
@@ -233,7 +235,7 @@ mod tests {
 
         // Create battle with Evolve+ in hand and cards to draw
         let deck = Deck::new(vec![evolve_upgraded(), crate::cards::ironclad::strike::strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player 0 energy (Evolve+ costs 0)
         battle.get_player_mut().battle_info.energy = 0;
@@ -265,7 +267,7 @@ mod tests {
 
         // Create battle with Evolve in hand and empty deck (only Evolve exists)
         let deck = Deck::new(vec![evolve()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy to play Evolve
         battle.get_player_mut().battle_info.energy = 1;

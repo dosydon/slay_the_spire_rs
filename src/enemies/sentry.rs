@@ -201,6 +201,7 @@ mod tests {
     use super::*;
     use crate::battle::Battle;
     use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::cards::ironclad::uppercut::uppercut;
     use crate::enemies::enemy_enum::EnemyEnum;
@@ -219,7 +220,7 @@ mod tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::Sentry(sentry))];
 
         let deck = Deck::new(vec![strike()]);
-        let battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Verify Sentry starts with 1 Artifact after combat start event
         assert_eq!(battle.get_enemies()[0].battle_info.get_artifact(), 1);
@@ -236,7 +237,7 @@ mod tests {
 
         // Create battle with Uppercut in hand
         let deck = Deck::new(vec![uppercut()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Verify Sentry starts with 1 Artifact
         let initial_artifact = battle.get_enemies()[0].battle_info.get_artifact();
@@ -283,7 +284,7 @@ mod tests {
             .collect();
 
         let deck = Deck::new(vec![strike()]);
-        let battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Each Sentry should have 1 Artifact after combat start event
         for (i, _) in battle.get_enemies().iter().enumerate() {

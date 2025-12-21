@@ -73,7 +73,8 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(100, 100, 0);
+let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, vec![enemy], &mut rng);
 
         // Draw initial hand and then play some cards to create discard pile
         battle.at_start_of_player_turn(&mut rng);
@@ -103,7 +104,7 @@ mod tests {
         assert!(final_enemy_hp < initial_enemy_hp, "Enemy should have taken damage");
 
         // Check that battle entered SelectCardInDiscard state
-        assert!(matches!(battle.battle_state, crate::battle::battle_action::BattleState::SelectCardInDiscard));
+        assert!(matches!(battle.battle_state, crate::battle::battle_state::BattleState::SelectCardInDiscard));
 
         // Should have cards in discard to select from
         if initial_discard_size > 0 {

@@ -83,7 +83,8 @@ mod tests {
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2)),
         ];
 
-        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(100, 100, 0);
+let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, enemies, &mut rng);
 
         // Verify no enemies are weak initially
         assert!(!battle.get_enemies()[0].battle_info.is_weak());
@@ -122,7 +123,8 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(100, 100, 0);
+let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, vec![enemy], &mut rng);
 
         // Verify enemy is not weak initially
         assert!(!battle.get_enemies()[0].battle_info.is_weak());

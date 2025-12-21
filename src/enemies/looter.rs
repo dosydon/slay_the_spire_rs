@@ -151,6 +151,8 @@ impl EnemyTrait for Looter {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -332,7 +334,7 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::Looter(looter));
 
         let deck = Deck::new(vec![strike()]);
-        let mut battle = Battle::new(deck, global_info.clone(), 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info.clone(), PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         // Enemy should be alive initially
         assert!(battle.get_enemies()[0].battle_info.is_alive());
@@ -367,7 +369,7 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::Looter(looter));
 
         let deck = Deck::new(vec![strike()]);
-        let battle = Battle::new(deck, global_info.clone(), 50, 80, vec![enemy], &mut rng);
+        let battle = Battle::new(deck, global_info.clone(), PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         // Battle should start with no gold stolen
         assert_eq!(battle.get_gold_stolen(), 0);
@@ -389,7 +391,7 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::Looter(looter));
 
         let deck = Deck::new(vec![strike()]);
-        let battle = Battle::new(deck, global_info.clone(), 50, 80, vec![enemy], &mut rng);
+        let battle = Battle::new(deck, global_info.clone(), PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         // If Looter is killed (not escaped), it should NOT have escaped flag
         assert!(!battle.get_enemies()[0].battle_info.has_escaped());
@@ -413,7 +415,7 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::Looter(looter));
 
         let deck = Deck::new(vec![strike()]);
-        let mut battle = Battle::new(deck, global_info.clone(), 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info.clone(), PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         // Mark enemy as escaped
         battle.get_enemies_mut()[0].battle_info.mark_escaped();

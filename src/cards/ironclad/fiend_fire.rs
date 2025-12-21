@@ -96,6 +96,7 @@ mod integration_tests {
     use crate::battle::Battle;
     use crate::battle::target::Entity;
     use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::game::global_info::GlobalInfo;
     use crate::game::enemy::EnemyTrait;
@@ -112,9 +113,8 @@ mod integration_tests {
 
         // Create battle with Fiend Fire and 3 Strikes in hand (4 cards total)
         let deck = Deck::new(vec![fiend_fire(), strike(), strike(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
-        let initial_hand_size = battle.get_hand().len();
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
 
         // Play Fiend Fire targeting enemy
@@ -144,7 +144,7 @@ mod integration_tests {
 
         // Create battle with upgraded Fiend Fire and 2 Strikes
         let deck = Deck::new(vec![fiend_fire_upgraded(), strike(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
 
@@ -167,7 +167,7 @@ mod integration_tests {
 
         // Create battle with only Fiend Fire
         let deck = Deck::new(vec![fiend_fire()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
 
@@ -195,7 +195,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![fiend_fire()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
 
@@ -232,7 +232,7 @@ mod integration_tests {
             strike(),
             strike(),
         ]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player extra energy since Embrace (2) + Fiend Fire (2) = 4 energy needed
         battle.get_player_mut().battle_info.gain_energy(1);
@@ -282,7 +282,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![fiend_fire_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
 
@@ -303,7 +303,7 @@ mod integration_tests {
 
         // Create battle with Fiend Fire and 2 Strikes
         let deck = Deck::new(vec![fiend_fire(), strike(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Fiend Fire
         let fiend_fire_idx = battle.get_hand().iter().position(|c| c.get_name() == "Fiend Fire").unwrap();

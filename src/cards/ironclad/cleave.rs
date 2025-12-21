@@ -14,6 +14,8 @@ pub fn cleave_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -77,7 +79,7 @@ mod tests {
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2)),
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse3))
         ];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         // Draw hand (manually add to hand for testing)
         battle.at_start_of_player_turn(&mut rng);
@@ -141,7 +143,7 @@ mod tests {
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse1)),
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2))
         ];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         // Give player some strength using the effect system
         let strength_effect = crate::game::effect::BaseEffect::GainStrength { source: Entity::Player, amount: 3 };
@@ -191,7 +193,7 @@ mod tests {
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse1)),
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2))
         ];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         // Make both enemies vulnerable
         let vulnerable_effect1 = BaseEffect::ApplyVulnerable { target: Entity::Enemy(0), duration: 2 };
@@ -247,7 +249,7 @@ mod tests {
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2)),
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse3))
         ];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         // Kill the middle enemy
         let middle_enemy_hp = battle.get_enemies()[1].battle_info.get_hp();

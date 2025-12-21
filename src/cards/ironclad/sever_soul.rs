@@ -41,6 +41,7 @@ mod tests {
     use super::*;
     use crate::battle::{Battle, target::Entity};
     use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::game::global_info::GlobalInfo;
     use crate::game::enemy::EnemyTrait;
@@ -123,10 +124,9 @@ mod tests {
             defend(),
             crate::cards::ironclad::flex::flex(),
         ]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
-        let initial_hand_size = battle.cards.hand_size();
         let initial_exhausted_size = battle.cards.exhausted_size();
 
         // Play Sever Soul (should be index 0)
@@ -162,7 +162,7 @@ mod tests {
             strike(),
             strike(),
         ]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
         let initial_hand_size = battle.cards.hand_size();
@@ -194,7 +194,7 @@ mod tests {
             strike(),
             defend(),
         ]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
 

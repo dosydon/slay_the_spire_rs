@@ -207,6 +207,7 @@ mod tests {
     use super::*;
     use crate::battle::Battle;
     use crate::cards::ironclad::starter_deck::starter_deck;
+    use crate::game::PlayerRunState;
 
     #[test]
     fn test_jaw_worm_creation() {
@@ -483,7 +484,7 @@ mod tests {
         let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::EnemyEnum::JawWorm(jaw_worm))];
         
         // Create battle with Jaw Worm
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         // Verify Jaw Worm was created correctly
         assert_eq!(battle.get_enemies().len(), 1);
@@ -530,7 +531,7 @@ mod tests {
         let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::EnemyEnum::JawWorm(jaw_worm))];
         
         // Create battle with Act 3 Jaw Worm
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         // Act 3 Jaw Worm should start with initial Bellow effects
         // This would typically be applied during enemy creation, but for this test
@@ -565,7 +566,7 @@ mod tests {
         let jaw_worm = JawWorm::instantiate(&mut rng, &global_info);
         let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::EnemyEnum::JawWorm(jaw_worm))];
         
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         // Simulate multiple enemy turns to test move sequence
         let mut player_damage_taken = 0;

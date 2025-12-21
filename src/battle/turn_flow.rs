@@ -156,6 +156,7 @@ mod tests {
     use crate::cards::ironclad::starter_deck::starter_deck;
     use crate::battle::enemy_in_battle::EnemyInBattle;
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
+    use crate::game::PlayerRunState;
     use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
     use crate::cards::ironclad::strike::strike;
 
@@ -166,7 +167,8 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Record initial state
         let initial_player_hp = battle.player.battle_info.get_hp();
@@ -254,7 +256,8 @@ mod tests {
         
         // Create a deck with strike cards
         let deck = Deck::new(vec![strike(), strike(), strike(), strike(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
         
         // Sample enemy actions for both enemies
         battle.sample_enemy_actions(&mut rng);
@@ -294,7 +297,7 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         // Draw the hand
         battle.cards.draw_n(5);
@@ -334,7 +337,7 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         // Draw the hand
         battle.cards.draw_n(5);

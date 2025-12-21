@@ -325,6 +325,7 @@ mod tests {
     use crate::cards::ironclad::starter_deck::starter_deck;
     use crate::battle::enemy_in_battle::EnemyInBattle;
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
+    use crate::game::PlayerRunState;
     use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
 
     #[test]
@@ -334,7 +335,8 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         let initial_energy = battle.player.get_energy();
         let initial_enemy_hp = battle.enemies[0].battle_info.get_hp();
@@ -363,7 +365,8 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         let available_actions = battle.list_available_actions();
         
@@ -403,7 +406,8 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
         
         // Spend all energy
         battle.player.battle_info.spend_energy(battle.player.get_energy());
@@ -423,7 +427,8 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
         
         // Kill all enemies to end battle
         let enemy_hp = battle.enemies[0].battle_info.get_hp();
@@ -444,7 +449,8 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
         
         let hand = battle.get_hand();
         
@@ -475,7 +481,7 @@ mod tests {
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse1)),
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2))
         ];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         // Kill the first enemy
         let first_enemy_hp = battle.enemies[0].battle_info.get_hp();
@@ -514,7 +520,8 @@ mod tests {
         
         // Create a deck with specific cards for testing
         let deck = Deck::new(vec![strike(), defend(), bash()]);
-        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         let available_actions = battle.list_available_actions();
         
@@ -574,7 +581,6 @@ mod tests {
         let start_node = MapNode::new(0, 0, NodeType::Start);
         map.add_node(start_node);
         map.set_starting_position((0, 0)).unwrap();
-        let start_node_position = (0, 0);
 
         // Create game with Burning Blood relic
         let mut game = Game::new(deck, global_info, map, 50, 80);
@@ -589,7 +595,8 @@ mod tests {
 
         // Create battle and start it
         let battle_deck = crate::cards::ironclad::starter_deck::starter_deck();
-        let mut battle = Battle::new(battle_deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(50, 80, 0);
+        let mut battle = Battle::new(battle_deck, global_info, player_state, enemies, &mut rng);
 
         // Record initial HP
         let initial_hp = battle.player.battle_info.get_hp();

@@ -36,6 +36,8 @@ pub fn whirlwind_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -121,7 +123,7 @@ mod tests {
 
         // Create battle with Whirlwind in hand
         let deck = Deck::new(vec![whirlwind()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial enemy HP
         let initial_hp1 = battle.get_enemies()[0].battle_info.get_hp();
@@ -129,7 +131,6 @@ mod tests {
 
         // Give player 2 energy for testing X-cost behavior
         battle.get_player_mut().battle_info.energy = 2;
-        let initial_energy = battle.get_player().get_energy();
 
         // Play Whirlwind
         let whirlwind_idx = 0;
@@ -143,8 +144,6 @@ mod tests {
         // Verify damage was dealt to ALL enemies twice (once for each energy spent)
         let final_hp1 = battle.get_enemies()[0].battle_info.get_hp();
         let final_hp2 = battle.get_enemies()[1].battle_info.get_hp();
-        let expected_hp1 = if initial_hp1 >= (5 * 2) { initial_hp1 - (5 * 2) } else { 0 };
-        let expected_hp2 = if initial_hp2 >= (5 * 2) { initial_hp2 - (5 * 2) } else { 0 };
 
         // Check that both enemies took damage (HP should be less than initial)
         assert!(final_hp1 < initial_hp1, "Enemy 1 should have taken damage");
@@ -176,7 +175,7 @@ mod tests {
 
         // Create battle with Whirlwind+ in hand
         let deck = Deck::new(vec![whirlwind_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial enemy HP
         let initial_hp1 = battle.get_enemies()[0].battle_info.get_hp();
@@ -221,7 +220,7 @@ mod tests {
 
         // Create battle with Whirlwind in hand (single enemy)
         let deck = Deck::new(vec![whirlwind()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial enemy HP
         let initial_hp = battle.get_enemies()[0].battle_info.get_hp();
@@ -258,7 +257,7 @@ mod tests {
 
         // Create battle with Whirlwind in hand
         let deck = Deck::new(vec![whirlwind()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial enemy HP
         let initial_hp = battle.get_enemies()[0].battle_info.get_hp();
@@ -292,7 +291,7 @@ mod tests {
 
         // Create battle with Whirlwind in hand
         let deck = Deck::new(vec![whirlwind()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial enemy HP
         let initial_hp = battle.get_enemies()[0].battle_info.get_hp();

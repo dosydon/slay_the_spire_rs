@@ -13,6 +13,7 @@ pub fn wound() -> Card {
 mod tests {
     use super::*;
     use crate::battle::{Battle, battle_action::BattleAction, target::Entity, BattleError};
+    use crate::game::PlayerRunState;
     use crate::game::enemy::EnemyTrait;
     use crate::game::global_info::GlobalInfo;
     use crate::game::deck::Deck;
@@ -28,7 +29,7 @@ mod tests {
 
         // Create a deck with just a wound card
         let deck = Deck::new(vec![wound()]);
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         // Draw the wound card into hand
         battle.at_start_of_player_turn(&mut rng);

@@ -209,7 +209,8 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![juggernaut()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Play Juggernaut
         let result = battle.play_card(0, Entity::Player);
@@ -226,7 +227,8 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![juggernaut()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
 
@@ -247,7 +249,8 @@ mod integration_tests {
 
         // Create battle with Juggernaut and Defend
         let deck = Deck::new(vec![juggernaut(), defend()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Play Juggernaut first
         let juggernaut_idx = battle.get_hand().iter().position(|c| c.get_name() == "Juggernaut").unwrap();
@@ -279,7 +282,8 @@ mod integration_tests {
 
         // Create battle with upgraded Juggernaut and Defend
         let deck = Deck::new(vec![juggernaut_upgraded(), defend()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Play Juggernaut+ first
         let juggernaut_idx = battle.get_hand().iter().position(|c| c.get_name() == "Juggernaut+").unwrap();

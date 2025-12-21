@@ -17,6 +17,8 @@ pub fn corruption_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -64,7 +66,7 @@ mod tests {
 
         // Create battle with Corruption in hand
         let deck = Deck::new(vec![corruption()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Corruption (power card targets player)
         let corruption_idx = 0;
@@ -109,7 +111,7 @@ mod tests {
 
         // Create battle with Corruption and Defend in hand
         let deck = Deck::new(vec![corruption(), defend()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0)  , enemies, &mut rng);
 
         // Give player enough energy to play both cards
         battle.get_player_mut().battle_info.energy = 5;
@@ -147,7 +149,6 @@ mod tests {
         let current_energy = battle.get_player().get_energy();
         
         // Debug: Check hand state right before playing Defend
-        let hand_before = battle.get_hand();
         
         // Try to play Defend at index 0 - it should be exhausted immediately due to Corruption
         let result = battle.play_card(0, Entity::Player);
@@ -190,7 +191,7 @@ mod tests {
 
         // Create battle with Corruption and multiple Skill cards in hand
         let deck = Deck::new(vec![corruption(), defend(), shrug_it_off(), defend()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy to play all cards
         battle.get_player_mut().battle_info.energy = 10;
@@ -245,7 +246,7 @@ mod tests {
 
         // Create battle with Corruption and an Attack card
         let deck = Deck::new(vec![corruption(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy
         battle.get_player_mut().battle_info.energy = 10;

@@ -28,6 +28,7 @@ mod tests {
     use crate::enemies::red_louse::RedLouse;
     use crate::enemies::EnemyEnum;
     use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::game::global_info::GlobalInfo;
     use crate::game::enemy::EnemyTrait;
@@ -45,7 +46,7 @@ mod tests {
 
         // Deck with only Perfected Strike
         let deck = Deck::new(vec![perfected_strike()]);
-        let mut battle = Battle::new(deck, global_info.clone(), 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info.clone(), PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         // Check strike count
         let strike_count = battle.count_strike_cards_in_deck();
@@ -83,7 +84,7 @@ mod tests {
             strike(),
             pommel_strike(),
         ]);
-        let mut battle = Battle::new(deck, global_info.clone(), 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info.clone(), PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         // Check strike count before playing
         let strike_count = battle.count_strike_cards_in_deck();
@@ -124,7 +125,7 @@ mod tests {
             strike(),
             strike(),
         ]);
-        let mut battle = Battle::new(deck, global_info.clone(), 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info.clone(), PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_hp = battle.get_enemies()[0].battle_info.get_hp();
         assert_eq!(initial_hp, 100, "Enemy should have 100 HP");

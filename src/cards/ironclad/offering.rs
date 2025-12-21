@@ -28,7 +28,7 @@ pub fn offering_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
-    use crate::battle::battle_action::BattleAction;
+    use crate::{battle::battle_action::BattleAction, game::PlayerRunState};
 
     use super::*;
 
@@ -117,7 +117,7 @@ mod tests {
             strike(),
             strike(),
         ]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_hp = battle.get_player().battle_info.get_current_hp();
         let initial_energy = battle.get_player().get_energy();

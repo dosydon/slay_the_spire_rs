@@ -35,6 +35,8 @@ pub fn rage_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -116,7 +118,7 @@ mod tests {
 
         // Create battle with Rage and Strike in hand
         let deck = Deck::new(vec![rage(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial block
         let initial_block = battle.get_player().battle_info.get_block();
@@ -155,7 +157,7 @@ mod tests {
 
         // Create battle with Rage+ and multiple Strikes in hand
         let deck = Deck::new(vec![rage_upgraded(), strike(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial block
         let initial_block = battle.get_player().battle_info.get_block();
@@ -204,7 +206,7 @@ mod tests {
 
         // Create battle with Rage, multiple Strikes, and a Defend
         let deck = Deck::new(vec![rage(), strike(), defend(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Rage first
         let result = battle.play_card(0, Entity::Player);
@@ -259,7 +261,7 @@ mod tests {
 
         // Create battle with Rage and Strike
         let deck = Deck::new(vec![rage(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Rage
         let result = battle.play_card(0, Entity::Player);

@@ -200,7 +200,8 @@ mod tests {
 
         // Create battle with Rupture in hand
         let deck = Deck::new(vec![rupture()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Check initial player strength
         let initial_strength = battle.get_player().battle_info.get_strength();

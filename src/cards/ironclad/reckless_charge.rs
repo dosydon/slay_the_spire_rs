@@ -113,7 +113,8 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
         let deck = Deck::new(vec![reckless_charge()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, vec![enemy], &mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
         let initial_discard_size = battle.cards.discard_pile_size();
@@ -141,7 +142,8 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
         let deck = Deck::new(vec![reckless_charge_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, vec![enemy], &mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
 

@@ -38,6 +38,8 @@ pub fn infernal_blade_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -112,7 +114,7 @@ mod tests {
 
         // Create battle with Infernal Blade in hand
         let deck = Deck::new(vec![infernal_blade()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial hand size
         let initial_hand_size = battle.cards.hand_size();
@@ -161,7 +163,7 @@ mod tests {
 
         // Create battle with Infernal Blade+ in hand
         let deck = Deck::new(vec![infernal_blade_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial hand size and energy
         let initial_hand_size = battle.cards.hand_size();
@@ -206,7 +208,7 @@ mod tests {
 
         // Create battle with Infernal Blade in hand
         let deck = Deck::new(vec![infernal_blade()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player 0 energy
         battle.get_player_mut().battle_info.energy = 0;
@@ -235,7 +237,7 @@ mod tests {
 
         // Create battle with Infernal Blade+ in hand
         let deck = Deck::new(vec![infernal_blade_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player 0 energy (Infernal Blade+ costs 0)
         battle.get_player_mut().battle_info.energy = 0;

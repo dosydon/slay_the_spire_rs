@@ -91,6 +91,7 @@ mod integration_tests {
     use crate::battle::Battle;
     use crate::battle::target::Entity;
     use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::game::global_info::GlobalInfo;
     use crate::game::enemy::EnemyTrait;
@@ -112,7 +113,7 @@ mod integration_tests {
         ];
 
         let deck = Deck::new(vec![reaper()]);
-        let mut battle = Battle::new(deck, global_info, 40, 80, enemies, &mut rng); // Start with 40 HP
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(40, 80, 0), enemies, &mut rng); // Start with 40 HP
 
         let initial_player_hp = battle.get_player().get_current_hp();
         let initial_enemy1_hp = battle.get_enemies()[0].get_current_hp();
@@ -146,7 +147,7 @@ mod integration_tests {
         ];
 
         let deck = Deck::new(vec![reaper_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 40, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(40, 80, 0), enemies, &mut rng);
 
         let initial_player_hp = battle.get_player().get_current_hp();
         let initial_enemy1_hp = battle.get_enemies()[0].get_current_hp();
@@ -176,7 +177,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![reaper()]);
-        let mut battle = Battle::new(deck, global_info, 79, 80, enemies, &mut rng); // 1 HP below max
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(79, 80, 0), enemies, &mut rng); // 1 HP below max
 
         let initial_player_hp = battle.get_player().get_current_hp();
         assert_eq!(initial_player_hp, 79);
@@ -198,7 +199,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![reaper()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
 
@@ -234,7 +235,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![reaper()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_player_hp = battle.get_player().get_current_hp();
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
@@ -264,7 +265,7 @@ mod integration_tests {
         let enemies = vec![enemy];
 
         let deck = Deck::new(vec![reaper()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_player_hp = battle.get_player().get_current_hp();
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
@@ -297,11 +298,10 @@ mod integration_tests {
         let enemies = vec![enemy];
 
         let deck = Deck::new(vec![reaper()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_player_hp = battle.get_player().get_current_hp();
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
-        let initial_enemy_block = battle.get_enemies()[0].battle_info.get_block();
 
         // Play Reaper against enemy with partial block
         let result = battle.play_card(0, Entity::Player);

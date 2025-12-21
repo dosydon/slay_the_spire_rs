@@ -87,6 +87,7 @@ mod integration_tests {
     use crate::battle::Battle;
     use crate::battle::target::Entity;
     use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::game::global_info::GlobalInfo;
     use crate::game::enemy::EnemyTrait;
@@ -101,7 +102,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![power_through()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_hand_size = battle.get_hand().len();
         let initial_block = battle.get_player().get_block();
@@ -131,7 +132,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![power_through_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_block = battle.get_player().get_block();
 
@@ -156,7 +157,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![power_through()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
 
@@ -176,7 +177,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![power_through()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Power Through
         let result = battle.play_card(0, Entity::Player);

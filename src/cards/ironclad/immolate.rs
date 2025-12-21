@@ -36,6 +36,8 @@ pub fn immolate_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -126,7 +128,7 @@ mod tests {
 
         // Create battle with Immolate in hand
         let deck = Deck::new(vec![immolate()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial enemy HP
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
@@ -167,7 +169,7 @@ mod tests {
 
         // Create battle with Immolate+ in hand
         let deck = Deck::new(vec![immolate_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial enemy HP
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
@@ -204,7 +206,7 @@ mod tests {
 
         // Create battle with Immolate in hand
         let deck = Deck::new(vec![immolate()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial enemy HP
         let initial_hp1 = battle.get_enemies()[0].battle_info.get_hp();

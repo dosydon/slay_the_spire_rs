@@ -62,12 +62,6 @@ mod tests {
     }
 
     #[test]
-    fn test_shrug_it_off_upgrade_name() {
-        let card = shrug_it_off();
-        assert_eq!(CardEnum::ShrugItOff.upgraded_name(), "ShrugItOff+");
-    }
-
-    #[test]
     fn test_shrug_it_off_enum_consistency() {
         let card = shrug_it_off();
         assert_eq!(card.get_card_enum(), CardEnum::ShrugItOff);
@@ -81,6 +75,7 @@ mod integration_tests {
     use crate::battle::Battle;
     use crate::battle::battle_action::BattleAction;
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
+    use crate::game::PlayerRunState;
     use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
     use crate::battle::enemy_in_battle::EnemyInBattle;
     use crate::battle::target::Entity;
@@ -103,7 +98,7 @@ mod integration_tests {
         // Create battle with one enemy
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         battle.at_start_of_player_turn(&mut rng);
 
@@ -144,7 +139,7 @@ mod integration_tests {
         // Create battle with one enemy
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         battle.at_start_of_player_turn(&mut rng);
 

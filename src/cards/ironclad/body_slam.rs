@@ -89,7 +89,8 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(100, 100, 0);
+let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, vec![enemy], &mut rng);
 
         // Give the player some Block
         battle.get_player_mut().gain_block(15);
@@ -133,7 +134,8 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(100, 100, 0);
+let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, vec![enemy], &mut rng);
 
         // Ensure player has no Block
         let player_block = battle.get_player().get_block();
@@ -170,7 +172,8 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(100, 100, 0);
+let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, vec![enemy], &mut rng);
 
         // Give the player some Block
         battle.get_player_mut().gain_block(10);

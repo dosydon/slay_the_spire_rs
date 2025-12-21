@@ -41,6 +41,7 @@ mod tests {
     use crate::battle::Battle;
     use crate::battle::target::Entity;
     use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::game::global_info::GlobalInfo;
     use crate::game::enemy::EnemyTrait;
@@ -146,7 +147,7 @@ mod tests {
 
         // Create battle with Demon Form in hand
         let deck = Deck::new(vec![demon_form()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy to play Demon Form
         battle.get_player_mut().battle_info.energy = 3;
@@ -192,7 +193,7 @@ mod tests {
 
         // Create battle with Demon Form+ in hand
         let deck = Deck::new(vec![demon_form_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy
         battle.get_player_mut().battle_info.energy = 2;
@@ -220,7 +221,7 @@ mod tests {
 
         // Create battle with Demon Form in hand
         let deck = Deck::new(vec![demon_form()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy to play Demon Form
         battle.get_player_mut().battle_info.energy = 3;
@@ -256,7 +257,7 @@ mod tests {
 
         // Create battle with Demon Form+ in hand
         let deck = Deck::new(vec![demon_form_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy
         battle.get_player_mut().battle_info.energy = 2;
@@ -287,7 +288,7 @@ mod tests {
 
         // Create battle with Demon Form in hand
         let deck = Deck::new(vec![demon_form()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy to play Demon Form
         battle.get_player_mut().battle_info.energy = 3;
@@ -317,7 +318,7 @@ mod tests {
 
         // Create battle with multiple Demon Form cards
         let deck = Deck::new(vec![demon_form(), demon_form_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy for both cards
         battle.get_player_mut().battle_info.energy = 5;

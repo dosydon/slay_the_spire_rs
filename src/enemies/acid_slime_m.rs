@@ -143,7 +143,7 @@ impl EnemyTrait for AcidSlimeM {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::global_info::GlobalInfo;
+    use crate::game::{PlayerRunState, global_info::GlobalInfo};
 
     #[test]
     fn test_acid_slime_m_creation() {
@@ -279,7 +279,7 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let acid_slime = AcidSlimeM::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeM(acid_slime))];
-        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         // Test that the enemy is properly set up
         assert_eq!(battle.get_enemies().len(), 1);
@@ -315,7 +315,7 @@ mod tests {
         // Create AcidSlimeM enemy
         let acid_slime = AcidSlimeM::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeM(acid_slime))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         // Verify player starts without Weak
         assert!(!battle.get_player().battle_info.is_weak());
@@ -360,7 +360,7 @@ mod tests {
         // Create a battle with AcidSlimeM enemy
         let acid_slime = AcidSlimeM::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeM(acid_slime))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         // Test damage calculation without Weak
         let base_damage = 10;

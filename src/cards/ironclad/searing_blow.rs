@@ -74,6 +74,7 @@ mod tests {
     use super::*;
     use crate::battle::{Battle, target::Entity};
     use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::game::global_info::GlobalInfo;
     use crate::game::enemy::EnemyTrait;
@@ -141,7 +142,7 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
         let deck = Deck::new(vec![searing_blow()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
 
@@ -163,7 +164,7 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
         let deck = Deck::new(vec![searing_blow_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
 

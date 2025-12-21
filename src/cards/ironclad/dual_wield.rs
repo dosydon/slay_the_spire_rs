@@ -26,6 +26,8 @@ pub fn dual_wield_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -92,10 +94,10 @@ mod tests {
 
         // Create battle with Dual Wield and Strike in hand
         let deck = Deck::new(vec![dual_wield(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_discard_size = battle.cards.discard_pile_size();
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_action::BattleState::PlayerTurn);
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::PlayerTurn);
 
         // Play Dual Wield targeting the player
         let dual_wield_idx = 0;
@@ -103,7 +105,7 @@ mod tests {
         assert!(result.is_ok());
 
         // Verify battle is now in SelectCardToDuplicate state with copies=1
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_action::BattleState::SelectCardToDuplicate { copies: 1 });
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardToDuplicate { copies: 1 });
 
         // Verify Strike is still in hand
         let hand = battle.get_hand();
@@ -115,7 +117,7 @@ mod tests {
         assert!(result.is_ok());
 
         // Verify battle returned to PlayerTurn state
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_action::BattleState::PlayerTurn);
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::PlayerTurn);
 
         // Verify Strike is still in hand
         let hand = battle.get_hand();
@@ -147,7 +149,7 @@ mod tests {
 
         // Create battle with upgraded Dual Wield and Strike in hand
         let deck = Deck::new(vec![dual_wield_upgraded(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_discard_size = battle.cards.discard_pile_size();
 
@@ -157,14 +159,14 @@ mod tests {
         assert!(result.is_ok());
 
         // Verify battle is now in SelectCardToDuplicate state with copies=2
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_action::BattleState::SelectCardToDuplicate { copies: 2 });
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardToDuplicate { copies: 2 });
 
         // Select the Strike card to duplicate it
         let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardToDuplicate(0), &mut rng);
         assert!(result.is_ok());
 
         // Verify battle returned to PlayerTurn state
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_action::BattleState::PlayerTurn);
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::PlayerTurn);
 
         // Verify Strike is still in hand
         let hand = battle.get_hand();
@@ -194,7 +196,7 @@ mod tests {
 
         // Create battle with only Dual Wield in hand
         let deck = Deck::new(vec![dual_wield()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Dual Wield
         let dual_wield_idx = 0;
@@ -202,7 +204,7 @@ mod tests {
         assert!(result.is_ok());
 
         // Verify battle is in SelectCardToDuplicate state
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_action::BattleState::SelectCardToDuplicate { copies: 1 });
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardToDuplicate { copies: 1 });
 
         // Try to select an invalid card index (hand should be empty after playing Dual Wield)
         let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardToDuplicate(0), &mut rng);

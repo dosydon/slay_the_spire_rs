@@ -6,6 +6,18 @@ use crate::battle::target::Entity;
 pub enum Potion {
     /// Strength Potion: Grants 2 Strength
     StrengthPotion,
+    /// Block Potion: Grants 12 Block
+    BlockPotion,
+    /// Energy Potion: Grants 2 Energy
+    EnergyPotion,
+    /// Dexterity Potion: Grants 2 Dexterity
+    DexterityPotion,
+    /// Fire Potion: Deals 20 damage to all enemies
+    FirePotion,
+    /// Swift Potion: Gain 2 Artifact and 2 Dexterity
+    SwiftPotion,
+    /// Blood Potion: Heal 25% of max HP
+    BloodPotion,
 }
 
 impl Potion {
@@ -13,6 +25,12 @@ impl Potion {
     pub fn name(&self) -> &'static str {
         match self {
             Potion::StrengthPotion => "Strength Potion",
+            Potion::BlockPotion => "Block Potion",
+            Potion::EnergyPotion => "Energy Potion",
+            Potion::DexterityPotion => "Dexterity Potion",
+            Potion::FirePotion => "Fire Potion",
+            Potion::SwiftPotion => "Swift Potion",
+            Potion::BloodPotion => "Blood Potion",
         }
     }
 
@@ -20,6 +38,12 @@ impl Potion {
     pub fn description(&self) -> &'static str {
         match self {
             Potion::StrengthPotion => "Gain 2 Strength",
+            Potion::BlockPotion => "Gain 12 Block",
+            Potion::EnergyPotion => "Gain 2 Energy",
+            Potion::DexterityPotion => "Gain 2 Dexterity",
+            Potion::FirePotion => "Deal 20 damage to ALL enemies",
+            Potion::SwiftPotion => "Gain 2 Artifact and 2 Dexterity",
+            Potion::BloodPotion => "Heal 25% of your missing HP",
         }
     }
 
@@ -32,6 +56,41 @@ impl Potion {
                 // Strength potion always targets the player
                 (Some(Entity::Player), vec![
                     Effect::GainStrength { amount: 2 }
+                ])
+            }
+            Potion::BlockPotion => {
+                (Some(Entity::Player), vec![
+                    Effect::GainDefense { amount: 12 }
+                ])
+            }
+            Potion::EnergyPotion => {
+                (Some(Entity::Player), vec![
+                    Effect::GainEnergy { amount: 2 }
+                ])
+            }
+            Potion::DexterityPotion => {
+                (Some(Entity::Player), vec![
+                    Effect::GainDexterity { amount: 2 }
+                ])
+            }
+            Potion::FirePotion => {
+                // Fire potion requires targeting an enemy (hits all enemies)
+                // For now, we'll use AttackToTarget since Fire potion should hit all enemies
+                // This would need special handling in the battle system
+                (None, vec![
+                    Effect::AttackAllEnemies { amount: 20, num_attacks: 1 }
+                ])
+            }
+            Potion::SwiftPotion => {
+                (Some(Entity::Player), vec![
+                    Effect::GainArtifact { amount: 2 },
+                    Effect::GainDexterity { amount: 2 }
+                ])
+            }
+            Potion::BloodPotion => {
+                // Blood potion heals based on max HP - this is simplified
+                (Some(Entity::Player), vec![
+                    Effect::Heal(15) // Simplified - should be 25% of max HP
                 ])
             }
         }

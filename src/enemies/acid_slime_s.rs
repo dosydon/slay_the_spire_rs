@@ -91,7 +91,7 @@ impl EnemyTrait for AcidSlimeS {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::global_info::GlobalInfo;
+    use crate::game::{PlayerRunState, global_info::GlobalInfo};
 
     #[test]
     fn test_acid_slime_s_creation() {
@@ -194,7 +194,7 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let acid_slime = AcidSlimeS::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeS(acid_slime))];
-        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         // Test that the enemy is properly set up
         assert_eq!(battle.get_enemies().len(), 1);

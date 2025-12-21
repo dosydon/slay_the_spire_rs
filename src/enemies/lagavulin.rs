@@ -283,7 +283,7 @@ impl EventListener for LagavulinListener {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::enemies::enemy_enum::EnemyMove;
+    use crate::{enemies::enemy_enum::EnemyMove, game::PlayerRunState};
 
     #[test]
     fn test_lagavulin_creation() {
@@ -460,7 +460,7 @@ mod tests {
 
         // Create battle with Lagavulin
         let deck = Deck::new(vec![strike(), strike(), strike(), strike(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 80, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), vec![enemy], &mut rng);
 
         // Verify Lagavulin starts in Asleep state by checking its first sampled move
         if let Some(enemy_move) = battle.get_enemy_move(0) {
@@ -542,7 +542,7 @@ mod tests {
 
         // Create battle with Lagavulin
         let deck = Deck::new(vec![strike(); 5]);
-        let battle = Battle::new(deck, global_info, 80, 80, vec![enemy], &mut rng);
+        let battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), vec![enemy], &mut rng);
 
         // Verify Lagavulin starts with 8 block from initial block listener
         // This tests both the initial block listener and indirectly confirms Metallicize 8 power
@@ -596,7 +596,7 @@ mod tests {
 
         // Create battle with a mix of cards
         let deck = Deck::new(vec![strike(), strike(), strike(), defend(), defend()]);
-        let mut battle = Battle::new(deck, global_info, 80, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), vec![enemy], &mut rng);
 
         // Verify initial state: Asleep with 8 block
         assert_eq!(battle.get_enemies()[0].battle_info.get_block(), 8);
@@ -644,7 +644,6 @@ mod tests {
     fn test_lagavulin_natural_sleep_cycle() {
         use crate::battle::Battle;
         use crate::battle::enemy_in_battle::EnemyInBattle;
-        use crate::battle::target::Entity;
         use crate::game::deck::Deck;
         use crate::cards::ironclad::defend::defend;
         use crate::enemies::enemy_enum::{EnemyEnum, EnemyMove};
@@ -658,7 +657,7 @@ mod tests {
 
         // Create battle with only Defend cards so we don't attack Lagavulin
         let deck = Deck::new(vec![defend(), defend(), defend(), defend(), defend()]);
-        let mut battle = Battle::new(deck, global_info, 80, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), vec![enemy], &mut rng);
 
         println!("\n=== Testing Lagavulin Natural Sleep Cycle ===");
 

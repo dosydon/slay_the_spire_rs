@@ -32,6 +32,8 @@ pub fn second_wind_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -83,7 +85,6 @@ mod tests {
         use crate::enemies::gremlin_nob::GremlinNob;
         use crate::enemies::enemy_enum::EnemyEnum;
         use crate::cards::ironclad::strike::strike;
-        use crate::cards::ironclad::defend::defend;
 
         let mut rng = rand::rng();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
@@ -97,7 +98,7 @@ mod tests {
             strike(),  // Attack card
             strike(),  // Attack card
         ]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Draw all cards to hand
         for _ in 0..4 {
@@ -154,7 +155,7 @@ mod tests {
             defend(),  // Skill card (will be exhausted)
             wound(),   // Status card (will be exhausted)
         ]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Draw all cards to hand
         for _ in 0..4 {
@@ -162,7 +163,6 @@ mod tests {
         }
 
         let initial_block = battle.get_player().battle_info.get_block();
-        let initial_hand_size = battle.cards.hand_size();
 
         // Play Second Wind
         let second_wind_idx = battle.cards.get_hand().iter()
@@ -209,7 +209,7 @@ mod tests {
             strike(),  // Attack card
             defend(),  // Skill card (will be exhausted)
         ]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Draw all cards to hand
         for _ in 0..3 {

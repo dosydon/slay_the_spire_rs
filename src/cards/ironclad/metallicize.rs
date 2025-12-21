@@ -66,6 +66,8 @@ pub fn metallicize_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -185,7 +187,7 @@ mod tests {
 
         // Create battle with Metallicize in hand
         let deck = Deck::new(vec![metallicize()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Metallicize (power card targets player)
         let metallicize_idx = 0;

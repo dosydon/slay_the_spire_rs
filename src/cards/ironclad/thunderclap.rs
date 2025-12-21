@@ -41,7 +41,8 @@ mod tests {
 
         // Create a deck with thunderclap
         let deck = Deck::new(vec![thunderclap()]);
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(80, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Draw the thunderclap card into hand
         battle.at_start_of_player_turn(&mut rng);
@@ -69,11 +70,6 @@ mod tests {
         assert!(final_vulnerable.iter().all(|&v| v == 1),
                 "All enemies should have Vulnerable(1) after thunderclap, got: {:?}", final_vulnerable);
 
-        // Check that all enemies took damage (they should have lower HP than initial)
-        let initial_hp: Vec<u32> = battle.get_enemies()
-            .iter()
-            .map(|enemy| enemy.battle_info.get_hp())
-            .collect();
 
         // Create a fresh battle to test damage
         let deck2 = Deck::new(vec![thunderclap()]);
@@ -85,7 +81,8 @@ mod tests {
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse2_new)),
             EnemyInBattle::new(EnemyEnum::RedLouse(red_louse3_new)),
         ];
-        let mut battle2 = Battle::new(deck2, global_info, 80, 80, enemies2, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(80, 80, 0);
+let mut battle2 = Battle::new(deck2, global_info, player_state, enemies2, &mut rng);
         battle2.at_start_of_player_turn(&mut rng);
 
         let hp_before: Vec<u32> = battle2.get_enemies()
@@ -120,7 +117,8 @@ mod tests {
 
         // Create a deck with upgraded thunderclap
         let deck = Deck::new(vec![thunderclap_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(80, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Draw the thunderclap+ card into hand
         battle.at_start_of_player_turn(&mut rng);

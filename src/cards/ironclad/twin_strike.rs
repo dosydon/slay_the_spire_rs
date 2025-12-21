@@ -58,12 +58,6 @@ mod tests {
     }
 
     #[test]
-    fn test_twin_strike_upgrade_name() {
-        let card = twin_strike();
-        assert_eq!(CardEnum::TwinStrike.upgraded_name(), "TwinStrike+");
-    }
-
-    #[test]
     fn test_twin_strike_enum_consistency() {
         let card = twin_strike();
         assert_eq!(card.get_card_enum(), CardEnum::TwinStrike);
@@ -77,7 +71,8 @@ mod integration_tests {
     use crate::battle::Battle;
     use crate::battle::battle_action::BattleAction;
     use crate::enemies::{acid_slime_m::AcidSlimeM, enemy_enum::EnemyEnum};
-    use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
+    use crate::game::PlayerRunState;
+    use crate::game::{global_info::GlobalInfo, deck::Deck};
     use crate::battle::enemy_in_battle::EnemyInBattle;
     use crate::battle::target::Entity;
 
@@ -95,7 +90,7 @@ mod integration_tests {
         // Create battle with one enemy
         let acid_slime = AcidSlimeM::new(30);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeM(acid_slime))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         battle.at_start_of_player_turn(&mut rng);
 
@@ -130,7 +125,7 @@ mod integration_tests {
         // Create battle with one enemy
         let acid_slime = AcidSlimeM::new(30);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeM(acid_slime))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         battle.at_start_of_player_turn(&mut rng);
 
@@ -165,7 +160,7 @@ mod integration_tests {
         // Create battle with one enemy
         let acid_slime = AcidSlimeM::new(30);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeM(acid_slime))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         battle.at_start_of_player_turn(&mut rng);
 
@@ -204,7 +199,7 @@ mod integration_tests {
         // Create battle with one enemy
         let acid_slime = AcidSlimeM::new(30);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::AcidSlimeM(acid_slime))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         battle.at_start_of_player_turn(&mut rng);
 

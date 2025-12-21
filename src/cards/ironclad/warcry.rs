@@ -31,6 +31,7 @@ mod tests {
     use super::*;
     use crate::battle::{Battle, target::Entity, enemy_in_battle::EnemyInBattle};
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
+    use crate::game::PlayerRunState;
     use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
 
     #[test]
@@ -81,7 +82,8 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(100, 100, 0);
+let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, vec![enemy], &mut rng);
 
         // Add Warcry to hand manually
         battle.cards.add_card_to_hand(warcry());
@@ -101,7 +103,7 @@ mod tests {
         assert_eq!(final_hand_size, initial_hand_size, "Should draw 1 card but play 1 (net 0 change)");
 
         // Check that battle entered SelectCardInHandToPutOnDeck state
-        assert!(matches!(battle.battle_state, crate::battle::battle_action::BattleState::SelectCardInHandToPutOnDeck));
+        assert!(matches!(battle.battle_state, crate::battle::battle_state::BattleState::SelectCardInHandToPutOnDeck));
 
         // Should have cards in hand to select from
         assert!(battle.cards.hand_size() > 0, "Should have cards in hand to select");
@@ -124,7 +126,8 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(100, 100, 0);
+let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, vec![enemy], &mut rng);
 
         // Add Warcry to hand manually
         battle.cards.add_card_to_hand(warcry());
@@ -138,10 +141,7 @@ mod tests {
         assert!(result.is_ok(), "Warcry should be playable");
 
         // Should be in SelectCardInHandToPutOnDeck state
-        assert!(matches!(battle.battle_state, crate::battle::battle_action::BattleState::SelectCardInHandToPutOnDeck));
-
-        // Get the current top of draw pile before selection
-        let initial_top_card = battle.cards.peek_top_card();
+        assert!(matches!(battle.battle_state, crate::battle::battle_state::BattleState::SelectCardInHandToPutOnDeck));
 
         // Store the name of the card we're about to select
         let card_to_select_name = battle.cards.get_hand()[0].get_name().to_string();
@@ -159,7 +159,7 @@ mod tests {
                   "Top card should be the selected card");
 
         // Should be back to PlayerTurn state
-        assert!(matches!(battle.battle_state, crate::battle::battle_action::BattleState::PlayerTurn));
+        assert!(matches!(battle.battle_state, crate::battle::battle_state::BattleState::PlayerTurn));
     }
 
     #[test]
@@ -173,7 +173,7 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new(empty_deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let mut battle = Battle::new(empty_deck, global_info, PlayerRunState::new(100, 100, 0), vec![enemy], &mut rng);
 
         // Add Warcry to hand manually since there's no deck to draw from
         battle.cards.add_card_to_hand(warcry());

@@ -51,6 +51,7 @@ mod tests {
     use crate::cards::ironclad::starter_deck::starter_deck;
     use crate::cards::ironclad::strike;
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::game::{global_info::GlobalInfo, enemy::EnemyTrait};
 
@@ -93,7 +94,8 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(100, 100, 0);
+let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, vec![enemy], &mut rng);
 
         // Draw initial hand
         battle.at_start_of_player_turn(&mut rng);
@@ -133,7 +135,8 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new_with_shuffle(deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(100, 100, 0);
+let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, vec![enemy], &mut rng);
 
         // Draw initial hand
         battle.at_start_of_player_turn(&mut rng);
@@ -175,7 +178,7 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new(deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(100, 100, 0), vec![enemy], &mut rng);
 
         // Make enemy vulnerable first (manually apply vulnerable status)
         // Note: This would normally be done through game effects, but for testing we'll simulate it

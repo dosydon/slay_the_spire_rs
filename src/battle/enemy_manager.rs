@@ -134,6 +134,7 @@ mod tests {
     use crate::cards::ironclad::starter_deck::starter_deck;
     use crate::battle::enemy_in_battle::EnemyInBattle;
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
+    use crate::game::PlayerRunState;
     use crate::game::{global_info::GlobalInfo, enemy::EnemyTrait};
 
     #[test]
@@ -143,7 +144,8 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info.clone(), player_state, enemies, &mut rng);
         
         // Initially enemy should have 0 block
         assert_eq!(battle.enemies[0].battle_info.get_block(), 0);
@@ -184,7 +186,8 @@ mod tests {
         let normal_global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &normal_global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut normal_battle = Battle::new(deck.clone(), normal_global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut normal_battle = Battle::new(deck.clone(), normal_global_info, player_state, enemies, &mut rng);
         normal_battle.apply_damage(Entity::Enemy(0), 6);
         let normal_block = normal_battle.enemies[0].battle_info.get_block();
         assert!(normal_block >= 3 && normal_block <= 7);
@@ -193,7 +196,8 @@ mod tests {
         let mid_global_info = GlobalInfo { ascention: 10, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &mid_global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut mid_battle = Battle::new(deck.clone(), mid_global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut mid_battle = Battle::new(deck.clone(), mid_global_info, player_state, enemies, &mut rng);
         mid_battle.apply_damage(Entity::Enemy(0), 6);
         let mid_block = mid_battle.enemies[0].battle_info.get_block();
         assert!(mid_block >= 4 && mid_block <= 8);
@@ -202,7 +206,8 @@ mod tests {
         let high_global_info = GlobalInfo { ascention: 17, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &high_global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
-        let mut high_battle = Battle::new(deck, high_global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut high_battle = Battle::new(deck, high_global_info, player_state, enemies, &mut rng);
         high_battle.apply_damage(Entity::Enemy(0), 6);
         let high_block = high_battle.enemies[0].battle_info.get_block();
         assert!(high_block >= 9 && high_block <= 12);
@@ -221,7 +226,8 @@ mod tests {
         let mut fungi = FungiBeast::instantiate(&mut rng, &global_info);
         fungi.hp = 5; // Low HP for easy kill
         let enemies = vec![EnemyInBattle::new(EnemyEnum::FungiBeast(fungi))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Player should start with 0 Vulnerable
         assert_eq!(battle.player.battle_info.get_vulnerable_turns(), 0);
@@ -255,7 +261,8 @@ mod tests {
             EnemyInBattle::new(EnemyEnum::FungiBeast(fungi1)),
             EnemyInBattle::new(EnemyEnum::FungiBeast(fungi2)),
         ];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Player should start with 0 Vulnerable
         assert_eq!(battle.player.battle_info.get_vulnerable_turns(), 0);

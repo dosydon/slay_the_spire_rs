@@ -192,6 +192,8 @@ impl EventListener for CurlUpListener {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -541,7 +543,7 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![crate::battle::enemy_in_battle::EnemyInBattle::new(crate::enemies::enemy_enum::EnemyEnum::RedLouse(red_louse))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
 
         println!("=== FIXED HAND BATTLE TEST ===");
         println!("Initial hand:");
@@ -573,7 +575,6 @@ mod tests {
         println!("After first Strike - Enemy HP: {}, Player Energy: {}", 
             battle.get_enemies()[0].battle_info.get_hp(), battle.get_player().get_energy());
         
-        let enemy_hp_after_first_strike = battle.get_enemies()[0].battle_info.get_hp();
         let enemy_block_after_first_strike = battle.get_enemies()[0].battle_info.get_block();
         println!("Enemy block after first Strike: {} (Curl Up should have activated)", enemy_block_after_first_strike);
         

@@ -22,6 +22,8 @@ pub fn disarm_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -80,7 +82,7 @@ mod tests {
 
         // Create battle with Disarm in hand
         let deck = Deck::new(vec![disarm()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Disarm targeting the enemy
         let disarm_idx = 0;
@@ -114,7 +116,7 @@ mod tests {
 
         // Create battle with Disarm+ in hand
         let deck = Deck::new(vec![disarm_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Disarm+ targeting the enemy
         let disarm_idx = 0;

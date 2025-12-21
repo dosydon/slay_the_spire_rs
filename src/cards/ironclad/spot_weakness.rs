@@ -39,12 +39,12 @@ mod tests {
     use super::*;
     use crate::battle::{Battle, target::Entity};
     use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::game::global_info::GlobalInfo;
     use crate::game::enemy::EnemyTrait;
     use crate::enemies::jaw_worm::JawWorm;
-    use crate::enemies::enemy_enum::{EnemyEnum, EnemyMove};
-    use crate::enemies::red_louse::RedLouse;
+    use crate::enemies::enemy_enum::{EnemyEnum};
 
     #[test]
     fn test_spot_weakness_creation() {
@@ -112,7 +112,7 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm));
 
         let deck = Deck::new(vec![spot_weakness()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_strength = battle.get_player().battle_info.get_strength();
 
@@ -133,7 +133,7 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm));
 
         let deck = Deck::new(vec![spot_weakness_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_strength = battle.get_player().battle_info.get_strength();
 

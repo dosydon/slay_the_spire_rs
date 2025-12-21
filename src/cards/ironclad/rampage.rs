@@ -40,6 +40,8 @@ pub fn rampage_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -110,7 +112,7 @@ mod tests {
 
         // Create battle with Rampage in hand
         let deck = Deck::new(vec![rampage()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial rampage damage scaling (should be 0)
         let initial_rampage_damage = battle.get_player().battle_info.get_rampage_damage();
@@ -151,7 +153,7 @@ mod tests {
 
         // Create battle with two Rampage cards
         let deck = Deck::new(vec![rampage(), rampage()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Draw both cards
         battle.cards.draw_card();
@@ -203,7 +205,7 @@ mod tests {
 
         // Create battle with two Rampage+ cards
         let deck = Deck::new(vec![rampage_upgraded(), rampage_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Draw both cards
         battle.cards.draw_card();
@@ -256,7 +258,7 @@ mod tests {
 
         // Create battle with Inflame and Rampage in hand
         let deck = Deck::new(vec![inflame(), rampage()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Draw both cards
         battle.cards.draw_card();

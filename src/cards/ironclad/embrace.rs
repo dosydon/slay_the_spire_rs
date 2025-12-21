@@ -104,7 +104,8 @@ mod tests {
 
         // Create battle with Embrace in hand
         let deck = Deck::new(vec![embrace(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Play Embrace (power card targets player)
         let embrace_idx = 0;
@@ -221,7 +222,8 @@ mod tests {
 
         // Create battle with Embrace, Carnage (ethereal), and Strike in hand
         let deck = Deck::new(vec![embrace(), carnage(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Play Embrace to activate the power
         let embrace_idx = 0;
@@ -278,7 +280,8 @@ mod tests {
 
         // Create battle with Embrace+, Carnage (ethereal), and 2 Strikes in hand
         let deck = Deck::new(vec![embrace_upgraded(), carnage(), strike(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Play Embrace+ to activate the power (costs 1 energy)
         let embrace_idx = 0;
@@ -333,7 +336,8 @@ mod tests {
             strike(),
             strike(), // Extra card to be drawn when Embrace triggers
         ]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Play Embrace to activate the power
         let embrace_idx = battle.get_hand().iter().position(|c| c.get_name() == "Embrace").unwrap();
@@ -385,7 +389,8 @@ mod tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 
         let deck = Deck::new(vec![embrace_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
 
@@ -414,7 +419,8 @@ mod tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 
         let deck = Deck::new(vec![embrace()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
 

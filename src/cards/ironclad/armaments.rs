@@ -96,7 +96,8 @@ mod tests {
 
         // Create battle with Armaments and Strike in hand
         let deck = Deck::new(vec![armaments(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         let initial_block = battle.get_player().get_block();
         assert_eq!(initial_block, 0);
@@ -121,7 +122,7 @@ mod tests {
         assert!(!hand[0].is_upgraded());
 
         // Select the Strike card to upgrade it
-        let result = battle.eval_action(crate::battle::battle_state::BattleAction::SelectCardInHand(0), &mut rng);
+        let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardInHand(0), &mut rng);
         assert!(result.is_ok());
 
         // Verify battle returned to PlayerTurn state
@@ -153,7 +154,8 @@ mod tests {
 
         // Create battle with Armaments and already-upgraded Strike in hand
         let deck = Deck::new(vec![armaments(), strike_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Play Armaments
         let armaments_idx = 0;
@@ -161,7 +163,7 @@ mod tests {
         assert!(result.is_ok());
 
         // Verify battle is in SelectCardInHand state
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_action::BattleState::SelectCardInHand);
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardInHand);
 
         // Try to upgrade the already-upgraded Strike
         let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardInHand(0), &mut rng);
@@ -174,7 +176,7 @@ mod tests {
         assert!(hand[0].is_upgraded());
 
         // Verify battle returned to PlayerTurn state
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_action::BattleState::PlayerTurn);
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::PlayerTurn);
     }
 
     #[test]
@@ -194,7 +196,8 @@ mod tests {
 
         // Create battle with only Armaments in hand
         let deck = Deck::new(vec![armaments()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Play Armaments
         let armaments_idx = 0;
@@ -202,7 +205,7 @@ mod tests {
         assert!(result.is_ok());
 
         // Verify battle is in SelectCardInHand state
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_action::BattleState::SelectCardInHand);
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardInHand);
 
         // Try to select an invalid card index (hand should be empty after playing Armaments)
         let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardInHand(0), &mut rng);
@@ -230,7 +233,8 @@ mod tests {
 
         // Create battle with Armaments+ and multiple cards in hand
         let deck = Deck::new(vec![armaments_upgraded(), strike(), defend()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let player_state = crate::game::player_run_state::PlayerRunState::new(50, 80, 0);
+let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Play Armaments+ (index 0)
         let armaments_idx = 0;
@@ -242,7 +246,7 @@ mod tests {
         assert_eq!(block_after_armaments, 5);
 
         // Verify battle should still be in PlayerTurn state (no card selection needed)
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_action::BattleState::PlayerTurn);
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::PlayerTurn);
 
         // Verify all cards in hand are now upgraded
         let hand = battle.get_hand();

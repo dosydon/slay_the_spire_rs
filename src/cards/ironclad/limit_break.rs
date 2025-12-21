@@ -35,6 +35,8 @@ pub fn limit_break_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -129,7 +131,7 @@ mod tests {
 
         // Create battle with Limit Break and Inflame in hand
         let deck = Deck::new(vec![limit_break(), inflame()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy to play both cards
         battle.get_player_mut().battle_info.energy = 3;
@@ -179,7 +181,7 @@ mod tests {
 
         // Create battle with multiple Limit Break cards
         let deck = Deck::new(vec![inflame(), limit_break(), limit_break()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy
         battle.get_player_mut().battle_info.energy = 6;
@@ -226,7 +228,7 @@ mod tests {
 
         // Create battle with Limit Break+ and Inflame in hand
         let deck = Deck::new(vec![limit_break_upgraded(), inflame()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give player enough energy for both cards
         battle.get_player_mut().battle_info.energy = 2;

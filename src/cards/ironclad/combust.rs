@@ -70,6 +70,8 @@ pub fn combust_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -240,7 +242,7 @@ mod tests {
 
         // Create battle with Combust in hand, starting with 15 HP
         let deck = Deck::new(vec![combust()]);
-        let mut battle = Battle::new(deck, global_info, 15, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(15, 80, 0), enemies, &mut rng);
 
         let initial_hp = battle.get_player().battle_info.get_hp();
         assert_eq!(initial_hp, 15);

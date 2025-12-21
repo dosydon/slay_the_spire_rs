@@ -28,10 +28,6 @@ pub fn true_grit_upgraded() -> Card {
 mod tests {
     use super::*;
     
-    
-    
-    use crate::game::enemy::EnemyTrait;
-
     #[test]
     fn test_true_grit_card_creation() {
         let true_grit_card = true_grit();

@@ -22,6 +22,8 @@ pub fn impervious_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -87,7 +89,7 @@ mod tests {
 
         // Create battle with Impervious in hand
         let deck = Deck::new(vec![impervious()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_block = battle.get_player().get_block();
         assert_eq!(initial_block, 0);
@@ -127,7 +129,7 @@ mod tests {
 
         // Create battle with Impervious+ in hand
         let deck = Deck::new(vec![impervious_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_block = battle.get_player().get_block();
         assert_eq!(initial_block, 0);

@@ -30,6 +30,7 @@ mod tests {
     use crate::battle::{Battle, target::Entity, enemy_in_battle::EnemyInBattle};
     
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
+    use crate::game::PlayerRunState;
     use crate::game::{global_info::GlobalInfo, deck::Deck, enemy::EnemyTrait};
 
     #[test]
@@ -68,7 +69,7 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new(empty_deck, global_info, 100, 100, vec![enemy], &mut rng);
+        let mut battle = Battle::new(empty_deck, global_info, PlayerRunState::new(100, 100, 0), vec![enemy], &mut rng);
 
         // Add Havoc to hand manually since there's no deck to draw from
         battle.add_card_to_hand_for_testing(havoc());
@@ -93,7 +94,7 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         // Now test with Havoc
         battle.add_card_to_hand_for_testing(havoc());
@@ -135,7 +136,7 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].get_current_hp();
 
@@ -165,7 +166,7 @@ mod tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
 

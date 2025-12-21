@@ -30,6 +30,9 @@ pub enum EncounterEvent {
     GremlinNob,      // Act 1 Elite - Gremlin Nob
     ThreeSentries,   // Act 1 Elite - 3 Sentries
     Lagavulin,       // Act 1 Elite - Lagavulin
+
+    // Act 1 Boss Encounters
+    Hexaghost,       // Act 1 Boss - Hexaghost
 }
 
 pub fn sample_encounter_event(global_info: &GlobalInfo, event_history: &[SLSEvent], rng: &mut impl rand::Rng) -> EncounterEvent {
@@ -344,6 +347,9 @@ impl EncounterEvent {
 
                 enemies
             }
+            EncounterEvent::Hexaghost => {
+                panic!("Hexaghost enemy not implemented yet");
+            }
         }
     }
 }
@@ -351,7 +357,7 @@ impl EncounterEvent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::global_info::GlobalInfo;
+    use crate::game::{PlayerRunState, global_info::GlobalInfo};
 
     #[test]
     fn test_jaw_worm_encounter() {
@@ -420,7 +426,7 @@ mod tests {
             .collect();
 
         let deck = Deck::new(vec![strike()]);
-        let battle = Battle::new(deck, global_info.clone(), 50, 80, enemies, &mut rng);
+        let battle = Battle::new(deck, global_info.clone(), PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Each Sentry should have 1 Artifact after combat start
         for i in 0..3 {
@@ -548,7 +554,7 @@ mod tests {
             .collect();
 
         let deck = Deck::new(vec![strike()]);
-        let battle = Battle::new(deck, global_info.clone(), 50, 80, enemies, &mut rng);
+        let battle = Battle::new(deck, global_info.clone(), PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // All 4 gremlins should be alive at battle start
         assert_eq!(battle.get_enemies().len(), 4);

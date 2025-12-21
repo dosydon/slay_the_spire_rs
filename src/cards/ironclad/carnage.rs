@@ -30,6 +30,8 @@ pub fn carnage_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -108,7 +110,7 @@ mod tests {
 
         // Create battle with Carnage in hand
         let deck = Deck::new(vec![carnage()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_hp = battle.get_enemies()[0].battle_info.get_hp();
 
@@ -146,7 +148,7 @@ mod tests {
 
         // Create battle with Carnage+ in hand
         let deck = Deck::new(vec![carnage_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_hp = battle.get_enemies()[0].battle_info.get_hp();
 

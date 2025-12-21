@@ -28,6 +28,8 @@ pub fn bludgeon_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -80,7 +82,7 @@ use crate::game::enemy::EnemyTrait;
 
         // Create deck with bludgeon and strike cards
         let deck = Deck::new(vec![bludgeon(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 80, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), vec![enemy], &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
         assert_eq!(initial_energy, 3, "Player should start with 3 energy");

@@ -45,6 +45,7 @@ mod tests {
     use super::*;
     use crate::battle::{Battle, target::Entity};
     use crate::battle::enemy_in_battle::EnemyInBattle;
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::game::global_info::GlobalInfo;
     use crate::game::enemy::EnemyTrait;
@@ -132,7 +133,7 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
         let deck = Deck::new(vec![sentinel()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_block = battle.get_player().get_block();
         let initial_energy = battle.get_player().get_energy();
@@ -159,7 +160,7 @@ mod tests {
         let enemy = EnemyInBattle::new(EnemyEnum::RedLouse(red_louse));
 
         let deck = Deck::new(vec![sentinel_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_block = battle.get_player().get_block();
         let initial_energy = battle.get_player().get_energy();
@@ -189,7 +190,7 @@ mod tests {
 
         // Create battle with Corruption and Sentinel
         let deck = Deck::new(vec![corruption(), sentinel()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         // Give player enough energy
         battle.get_player_mut().battle_info.energy = 10;

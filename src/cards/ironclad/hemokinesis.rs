@@ -32,6 +32,8 @@ pub fn hemokinesis_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -90,7 +92,6 @@ mod tests {
         use crate::game::{global_info::GlobalInfo, deck::Deck};
         use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
         use crate::cards::ironclad::strike;
-        use crate::game::enemy::EnemyTrait;
         
 
         let mut rng = rand::rng();
@@ -100,7 +101,7 @@ mod tests {
 
         // Create deck with hemokinesis and strike cards
         let deck = Deck::new(vec![hemokinesis(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_player_hp = battle.get_player().battle_info.get_hp();
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
@@ -132,7 +133,6 @@ mod tests {
         use crate::game::{global_info::GlobalInfo, deck::Deck};
         use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
         use crate::cards::ironclad::strike;
-        use crate::game::enemy::EnemyTrait;
         
 
         let mut rng = rand::rng();
@@ -142,7 +142,7 @@ mod tests {
 
         // Create deck with hemokinesis+ and strike cards
         let deck = Deck::new(vec![hemokinesis_upgraded(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, vec![enemy], &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), vec![enemy], &mut rng);
 
         let initial_player_hp = battle.get_player().battle_info.get_hp();
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();

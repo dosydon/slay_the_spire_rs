@@ -75,6 +75,8 @@ pub fn feel_no_pain_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -132,7 +134,7 @@ mod tests {
 
         // Create battle with Feel No Pain and Slimed (an exhaust card)
         let deck = Deck::new(vec![feel_no_pain(), slimed()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Feel No Pain to activate the power
         let feel_no_pain_idx = battle.get_hand().iter().position(|c| c.get_name() == "Feel No Pain").unwrap();
@@ -180,7 +182,7 @@ mod tests {
 
         // Create battle with Feel No Pain+ and Slimed
         let deck = Deck::new(vec![feel_no_pain_upgraded(), slimed()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Feel No Pain+ to activate the power
         let feel_no_pain_idx = battle.get_hand().iter().position(|c| c.get_name() == "Feel No Pain+").unwrap();
@@ -226,7 +228,7 @@ mod tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 
         let deck = Deck::new(vec![feel_no_pain()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
 

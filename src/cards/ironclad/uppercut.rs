@@ -32,7 +32,7 @@ pub fn uppercut_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
-    use crate::enemies::gremlin_nob::GremlinNob;
+    use crate::{enemies::gremlin_nob::GremlinNob, game::PlayerRunState};
 
     use super::*;
 
@@ -108,7 +108,7 @@ mod tests {
 
         // Create battle with Uppercut+ in hand
         let deck = Deck::new(vec![uppercut_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let enemy_initial_hp = battle.get_enemies()[0].get_current_hp();
         let enemy_initial_weak = battle.get_enemies()[0].get_weak();
@@ -157,7 +157,7 @@ mod tests {
 
         // Create battle with Uppercut in hand
         let deck = Deck::new(vec![uppercut()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let enemy1_initial_hp = battle.get_enemies()[0].get_current_hp();
         let enemy2_initial_hp = battle.get_enemies()[1].get_current_hp();
@@ -196,7 +196,7 @@ mod tests {
 
         // Create battle with Uppercut in hand
         let deck = Deck::new(vec![uppercut()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give enemy 2 Artifact charges
         battle.get_enemies_mut()[0].battle_info.gain_artifact(2);
@@ -244,7 +244,7 @@ mod tests {
 
         // Create battle with Uppercut in hand
         let deck = Deck::new(vec![uppercut()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Give enemy only 1 Artifact charge (not enough to block both debuffs)
         battle.get_enemies_mut()[0].battle_info.gain_artifact(1);

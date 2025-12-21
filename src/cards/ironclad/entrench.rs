@@ -22,6 +22,8 @@ pub fn entrench_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
 
     #[test]
@@ -69,7 +71,7 @@ mod tests {
 
         // Create battle with Defend and Entrench in hand
         let deck = Deck::new(vec![defend(), entrench()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Defend first to gain some block
         let defend_idx = 0;
@@ -112,7 +114,7 @@ mod tests {
 
         // Create battle with Defend and Entrench+ in hand
         let deck = Deck::new(vec![defend(), entrench_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Defend first to gain some block
         let defend_idx = 0;
@@ -154,7 +156,7 @@ mod tests {
 
         // Create battle with Entrench in hand but no prior block
         let deck = Deck::new(vec![entrench()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_block = battle.get_player().get_block();
         assert_eq!(initial_block, 0);
@@ -188,7 +190,7 @@ mod tests {
 
         // Create battle with Defend and two Entrench+ cards (cost less energy)
         let deck = Deck::new(vec![defend(), entrench_upgraded(), entrench_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Play Defend first
         let defend_idx = 0;

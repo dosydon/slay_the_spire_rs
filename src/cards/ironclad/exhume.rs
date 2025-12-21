@@ -63,7 +63,9 @@ mod integration_tests {
     use crate::battle::Battle;
     use crate::battle::target::Entity;
     use crate::battle::enemy_in_battle::EnemyInBattle;
-    use crate::battle::battle_action::{BattleAction, BattleState};
+    use crate::battle::battle_action::BattleAction;
+    use crate::battle::battle_state::BattleState;
+    use crate::game::PlayerRunState;
     use crate::game::deck::Deck;
     use crate::game::global_info::GlobalInfo;
     use crate::game::enemy::EnemyTrait;
@@ -80,7 +82,7 @@ mod integration_tests {
 
         // Create battle with Exhume and Seeing Red (Seeing Red will be exhausted first)
         let deck = Deck::new(vec![seeing_red(), exhume()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Exhaust Seeing Red first by playing it
         let seeing_red_idx = battle.get_hand().iter().position(|c| c.get_name() == "Seeing Red").unwrap();
@@ -119,7 +121,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![exhume_upgraded()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
 
@@ -139,7 +141,7 @@ mod integration_tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::JawWorm(jaw_worm))];
 
         let deck = Deck::new(vec![exhume()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         let initial_energy = battle.get_player().get_energy();
 
@@ -160,7 +162,7 @@ mod integration_tests {
 
         // Create battle with Seeing Red and Exhume
         let deck = Deck::new(vec![seeing_red(), exhume()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Exhaust Seeing Red first
         let seeing_red_idx = battle.get_hand().iter().position(|c| c.get_name() == "Seeing Red").unwrap();

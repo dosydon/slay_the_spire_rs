@@ -263,7 +263,7 @@ impl EventListener for EnrageListener {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::global_info::GlobalInfo;
+    use crate::game::{PlayerRunState, global_info::GlobalInfo};
 
     #[test]
     fn test_gremlin_nob_creation() {
@@ -471,7 +471,7 @@ mod tests {
         // Create Gremlin Nob enemy
         let gremlin_nob = GremlinNob::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::GremlinNob(gremlin_nob))];
-        let battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         // Test that the enemy is properly set up
         assert_eq!(battle.get_enemies().len(), 1);
@@ -520,7 +520,7 @@ mod tests {
         // Create Gremlin Nob enemy
         let gremlin_nob = GremlinNob::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::GremlinNob(gremlin_nob))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         // Manually apply ActivateEnrage effect
         let activate_enrage_effect = BaseEffect::ActivateEnrage {
@@ -643,7 +643,7 @@ mod tests {
         // Test the enrage mechanic directly
         let gremlin_nob = GremlinNob::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::GremlinNob(gremlin_nob))];
-        let mut battle = Battle::new(deck, global_info, 80, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
         
         let initial_strength = battle.get_enemies()[0].battle_info.get_strength();
         

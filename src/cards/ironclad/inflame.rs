@@ -14,6 +14,8 @@ pub fn inflame_upgraded() -> Card {
 
 #[cfg(test)]
 mod tests {
+    use crate::game::PlayerRunState;
+
     use super::*;
     
 
@@ -62,7 +64,7 @@ mod tests {
 
         // Create battle with Inflame in hand
         let deck = Deck::new(vec![inflame(), strike()]);
-        let mut battle = Battle::new(deck, global_info, 50, 80, enemies, &mut rng);
+        let mut battle = Battle::new(deck, global_info, PlayerRunState::new(50, 80, 0), enemies, &mut rng);
 
         // Check initial strength
         let initial_strength = battle.get_player().battle_info.get_strength();
