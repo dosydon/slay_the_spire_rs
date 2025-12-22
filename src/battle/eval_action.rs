@@ -634,8 +634,8 @@ mod tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 
         // Create battle with Anchor relic listener
-        let relics = vec![Relic::Anchor];
-        let battle = Battle::new_with_relics(deck, global_info, 50, 80, enemies, relics, &mut rng);
+        let player_state = PlayerRunState::new_with_relics(50, 80, 0, vec![Relic::Anchor]);
+        let battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Check that player now has 10 block from Anchor relic (CombatStart already emitted)
         assert_eq!(battle.get_player().battle_info.get_block(), 10);
@@ -661,7 +661,8 @@ mod tests {
 
         // Create battle with Blood Vial relic listener
         let relics = vec![Relic::BloodVial];
-        let battle = Battle::new_with_relics(deck, global_info, 48, 80, enemies, relics, &mut rng);
+        let player_state = PlayerRunState::new_with_relics(48, 80, 0, relics);
+        let battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Check that player now has 50 HP (48 + 2 from Blood Vial)
         assert_eq!(battle.get_player().battle_info.get_hp(), 50);

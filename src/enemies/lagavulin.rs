@@ -316,7 +316,6 @@ mod tests {
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
 
         let mut lagavulin = Lagavulin::instantiate(&mut rng, &global_info);
-        let initial_hp = lagavulin.get_hp();
 
         // Lagavulin starts asleep
         assert_eq!(lagavulin.state, LagavulinState::Asleep);

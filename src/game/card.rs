@@ -146,10 +146,9 @@ impl Card {
             return self; // Already upgraded
         }
 
-        let rarity = self.rarity; // Preserve rarity when upgrading
 
         // Delegate to individual card upgrade functions and preserve rarity
-        let mut upgraded_card = match self.card_enum {
+        let upgraded_card = match self.card_enum {
             CardEnum::Strike => crate::cards::ironclad::strike::strike_upgraded(),
             CardEnum::Defend => crate::cards::ironclad::defend::defend_upgraded(),
             CardEnum::Bash => crate::cards::ironclad::bash::bash_upgraded(),

@@ -266,11 +266,6 @@ mod tests {
         // Play Rage
         let result = battle.play_card(0, Entity::Player);
         assert!(result.is_ok());
-
-        // For now, just verify the effect is activated
-        // Full turn-based testing would require more complex turn management
-        let player = battle.get_player();
-        assert!(player.battle_info.get_block() >= 0);
     }
 }
 

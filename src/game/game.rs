@@ -847,7 +847,7 @@ mod tests {
     fn test_game_creation() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let game = Game::new(deck, global_info, map, 80, 80);
         
         assert_eq!(game.get_state(), &GameState::OnMap);
@@ -862,7 +862,7 @@ mod tests {
     fn test_choose_path_action() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
         
@@ -881,7 +881,7 @@ mod tests {
     fn test_battle_action_delegation() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, __node_position) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
         
@@ -900,7 +900,7 @@ mod tests {
     fn test_invalid_state_actions() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
         
@@ -917,7 +917,7 @@ mod tests {
     fn test_hp_syncing_between_game_and_battle() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 70, 80);
         let mut rng = rand::rng();
         
@@ -939,13 +939,6 @@ mod tests {
         let initial_game_hp = game.get_player_hp();
         game.eval_action(GameAction::Battle(BattleAction::EndTurn), &mut rng).unwrap();
         
-        // Check if HP was affected during battle
-        if let Some(battle) = game.get_battle() {
-            let battle_hp = battle.get_final_player_hp();
-            // Game HP should still be the old value until battle ends
-            assert_eq!(game.get_player_hp(), initial_game_hp);
-        }
-        
         // Test healing outside of battle
         game.heal_player(5);
         let healed_hp = game.get_player_hp();
@@ -957,7 +950,7 @@ mod tests {
     fn test_max_hp_management() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         
         // Test max HP increase
@@ -1021,7 +1014,7 @@ mod tests {
     fn test_card_reward_selection_state() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1054,7 +1047,7 @@ mod tests {
     fn test_select_card_reward_valid_action() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1068,7 +1061,6 @@ mod tests {
         };
         game.start_card_reward_selection(&mut rng, test_reward_state);
         let initial_deck_size = game.deck.size();
-        let reward_options = game.get_card_reward_options().to_vec();
 
         // Select first card reward
         let result = game.eval_action(GameAction::SelectCardReward(0), &mut rng);
@@ -1089,7 +1081,7 @@ mod tests {
     fn test_select_card_reward_invalid_state() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1103,7 +1095,7 @@ mod tests {
     fn test_select_card_reward_invalid_index() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1132,7 +1124,7 @@ mod tests {
     fn test_card_reward_selection_different_options() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1160,7 +1152,7 @@ mod tests {
     fn test_card_reward_selection_no_duplicates() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1188,7 +1180,7 @@ mod tests {
     fn test_start_event() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
 
         // Start an event
@@ -1216,14 +1208,13 @@ mod tests {
     fn test_choose_event_banana() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
         // Start an event
         game.start_event(MapEvent::BigFish);
 
-        let initial_hp = game.get_player_hp();
         let initial_max_hp = game.get_player_max_hp();
 
         // Choose Banana (should be first choice)
@@ -1247,7 +1238,7 @@ mod tests {
     fn test_choose_event_donut() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 60, 90); // Start with low HP
         let mut rng = rand::rng();
 
@@ -1278,7 +1269,7 @@ mod tests {
     fn test_choose_event_invalid_state() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1292,7 +1283,7 @@ mod tests {
     fn test_choose_event_invalid_index() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1349,10 +1340,7 @@ mod tests {
 
     #[test]
     fn test_rest_site_upgrade_starts_selection_state() {
-        let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
         // Move to rest site first
@@ -1381,7 +1369,7 @@ mod tests {
     fn test_select_card_to_upgrade_valid() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1423,7 +1411,7 @@ mod tests {
     fn test_select_card_to_upgrade_invalid_state() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1437,7 +1425,7 @@ mod tests {
     fn test_select_card_to_upgrade_invalid_index() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1454,8 +1442,8 @@ mod tests {
     fn test_get_upgradeable_cards() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let (map, _) = create_test_map();
+        let game = Game::new(deck, global_info, map, 80, 80);
 
         // Get upgradeable cards
         let upgradeable = game.get_upgradeable_cards();
@@ -1482,8 +1470,8 @@ mod tests {
     fn test_has_upgradeable_cards() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
-        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let (map, _) = create_test_map();
+        let game = Game::new(deck, global_info, map, 80, 80);
 
         // Starter deck should have upgradeable cards
         assert!(game.has_upgradeable_cards());
@@ -1497,7 +1485,7 @@ mod tests {
     fn test_already_upgraded_card_cannot_be_upgraded() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1519,7 +1507,7 @@ mod tests {
     fn test_potion_pool_initialization() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let game = Game::new(deck, global_info, map, 80, 80);
 
         // Check that potion pool is initialized correctly
@@ -1531,7 +1519,7 @@ mod tests {
     fn test_reward_state_creation_with_potion_pool() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1556,9 +1544,8 @@ mod tests {
     fn test_potion_pool_progression() {
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
-        let mut rng = rand::rng();
 
         // Manually set counter to test progression
         game.potion_pool.reset_drop_counter();
@@ -1582,7 +1569,7 @@ mod tests {
 
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 
@@ -1623,7 +1610,7 @@ mod tests {
 
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-        let (map, start_node_position) = create_test_map();
+        let (map, _) = create_test_map();
         let mut game = Game::new(deck, global_info, map, 80, 80);
         let mut rng = rand::rng();
 

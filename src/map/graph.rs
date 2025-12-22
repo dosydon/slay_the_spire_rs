@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::map::node::{MapNode, NodeType};
+use crate::map::node::MapNode;
 use crate::map::error::MapError;
 
 /// Static graph-based map representation
@@ -99,6 +99,8 @@ impl Map {
 
 #[cfg(test)]
 mod tests {
+    use crate::map::NodeType;
+
     use super::*;
 
     #[test]

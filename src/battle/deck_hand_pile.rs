@@ -103,10 +103,6 @@ impl DeckHandPile {
         }
     }
     
-    pub(in crate::battle) fn exhaust_card(&mut self, card: Card) {
-        self.exhausted.push(card);
-    }
-
     /// Look at the top card of the draw pile without removing it
     pub(in crate) fn peek_top_card(&mut self) -> Option<Card> {
         // If deck is empty, shuffle discard pile into deck
@@ -429,20 +425,6 @@ mod tests {
         assert!(invalid_exhaust.is_none());
         assert_eq!(deck_hand_pile.hand_size(), 2);
         assert_eq!(deck_hand_pile.exhausted_size(), 1);
-    }
-
-    #[test] 
-    fn test_exhaust_card_directly() {
-        let deck = Deck::new(vec![strike()]);
-        let mut deck_hand_pile = DeckHandPile::new(deck);
-        
-        assert_eq!(deck_hand_pile.exhausted_size(), 0);
-        
-        let card_to_exhaust = defend();
-        deck_hand_pile.exhaust_card(card_to_exhaust);
-        
-        assert_eq!(deck_hand_pile.exhausted_size(), 1);
-        assert_eq!(deck_hand_pile.get_exhausted()[0].get_name(), "Defend");
     }
 
     #[test]

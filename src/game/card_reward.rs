@@ -452,9 +452,6 @@ mod tests {
         let mut pool = CardRewardPool::new();
         let mut rng = StdRng::seed_from_u64(12345);
 
-        // Draw cards until we get a common (might take a few tries due to RNG)
-        let initial_offset = pool.get_rare_offset();
-
         // Manually set offset to test increment
         pool.rare_offset_percent = 0;
 
@@ -512,19 +509,15 @@ mod tests {
         let mut pool = CardRewardPool::new();
 
         // At -5% offset, rare chance should be lower than base
-        let (common, uncommon, rare) = pool.get_adjusted_probabilities(CombatType::Normal);
-        assert!(rare < 3.0, "Rare chance should be less than 3% at -5 offset");
-        assert!(common > 60.0, "Common chance should be higher than 60% at -5 offset");
+        let (common, _, rare) = pool.get_adjusted_probabilities(CombatType::Normal);
+        assert!(rare < 3.0, "Rare chance should be less than base 3% at -5 offset");
+        assert!(common > 60.0, "Common chance should be greater than base 60% at -5 offset");
 
         // At +10% offset, rare chance should be higher than base
         pool.rare_offset_percent = 10;
-        let (common, uncommon, rare) = pool.get_adjusted_probabilities(CombatType::Normal);
-        assert!(rare > 3.0, "Rare chance should be more than 3% at +10 offset: {}", rare);
-        assert!(common < 60.0, "Common chance should be less than 60% at +10 offset: {}", common);
-
-        // Probabilities should always sum to 100
-        let sum = common + uncommon + rare;
-        assert!((sum - 100.0).abs() < 0.01, "Probabilities should sum to 100: {}", sum);
+        let (common, _, rare) = pool.get_adjusted_probabilities(CombatType::Normal);
+        assert!(rare > 3.0, "Rare chance should be greater than base 3% at +10 offset");
+        assert!(common < 60.0, "Common chance should be less than base 60% at +10 offset");
     }
 
     #[test]

@@ -121,11 +121,6 @@ impl Battle {
     pub fn get_enemy_move_and_effects(&self, enemy_index: usize) -> Option<(&EnemyMove, &Vec<Effect>)> {
         self.enemy_actions.get(enemy_index).and_then(|pair| pair.as_ref().map(|(enemy_move, effects)| (enemy_move, effects)))
     }
-    
-    /// Get all stored enemy moves
-    pub(in crate::battle) fn get_all_enemy_moves(&self) -> Vec<Option<&EnemyMove>> {
-        self.enemy_actions.iter().map(|pair| pair.as_ref().map(|(enemy_move, _)| enemy_move)).collect()
-    }
 }
 
 #[cfg(test)]

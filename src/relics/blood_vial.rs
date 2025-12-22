@@ -43,6 +43,8 @@ impl EventListener for BloodVialRelic {
 
 #[cfg(test)]
 mod tests {
+    use crate::{game::PlayerRunState};
+
     use super::*;
 
     #[test]
@@ -113,7 +115,6 @@ mod tests {
         use crate::battle::enemy_in_battle::EnemyInBattle;
         use crate::relics::Relic;
 
-        let player = Entity::Player;
 
         // Create a battle context
         let deck = Deck::new(vec![strike()]);
@@ -123,8 +124,8 @@ mod tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 
         // Create battle with the blood vial relic listener
-        let relics = vec![Relic::BloodVial];
-        let battle = Battle::new_with_relics(deck, global_info, 48, 80, enemies, relics, &mut rng);
+        let player_state = PlayerRunState::new_with_relics(48, 80, 0, vec![Relic::BloodVial]);
+        let battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Verify player now has exactly 50 HP (48 + 2 from Blood Vial)
         let final_hp = battle.get_player().battle_info.get_hp();

@@ -95,29 +95,12 @@ impl Battle {
         battle
     }
 
-    /// Deprecated: Use Battle::new with PlayerRunState instead
-    #[deprecated(note = "Use Battle::new with PlayerRunState instead")]
-    pub fn new_with_relics(deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, relics: Vec<crate::relics::Relic>, rng: &mut impl rand::Rng) -> Self {
-        let player_state = PlayerRunState::new_with_relics(initial_hp, max_hp, 0, relics);
-        Self::new(deck, global_info, player_state, enemies, rng)
-    }
-
     /// Create a new battle with deck shuffling
     pub fn new_with_shuffle(mut deck: Deck, global_info: GlobalInfo, player_state: PlayerRunState, enemies: Vec<EnemyInBattle>, rng: &mut impl rand::Rng) -> Self {
         // Shuffle the deck first
         deck.shuffle(rng);
 
         // Then call the main constructor
-        Self::new(deck, global_info, player_state, enemies, rng)
-    }
-
-    /// Deprecated: Use Battle::new_with_shuffle with PlayerRunState instead
-    #[deprecated(note = "Use Battle::new_with_shuffle with PlayerRunState instead")]
-    pub fn new_with_shuffle_and_relics(mut deck: Deck, global_info: GlobalInfo, initial_hp: u32, max_hp: u32, enemies: Vec<EnemyInBattle>, relics: Vec<crate::relics::Relic>, rng: &mut impl rand::Rng) -> Self {
-        // Shuffle the deck first
-        deck.shuffle(rng);
-
-        let player_state = PlayerRunState::new_with_relics(initial_hp, max_hp, 0, relics);
         Self::new(deck, global_info, player_state, enemies, rng)
     }
 

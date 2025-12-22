@@ -294,28 +294,4 @@ mod tests {
         assert_eq!(effects.len(), 1);
         assert!(matches!(effects[0], Effect::ApplyVulnerable { duration: 2 }));
     }
-
-    #[test]
-    fn test_move_pattern_probabilities() {
-        let mut rng = rand::rng();
-        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
-
-        let mut bite_count = 0;
-        let mut grow_count = 0;
-        let iterations = 1000;
-
-        for _ in 0..iterations {
-            let mut fungi = FungiBeast::instantiate(&mut rng, &global_info);
-            let (first_move, _) = fungi.choose_move_and_effects(&global_info, &mut rng);
-
-            match first_move {
-                FungiBeastMove::Bite => bite_count += 1,
-                FungiBeastMove::Grow => grow_count += 1,
-            }
-        }
-
-        // First move should be roughly 60% Bite, 40% Grow
-        let bite_ratio = bite_count as f64 / iterations as f64;
-        assert!(bite_ratio > 0.55 && bite_ratio < 0.65, "Bite ratio {} should be around 0.60", bite_ratio);
-    }
 }

@@ -4,7 +4,6 @@
 
 use crate::game::effect::Effect;
 use crate::game::global_info::GlobalInfo;
-use crate::utils::CategoricalDistribution;
 
 /// All non-combat events in Slay the Spire
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
@@ -51,17 +50,10 @@ impl MapEvent {
 }
 
 /// Sample a random SLS Event based on the current game state
-pub fn sample_sls_event(global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> MapEvent {
+pub fn sample_sls_event(_global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> MapEvent {
     // For now, only return BigFish since that's the only event we have implemented
     // In the future, this could be expanded to sample from a distribution based on floor, act, etc.
     MapEvent::BigFish
-}
-
-/// Create a distribution for Act 1 events (for future expansion)
-fn act1_event_distribution() -> CategoricalDistribution<MapEvent> {
-    CategoricalDistribution::new(vec![
-        (MapEvent::BigFish, 1.0), // Currently the only event
-    ])
 }
 
 /// Big Fish event choices

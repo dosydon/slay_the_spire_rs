@@ -44,7 +44,7 @@ impl EventListener for AnchorRelic {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::battle::target::Entity;
+    use crate::{battle::target::Entity, game::PlayerRunState};
 
     #[test]
     fn test_anchor_relic_creation() {
@@ -114,9 +114,6 @@ mod tests {
         use crate::battle::enemy_in_battle::EnemyInBattle;
         use crate::relics::Relic;
 
-        let player = Entity::Player;
-        let anchor = AnchorRelic::new(player);
-
         // Create a battle context
         let deck = Deck::new(vec![strike()]);
         let mut rng = rand::rng();
@@ -125,8 +122,8 @@ mod tests {
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
 
         // Create battle with the anchor relic listener
-        let relics = vec![Relic::Anchor];
-        let battle = Battle::new_with_relics(deck, global_info, 50, 80, enemies, relics, &mut rng);
+        let player_state = PlayerRunState::new_with_relics(50, 80, 0, vec![Relic::Anchor]);
+        let battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
 
         // Verify player now has exactly 10 block (CombatStart event already emitted)
         let final_block = battle.get_player().battle_info.get_block();
