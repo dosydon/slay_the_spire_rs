@@ -1,9 +1,14 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum BattleState {
     PlayerTurn,
-    SelectCardInHand,
+    SelectCardInHand (CardInHandTo),
     SelectCardInDiscard,
-    SelectCardInHandToPutOnDeck,
-    SelectCardToDuplicate { copies: u32 },
     SelectCardInExhaust,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum CardInHandTo {
+    PutOnDeck,
+    Upgrade,
+    Duplicate { copies: u32 },
 }

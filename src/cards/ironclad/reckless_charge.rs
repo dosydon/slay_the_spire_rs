@@ -1,19 +1,13 @@
-use crate::game::{card::{Card, Rarity}, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::{Card, Rarity, CardClass}, card_type::CardType, card_enum::CardEnum, effect::Effect};
 
 /// Reckless Charge - Common Attack Card
 /// Cost: 0
 /// Effect: Deal 7 damage. Add Dazed to discard pile
 pub fn reckless_charge() -> Card {
-    Card::new(
-        CardEnum::RecklessCharge,
-        0,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::RecklessCharge, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTarget { amount: 7, num_attacks: 1, strength_multiplier: 1 },
             Effect::AddStatusToDiscard { status_card: crate::game::card_enum::CardEnum::Dazed },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
@@ -21,16 +15,10 @@ pub fn reckless_charge() -> Card {
 /// Cost: 0
 /// Effect: Deal 10 damage. Add Dazed to discard pile
 pub fn reckless_charge_upgraded() -> Card {
-    Card::new(
-        CardEnum::RecklessCharge,
-        0,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::RecklessCharge, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
             Effect::AddStatusToDiscard { status_card: crate::game::card_enum::CardEnum::Dazed },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -51,7 +39,7 @@ mod tests {
         let card = reckless_charge();
         assert_eq!(card.get_name(), "Reckless Charge");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -61,7 +49,7 @@ mod tests {
         let card = reckless_charge_upgraded();
         assert_eq!(card.get_name(), "Reckless Charge+");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }

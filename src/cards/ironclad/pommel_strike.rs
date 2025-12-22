@@ -1,17 +1,17 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 pub fn pommel_strike() -> Card {
-    Card::new(CardEnum::PommelStrike, 1, CardType::Attack, vec![
+    Card::new(CardEnum::PommelStrike, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
         Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 },
         Effect::DrawCard { count: 1 }
-    ], Rarity::Common)
+    ])
 }
 
 pub fn pommel_strike_upgraded() -> Card {
-    Card::new(CardEnum::PommelStrike, 1, CardType::Attack, vec![
+    Card::new(CardEnum::PommelStrike, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
         Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
         Effect::DrawCard { count: 2 }
-    ], Rarity::Common)
+    ])
         .set_upgraded(true)
 }
 
@@ -25,7 +25,7 @@ mod tests {
         let card = pommel_strike();
         assert_eq!(card.get_name(), "PommelStrike");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(*card.get_card_type(), CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
     }
@@ -46,7 +46,7 @@ mod tests {
         let card = pommel_strike_upgraded();
         assert_eq!(card.get_name(), "PommelStrike+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(*card.get_card_type(), CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
     }

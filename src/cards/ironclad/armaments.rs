@@ -1,26 +1,14 @@
-use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Armaments - Gain 5 Block. Upgrade a card in your hand for the rest of combat.
 pub fn armaments() -> Card {
-    Card::new(
-        CardEnum::Armaments,
-        1,
-        CardType::Skill,
-        vec![Effect::GainDefense { amount: 5 }, Effect::EnterSelectCardInHand],
-        Rarity::Common
-    )
+    Card::new(CardEnum::Armaments, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![Effect::GainDefense { amount: 5 }, Effect::EnterSelectCardInHand])
         .set_play_condition(Condition::True)
 }
 
 /// Armaments+ (Upgraded version) - Gain 5 Block. Upgrade ALL cards in your hand for the rest of combat.
 pub fn armaments_upgraded() -> Card {
-    Card::new(
-        CardEnum::Armaments,
-        1,
-        CardType::Skill,
-        vec![Effect::GainDefense { amount: 5 }, Effect::UpgradeAllCardsInHand],
-        Rarity::Common
-    )
+    Card::new(CardEnum::Armaments, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![Effect::GainDefense { amount: 5 }, Effect::UpgradeAllCardsInHand])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -28,6 +16,7 @@ pub fn armaments_upgraded() -> Card {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::battle::battle_state::CardInHandTo;
 
     #[test]
     fn test_armaments_creation() {
@@ -35,7 +24,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Armaments");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 5 });
         assert_eq!(card.get_effects()[1], Effect::EnterSelectCardInHand);
@@ -49,7 +38,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Armaments+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 5 });
         assert_eq!(card.get_effects()[1], Effect::UpgradeAllCardsInHand);
@@ -113,8 +102,8 @@ let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng)
         let block_after_armaments = battle.get_player().get_block();
         assert_eq!(block_after_armaments, 5);
 
-        // Verify battle is now in SelectCardInHand state
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardInHand);
+        // Verify battle is now in SelectCardInHand state with Upgrade
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardInHand(CardInHandTo::Upgrade));
 
         // Verify Strike is still in hand and not upgraded
         let hand = battle.get_hand();
@@ -163,8 +152,8 @@ let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng)
         let result = battle.play_card(armaments_idx, Entity::Player);
         assert!(result.is_ok());
 
-        // Verify battle is in SelectCardInHand state
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardInHand);
+        // Verify battle is in SelectCardInHand state with Upgrade
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardInHand(CardInHandTo::Upgrade));
 
         // Try to upgrade the already-upgraded Strike
         let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardInHand(0), &mut rng);
@@ -205,8 +194,8 @@ let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng)
         let result = battle.play_card(armaments_idx, crate::battle::target::Entity::Player);
         assert!(result.is_ok());
 
-        // Verify battle is in SelectCardInHand state
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardInHand);
+        // Verify battle is in SelectCardInHand state with Upgrade
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardInHand(CardInHandTo::Upgrade));
 
         // Try to select an invalid card index (hand should be empty after playing Armaments)
         let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardInHand(0), &mut rng);

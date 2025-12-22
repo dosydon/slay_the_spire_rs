@@ -1,15 +1,15 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Offering - Rare Skill Card
 /// Cost: 0
 /// Effect: Lose 6 HP. Gain 2 Energy. Draw 3 cards. Exhaust.
 pub fn offering() -> Card {
-    Card::new(CardEnum::Offering, 0, CardType::Skill, vec![
+    Card::new(CardEnum::Offering, 0, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
         Effect::LoseHp(6),
         Effect::GainEnergy { amount: 2 },
         Effect::DrawCard { count: 3 },
         Effect::Exhaust,
-    ], Rarity::Rare)
+    ])
         .set_playable(true)
 }
 
@@ -17,12 +17,12 @@ pub fn offering() -> Card {
 /// Cost: 0
 /// Effect: Lose 4 HP. Gain 2 Energy. Draw 5 cards. Exhaust.
 pub fn offering_upgraded() -> Card {
-    Card::new(CardEnum::Offering, 0, CardType::Skill, vec![
+    Card::new(CardEnum::Offering, 0, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
         Effect::LoseHp(4),
         Effect::GainEnergy { amount: 2 },
         Effect::DrawCard { count: 5 },
         Effect::Exhaust,
-    ], Rarity::Rare)
+    ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -39,7 +39,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Offering");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 4);
         assert_eq!(card.get_effects()[0], Effect::LoseHp(6));
         assert_eq!(card.get_effects()[1], Effect::GainEnergy { amount: 2 });
@@ -55,7 +55,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Offering+");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 4);
         assert_eq!(card.get_effects()[0], Effect::LoseHp(4));
         assert_eq!(card.get_effects()[1], Effect::GainEnergy { amount: 2 });

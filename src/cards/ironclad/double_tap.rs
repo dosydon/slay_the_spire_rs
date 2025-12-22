@@ -1,31 +1,19 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 pub fn double_tap() -> Card {
-    Card::new(
-        CardEnum::DoubleTap,
-        1,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::DoubleTap, 1, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
             Effect::ActivateDoubleTap { remaining_attacks: 1 },
             Effect::Exhaust,
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
 pub fn double_tap_upgraded() -> Card {
-    Card::new(
-        CardEnum::DoubleTap,
-        1,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::DoubleTap, 1, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
             Effect::ActivateDoubleTap { remaining_attacks: 2 },
             Effect::Exhaust,
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -83,7 +71,7 @@ mod tests {
         let card = double_tap();
         assert_eq!(card.get_name(), "Double Tap");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
         assert_eq!(card.get_effects()[0], Effect::ActivateDoubleTap { remaining_attacks: 1 });
@@ -95,7 +83,7 @@ mod tests {
         let card = double_tap_upgraded();
         assert_eq!(card.get_name(), "Double Tap+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
         assert_eq!(card.get_effects()[0], Effect::ActivateDoubleTap { remaining_attacks: 2 });

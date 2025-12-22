@@ -1,4 +1,6 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Condition, card::Rarity};
+use crate::game::{card::{Card, CardClass}, card_enum::CardEnum, effect::Condition};
+#[cfg(test)]
+use crate::game::card_type::CardType;
 
 /// Dazed - Status Card
 /// Cost: -
@@ -7,9 +9,8 @@ pub fn dazed() -> Card {
     Card::new(
         CardEnum::Dazed,
         1, // Cost 1 but unplayable due to condition
-        CardType::Status,
-        vec![],
-        Rarity::Basic
+        CardClass::Status,
+        vec![]
     )
         .set_play_condition(Condition::False)
 }
@@ -23,7 +24,7 @@ mod tests {
         let card = dazed();
         assert_eq!(card.get_name(), "Dazed");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Status);
+        assert_eq!(card.get_card_type(), CardType::Status);
         assert!(!card.is_upgraded());
         assert!(!card.is_playable()); // Should not be playable
     }

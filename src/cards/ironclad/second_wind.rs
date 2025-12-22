@@ -1,16 +1,10 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Second Wind - Uncommon Skill Card
 /// Cost: 1
 /// Effect: Exhaust all non-Attack cards from your hand. Gain 5 Block per card exhausted.
 pub fn second_wind() -> Card {
-    Card::new(
-        CardEnum::SecondWind,
-        1,
-        CardType::Skill,
-        vec![Effect::ExhaustNonAttackCardsFromHand { block_per_card: 5 }],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::SecondWind, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::ExhaustNonAttackCardsFromHand { block_per_card: 5 }])
         .set_playable(true)
 }
 
@@ -18,13 +12,7 @@ pub fn second_wind() -> Card {
 /// Cost: 1
 /// Effect: Exhaust all non-Attack cards from your hand. Gain 8 Block per card exhausted.
 pub fn second_wind_upgraded() -> Card {
-    Card::new(
-        CardEnum::SecondWind,
-        1,
-        CardType::Skill,
-        vec![Effect::ExhaustNonAttackCardsFromHand { block_per_card: 8 }],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::SecondWind, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::ExhaustNonAttackCardsFromHand { block_per_card: 8 }])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -40,7 +28,7 @@ mod tests {
         let card = second_wind();
         assert_eq!(card.get_name(), "Second Wind");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -51,7 +39,7 @@ mod tests {
         let card = second_wind_upgraded();
         assert_eq!(card.get_name(), "Second Wind+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
@@ -124,7 +112,7 @@ mod tests {
         // All remaining cards should be Attack cards
         let hand = battle.cards.get_hand();
         for card in hand {
-            assert_eq!(card.get_card_type(), &CardType::Attack);
+            assert_eq!(card.get_card_type(), CardType::Attack);
         }
     }
 
@@ -180,7 +168,7 @@ mod tests {
         // The remaining card should be an Attack
         let hand = battle.cards.get_hand();
         assert_eq!(hand.len(), 1);
-        assert_eq!(hand[0].get_card_type(), &CardType::Attack);
+        assert_eq!(hand[0].get_card_type(), CardType::Attack);
         assert_eq!(hand[0].get_name(), "Strike");
     }
 

@@ -1,26 +1,14 @@
-use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Intimidate - Apply 1 Weak to all enemies. Exhaust.
 pub fn intimidate() -> Card {
-    Card::new(
-        CardEnum::Intimidate,
-        0,
-        CardType::Skill,
-        vec![Effect::ApplyWeakAll { duration: 1 }, Effect::Exhaust],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::Intimidate, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::ApplyWeakAll { duration: 1 }, Effect::Exhaust])
         .set_play_condition(Condition::True)
 }
 
 /// Intimidate+ (Upgraded version) - Apply 2 Weak to all enemies
 pub fn intimidate_upgraded() -> Card {
-    Card::new(
-        CardEnum::Intimidate,
-        0,
-        CardType::Skill,
-        vec![Effect::ApplyWeakAll { duration: 2 }, Effect::Exhaust],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::Intimidate, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::ApplyWeakAll { duration: 2 }, Effect::Exhaust])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -37,7 +25,7 @@ mod tests {
         let intimidate_card = intimidate();
         assert_eq!(intimidate_card.get_name(), "Intimidate");
         assert_eq!(intimidate_card.get_cost(), 0);
-        assert_eq!(intimidate_card.get_card_type(), &CardType::Skill);
+        assert_eq!(intimidate_card.get_card_type(), CardType::Skill);
         assert!(!intimidate_card.is_upgraded());
 
         let effects = intimidate_card.get_effects();
@@ -50,7 +38,7 @@ mod tests {
         let intimidate_plus = intimidate_upgraded();
         assert_eq!(intimidate_plus.get_name(), "Intimidate+");
         assert_eq!(intimidate_plus.get_cost(), 0);
-        assert_eq!(intimidate_plus.get_card_type(), &CardType::Skill);
+        assert_eq!(intimidate_plus.get_card_type(), CardType::Skill);
         assert!(intimidate_plus.is_upgraded());
 
         let effects = intimidate_plus.get_effects();

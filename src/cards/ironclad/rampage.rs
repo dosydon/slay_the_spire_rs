@@ -1,21 +1,15 @@
-use crate::game::{card::{Card, Rarity}, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::Effect, card_type::CardType, card_enum::CardEnum};
 
 /// Rampage - Uncommon Attack Card
 /// Cost: 1
 /// Effect: Deal 8 damage. Increases by 5 each use
 pub fn rampage() -> Card {
-    Card::new(
-        CardEnum::Rampage,
-        1,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Rampage, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTargetWithScaling {
                 base_damage: 8,
                 scaling: 5,
             },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
@@ -23,18 +17,12 @@ pub fn rampage() -> Card {
 /// Cost: 1
 /// Effect: Deal 8 damage. Increases by 8 each use
 pub fn rampage_upgraded() -> Card {
-    Card::new(
-        CardEnum::Rampage,
-        1,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Rampage, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTargetWithScaling {
                 base_damage: 8,
                 scaling: 8, // upgraded version scales by 8 instead of 5
             },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -50,7 +38,7 @@ mod tests {
         let card = rampage();
         assert_eq!(card.get_name(), "Rampage");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -61,7 +49,7 @@ mod tests {
         let card = rampage_upgraded();
         assert_eq!(card.get_name(), "Rampage+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

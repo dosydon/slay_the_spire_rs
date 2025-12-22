@@ -1,32 +1,20 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 pub fn feed() -> Card {
-    Card::new(
-        CardEnum::Feed,
-        1,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Feed, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
             Effect::HealAndIncreaseMaxHp(3),
             Effect::Exhaust,
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
 pub fn feed_upgraded() -> Card {
-    Card::new(
-        CardEnum::Feed,
-        1,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Feed, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 1 },
             Effect::HealAndIncreaseMaxHp(4),
             Effect::Exhaust,
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -40,7 +28,7 @@ mod tests {
         let card = feed();
         assert_eq!(card.get_name(), "Feed");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 3);
         assert!(card.is_playable());
@@ -51,7 +39,7 @@ mod tests {
         let card = feed_upgraded();
         assert_eq!(card.get_name(), "Feed+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 3);
         assert!(card.is_playable());

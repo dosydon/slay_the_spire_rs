@@ -1,16 +1,16 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Sword Boomerang - Common Attack Card
 /// Cost: 1
 /// Effect: Deal 3 damage 3 times
 pub fn sword_boomerang() -> Card {
-    Card::new(CardEnum::SwordBoomerang, 1, CardType::Attack, vec![
+    Card::new(CardEnum::SwordBoomerang, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
         Effect::AttackToTarget {
             amount: 3,
             num_attacks: 3,
             strength_multiplier: 1,
         },
-    ], Rarity::Common)
+    ])
         .set_playable(true)
 }
 
@@ -18,13 +18,13 @@ pub fn sword_boomerang() -> Card {
 /// Cost: 1
 /// Effect: Deal 4 damage 3 times
 pub fn sword_boomerang_upgraded() -> Card {
-    Card::new(CardEnum::SwordBoomerang, 1, CardType::Attack, vec![
+    Card::new(CardEnum::SwordBoomerang, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
         Effect::AttackToTarget {
             amount: 4,
             num_attacks: 3,
             strength_multiplier: 1,
         },
-    ], Rarity::Common)
+    ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -39,7 +39,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Sword Boomerang");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::AttackToTarget {
             amount: 3,
@@ -56,7 +56,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Sword Boomerang+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::AttackToTarget {
             amount: 4,

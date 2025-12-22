@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Brutality Power Listener
@@ -47,9 +47,9 @@ impl EventListener for BrutalityListener {
 /// Cost: 0
 /// Effect: At the start of your turn, lose 1 HP and draw 1 card.
 pub fn brutality() -> Card {
-    Card::new(CardEnum::Brutality, 0, CardType::Power, vec![
+    Card::new(CardEnum::Brutality, 0, CardClass::IronClad(Rarity::Rare, CardType::Power), vec![
         Effect::ActivateBrutality,
-    ], Rarity::Rare)
+    ])
         .set_playable(true)
 }
 
@@ -57,9 +57,9 @@ pub fn brutality() -> Card {
 /// Cost: 0
 /// Effect: At the start of your turn, lose 1 HP and draw 1 card.
 pub fn brutality_upgraded() -> Card {
-    Card::new(CardEnum::Brutality, 0, CardType::Power, vec![
+    Card::new(CardEnum::Brutality, 0, CardClass::IronClad(Rarity::Rare, CardType::Power), vec![
         Effect::ActivateBrutality,
-    ], Rarity::Rare)
+    ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -74,7 +74,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Brutality");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::ActivateBrutality);
         assert!(!card.is_upgraded());
@@ -87,7 +87,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Brutality+");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::ActivateBrutality);
         assert!(card.is_upgraded());

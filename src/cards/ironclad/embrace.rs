@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Embrace Power Listener
@@ -44,16 +44,16 @@ impl EventListener for EmbraceListener {
 /// Cost: 2 (1 when upgraded)
 /// Effect: Whenever you Exhaust a card, draw 1 card.
 pub fn embrace() -> Card {
-    Card::new(CardEnum::Embrace, 2, CardType::Power, vec![
+    Card::new(CardEnum::Embrace, 2, CardClass::IronClad(Rarity::Rare, CardType::Power), vec![
         Effect::ActivateEmbrace,
-    ], Rarity::Rare)
+    ])
         .set_play_condition(Condition::True)
 }
 
 pub fn embrace_upgraded() -> Card {
-    Card::new(CardEnum::Embrace, 1, CardType::Power, vec![
+    Card::new(CardEnum::Embrace, 1, CardClass::IronClad(Rarity::Rare, CardType::Power), vec![
         Effect::ActivateEmbrace,
-    ], Rarity::Rare)
+    ])
         .set_play_condition(Condition::True)
         .set_upgraded(true)
 }
@@ -68,7 +68,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Embrace");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::ActivateEmbrace);
         assert!(!card.is_upgraded());
@@ -81,7 +81,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Embrace+");
         assert_eq!(card.get_cost(), 1);  // Upgraded cost is 1
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::ActivateEmbrace);
         assert!(card.is_upgraded());

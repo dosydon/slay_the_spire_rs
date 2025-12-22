@@ -1,23 +1,17 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Pummel - Uncommon Attack Card
 /// Cost: 1
 /// Effect: Deal 2 damage 4 times. Exhaust.
 pub fn pummel() -> Card {
-    Card::new(
-        CardEnum::Pummel,
-        1,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Pummel, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTarget {
                 amount: 2,
                 num_attacks: 4,
                 strength_multiplier: 1,
             },
             Effect::Exhaust,
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
@@ -25,20 +19,14 @@ pub fn pummel() -> Card {
 /// Cost: 1
 /// Effect: Deal 2 damage 5 times. Exhaust.
 pub fn pummel_upgraded() -> Card {
-    Card::new(
-        CardEnum::Pummel,
-        1,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Pummel, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTarget {
                 amount: 2,
                 num_attacks: 5, // upgraded version deals damage 5 times instead of 4
                 strength_multiplier: 1,
             },
             Effect::Exhaust,
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -54,7 +42,7 @@ mod tests {
         let card = pummel();
         assert_eq!(card.get_name(), "Pummel");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 2); // AttackToTarget and Exhaust
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -65,7 +53,7 @@ mod tests {
         let card = pummel_upgraded();
         assert_eq!(card.get_name(), "Pummel+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 2); // AttackToTarget and Exhaust
         assert!(card.is_upgraded());
         assert!(card.is_playable());

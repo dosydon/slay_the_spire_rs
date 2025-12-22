@@ -1,31 +1,19 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 use crate::battle::target::Entity;
 
 pub fn fiend_fire() -> Card {
-    Card::new(
-        CardEnum::FiendFire,
-        2,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::FiendFire, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::Exhaust,
             Effect::ExhaustHandForDamage { damage_per_card: 7, target: Entity::Player },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
 pub fn fiend_fire_upgraded() -> Card {
-    Card::new(
-        CardEnum::FiendFire,
-        2,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::FiendFire, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::Exhaust,
             Effect::ExhaustHandForDamage { damage_per_card: 10, target: Entity::Player },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -39,7 +27,7 @@ mod tests {
         let card = fiend_fire();
         assert_eq!(card.get_name(), "Fiend Fire");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
         assert!(card.is_playable());
@@ -50,7 +38,7 @@ mod tests {
         let card = fiend_fire_upgraded();
         assert_eq!(card.get_name(), "Fiend Fire+");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
         assert!(card.is_playable());

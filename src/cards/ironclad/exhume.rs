@@ -1,16 +1,10 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 pub fn exhume() -> Card {
-    Card::new(
-        CardEnum::Exhume,
-        1,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::Exhume, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
             Effect::EnterSelectCardInExhaust, // Transition to select card from exhaust pile
             Effect::Exhaust,
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
@@ -18,12 +12,11 @@ pub fn exhume_upgraded() -> Card {
     Card::new(
         CardEnum::Exhume,
         0, // costs 0 when upgraded
-        CardType::Skill,
+        CardClass::IronClad(Rarity::Uncommon, CardType::Skill),
         vec![
             Effect::EnterSelectCardInExhaust, // Transition to select card from exhaust pile
             Effect::Exhaust,
-        ],
-        Rarity::Uncommon
+        ]
     )
         .set_upgraded(true)
         .set_playable(true)
@@ -38,7 +31,7 @@ mod tests {
         let card = exhume();
         assert_eq!(card.get_name(), "Exhume");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
         assert!(card.is_playable());
@@ -49,7 +42,7 @@ mod tests {
         let card = exhume_upgraded();
         assert_eq!(card.get_name(), "Exhume+");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
         assert!(card.is_playable());

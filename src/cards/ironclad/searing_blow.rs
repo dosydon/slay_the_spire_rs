@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Calculate Searing Blow damage using quadratic progression
 /// Formula: damage = n(n+7)/2 + 12 where n is upgrade level
@@ -22,15 +22,9 @@ fn calculate_searing_blow_damage(upgrade_level: u32) -> u32 {
 fn searing_blow_with_level(upgrade_level: u32) -> Card {
     let damage = calculate_searing_blow_damage(upgrade_level);
 
-    Card::new(
-        CardEnum::SearingBlow,
-        2,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::SearingBlow, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgrade_level(upgrade_level)
         .set_playable(true)
 }
@@ -86,7 +80,7 @@ mod tests {
         let card = searing_blow();
         assert_eq!(card.get_name(), "Searing Blow");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -96,7 +90,7 @@ mod tests {
         let card = searing_blow_upgraded();
         assert_eq!(card.get_name(), "Searing Blow+");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }

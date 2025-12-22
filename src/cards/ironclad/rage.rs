@@ -1,19 +1,13 @@
-use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Rage - Uncommon Skill Card
 /// Cost: 0 (0 when upgraded)
 /// Effect: Whenever you play an Attack card this turn, gain 3 Block.
 pub fn rage() -> Card {
-    Card::new(
-        CardEnum::Rage,
-        0,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::Rage, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
             Effect::ActivateRage { block_per_attack: 3 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_play_condition(Condition::True)
 }
 
@@ -21,15 +15,9 @@ pub fn rage() -> Card {
 /// Cost: 0 (0 when upgraded)
 /// Effect: Whenever you play an Attack card this turn, gain 4 Block.
 pub fn rage_upgraded() -> Card {
-    Card::new(
-        CardEnum::Rage,
-        0,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::Rage, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
             Effect::ActivateRage { block_per_attack: 4 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -46,7 +34,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Rage");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -58,7 +46,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Rage+");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

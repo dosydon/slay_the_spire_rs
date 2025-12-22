@@ -1,18 +1,12 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Evolve - Uncommon Power Card
 /// Cost: 1 (0 when upgraded)
 /// Effect: Draw 1 card. (In the full game, would draw cards when Status cards are drawn)
 pub fn evolve() -> Card {
-    Card::new(
-        CardEnum::Evolve,
-        1,
-        CardType::Power,
-        vec![
+    Card::new(CardEnum::Evolve, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
             Effect::DrawCard { count: 1 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_play_condition(Condition::True)
 }
 
@@ -23,11 +17,10 @@ pub fn evolve_upgraded() -> Card {
     Card::new(
         CardEnum::Evolve,
         0, // Costs 0 when upgraded
-        CardType::Power,
+        CardClass::IronClad(Rarity::Uncommon, CardType::Power),
         vec![
             Effect::DrawCard { count: 1 },
-        ],
-        Rarity::Uncommon
+        ]
     )
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -45,7 +38,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Evolve");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -57,7 +50,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Evolve+");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

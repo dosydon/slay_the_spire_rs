@@ -1,26 +1,14 @@
-use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Dual Wield - Duplicate a card in your hand into the discard pile
 pub fn dual_wield() -> Card {
-    Card::new(
-        CardEnum::DualWield,
-        1,
-        CardType::Skill,
-        vec![Effect::EnterSelectCardToDuplicate { copies: 1 }],
-        Rarity::Common
-    )
+    Card::new(CardEnum::DualWield, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::EnterSelectCardToDuplicate { copies: 1 }])
         .set_play_condition(Condition::True)
 }
 
 /// Dual Wield+ (Upgraded version) - Duplicate a card in your hand twice into the discard pile
 pub fn dual_wield_upgraded() -> Card {
-    Card::new(
-        CardEnum::DualWield,
-        1,
-        CardType::Skill,
-        vec![Effect::EnterSelectCardToDuplicate { copies: 2 }],
-        Rarity::Common
-    )
+    Card::new(CardEnum::DualWield, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::EnterSelectCardToDuplicate { copies: 2 }])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -28,6 +16,7 @@ pub fn dual_wield_upgraded() -> Card {
 #[cfg(test)]
 mod tests {
     use crate::game::PlayerRunState;
+    use crate::battle::battle_state::CardInHandTo;
 
     use super::*;
 
@@ -37,7 +26,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Dual Wield");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::EnterSelectCardToDuplicate { copies: 1 });
         assert!(!card.is_upgraded());
@@ -50,7 +39,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Dual Wield+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::EnterSelectCardToDuplicate { copies: 2 });
         assert!(card.is_upgraded());
@@ -106,7 +95,7 @@ mod tests {
         assert!(result.is_ok());
 
         // Verify battle is now in SelectCardToDuplicate state with copies=1
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardToDuplicate { copies: 1 });
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardInHand(CardInHandTo::Duplicate { copies: 1 }));
 
         // Verify Strike is still in hand
         let hand = battle.get_hand();
@@ -114,7 +103,7 @@ mod tests {
         assert_eq!(hand[0].get_name(), "Strike");
 
         // Select the Strike card to duplicate it
-        let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardToDuplicate(0), &mut rng);
+        let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardInHand(0), &mut rng);
         assert!(result.is_ok());
 
         // Verify battle returned to PlayerTurn state
@@ -160,10 +149,10 @@ mod tests {
         assert!(result.is_ok());
 
         // Verify battle is now in SelectCardToDuplicate state with copies=2
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardToDuplicate { copies: 2 });
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardInHand(CardInHandTo::Duplicate { copies: 2 }));
 
         // Select the Strike card to duplicate it
-        let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardToDuplicate(0), &mut rng);
+        let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardInHand(0), &mut rng);
         assert!(result.is_ok());
 
         // Verify battle returned to PlayerTurn state
@@ -205,10 +194,10 @@ mod tests {
         assert!(result.is_ok());
 
         // Verify battle is in SelectCardToDuplicate state
-        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardToDuplicate { copies: 1 });
+        assert_eq!(battle.get_battle_state(), crate::battle::battle_state::BattleState::SelectCardInHand(CardInHandTo::Duplicate { copies: 1 }));
 
         // Try to select an invalid card index (hand should be empty after playing Dual Wield)
-        let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardToDuplicate(0), &mut rng);
+        let result = battle.eval_action(crate::battle::battle_action::BattleAction::SelectCardInHand(0), &mut rng);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), crate::battle::BattleError::CardNotInHand);
     }

@@ -29,8 +29,8 @@ pub fn test_map_large() -> Map {
     map.add_node(MapNode::new(0, 3, NodeType::Start));
 
     // First floor nodes
-    map.add_node(MapNode::new(1, 0, NodeType::Combat));
-    map.add_node(MapNode::new(1, 1, NodeType::Event));
+    map.add_node(MapNode::new(1, 0, NodeType::Event));
+    map.add_node(MapNode::new(1, 1, NodeType::Combat));
     map.add_node(MapNode::new(1, 3, NodeType::Combat));
     map.add_node(MapNode::new(1, 4, NodeType::Combat));
     map.add_node(MapNode::new(1, 6, NodeType::Combat));
@@ -49,6 +49,7 @@ pub fn test_map_large() -> Map {
     map.add_node(MapNode::new(2, 6, NodeType::Combat));
 
     map.add_edge((1, 0), (2, 0)).unwrap();
+    map.add_edge((1, 1), (2, 1)).unwrap();
     map.add_edge((1, 3), (2, 1)).unwrap();
     map.add_edge((1, 3), (2, 3)).unwrap();
     map.add_edge((1, 4), (2, 4)).unwrap();
@@ -126,6 +127,86 @@ pub fn test_map_large() -> Map {
     map.add_edge((7, 2), (8, 2)).unwrap();
     map.add_edge((7, 3), (8, 4)).unwrap();
     map.add_edge((7, 6), (8, 5)).unwrap();
+
+    map.add_node(MapNode::new(9, 0, NodeType::Treasure));
+    map.add_node(MapNode::new(9, 1, NodeType::Treasure));
+    map.add_node(MapNode::new(9, 3, NodeType::Treasure));
+    map.add_node(MapNode::new(9, 4, NodeType::Treasure));
+
+    map.add_edge((8, 0), (9, 0)).unwrap();
+    map.add_edge((8, 1), (9, 1)).unwrap();
+    map.add_edge((8, 2), (9, 3)).unwrap();
+    map.add_edge((8, 4), (9, 3)).unwrap();
+    map.add_edge((8, 5), (9, 4)).unwrap();
+
+    map.add_node(MapNode::new(10, 0, NodeType::RestSite));
+    map.add_node(MapNode::new(10, 2, NodeType::Event));
+    map.add_node(MapNode::new(10, 4, NodeType::Combat));
+
+    map.add_edge((9, 0), (10, 0)).unwrap();
+    map.add_edge((9, 1), (10, 0)).unwrap();
+    map.add_edge((9, 1), (10, 2)).unwrap();
+    map.add_edge((9, 3), (10, 4)).unwrap();
+    map.add_edge((9, 4), (10, 4)).unwrap();
+
+    map.add_node(MapNode::new(11, 0, NodeType::Elite));
+    map.add_node(MapNode::new(11, 1, NodeType::Event));
+    map.add_node(MapNode::new(11, 2, NodeType::Event));
+    map.add_node(MapNode::new(11, 3, NodeType::Combat));
+    map.add_node(MapNode::new(11, 4, NodeType::Shop));
+    map.add_node(MapNode::new(11, 5, NodeType::Elite));
+
+    map.add_edge((10, 0), (11, 0)).unwrap();
+    map.add_edge((10, 0), (11, 1)).unwrap();
+    map.add_edge((10, 2), (11, 2)).unwrap();
+    map.add_edge((10, 4), (11, 3)).unwrap();
+    map.add_edge((10, 4), (11, 4)).unwrap();
+    map.add_edge((10, 4), (11, 5)).unwrap();
+
+    map.add_node(MapNode::new(12, 0, NodeType::Combat));
+    map.add_node(MapNode::new(12, 2, NodeType::RestSite));
+    map.add_node(MapNode::new(12, 3, NodeType::RestSite));
+    map.add_node(MapNode::new(12, 5, NodeType::Event));
+
+    map.add_edge((11, 0), (12, 0)).unwrap();
+    map.add_edge((11, 1), (12, 2)).unwrap();
+    map.add_edge((11, 2), (12, 2)).unwrap();
+    map.add_edge((11, 3), (12, 2)).unwrap();
+    map.add_edge((11, 4), (12, 3)).unwrap();
+    map.add_edge((11, 5), (12, 5)).unwrap();
+
+    map.add_node(MapNode::new(13, 1, NodeType::Combat));
+    map.add_node(MapNode::new(13, 2, NodeType::Event));
+    map.add_node(MapNode::new(13, 5, NodeType::Shop));
+
+    map.add_edge((12, 0), (13, 1)).unwrap();
+    map.add_edge((12, 2), (13, 1)).unwrap();
+    map.add_edge((12, 2), (13, 2)).unwrap();
+    map.add_edge((12, 3), (13, 2)).unwrap();
+    map.add_edge((12, 5), (13, 5)).unwrap();
+
+    map.add_node(MapNode::new(14, 1, NodeType::Combat));
+    map.add_node(MapNode::new(14, 2, NodeType::Event));
+    map.add_node(MapNode::new(14, 3, NodeType::Elite));
+    map.add_node(MapNode::new(14, 4, NodeType::Combat));
+
+    map.add_edge((13, 1), (14, 1)).unwrap();
+    map.add_edge((13, 2), (14, 2)).unwrap();
+    map.add_edge((13, 2), (14, 3)).unwrap();
+    map.add_edge((13, 5), (14, 4)).unwrap();
+
+    map.add_node(MapNode::new(15, 1, NodeType::RestSite));
+    map.add_node(MapNode::new(15, 3, NodeType::RestSite));
+
+    map.add_edge((14, 1), (15, 1)).unwrap();
+    map.add_edge((14, 2), (15, 1)).unwrap();
+    map.add_edge((14, 3), (15, 3)).unwrap();
+    map.add_edge((14, 4), (15, 3)).unwrap();
+
+    map.add_node(MapNode::new(16, 3, NodeType::Boss));
+
+    map.add_edge((15, 1), (16, 3)).unwrap();
+    map.add_edge((15, 3), (16, 3)).unwrap();
 
     // Set starting position
     map.set_starting_position((0, 3)).unwrap();

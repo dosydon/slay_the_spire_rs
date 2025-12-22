@@ -273,7 +273,7 @@ impl Battle {
 
     /// Get the modified cost of a card considering active powers like Corruption
     pub fn get_modified_cost(&self, card: &crate::game::card::Card) -> u32 {
-        if card.get_card_type() == &crate::game::card_type::CardType::Skill && self.has_corruption_active() {
+        if card.get_card_type() == crate::game::card_type::CardType::Skill && self.has_corruption_active() {
             0  // Skills cost 0 with Corruption
         } else {
             card.get_cost()
@@ -364,7 +364,7 @@ impl Battle {
             }
             Condition::HandAllAttacks => {
                 let hand = self.cards.get_hand();
-                hand.iter().all(|c| c.get_card_type() == &crate::game::card_type::CardType::Attack)
+                hand.iter().all(|c| c.get_card_type() == crate::game::card_type::CardType::Attack)
             }
             Condition::EnemyIsAttacking => {
                 // Check if any enemy is currently attacking

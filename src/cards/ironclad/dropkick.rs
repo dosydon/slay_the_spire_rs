@@ -1,12 +1,8 @@
-use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Dropkick - Deal 5 damage. If enemy Vulnerable: gain 1 Energy, draw 1 card
 pub fn dropkick() -> Card {
-    Card::new(
-        CardEnum::Dropkick,
-        1,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Dropkick, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 0 },
             Effect::ConditionalEffect(
                 Condition::TargetIsVulnerable,
@@ -16,17 +12,12 @@ pub fn dropkick() -> Card {
                 Condition::TargetIsVulnerable,
                 Box::new(Effect::DrawCard { count: 1 })
             ),
-        ],
-        Rarity::Uncommon)
+        ])
 }
 
 /// Dropkick+ (upgraded version)
 pub fn dropkick_upgraded() -> Card {
-    Card::new(
-        CardEnum::Dropkick,
-        1,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Dropkick, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 0 },
             Effect::ConditionalEffect(
                 Condition::TargetIsVulnerable,
@@ -36,8 +27,7 @@ pub fn dropkick_upgraded() -> Card {
                 Condition::TargetIsVulnerable,
                 Box::new(Effect::DrawCard { count: 1 })
             ),
-        ],
-        Rarity::Uncommon)
+        ])
         .set_upgraded(true)
 }
 
@@ -57,7 +47,7 @@ mod tests {
         let dropkick_card = dropkick();
         assert_eq!(dropkick_card.get_name(), "Dropkick");
         assert_eq!(dropkick_card.get_cost(), 1);
-        assert_eq!(dropkick_card.get_card_type(), &CardType::Attack);
+        assert_eq!(dropkick_card.get_card_type(), CardType::Attack);
 
         let effects = dropkick_card.get_effects();
         assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 0 })));
@@ -68,7 +58,7 @@ mod tests {
         let dropkick_plus = dropkick_upgraded();
         assert_eq!(dropkick_plus.get_name(), "Dropkick+");
         assert_eq!(dropkick_plus.get_cost(), 1);
-        assert_eq!(dropkick_plus.get_card_type(), &CardType::Attack);
+        assert_eq!(dropkick_plus.get_card_type(), CardType::Attack);
 
         let effects = dropkick_plus.get_effects();
         assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 0 })));

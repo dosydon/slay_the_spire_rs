@@ -1,32 +1,20 @@
-use crate::game::{card::{Card, Rarity}, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::{Card, Rarity, CardClass}, card_type::CardType, card_enum::CardEnum, effect::Effect};
 
 pub fn power_through() -> Card {
-    Card::new(
-        CardEnum::PowerThrough,
-        1,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::PowerThrough, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
             Effect::AddCardToHand(CardEnum::Wound),
             Effect::AddCardToHand(CardEnum::Wound),
             Effect::GainDefense { amount: 15 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
 pub fn power_through_upgraded() -> Card {
-    Card::new(
-        CardEnum::PowerThrough,
-        1,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::PowerThrough, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
             Effect::AddCardToHand(CardEnum::Wound),
             Effect::AddCardToHand(CardEnum::Wound),
             Effect::GainDefense { amount: 20 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -40,7 +28,7 @@ mod tests {
         let card = power_through();
         assert_eq!(card.get_name(), "Power Through");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 3);
         assert!(card.is_playable());
@@ -51,7 +39,7 @@ mod tests {
         let card = power_through_upgraded();
         assert_eq!(card.get_name(), "Power Through+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 3);
         assert!(card.is_playable());
@@ -190,19 +178,19 @@ mod integration_tests {
         assert_eq!(wounds.len(), 2);
 
         for wound in wounds {
-            assert_eq!(wound.get_card_type(), &CardType::Status);
+            assert_eq!(wound.get_card_type(), CardType::Status);
         }
     }
 
     #[test]
     fn test_power_through_is_skill_card() {
         let card = power_through();
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
     }
 
     #[test]
     fn test_power_through_upgraded_is_skill_card() {
         let card = power_through_upgraded();
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
     }
 }

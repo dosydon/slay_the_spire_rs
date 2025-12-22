@@ -1,18 +1,12 @@
-use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Limit Break - Rare Skill Card
 /// Effect: Double your Strength. Exhaust.
 pub fn limit_break() -> Card {
-    Card::new(
-        CardEnum::LimitBreak,
-        1,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::LimitBreak, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
             Effect::DoubleStrength, // Double current Strength
             Effect::Exhaust,         // Exhaust after use
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_play_condition(Condition::True)
 }
 
@@ -23,12 +17,11 @@ pub fn limit_break_upgraded() -> Card {
     Card::new(
         CardEnum::LimitBreak,
         1, // Costs 1 when upgraded
-        CardType::Skill,
+        CardClass::IronClad(Rarity::Uncommon, CardType::Skill),
         vec![
             Effect::DoubleStrength, // Double current Strength
             // No Exhaust when upgraded
-        ],
-        Rarity::Uncommon
+        ]
     )
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -46,7 +39,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Limit Break");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -58,7 +51,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Limit Break+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1); // Only DoubleStrength, no Exhaust
         assert!(card.is_upgraded());
         assert!(card.is_playable());

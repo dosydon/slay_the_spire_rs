@@ -1,6 +1,6 @@
 use super::Battle;
 use crate::game::effect::BaseEffect;
-use crate::battle::{target::Entity, battle_events::BattleEvent};
+use crate::battle::{target::Entity, battle_events::BattleEvent, battle_state::CardInHandTo};
 use crate::enemies::gremlin_nob::EnrageListener;
 use rand::prelude::IndexedRandom;
 use log::info;
@@ -320,14 +320,7 @@ impl Battle {
                     self.add_listener(Box::new(flame_barrier_listener));
                 }
             },
-            BaseEffect::ActivateBurn { source, damage } => {
-                // Add BurnListener for the player
-                if let Entity::Player = source {
-                    let burn_listener = crate::cards::status::burn::BurnListener::new(*source, *damage);
-                    self.add_listener(Box::new(burn_listener));
-                }
-            },
-            BaseEffect::ActivateDemonForm { source, strength_per_turn } => {
+                        BaseEffect::ActivateDemonForm { source, strength_per_turn } => {
                 // Add DemonFormListener for the player
                 if let Entity::Player = source {
                     let demon_form_listener = crate::cards::ironclad::demon_form::DemonFormListener::new(*source, *strength_per_turn);
@@ -527,16 +520,16 @@ impl Battle {
                 self.cards.upgrade_all_cards_in_hand();
             },
             BaseEffect::EnterSelectCardInHand => {
-                // Transition to SelectCardInHand state
-                self.battle_state = crate::battle::battle_state::BattleState::SelectCardInHand;
+                // Transition to SelectCardInHand state with Upgrade
+                self.battle_state = crate::battle::battle_state::BattleState::SelectCardInHand(CardInHandTo::Upgrade);
             },
             BaseEffect::EnterSelectCardInHandToPutOnDeck => {
-                // Transition to SelectCardInHandToPutOnDeck state
-                self.battle_state = crate::battle::battle_state::BattleState::SelectCardInHandToPutOnDeck;
+                // Transition to SelectCardInHand state with PutOnDeck
+                self.battle_state = crate::battle::battle_state::BattleState::SelectCardInHand(CardInHandTo::PutOnDeck);
             },
             BaseEffect::EnterSelectCardToDuplicate { copies } => {
-                // Transition to SelectCardToDuplicate state
-                self.battle_state = crate::battle::battle_state::BattleState::SelectCardToDuplicate { copies: *copies };
+                // Transition to SelectCardInHand state with Duplicate
+                self.battle_state = crate::battle::battle_state::BattleState::SelectCardInHand(CardInHandTo::Duplicate { copies: *copies });
             },
             BaseEffect::EnterSelectCardInExhaust => {
                 // Transition to SelectCardInExhaust state
@@ -610,7 +603,7 @@ impl Battle {
                         // For conditional effects, this would need to know which player's hand
                         // For now, use current player's hand
                         let hand = self.cards.get_hand();
-                        hand.iter().all(|c| c.get_card_type() == &crate::game::card_type::CardType::Attack)
+                        hand.iter().all(|c| c.get_card_type() == crate::game::card_type::CardType::Attack)
                     },
                     crate::game::effect::Condition::True => true,
                     crate::game::effect::Condition::False => false,
@@ -636,7 +629,7 @@ impl Battle {
 
                 // Find all non-Attack cards in hand
                 for (index, card) in hand.iter().enumerate() {
-                    if card.get_card_type() != &crate::game::card_type::CardType::Attack {
+                    if card.get_card_type() != crate::game::card_type::CardType::Attack {
                         cards_to_exhaust.push(index);
                         num_exhausted += 1;
                     }
@@ -922,6 +915,15 @@ impl Battle {
                             }
                         }
                     }
+                }
+            },
+            BaseEffect::LoseHpPerCardInHand { source, damage_per_card } => {
+                // Deal damage to the source equal to damage_per_card * number of cards in hand
+                let hand_size = self.cards.get_hand().len() as u32;
+                let total_damage = damage_per_card * hand_size;
+
+                if total_damage > 0 {
+                    self.apply_damage(*source, total_damage);
                 }
             },
         }
@@ -1253,7 +1255,7 @@ mod tests {
         for card in last_two_cards {
             assert_eq!(card.get_name(), "Slimed");
             assert_eq!(card.get_cost(), 1);
-            assert_eq!(card.get_card_type(), &CardType::Status);
+            assert_eq!(card.get_card_type(), CardType::Status);
         }
     }
 

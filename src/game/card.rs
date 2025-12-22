@@ -9,35 +9,44 @@ pub enum Rarity {
     Common,     // Most frequent rewards (~75% of pool)
     Uncommon,   // Less frequent rewards (~20% of pool)
     Rare,       // Rare rewards (~5% of pool)
-    Curse,      // Curse cards
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum CardClass {
+    IronClad(Rarity, CardType),
+    Colorless(Rarity, CardType),
+    Status,
+    Curse,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Card {
     card_enum: CardEnum,
     cost: u32,
-    card_type: CardType,
+    card_class: CardClass, // Combines card type, rarity, and character class
     effects: Vec<Effect>,
     upgrade_level: u32, // 0 = not upgraded, 1+ = upgraded level
     play_condition: Condition,
     ethereal: bool,
     on_exhaust: Option<Vec<Effect>>, // Effects that trigger when this card is exhausted
-    rarity: Rarity, // Card rarity for reward generation and classification
+    end_of_turn: Option<Vec<Effect>>, // Effects that trigger at end of turn
+    is_removable: bool, // Whether this card can be removed from the deck (false for Ascender's Bane, Curse of the Bell, Necronomicurse)
 }
 
 impl Card {
 
-    pub fn new(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, rarity: Rarity) -> Self {
+    pub fn new(card_enum: CardEnum, cost: u32, card_class: CardClass, effects: Vec<Effect>) -> Self {
         Card {
             card_enum,
             cost,
-            card_type,
+            card_class,
             effects,
             upgrade_level: 0, // Default to not upgraded
             play_condition: Condition::True, // Default to playable
             ethereal: false,
             on_exhaust: None,
-            rarity,
+            end_of_turn: None,
+            is_removable: true, // Default to removable
         }
     }
 
@@ -65,6 +74,12 @@ impl Card {
         self
     }
 
+    /// Builder pattern method to set end-of-turn effects
+    pub fn set_end_of_turn(mut self, end_of_turn: Vec<Effect>) -> Self {
+        self.end_of_turn = Some(end_of_turn);
+        self
+    }
+
     /// Convenience method to set upgradable from boolean
     pub fn set_upgraded(mut self, upgraded: bool) -> Self {
         if upgraded {
@@ -81,73 +96,10 @@ impl Card {
         self
     }
 
-    // ========== DEPRECATED CONSTRUCTORS ==========
-    // These are kept for backward compatibility during migration
-    // Use the builder pattern methods instead
-
-    #[deprecated(since = "0.1.0", note = "Use Card::new().set_play_condition() instead")]
-    pub fn new_with_condition(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, play_condition: Condition, rarity: Rarity) -> Self {
-        let upgrade_level = if upgraded { 1 } else { 0 };
-        Card {
-            card_enum,
-            cost,
-            card_type,
-            effects,
-            upgrade_level,
-            play_condition,
-            ethereal: false,
-            on_exhaust: None,
-            rarity,
-        }
-    }
-
-    #[deprecated(since = "0.1.0", note = "Use Card::new().set_ethereal() instead")]
-    pub fn new_with_ethereal(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, playable: bool, ethereal: bool, rarity: Rarity) -> Self {
-        let play_condition = if playable { Condition::True } else { Condition::False };
-        let upgrade_level = if upgraded { 1 } else { 0 };
-        Card {
-            card_enum,
-            cost,
-            card_type,
-            effects,
-            upgrade_level,
-            play_condition,
-            ethereal,
-            on_exhaust: None,
-            rarity,
-        }
-    }
-
-    #[deprecated(since = "0.1.0", note = "Use Card::new().set_upgrade_level() instead")]
-    pub fn new_with_upgrade_level(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgrade_level: u32, playable: bool, rarity: Rarity) -> Self {
-        let play_condition = if playable { Condition::True } else { Condition::False };
-        Card {
-            card_enum,
-            cost,
-            card_type,
-            effects,
-            upgrade_level,
-            play_condition,
-            ethereal: false,
-            on_exhaust: None,
-            rarity,
-        }
-    }
-
-    #[deprecated(since = "0.1.0", note = "Use Card::new().set_on_exhaust() instead")]
-    pub fn new_with_on_exhaust(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, play_condition: Condition, on_exhaust: Vec<Effect>, rarity: Rarity) -> Self {
-        let upgrade_level = if upgraded { 1 } else { 0 };
-        Card {
-            card_enum,
-            cost,
-            card_type,
-            effects,
-            upgrade_level,
-            play_condition,
-            ethereal: false,
-            on_exhaust: Some(on_exhaust),
-            rarity,
-        }
+    /// Builder pattern method to set whether the card can be removed from the deck
+    pub fn set_removable(mut self, is_removable: bool) -> Self {
+        self.is_removable = is_removable;
+        self
     }
 
     pub fn get_name(&self) -> String {
@@ -166,8 +118,17 @@ impl Card {
         self.cost
     }
 
-    pub fn get_card_type(&self) -> &CardType {
-        &self.card_type
+    pub fn get_card_type(&self) -> CardType {
+        match &self.card_class {
+            CardClass::IronClad(_, card_type) => *card_type,
+            CardClass::Colorless(_, card_type) => *card_type,
+            CardClass::Status => CardType::Status,
+            CardClass::Curse => CardType::Curse,
+        }
+    }
+
+    pub fn get_card_class(&self) -> &CardClass {
+        &self.card_class
     }
 
     pub fn get_effects(&self) -> &Vec<Effect> {
@@ -178,8 +139,17 @@ impl Card {
         self.on_exhaust.as_ref()
     }
 
+    pub fn get_end_of_turn(&self) -> Option<&Vec<Effect>> {
+        self.end_of_turn.as_ref()
+    }
+
     pub fn get_rarity(&self) -> Rarity {
-        self.rarity
+        match &self.card_class {
+            CardClass::IronClad(rarity, _) => *rarity,
+            CardClass::Colorless(rarity, _) => *rarity,
+            CardClass::Status => Rarity::Basic, // Status cards don't have traditional rarity
+            CardClass::Curse => Rarity::Basic,  // Curse cards don't have traditional rarity
+        }
     }
 
     pub fn cost(&self) -> u32 {
@@ -279,6 +249,9 @@ impl Card {
             CardEnum::BandageUp => crate::cards::colorless::bandage_up::bandage_up_upgraded(),
             CardEnum::DeepBreath => crate::cards::colorless::deep_breath::deep_breath_upgraded(),
             CardEnum::AscendersCurse => crate::cards::curse::ascenders_curse(), // Curse cards don't have upgrades
+            CardEnum::Injury => crate::cards::curse::injury(), // Curse cards don't have upgrades
+            CardEnum::Clumsy => crate::cards::curse::clumsy(), // Curse cards don't have upgrades
+            CardEnum::Regret => crate::cards::curse::regret(), // Curse cards don't have upgrades
         };
 
         upgraded_card
@@ -306,13 +279,14 @@ impl Card {
         Card {
             card_enum: self.card_enum,
             cost: self.cost,
-            card_type: self.card_type,
+            card_class: self.card_class,
             effects: self.effects,
             upgrade_level,
             play_condition: self.play_condition,
             ethereal: self.ethereal,
             on_exhaust: self.on_exhaust,
-            rarity: self.rarity,
+            end_of_turn: self.end_of_turn,
+            is_removable: self.is_removable,
         }
     }
 
@@ -333,6 +307,12 @@ impl Card {
     pub fn is_ethereal(&self) -> bool {
         self.ethereal
     }
+
+    /// Checks if this card can be removed from the deck
+    /// Returns false for non-removable curses like Ascender's Bane, Curse of the Bell, and Necronomicurse
+    pub fn is_removable(&self) -> bool {
+        self.is_removable
+    }
 }
 
 #[cfg(test)]
@@ -341,7 +321,7 @@ mod tests {
 
     #[test]
     fn test_card_creation() {
-        let card = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], Rarity::Basic);
+        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
         assert_eq!(card.get_name(), "Strike");
         assert_eq!(card.get_cost(), 1);
         assert_eq!(matches!(card.get_card_type(), CardType::Attack), true);
@@ -350,12 +330,12 @@ mod tests {
 
     #[test]
     fn test_strike_upgrade() {
-        let strike = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], Rarity::Basic);
+        let strike = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
         let upgraded = strike.upgrade();
 
         assert_eq!(upgraded.get_name(), "Strike+");
         assert_eq!(upgraded.get_cost(), 1); // Cost stays same
-        assert_eq!(upgraded.get_card_type(), &CardType::Attack);
+        assert_eq!(upgraded.get_card_type(), CardType::Attack);
         assert!(upgraded.is_upgraded());
 
         // Check damage increased to 9
@@ -371,10 +351,32 @@ mod tests {
 
     #[test]
     fn test_is_upgraded() {
-        let basic = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], Rarity::Basic);
-        let upgraded = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }], Rarity::Basic).set_upgraded(true);
-        
+        let basic = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
+        let upgraded = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }]).set_upgraded(true);
+
         assert!(!basic.is_upgraded());
         assert!(upgraded.is_upgraded());
+    }
+
+    #[test]
+    fn test_card_removable_default() {
+        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
+        assert!(card.is_removable()); // Default should be removable
+    }
+
+    #[test]
+    fn test_card_set_non_removable() {
+        let card = Card::new(CardEnum::Strike, 1, CardClass::Curse, vec![])
+            .set_removable(false);
+        assert!(!card.is_removable()); // Should be non-removable
+    }
+
+    #[test]
+    fn test_card_removable_preserved_in_upgrade() {
+        let non_removable_card = Card::new(CardEnum::Strike, 1, CardClass::Curse, vec![])
+            .set_removable(false);
+
+        let upgraded = non_removable_card.with_upgrade_level(1);
+        assert!(!upgraded.is_removable()); // Should preserve non-removable status
     }
 }

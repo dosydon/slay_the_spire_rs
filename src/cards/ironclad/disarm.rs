@@ -1,21 +1,21 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Disarm - Skill Card
 /// Cost: 1
 /// Effect: Target enemy loses 2 Strength.
 pub fn disarm() -> Card {
-    Card::new(CardEnum::Disarm, 1, CardType::Skill, vec![
+    Card::new(CardEnum::Disarm, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
         Effect::LoseStrengthTarget(2),
-    ], Rarity::Uncommon)
+    ])
 }
 
 /// Disarm+ (Upgraded)
 /// Cost: 1
 /// Effect: Target enemy loses 3 Strength.
 pub fn disarm_upgraded() -> Card {
-    Card::new(CardEnum::Disarm, 1, CardType::Skill, vec![
+    Card::new(CardEnum::Disarm, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
         Effect::LoseStrengthTarget(3),
-    ], Rarity::Uncommon)
+    ])
         .set_upgraded(true)
 }
 
@@ -31,7 +31,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Disarm");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::LoseStrengthTarget(2));
         assert!(!card.is_upgraded());
@@ -44,7 +44,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Disarm+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::LoseStrengthTarget(3));
         assert!(card.is_upgraded());

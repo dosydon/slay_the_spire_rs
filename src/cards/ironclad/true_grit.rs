@@ -1,26 +1,14 @@
-use crate::game::{card::{Card, Rarity}, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::Effect, card_type::CardType, card_enum::CardEnum};
 
 /// True Grit - Gain 7 Block. Exhaust 1 card from hand
 pub fn true_grit() -> Card {
-    Card::new(
-        CardEnum::TrueGrit,
-        1,
-        CardType::Skill,
-        vec![Effect::GainDefense { amount: 7 }, Effect::EnterSelectCardInHand],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::TrueGrit, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::GainDefense { amount: 7 }, Effect::EnterSelectCardInHand])
         .set_playable(true)
 }
 
 /// True Grit+ (upgraded version)
 pub fn true_grit_upgraded() -> Card {
-    Card::new(
-        CardEnum::TrueGrit,
-        1,
-        CardType::Skill,
-        vec![Effect::GainDefense { amount: 9 }, Effect::EnterSelectCardInHand],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::TrueGrit, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::GainDefense { amount: 9 }, Effect::EnterSelectCardInHand])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -34,7 +22,7 @@ mod tests {
         let true_grit_card = true_grit();
         assert_eq!(true_grit_card.get_name(), "True Grit");
         assert_eq!(true_grit_card.get_cost(), 1);
-        assert_eq!(true_grit_card.get_card_type(), &CardType::Skill);
+        assert_eq!(true_grit_card.get_card_type(), CardType::Skill);
 
         let effects = true_grit_card.get_effects();
         assert!(effects.iter().any(|e| matches!(e, Effect::GainDefense { amount: 7 })));
@@ -46,7 +34,7 @@ mod tests {
         let true_grit_plus = true_grit_upgraded();
         assert_eq!(true_grit_plus.get_name(), "True Grit+");
         assert_eq!(true_grit_plus.get_cost(), 1);
-        assert_eq!(true_grit_plus.get_card_type(), &CardType::Skill);
+        assert_eq!(true_grit_plus.get_card_type(), CardType::Skill);
 
         let effects = true_grit_plus.get_effects();
         assert!(effects.iter().any(|e| matches!(e, Effect::GainDefense { amount: 9 })));

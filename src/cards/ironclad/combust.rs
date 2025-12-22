@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Combust Power Listener
@@ -52,18 +52,18 @@ impl EventListener for CombustListener {
 /// Cost: 1
 /// Effect: At the end of your turn, lose 1 HP and deal 5 damage to ALL enemies.
 pub fn combust() -> Card {
-    Card::new(CardEnum::Combust, 1, CardType::Power, vec![
+    Card::new(CardEnum::Combust, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
         Effect::ActivateCombust(5),
-    ], Rarity::Common)
+    ])
 }
 
 /// Combust+ (Upgraded)
 /// Cost: 1
 /// Effect: At the end of your turn, lose 1 HP and deal 7 damage to ALL enemies.
 pub fn combust_upgraded() -> Card {
-    Card::new(CardEnum::Combust, 1, CardType::Power, vec![
+    Card::new(CardEnum::Combust, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
         Effect::ActivateCombust(7),
-    ], Rarity::Common)
+    ])
         .set_upgraded(true)
 }
 
@@ -79,7 +79,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Combust");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::ActivateCombust(5));
         assert!(!card.is_upgraded());
@@ -92,7 +92,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Combust+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert_eq!(card.get_effects()[0], Effect::ActivateCombust(7));
         assert!(card.is_upgraded());

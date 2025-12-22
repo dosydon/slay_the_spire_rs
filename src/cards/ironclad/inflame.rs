@@ -1,16 +1,16 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 pub fn inflame() -> Card {
-    Card::new(CardEnum::Inflame, 1, CardType::Power, vec![
+    Card::new(CardEnum::Inflame, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
         Effect::GainStrength { amount: 2 },        // Gain 2 Strength permanently for this combat
-    ], Rarity::Uncommon)
+    ])
         .set_play_condition(Condition::True)
 }
 
 pub fn inflame_upgraded() -> Card {
-    Card::new(CardEnum::Inflame, 1, CardType::Power, vec![
+    Card::new(CardEnum::Inflame, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
         Effect::GainStrength { amount: 3 },        // Gain 3 Strength permanently for this combat (+1)
-    ], Rarity::Uncommon)
+    ])
         .set_play_condition(Condition::True)
         .set_upgraded(true)
 }
@@ -28,7 +28,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Inflame");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert!(matches!(card.get_effects()[0], Effect::GainStrength { amount: 2 }));
         assert!(!card.is_upgraded());
@@ -41,7 +41,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Inflame+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert!(matches!(card.get_effects()[0], Effect::GainStrength { amount: 3 }));
         assert!(card.is_upgraded());

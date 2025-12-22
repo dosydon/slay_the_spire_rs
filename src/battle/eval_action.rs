@@ -1,5 +1,5 @@
 use super::Battle;
-use crate::battle::{battle_action::BattleAction, target::Entity, BattleResult, BattleError};
+use crate::battle::{battle_action::BattleAction, battle_state::CardInHandTo, target::Entity, BattleResult, BattleError};
 use crate::game::{effect::Effect, card::Card, card_type::CardType};
 
 impl Battle {
@@ -17,7 +17,7 @@ impl Battle {
                     _ => {}
                 }
             }
-            crate::battle::battle_state::BattleState::SelectCardInHand => {
+            crate::battle::battle_state::BattleState::SelectCardInHand(_) => {
                 match action {
                     BattleAction::PlayCard(_, _) => return Err(BattleError::InvalidAction),
                     BattleAction::EndTurn => return Err(BattleError::InvalidAction),
@@ -29,23 +29,6 @@ impl Battle {
                     BattleAction::PlayCard(_, _) => return Err(BattleError::InvalidAction),
                     BattleAction::EndTurn => return Err(BattleError::InvalidAction),
                     BattleAction::SelectCardInHand(_) => return Err(BattleError::InvalidAction),
-                    _ => {}
-                }
-            }
-            crate::battle::battle_state::BattleState::SelectCardInHandToPutOnDeck => {
-                match action {
-                    BattleAction::PlayCard(_, _) => return Err(BattleError::InvalidAction),
-                    BattleAction::EndTurn => return Err(BattleError::InvalidAction),
-                    BattleAction::SelectCardInDiscard(_) => return Err(BattleError::InvalidAction),
-                    _ => {}
-                }
-            }
-            crate::battle::battle_state::BattleState::SelectCardToDuplicate { .. } => {
-                match action {
-                    BattleAction::PlayCard(_, _) => return Err(BattleError::InvalidAction),
-                    BattleAction::EndTurn => return Err(BattleError::InvalidAction),
-                    BattleAction::SelectCardInHand(_) => return Err(BattleError::InvalidAction),
-                    BattleAction::SelectCardInDiscard(_) => return Err(BattleError::InvalidAction),
                     _ => {}
                 }
             }
@@ -85,6 +68,12 @@ impl Battle {
                 // Use the potion from the specified slot
                 self.use_potion(slot_index, target)?;
             }
+            BattleAction::KillAllEnemies => {
+                // Kill all enemies (for debugging)
+                for enemy in &mut self.enemies {
+                    enemy.battle_info.take_damage(enemy.battle_info.get_hp());
+                }
+            }
             BattleAction::EndTurn => {
                 self.at_end_of_player_turn();
 
@@ -102,24 +91,38 @@ impl Battle {
 
                 // Check which state we're in to determine behavior
                 match &self.battle_state {
-                    crate::battle::battle_state::BattleState::SelectCardInHand => {
-                        // Get the selected card and upgrade it
-                        let hand = self.cards.get_hand();
-                        let card = &hand[card_index];
+                    crate::battle::battle_state::BattleState::SelectCardInHand(card_in_hand_to) => {
+                        match card_in_hand_to {
+                            CardInHandTo::Upgrade => {
+                                // Get the selected card and upgrade it
+                                let hand = self.cards.get_hand();
+                                let card = &hand[card_index];
 
-                        // Only upgrade if not already upgraded
-                        if !card.is_upgraded() {
-                            let upgraded_card = card.clone().upgrade();
+                                // Only upgrade if not already upgraded
+                                if !card.is_upgraded() {
+                                    let upgraded_card = card.clone().upgrade();
 
-                            // Replace the card in hand with the upgraded version
-                            self.cards.replace_card_in_hand(card_index, upgraded_card);
-                        }
-                    }
-                    crate::battle::battle_state::BattleState::SelectCardInHandToPutOnDeck => {
-                        // Get the selected card from hand and put it on top of draw pile
-                        if let Some(card_to_move) = self.cards.remove_card_from_hand(card_index) {
-                            // Put on top of draw pile
-                            self.cards.put_card_on_top_of_deck(card_to_move);
+                                    // Replace the card in hand with the upgraded version
+                                    self.cards.replace_card_in_hand(card_index, upgraded_card);
+                                }
+                            }
+                            CardInHandTo::PutOnDeck => {
+                                // Get the selected card from hand and put it on top of draw pile
+                                if let Some(card_to_move) = self.cards.remove_card_from_hand(card_index) {
+                                    // Put on top of draw pile
+                                    self.cards.put_card_on_top_of_deck(card_to_move);
+                                }
+                            }
+                            CardInHandTo::Duplicate { copies } => {
+                                // Get the selected card from hand
+                                let hand = self.cards.get_hand();
+                                let card_to_duplicate = hand[card_index].clone();
+
+                                // Add the specified number of copies to the discard pile
+                                for _ in 0..*copies {
+                                    self.cards.add_card_to_discard(card_to_duplicate.clone());
+                                }
+                            }
                         }
                     }
                     _ => {
@@ -139,26 +142,6 @@ impl Battle {
                 if let Some(card_to_move) = self.cards.remove_from_discard_pile(card_index) {
                     // Put on top of draw pile
                     self.cards.put_card_on_top_of_deck(card_to_move);
-                }
-
-                // Return to player turn state
-                self.battle_state = crate::battle::battle_state::BattleState::PlayerTurn;
-            }
-            BattleAction::SelectCardToDuplicate(card_index) => {
-                if card_index >= self.cards.hand_size() {
-                    return Err(BattleError::CardNotInHand);
-                }
-
-                // Get the number of copies from the current battle state
-                if let crate::battle::battle_state::BattleState::SelectCardToDuplicate { copies } = &self.battle_state {
-                    // Get the selected card from hand
-                    let hand = self.cards.get_hand();
-                    let card_to_duplicate = hand[card_index].clone();
-
-                    // Add the specified number of copies to the discard pile
-                    for _ in 0..*copies {
-                        self.cards.add_card_to_discard(card_to_duplicate.clone());
-                    }
                 }
 
                 // Return to player turn state
@@ -211,7 +194,7 @@ impl Battle {
         for (card_index, card) in hand.iter().enumerate() {
             // Check if card is playable, player has enough energy, and card is not an Attack while Entangled
             let is_attack_while_entangled = self.player.battle_info.is_entangled()
-                && card.get_card_type() == &CardType::Attack;
+                && card.get_card_type() == CardType::Attack;
 
             if card.is_playable() && self.player.get_energy() >= card.get_cost() && !is_attack_while_entangled {
                 // Determine valid targets for this card based on its type and effects

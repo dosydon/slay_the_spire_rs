@@ -1,13 +1,13 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Impervious - Rare Skill Card
 /// Cost: 2
 /// Effect: Gain 30 Block. Exhaust.
 pub fn impervious() -> Card {
-    Card::new(CardEnum::Impervious, 2, CardType::Skill, vec![
+    Card::new(CardEnum::Impervious, 2, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
         Effect::GainDefense { amount: 30 },
         Effect::Exhaust,
-    ], Rarity::Rare)
+    ])
         .set_playable(true)
 }
 
@@ -15,10 +15,10 @@ pub fn impervious() -> Card {
 /// Cost: 2
 /// Effect: Gain 40 Block. Exhaust.
 pub fn impervious_upgraded() -> Card {
-    Card::new(CardEnum::Impervious, 2, CardType::Skill, vec![
+    Card::new(CardEnum::Impervious, 2, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
         Effect::GainDefense { amount: 40 },
         Effect::Exhaust,
-    ], Rarity::Rare)
+    ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -35,7 +35,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Impervious");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 30 });
         assert_eq!(card.get_effects()[1], Effect::Exhaust);
@@ -49,7 +49,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Impervious+");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 40 });
         assert_eq!(card.get_effects()[1], Effect::Exhaust);

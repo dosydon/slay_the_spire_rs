@@ -1,14 +1,8 @@
-use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Seeing Red - Gain 2 Energy. Exhaust.
 pub fn seeing_red() -> Card {
-    Card::new(
-        CardEnum::SeeingRed,
-        1,
-        CardType::Skill,
-        vec![Effect::GainEnergy { amount: 2 }, Effect::Exhaust],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::SeeingRed, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::GainEnergy { amount: 2 }, Effect::Exhaust])
         .set_play_condition(Condition::True)
 }
 
@@ -17,9 +11,8 @@ pub fn seeing_red_upgraded() -> Card {
     Card::new(
         CardEnum::SeeingRed,
         0, // Cost reduced from 1 to 0
-        CardType::Skill,
-        vec![Effect::GainEnergy { amount: 2 }, Effect::Exhaust],
-        Rarity::Uncommon
+        CardClass::IronClad(Rarity::Uncommon, CardType::Skill),
+        vec![Effect::GainEnergy { amount: 2 }, Effect::Exhaust]
     )
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -37,7 +30,7 @@ mod tests {
         let seeing_red_card = seeing_red();
         assert_eq!(seeing_red_card.get_name(), "Seeing Red");
         assert_eq!(seeing_red_card.get_cost(), 1);
-        assert_eq!(seeing_red_card.get_card_type(), &CardType::Skill);
+        assert_eq!(seeing_red_card.get_card_type(), CardType::Skill);
         assert!(!seeing_red_card.is_upgraded());
 
         let effects = seeing_red_card.get_effects();
@@ -50,7 +43,7 @@ mod tests {
         let seeing_red_plus = seeing_red_upgraded();
         assert_eq!(seeing_red_plus.get_name(), "Seeing Red+");
         assert_eq!(seeing_red_plus.get_cost(), 0);
-        assert_eq!(seeing_red_plus.get_card_type(), &CardType::Skill);
+        assert_eq!(seeing_red_plus.get_card_type(), CardType::Skill);
         assert!(seeing_red_plus.is_upgraded());
 
         let effects = seeing_red_plus.get_effects();

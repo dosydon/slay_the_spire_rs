@@ -1,26 +1,14 @@
-use crate::game::{card::{Card, Rarity}, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::Effect, card_type::CardType, card_enum::CardEnum};
 
 /// Headbutt - Deal 9 damage. Put a card from discard pile on top of draw pile
 pub fn headbutt() -> Card {
-    Card::new(
-        CardEnum::Headbutt,
-        1,
-        CardType::Attack,
-        vec![Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 0 }, Effect::EnterSelectCardInDiscard],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::Headbutt, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 0 }, Effect::EnterSelectCardInDiscard])
         .set_playable(true)
 }
 
 /// Headbutt+ (upgraded version)
 pub fn headbutt_upgraded() -> Card {
-    Card::new(
-        CardEnum::Headbutt,
-        1,
-        CardType::Attack,
-        vec![Effect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 0 }, Effect::EnterSelectCardInDiscard],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::Headbutt, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![Effect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 0 }, Effect::EnterSelectCardInDiscard])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -38,7 +26,7 @@ mod tests {
         let headbutt_card = headbutt();
         assert_eq!(headbutt_card.get_name(), "Headbutt");
         assert_eq!(headbutt_card.get_cost(), 1);
-        assert_eq!(headbutt_card.get_card_type(), &CardType::Attack);
+        assert_eq!(headbutt_card.get_card_type(), CardType::Attack);
 
         let effects = headbutt_card.get_effects();
         assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 9, .. })));
@@ -50,7 +38,7 @@ mod tests {
         let headbutt_plus = headbutt_upgraded();
         assert_eq!(headbutt_plus.get_name(), "Headbutt+");
         assert_eq!(headbutt_plus.get_cost(), 1);
-        assert_eq!(headbutt_plus.get_card_type(), &CardType::Attack);
+        assert_eq!(headbutt_plus.get_card_type(), CardType::Attack);
 
         let effects = headbutt_plus.get_effects();
         assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 12, .. })));

@@ -1,19 +1,13 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{target::Entity, battle_events::BattleEvent, battle_events::EventListener};
 
 /// Demon Form - Rare Power Card
 /// Cost: 3 (2 when upgraded)
 /// Effect: At the start of your turn, gain 2 Strength. This card cannot be shuffled back into your draw pile.
 pub fn demon_form() -> Card {
-    Card::new(
-        CardEnum::DemonForm,
-        3,
-        CardType::Power,
-        vec![
+    Card::new(CardEnum::DemonForm, 3, CardClass::IronClad(Rarity::Rare, CardType::Power), vec![
             Effect::ActivateDemonForm { strength_per_turn: 2 },
-        ],
-        Rarity::Rare
-    )
+        ])
         .set_play_condition(Condition::True)
 }
 
@@ -24,11 +18,10 @@ pub fn demon_form_upgraded() -> Card {
     Card::new(
         CardEnum::DemonForm,
         2, // Costs 2 when upgraded
-        CardType::Power,
+        CardClass::IronClad(Rarity::Rare, CardType::Power),
         vec![
             Effect::ActivateDemonForm { strength_per_turn: 3 }, // Gain 3 Strength per turn when upgraded
-        ],
-        Rarity::Rare
+        ]
     )
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -53,7 +46,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Demon Form");
         assert_eq!(card.get_cost(), 3);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -65,7 +58,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Demon Form+");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

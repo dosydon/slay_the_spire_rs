@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Swift Strike - Colorless Attack Card
 /// Cost: 0 (0 when upgraded)
@@ -7,9 +7,8 @@ pub fn swift_strike() -> Card {
     Card::new(
         CardEnum::SwiftStrike,
         0,
-        CardType::Attack,
-        vec![Effect::AttackToTarget { amount: 7, num_attacks: 1, strength_multiplier: 0 }],
-        Rarity::Uncommon
+        CardClass::Colorless(Rarity::Uncommon, CardType::Attack),
+        vec![Effect::AttackToTarget { amount: 7, num_attacks: 1, strength_multiplier: 0 }]
     )
         .set_playable(true)
 }
@@ -18,9 +17,8 @@ pub fn swift_strike_upgraded() -> Card {
     Card::new(
         CardEnum::SwiftStrike,
         0,
-        CardType::Attack,
-        vec![Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 0 }],
-        Rarity::Uncommon
+        CardClass::Colorless(Rarity::Uncommon, CardType::Attack),
+        vec![Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 0 }]
     )
         .set_upgraded(true)
         .set_playable(true)
@@ -36,7 +34,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Swift Strike");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -48,7 +46,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Swift Strike+");
         assert_eq!(card.get_cost(), 0); // Still costs 0
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

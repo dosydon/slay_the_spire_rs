@@ -1,18 +1,13 @@
-use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Immolate - Rare Attack Card
 /// Cost: 2 (2 when upgraded)
 /// Effect: Deal 21 damage to ALL enemies. Add a Burn to your discard pile.
 pub fn immolate() -> Card {
-    Card::new(
-        CardEnum::Immolate,
-        2,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Immolate, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackAllEnemies { amount: 21, num_attacks: 1 },
             Effect::AddCardToDiscard(CardEnum::Burn),
-        ],
-        Rarity::Uncommon)
+        ])
         .set_play_condition(Condition::True)
 }
 
@@ -20,15 +15,10 @@ pub fn immolate() -> Card {
 /// Cost: 2 (2 when upgraded)
 /// Effect: Deal 28 damage to ALL enemies. Add a Burn to your discard pile.
 pub fn immolate_upgraded() -> Card {
-    Card::new(
-        CardEnum::Immolate,
-        2,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Immolate, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackAllEnemies { amount: 28, num_attacks: 1 },
             Effect::AddCardToDiscard(CardEnum::Burn),
-        ],
-        Rarity::Uncommon)
+        ])
         .set_play_condition(Condition::True)
         .set_upgraded(true)
 }
@@ -45,7 +35,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Immolate");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 2);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -57,7 +47,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Immolate+");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 2);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

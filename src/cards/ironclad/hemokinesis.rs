@@ -1,17 +1,17 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Hemokinesis - Uncommon Attack Card
 /// Cost: 1
 /// Effect: Lose 2 HP. Deal 15 damage
 pub fn hemokinesis() -> Card {
-    Card::new(CardEnum::Hemokinesis, 1, CardType::Attack, vec![
+    Card::new(CardEnum::Hemokinesis, 1, CardClass::IronClad(Rarity::Rare, CardType::Attack), vec![
         Effect::LoseHp(2),
         Effect::AttackToTarget {
             amount: 15,
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], Rarity::Rare)
+    ])
         .set_playable(true)
 }
 
@@ -19,14 +19,14 @@ pub fn hemokinesis() -> Card {
 /// Cost: 1
 /// Effect: Lose 2 HP. Deal 22 damage
 pub fn hemokinesis_upgraded() -> Card {
-    Card::new(CardEnum::Hemokinesis, 1, CardType::Attack, vec![
+    Card::new(CardEnum::Hemokinesis, 1, CardClass::IronClad(Rarity::Rare, CardType::Attack), vec![
         Effect::LoseHp(2),
         Effect::AttackToTarget {
             amount: 22,
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], Rarity::Rare)
+    ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -43,7 +43,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Hemokinesis");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 2);
         assert_eq!(card.get_effects()[0], Effect::LoseHp(2));
         assert_eq!(card.get_effects()[1], Effect::AttackToTarget {
@@ -61,7 +61,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Hemokinesis+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 2);
         assert_eq!(card.get_effects()[0], Effect::LoseHp(2));
         assert_eq!(card.get_effects()[1], Effect::AttackToTarget {

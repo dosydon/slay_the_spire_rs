@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Whirlwind - Uncommon Attack Card
 /// Cost: 0 (X-cost - spends all available energy)
@@ -7,11 +7,10 @@ pub fn whirlwind() -> Card {
     Card::new(
         CardEnum::Whirlwind,
         0, // X-cost - actual cost determined by available energy
-        CardType::Attack,
+        CardClass::IronClad(Rarity::Uncommon, CardType::Attack),
         vec![
             Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit: 5 },
-        ],
-        Rarity::Uncommon
+        ]
     )
         .set_play_condition(Condition::True)
 }
@@ -23,11 +22,10 @@ pub fn whirlwind_upgraded() -> Card {
     Card::new(
         CardEnum::Whirlwind,
         0, // X-cost - actual cost determined by available energy
-        CardType::Attack,
+        CardClass::IronClad(Rarity::Uncommon, CardType::Attack),
         vec![
             Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit: 8 },
-        ],
-        Rarity::Uncommon
+        ]
     )
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -45,7 +43,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Whirlwind");
         assert_eq!(card.get_cost(), 0); // X-cost card
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -57,7 +55,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Whirlwind+");
         assert_eq!(card.get_cost(), 0); // X-cost card
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

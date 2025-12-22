@@ -1,15 +1,15 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 pub fn cleave() -> Card {
-    Card::new(CardEnum::Cleave, 1, CardType::Attack, vec![
+    Card::new(CardEnum::Cleave, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
         Effect::AttackAllEnemies { amount: 8, num_attacks: 1 }
-    ], Rarity::Common)
+    ])
 }
 
 pub fn cleave_upgraded() -> Card {
-    Card::new(CardEnum::Cleave, 1, CardType::Attack, vec![
+    Card::new(CardEnum::Cleave, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
         Effect::AttackAllEnemies { amount: 11, num_attacks: 1 }
-    ], Rarity::Common)
+    ])
         .set_upgraded(true)
 }
 
@@ -24,7 +24,7 @@ mod tests {
         let card = cleave();
         assert_eq!(card.get_name(), "Cleave");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
@@ -42,7 +42,7 @@ mod tests {
         let card = cleave_upgraded();
         assert_eq!(card.get_name(), "Cleave+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);

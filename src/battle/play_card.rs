@@ -24,7 +24,7 @@ impl Battle {
             }
 
             // Check if player is entangled and trying to play an Attack card
-            if self.player.battle_info.is_entangled() && card.get_card_type() == &CardType::Attack {
+            if self.player.battle_info.is_entangled() && card.get_card_type() == CardType::Attack {
                 return Err(BattleError::CardNotPlayable);
             }
 
@@ -37,8 +37,8 @@ impl Battle {
 
             card_effects = card.get_effects().clone();
             let card_type_clone = card.get_card_type().clone();
-            is_skill_card = card.get_card_type() == &CardType::Skill;
-            is_power_card = card.get_card_type() == &CardType::Power;
+            is_skill_card = card.get_card_type() == CardType::Skill;
+            is_power_card = card.get_card_type() == CardType::Power;
             // A card has exhaust if it naturally has the Exhaust effect OR if it's a Skill with Corruption active
             has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust)
                 || (is_skill_card && self.has_corruption_active());

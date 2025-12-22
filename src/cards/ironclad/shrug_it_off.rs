@@ -1,17 +1,17 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 pub fn shrug_it_off() -> Card {
-    Card::new(CardEnum::ShrugItOff, 1, CardType::Skill, vec![
+    Card::new(CardEnum::ShrugItOff, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![
         Effect::GainDefense { amount: 8 },
         Effect::DrawCard { count: 1 }
-    ], Rarity::Common)
+    ])
 }
 
 pub fn shrug_it_off_upgraded() -> Card {
-    Card::new(CardEnum::ShrugItOff, 1, CardType::Skill, vec![
+    Card::new(CardEnum::ShrugItOff, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![
         Effect::GainDefense { amount: 11 },
         Effect::DrawCard { count: 1 }
-    ], Rarity::Common)
+    ])
         .set_upgraded(true)
 }
 
@@ -25,7 +25,7 @@ mod tests {
         let card = shrug_it_off();
         assert_eq!(card.get_name(), "ShrugItOff");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(*card.get_card_type(), CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
     }
@@ -46,7 +46,7 @@ mod tests {
         let card = shrug_it_off_upgraded();
         assert_eq!(card.get_name(), "ShrugItOff+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(*card.get_card_type(), CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
     }

@@ -1,19 +1,19 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 pub fn ghostly_armor() -> Card {
-    Card::new(CardEnum::GhostlyArmor, 1, CardType::Skill, vec![
+    Card::new(CardEnum::GhostlyArmor, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
         Effect::GainDefense { amount: 10 }
         // Note: Ethereal is a card property, not an effect that needs to be in effects list
         // The card should be marked as ethereal via card properties
-    ], Rarity::Uncommon)
+    ])
         .set_ethereal(true)
         .set_playable(true)
 }
 
 pub fn ghostly_armor_upgraded() -> Card {
-    Card::new(CardEnum::GhostlyArmor, 1, CardType::Skill, vec![
+    Card::new(CardEnum::GhostlyArmor, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
         Effect::GainDefense { amount: 13 }
-    ], Rarity::Uncommon)
+    ])
         .set_upgraded(true)
         .set_ethereal(true)
         .set_playable(true)
@@ -28,7 +28,7 @@ mod tests {
         let card = ghostly_armor();
         assert_eq!(card.get_name(), "Ghostly Armor");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(!card.is_upgraded());
 
         let effects = card.get_effects();
@@ -41,7 +41,7 @@ mod tests {
         let card = ghostly_armor_upgraded();
         assert_eq!(card.get_name(), "Ghostly Armor+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(card.is_upgraded());
 
         let effects = card.get_effects();

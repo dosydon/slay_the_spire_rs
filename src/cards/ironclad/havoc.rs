@@ -1,14 +1,8 @@
-use crate::game::{card::{Card, Rarity}, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::Effect, card_type::CardType, card_enum::CardEnum};
 
 /// Havoc - Play top card of draw pile. Exhaust it
 pub fn havoc() -> Card {
-    Card::new(
-        CardEnum::Havoc,
-        1,
-        CardType::Skill,
-        vec![Effect::PlayTopCardAndExhaust],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::Havoc, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::PlayTopCardAndExhaust])
         .set_playable(true)
 }
 
@@ -17,9 +11,8 @@ pub fn havoc_upgraded() -> Card {
     Card::new(
         CardEnum::Havoc,
         0, // Cost reduced from 1 to 0
-        CardType::Skill,
-        vec![Effect::PlayTopCardAndExhaust],
-        Rarity::Uncommon
+        CardClass::IronClad(Rarity::Uncommon, CardType::Skill),
+        vec![Effect::PlayTopCardAndExhaust]
     )
         .set_upgraded(true)
         .set_playable(true)
@@ -39,7 +32,7 @@ mod tests {
         let havoc_card = havoc();
         assert_eq!(havoc_card.get_name(), "Havoc");
         assert_eq!(havoc_card.get_cost(), 1);
-        assert_eq!(havoc_card.get_card_type(), &CardType::Skill);
+        assert_eq!(havoc_card.get_card_type(), CardType::Skill);
         assert!(havoc_card.get_effects().contains(&Effect::PlayTopCardAndExhaust));
     }
 
@@ -48,7 +41,7 @@ mod tests {
         let havoc_plus = havoc_upgraded();
         assert_eq!(havoc_plus.get_name(), "Havoc+");
         assert_eq!(havoc_plus.get_cost(), 0); // Cost should be 0
-        assert_eq!(havoc_plus.get_card_type(), &CardType::Skill);
+        assert_eq!(havoc_plus.get_card_type(), CardType::Skill);
         assert!(havoc_plus.get_effects().contains(&Effect::PlayTopCardAndExhaust));
     }
 

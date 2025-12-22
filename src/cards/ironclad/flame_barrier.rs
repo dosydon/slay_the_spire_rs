@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Flame Barrier Listener
@@ -52,18 +52,18 @@ impl EventListener for FlameBarrierListener {
 /// Cost: 2 (2 when upgraded)
 /// Effect: Gain 12 Block. This turn, when attacked, deal 4 damage to the attacker.
 pub fn flame_barrier() -> Card {
-    Card::new(CardEnum::FlameBarrier, 2, CardType::Skill, vec![
+    Card::new(CardEnum::FlameBarrier, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
         Effect::GainDefense { amount: 12 },
         Effect::ActivateFlameBarrier { damage: 4 },
-    ], Rarity::Uncommon)
+    ])
         .set_play_condition(Condition::True)
 }
 
 pub fn flame_barrier_upgraded() -> Card {
-    Card::new(CardEnum::FlameBarrier, 2, CardType::Skill, vec![
+    Card::new(CardEnum::FlameBarrier, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
         Effect::GainDefense { amount: 16 },
         Effect::ActivateFlameBarrier { damage: 6 },
-    ], Rarity::Uncommon)
+    ])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -78,7 +78,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Flame Barrier");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -90,7 +90,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Flame Barrier+");
         assert_eq!(card.get_cost(), 2);  // Cost stays the same
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

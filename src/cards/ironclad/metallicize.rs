@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Metallicize Listener
@@ -53,16 +53,16 @@ impl EventListener for MetallicizeListener {
 /// Cost: 1 (1 when upgraded)
 /// Effect: At the end of your turn, gain 3 Block.
 pub fn metallicize() -> Card {
-    Card::new(CardEnum::Metallicize, 1, CardType::Power, vec![
+    Card::new(CardEnum::Metallicize, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
         Effect::ActivateMetallicize { amount: 3 },
-    ], Rarity::Uncommon)
+    ])
         .set_play_condition(Condition::True)
 }
 
 pub fn metallicize_upgraded() -> Card {
-    Card::new(CardEnum::Metallicize, 1, CardType::Power, vec![
+    Card::new(CardEnum::Metallicize, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
         Effect::ActivateMetallicize { amount: 4 },
-    ], Rarity::Uncommon)
+    ])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -79,7 +79,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Metallicize");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -91,7 +91,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Metallicize+");
         assert_eq!(card.get_cost(), 1);  // Cost stays the same
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

@@ -79,7 +79,6 @@ pub enum Effect {
     ActivateCorruption, // Activates Corruption power for making skills cost 0 and exhaust them
     ActivateMetallicize { amount: u32 }, // Activates Metallicize power for end-of-turn block generation
     ActivateFlameBarrier { damage: u32 }, // Activates Flame Barrier for retaliation damage
-    ActivateBurn { damage: u32 }, // Activates Burn for end-of-turn damage
     ActivateDemonForm { strength_per_turn: u32 }, // Activates Demon Form for turn-based Strength gain
     ActivateRage { block_per_attack: u32 }, // Activates Rage for gaining block when playing attacks
     AddRandomAttackToHand, // Add a random Attack card to hand
@@ -111,6 +110,7 @@ pub enum Effect {
     StealGold { amount: u32 }, // Steal gold from the player (used by Looter)
     EnemyEscape, // Enemy escapes from combat (used by Looter)
     SplitIntoMediumSlimes, // Split into 2 medium slimes (used by large slimes on death)
+    LoseHpPerCardInHand { damage_per_card: u32 }, // Lose HP for each card in hand (used by Regret)
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -238,10 +238,6 @@ pub enum BaseEffect {
         amount: u32,
     },
     ActivateFlameBarrier {
-        source: Entity,
-        damage: u32,
-    },
-    ActivateBurn {
         source: Entity,
         damage: u32,
     },
@@ -406,6 +402,10 @@ pub enum BaseEffect {
     SplitIntoMediumSlimes {
         source: Entity,
     },
+    LoseHpPerCardInHand {
+        source: Entity,
+        damage_per_card: u32,
+    },
 }
 
 impl BaseEffect {
@@ -446,7 +446,6 @@ impl BaseEffect {
             Effect::ActivateCorruption => BaseEffect::ActivateCorruption { source },
             Effect::ActivateMetallicize { amount } => BaseEffect::ActivateMetallicize { source, amount },
             Effect::ActivateFlameBarrier { damage } => BaseEffect::ActivateFlameBarrier { source, damage },
-            Effect::ActivateBurn { damage } => BaseEffect::ActivateBurn { source, damage },
             Effect::ActivateDemonForm { strength_per_turn } => BaseEffect::ActivateDemonForm { source, strength_per_turn },
             Effect::ActivateRage { block_per_attack } => BaseEffect::ActivateRage { source, block_per_attack },
             Effect::AddRandomAttackToHand => BaseEffect::AddRandomAttackToHand { source },
@@ -506,6 +505,7 @@ impl BaseEffect {
             Effect::StealGold { amount } => BaseEffect::StealGold { source, amount },
             Effect::EnemyEscape => BaseEffect::EnemyEscape { source },
             Effect::SplitIntoMediumSlimes => BaseEffect::SplitIntoMediumSlimes { source },
+            Effect::LoseHpPerCardInHand { damage_per_card } => BaseEffect::LoseHpPerCardInHand { source, damage_per_card },
         }
     }
 }

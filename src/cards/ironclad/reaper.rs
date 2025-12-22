@@ -1,28 +1,16 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 pub fn reaper() -> Card {
-    Card::new(
-        CardEnum::Reaper,
-        2,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Reaper, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackAllEnemiesAndHeal { amount: 4, num_attacks: 1 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
 pub fn reaper_upgraded() -> Card {
-    Card::new(
-        CardEnum::Reaper,
-        2,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Reaper, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackAllEnemiesAndHeal { amount: 5, num_attacks: 1 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -36,7 +24,7 @@ mod tests {
         let card = reaper();
         assert_eq!(card.get_name(), "Reaper");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_playable());
@@ -47,7 +35,7 @@ mod tests {
         let card = reaper_upgraded();
         assert_eq!(card.get_name(), "Reaper+");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_playable());
@@ -213,7 +201,7 @@ mod integration_tests {
     #[test]
     fn test_reaper_is_attack_card() {
         let card = reaper();
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_cost(), 2);
         assert!(!card.is_upgraded());
     }
@@ -221,7 +209,7 @@ mod integration_tests {
     #[test]
     fn test_reaper_upgraded_is_attack_card() {
         let card = reaper_upgraded();
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_cost(), 2);
         assert!(card.is_upgraded());
     }

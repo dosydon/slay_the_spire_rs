@@ -1,15 +1,15 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 pub fn twin_strike() -> Card {
-    Card::new(CardEnum::TwinStrike, 1, CardType::Attack, vec![
+    Card::new(CardEnum::TwinStrike, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
         Effect::AttackToTarget { amount: 5, num_attacks: 2, strength_multiplier: 1 }
-    ], Rarity::Common)
+    ])
 }
 
 pub fn twin_strike_upgraded() -> Card {
-    Card::new(CardEnum::TwinStrike, 1, CardType::Attack, vec![
+    Card::new(CardEnum::TwinStrike, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
         Effect::AttackToTarget { amount: 7, num_attacks: 2, strength_multiplier: 1 }
-    ], Rarity::Common)
+    ])
         .set_upgraded(true)
 }
 
@@ -23,7 +23,7 @@ mod tests {
         let card = twin_strike();
         assert_eq!(card.get_name(), "TwinStrike");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(*card.get_card_type(), CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 1);
     }
@@ -43,7 +43,7 @@ mod tests {
         let card = twin_strike_upgraded();
         assert_eq!(card.get_name(), "TwinStrike+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(*card.get_card_type(), CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 1);
     }

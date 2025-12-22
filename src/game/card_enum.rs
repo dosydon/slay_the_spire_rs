@@ -79,6 +79,9 @@ pub enum CardEnum {
 
     // Curse Cards
     AscendersCurse,
+    Injury,
+    Clumsy,
+    Regret,
 
     // Colorless Cards
     SwiftStrike,
@@ -169,6 +172,9 @@ impl CardEnum {
             CardEnum::Burn => "Burn",
             CardEnum::Dazed => "Dazed",
             CardEnum::AscendersCurse => "Ascender's Curse",
+            CardEnum::Injury => "Injury",
+            CardEnum::Clumsy => "Clumsy",
+            CardEnum::Regret => "Regret",
             CardEnum::SwiftStrike => "Swift Strike",
             CardEnum::Finesse => "Finesse",
             CardEnum::FlashOfSteel => "Flash of Steel",
@@ -183,5 +189,102 @@ impl CardEnum {
     /// Get the upgraded name for this card
     pub fn upgraded_name(&self) -> String {
         format!("{}+", self.name())
+    }
+
+    /// Create a Card instance from this CardEnum
+    /// This provides a centralized way to get card definitions
+    pub fn to_card(&self) -> super::card::Card {
+        match self {
+            CardEnum::Strike => crate::cards::ironclad::strike::strike(),
+            CardEnum::Defend => crate::cards::ironclad::defend::defend(),
+            CardEnum::Bash => crate::cards::ironclad::bash::bash(),
+            CardEnum::BodySlam => crate::cards::ironclad::body_slam::body_slam(),
+            CardEnum::Clash => crate::cards::ironclad::clash::clash(),
+            CardEnum::Carnage => crate::cards::ironclad::carnage::carnage(),
+            CardEnum::Cleave => crate::cards::ironclad::cleave::cleave(),
+            CardEnum::Embrace => crate::cards::ironclad::embrace::embrace(),
+            CardEnum::Flex => crate::cards::ironclad::flex::flex(),
+            CardEnum::Inflame => crate::cards::ironclad::inflame::inflame(),
+            CardEnum::Immolate => crate::cards::ironclad::immolate::immolate(),
+            CardEnum::IronWave => crate::cards::ironclad::iron_wave::iron_wave(),
+            CardEnum::PommelStrike => crate::cards::ironclad::pommel_strike::pommel_strike(),
+            CardEnum::PowerThrough => crate::cards::ironclad::power_through::power_through(),
+            CardEnum::ShrugItOff => crate::cards::ironclad::shrug_it_off::shrug_it_off(),
+            CardEnum::TwinStrike => crate::cards::ironclad::twin_strike::twin_strike(),
+            CardEnum::Clothesline => crate::cards::ironclad::clothesline::clothesline(),
+            CardEnum::HeavyBlade => crate::cards::ironclad::heavy_blade::heavy_blade(),
+            CardEnum::PerfectedStrike => crate::cards::ironclad::perfected_strike::perfected_strike(),
+            CardEnum::Thunderclap => crate::cards::ironclad::thunderclap::thunderclap(),
+            CardEnum::WildStrike => crate::cards::ironclad::wild_strike::wild_strike(),
+            CardEnum::Combust => crate::cards::ironclad::combust::combust(),
+            CardEnum::Disarm => crate::cards::ironclad::disarm::disarm(),
+            CardEnum::Dropkick => crate::cards::ironclad::dropkick::dropkick(),
+            CardEnum::FeelNoPain => crate::cards::ironclad::feel_no_pain::feel_no_pain(),
+            CardEnum::Entrench => crate::cards::ironclad::entrench::entrench(),
+            CardEnum::Bludgeon => crate::cards::ironclad::bludgeon::bludgeon(),
+            CardEnum::Anger => crate::cards::ironclad::anger::anger(),
+            CardEnum::SwordBoomerang => crate::cards::ironclad::sword_boomerang::sword_boomerang(),
+            CardEnum::Hemokinesis => crate::cards::ironclad::hemokinesis::hemokinesis(),
+            CardEnum::Armaments => crate::cards::ironclad::armaments::armaments(),
+            CardEnum::Impervious => crate::cards::ironclad::impervious::impervious(),
+            CardEnum::Brutality => crate::cards::ironclad::brutality::brutality(),
+            CardEnum::Offering => crate::cards::ironclad::offering::offering(),
+            CardEnum::Shockwave => crate::cards::ironclad::shockwave::shockwave(),
+            CardEnum::Uppercut => crate::cards::ironclad::uppercut::uppercut(),
+            CardEnum::Intimidate => crate::cards::ironclad::intimidate::intimidate(),
+            CardEnum::SeeingRed => crate::cards::ironclad::seeing_red::seeing_red(),
+            CardEnum::GhostlyArmor => crate::cards::ironclad::ghostly_armor::ghostly_armor(),
+            CardEnum::Havoc => crate::cards::ironclad::havoc::havoc(),
+            CardEnum::Headbutt => crate::cards::ironclad::headbutt::headbutt(),
+            CardEnum::TrueGrit => crate::cards::ironclad::true_grit::true_grit(),
+            CardEnum::Warcry => crate::cards::ironclad::warcry::warcry(),
+            CardEnum::Corruption => crate::cards::ironclad::corruption::corruption(),
+            CardEnum::LimitBreak => crate::cards::ironclad::limit_break::limit_break(),
+            CardEnum::Metallicize => crate::cards::ironclad::metallicize::metallicize(),
+            CardEnum::FlameBarrier => crate::cards::ironclad::flame_barrier::flame_barrier(),
+            CardEnum::Rage => crate::cards::ironclad::rage::rage(),
+            CardEnum::Rampage => crate::cards::ironclad::rampage::rampage(),
+            CardEnum::RecklessCharge => crate::cards::ironclad::reckless_charge::reckless_charge(),
+            CardEnum::SearingBlow => crate::cards::ironclad::searing_blow::searing_blow(),
+            CardEnum::SeverSoul => crate::cards::ironclad::sever_soul::sever_soul(),
+            CardEnum::SpotWeakness => crate::cards::ironclad::spot_weakness::spot_weakness(),
+            CardEnum::Pummel => crate::cards::ironclad::pummel::pummel(),
+            CardEnum::InfernalBlade => crate::cards::ironclad::infernal_blade::infernal_blade(),
+            CardEnum::Evolve => crate::cards::ironclad::evolve::evolve(),
+            CardEnum::Sentinel => crate::cards::ironclad::sentinel::sentinel(),
+            CardEnum::Whirlwind => crate::cards::ironclad::whirlwind::whirlwind(),
+            CardEnum::DemonForm => crate::cards::ironclad::demon_form::demon_form(),
+            CardEnum::SecondWind => crate::cards::ironclad::second_wind::second_wind(),
+            CardEnum::Rupture => crate::cards::ironclad::rupture::rupture(),
+            CardEnum::DualWield => crate::cards::ironclad::dual_wield::dual_wield(),
+            CardEnum::DoubleTap => crate::cards::ironclad::double_tap::double_tap(),
+            CardEnum::Exhume => crate::cards::ironclad::exhume::exhume(),
+            CardEnum::Feed => crate::cards::ironclad::feed::feed(),
+            CardEnum::Reaper => crate::cards::ironclad::reaper::reaper(),
+            CardEnum::FiendFire => crate::cards::ironclad::fiend_fire::fiend_fire(),
+            CardEnum::FireBreathing => crate::cards::ironclad::fire_breathing::fire_breathing(),
+
+            // Status Cards
+            CardEnum::Slimed => crate::cards::status::slimed::slimed(),
+            CardEnum::Wound => crate::cards::status::wound::wound(),
+            CardEnum::Burn => crate::cards::status::burn::burn(),
+            CardEnum::Dazed => crate::cards::status::dazed::dazed(),
+
+            // Curse Cards
+            CardEnum::AscendersCurse => crate::cards::curse::ascenders_curse(),
+            CardEnum::Injury => crate::cards::curse::injury(),
+            CardEnum::Clumsy => crate::cards::curse::clumsy(),
+            CardEnum::Regret => crate::cards::curse::regret(),
+
+            // Colorless Cards
+            CardEnum::SwiftStrike => crate::cards::colorless::swift_strike::swift_strike(),
+            CardEnum::Finesse => crate::cards::colorless::finesse::finesse(),
+            CardEnum::FlashOfSteel => crate::cards::colorless::flash_of_steel::flash_of_steel(),
+            CardEnum::Blind => crate::cards::colorless::blind::blind(),
+            CardEnum::Trip => crate::cards::colorless::trip::trip(),
+            CardEnum::GoodInstincts => crate::cards::colorless::good_instincts::good_instincts(),
+            CardEnum::BandageUp => crate::cards::colorless::bandage_up::bandage_up(),
+            CardEnum::DeepBreath => crate::cards::colorless::deep_breath::deep_breath(),
+        }
     }
 }

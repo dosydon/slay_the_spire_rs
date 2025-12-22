@@ -1,32 +1,20 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Anger - Deal 6 damage. Add a copy of this card to your discard pile.
 pub fn anger() -> Card {
-    Card::new(
-        CardEnum::Anger,
-        0,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Anger, 0, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
             Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
             Effect::AddCardToDiscard(CardEnum::Anger),
-        ],
-        Rarity::Common
-    )
+        ])
         .set_play_condition(Condition::True)
 }
 
 /// Anger+ (Upgraded version) - Deal 8 damage. Add a copy of this card to your discard pile.
 pub fn anger_upgraded() -> Card {
-    Card::new(
-        CardEnum::Anger,
-        0,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::Anger, 0, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
             Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
             Effect::AddUpgradedCardToDiscard(CardEnum::Anger),
-        ],
-        Rarity::Common
-    )
+        ])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -43,7 +31,7 @@ mod tests {
         let anger_card = anger();
         assert_eq!(anger_card.get_name(), "Anger");
         assert_eq!(anger_card.get_cost(), 0);
-        assert_eq!(anger_card.get_card_type(), &CardType::Attack);
+        assert_eq!(anger_card.get_card_type(), CardType::Attack);
         assert!(!anger_card.is_upgraded());
 
         let effects = anger_card.get_effects();
@@ -56,7 +44,7 @@ mod tests {
         let anger_plus = anger_upgraded();
         assert_eq!(anger_plus.get_name(), "Anger+");
         assert_eq!(anger_plus.get_cost(), 0);
-        assert_eq!(anger_plus.get_card_type(), &CardType::Attack);
+        assert_eq!(anger_plus.get_card_type(), CardType::Attack);
         assert!(anger_plus.is_upgraded());
 
         let effects = anger_plus.get_effects();

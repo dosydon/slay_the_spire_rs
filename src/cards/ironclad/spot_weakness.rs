@@ -1,18 +1,12 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Spot Weakness - Uncommon Skill Card
 /// Cost: 1 (1 when upgraded)
 /// Effect: If enemy is attacking, gain 3 Strength. Exhaust
 pub fn spot_weakness() -> Card {
-    Card::new(
-        CardEnum::SpotWeakness,
-        1,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::SpotWeakness, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
             Effect::GainStrengthIfEnemyAttacking { amount: 3 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_play_condition(Condition::EnemyIsAttacking)
 }
 
@@ -20,15 +14,9 @@ pub fn spot_weakness() -> Card {
 /// Cost: 1
 /// Effect: If enemy is attacking, gain 4 Strength. Exhaust
 pub fn spot_weakness_upgraded() -> Card {
-    Card::new(
-        CardEnum::SpotWeakness,
-        1,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::SpotWeakness, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
             Effect::GainStrengthIfEnemyAttacking { amount: 4 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_play_condition(Condition::EnemyIsAttacking)
 }
@@ -50,7 +38,7 @@ mod tests {
         let card = spot_weakness();
         assert_eq!(card.get_name(), "Spot Weakness");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -60,7 +48,7 @@ mod tests {
         let card = spot_weakness_upgraded();
         assert_eq!(card.get_name(), "Spot Weakness+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }

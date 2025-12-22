@@ -1,4 +1,4 @@
-use crate::game::{card::{Card, Rarity}, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::{Card, Rarity, CardClass}, card_type::CardType, card_enum::CardEnum, effect::Effect};
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 
@@ -49,13 +49,7 @@ impl EventListener for FeelNoPainListener {
 /// Cost: 1
 /// Effect: Whenever you Exhaust a card, gain 3 Block.
 pub fn feel_no_pain() -> Card {
-    Card::new(
-        CardEnum::FeelNoPain,
-        1,
-        CardType::Power,
-        vec![Effect::ActivateFeelNoPain { block_per_exhaust: 3 }],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::FeelNoPain, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![Effect::ActivateFeelNoPain { block_per_exhaust: 3 }])
         .set_playable(true)
 }
 
@@ -63,13 +57,7 @@ pub fn feel_no_pain() -> Card {
 /// Cost: 1
 /// Effect: Whenever you Exhaust a card, gain 4 Block.
 pub fn feel_no_pain_upgraded() -> Card {
-    Card::new(
-        CardEnum::FeelNoPain,
-        1,
-        CardType::Power,
-        vec![Effect::ActivateFeelNoPain { block_per_exhaust: 4 }],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::FeelNoPain, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![Effect::ActivateFeelNoPain { block_per_exhaust: 4 }])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -86,7 +74,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Feel No Pain");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         match &card.get_effects()[0] {
             Effect::ActivateFeelNoPain { block_per_exhaust } => {
@@ -104,7 +92,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Feel No Pain+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         match &card.get_effects()[0] {
             Effect::ActivateFeelNoPain { block_per_exhaust } => {

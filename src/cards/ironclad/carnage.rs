@@ -1,17 +1,17 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Carnage - Uncommon Attack Card
 /// Cost: 2
 /// Deal 20 damage
 /// Ethereal: Exhausts at end of turn if not played
 pub fn carnage() -> Card {
-    Card::new(CardEnum::Carnage, 2, CardType::Attack, vec![
+    Card::new(CardEnum::Carnage, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
         Effect::AttackToTarget {
             amount: 20,
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], Rarity::Uncommon)
+    ])
         .set_ethereal(true)
 }
 
@@ -20,13 +20,13 @@ pub fn carnage() -> Card {
 /// Deal 28 damage
 /// Ethereal: Exhausts at end of turn if not played
 pub fn carnage_upgraded() -> Card {
-    Card::new(CardEnum::Carnage, 2, CardType::Attack, vec![
+    Card::new(CardEnum::Carnage, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
         Effect::AttackToTarget {
             amount: 28,
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], Rarity::Uncommon)
+    ])
         .set_ethereal(true)
         .set_upgraded(true)
 }
@@ -43,7 +43,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Carnage");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -56,7 +56,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Carnage+");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

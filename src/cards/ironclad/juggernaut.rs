@@ -2,28 +2,16 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 use crate::battle::{events::{BattleEvent, EventListener}, target::Entity};
 
 pub fn juggernaut() -> Card {
-    Card::new(
-        CardEnum::Juggernaut,
-        2,
-        CardType::Power,
-        vec![
+    Card::new(CardEnum::Juggernaut, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
             Effect::ActivateJuggernaut { damage_per_block: 5 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
 pub fn juggernaut_upgraded() -> Card {
-    Card::new(
-        CardEnum::Juggernaut,
-        2,
-        CardType::Power,
-        vec![
+    Card::new(CardEnum::Juggernaut, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
             Effect::ActivateJuggernaut { damage_per_block: 7 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -84,7 +72,7 @@ mod tests {
         let card = juggernaut();
         assert_eq!(card.get_name(), "Juggernaut");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_playable());
@@ -95,7 +83,7 @@ mod tests {
         let card = juggernaut_upgraded();
         assert_eq!(card.get_name(), "Juggernaut+");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_playable());
@@ -189,7 +177,7 @@ mod integration_tests {
     #[test]
     fn test_juggernaut_is_power_card() {
         let card = juggernaut();
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_cost(), 2);
         assert!(!card.is_upgraded());
     }
@@ -197,7 +185,7 @@ mod integration_tests {
     #[test]
     fn test_juggernaut_upgraded_is_power_card() {
         let card = juggernaut_upgraded();
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_cost(), 2);
         assert!(card.is_upgraded());
     }

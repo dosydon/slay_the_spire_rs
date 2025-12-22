@@ -1,13 +1,12 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Body Slam - Deal damage equal to your Block
 pub fn body_slam() -> Card {
     Card::new(
         CardEnum::BodySlam,
         1,
-        CardType::Attack,
-        vec![Effect::AttackToTargetWithBlock],
-        Rarity::Common,
+        CardClass::IronClad(Rarity::Common, CardType::Attack),
+        vec![Effect::AttackToTargetWithBlock]
     )
 }
 
@@ -16,9 +15,8 @@ pub fn body_slam_upgraded() -> Card {
     Card::new(
         CardEnum::BodySlam,
         0, // Cost reduced from 1 to 0
-        CardType::Attack,
-        vec![Effect::AttackToTargetWithBlock],
-        Rarity::Common,
+        CardClass::IronClad(Rarity::Common, CardType::Attack),
+        vec![Effect::AttackToTargetWithBlock]
     )
         .set_upgraded(true)
 }
@@ -35,7 +33,7 @@ mod tests {
         let body_slam_card = body_slam();
         assert_eq!(body_slam_card.get_name(), "Body Slam");
         assert_eq!(body_slam_card.get_cost(), 1);
-        assert_eq!(body_slam_card.get_card_type(), &CardType::Attack);
+        assert_eq!(body_slam_card.get_card_type(), CardType::Attack);
         assert!(!body_slam_card.is_upgraded());
 
         let effects = body_slam_card.get_effects();
@@ -47,7 +45,7 @@ mod tests {
         let body_slam_plus = body_slam_upgraded();
         assert_eq!(body_slam_plus.get_name(), "Body Slam+");
         assert_eq!(body_slam_plus.get_cost(), 0);
-        assert_eq!(body_slam_plus.get_card_type(), &CardType::Attack);
+        assert_eq!(body_slam_plus.get_card_type(), CardType::Attack);
         assert!(body_slam_plus.is_upgraded());
 
         let effects = body_slam_plus.get_effects();

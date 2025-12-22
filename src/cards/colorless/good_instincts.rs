@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Good Instincts - Colorless Skill Card
 /// Cost: 0 (0 when upgraded)
@@ -7,9 +7,8 @@ pub fn good_instincts() -> Card {
     Card::new(
         CardEnum::GoodInstincts,
         0,
-        CardType::Skill,
-        vec![Effect::GainDefense { amount: 6 }],
-        Rarity::Uncommon
+        CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
+        vec![Effect::GainDefense { amount: 6 }]
     )
         .set_playable(true)
 }
@@ -18,9 +17,8 @@ pub fn good_instincts_upgraded() -> Card {
     Card::new(
         CardEnum::GoodInstincts,
         0,
-        CardType::Skill,
-        vec![Effect::GainDefense { amount: 9 }],
-        Rarity::Uncommon
+        CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
+        vec![Effect::GainDefense { amount: 9 }]
     )
         .set_upgraded(true)
         .set_playable(true)
@@ -36,7 +34,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Good Instincts");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -48,7 +46,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Good Instincts+");
         assert_eq!(card.get_cost(), 0); // Still costs 0
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

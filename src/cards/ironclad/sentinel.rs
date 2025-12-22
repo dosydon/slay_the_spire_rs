@@ -1,18 +1,12 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, effect::Condition, card::Rarity};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, effect::Condition, card::{Rarity, CardClass}};
 
 /// Sentinel - Uncommon Skill Card
 /// Cost: 1 (0 when upgraded)
 /// Effect: Gain 5 (8+) Block. Whenever this card is Exhausted, gain 2 (3+) Energy.
 pub fn sentinel() -> Card {
-    Card::new(
-        CardEnum::Sentinel,
-        1,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::Sentinel, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
             Effect::GainDefense { amount: 5 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_play_condition(Condition::True)
         .set_on_exhaust(vec![
             Effect::GainEnergy { amount: 2 },
@@ -23,15 +17,9 @@ pub fn sentinel() -> Card {
 /// Cost: 0
 /// Effect: Gain 8 Block. Whenever this card is Exhausted, gain 3 Energy.
 pub fn sentinel_upgraded() -> Card {
-    Card::new(
-        CardEnum::Sentinel,
-        0,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::Sentinel, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
             Effect::GainDefense { amount: 8 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
         .set_on_exhaust(vec![
@@ -56,7 +44,7 @@ mod tests {
         let card = sentinel();
         assert_eq!(card.get_name(), "Sentinel");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -66,7 +54,7 @@ mod tests {
         let card = sentinel_upgraded();
         assert_eq!(card.get_name(), "Sentinel+");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }

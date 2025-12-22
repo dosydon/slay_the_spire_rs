@@ -1,26 +1,14 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Warcry - Draw 1 cards. Put 1 card on top of draw pile
 pub fn warcry() -> Card {
-    Card::new(
-        CardEnum::Warcry,
-        0,
-        CardType::Skill,
-        vec![Effect::DrawCard { count: 1 }, Effect::EnterSelectCardInHandToPutOnDeck],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::Warcry, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::DrawCard { count: 1 }, Effect::EnterSelectCardInHandToPutOnDeck])
         .set_play_condition(Condition::True)
 }
 
 /// Warcry+ (upgraded version)
 pub fn warcry_upgraded() -> Card {
-    Card::new(
-        CardEnum::Warcry,
-        0,
-        CardType::Skill,
-        vec![Effect::DrawCard { count: 2 }, Effect::EnterSelectCardInHandToPutOnDeck],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::Warcry, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::DrawCard { count: 2 }, Effect::EnterSelectCardInHandToPutOnDeck])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -28,6 +16,7 @@ pub fn warcry_upgraded() -> Card {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::battle::battle_state::CardInHandTo;
     use crate::battle::{Battle, target::Entity, enemy_in_battle::EnemyInBattle};
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
     use crate::game::PlayerRunState;
@@ -38,7 +27,7 @@ mod tests {
         let warcry_card = warcry();
         assert_eq!(warcry_card.get_name(), "Warcry");
         assert_eq!(warcry_card.get_cost(), 0);
-        assert_eq!(warcry_card.get_card_type(), &CardType::Skill);
+        assert_eq!(warcry_card.get_card_type(), CardType::Skill);
 
         let effects = warcry_card.get_effects();
         assert!(effects.iter().any(|e| matches!(e, Effect::DrawCard { count: 1 })));
@@ -50,7 +39,7 @@ mod tests {
         let warcry_plus = warcry_upgraded();
         assert_eq!(warcry_plus.get_name(), "Warcry+");
         assert_eq!(warcry_plus.get_cost(), 0);
-        assert_eq!(warcry_plus.get_card_type(), &CardType::Skill);
+        assert_eq!(warcry_plus.get_card_type(), CardType::Skill);
 
         let effects = warcry_plus.get_effects();
         assert!(effects.iter().any(|e| matches!(e, Effect::DrawCard { count: 2 })));
@@ -101,8 +90,8 @@ let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, vec![
         let final_hand_size = battle.cards.hand_size();
         assert_eq!(final_hand_size, initial_hand_size, "Should draw 1 card but play 1 (net 0 change)");
 
-        // Check that battle entered SelectCardInHandToPutOnDeck state
-        assert!(matches!(battle.battle_state, crate::battle::battle_state::BattleState::SelectCardInHandToPutOnDeck));
+        // Check that battle entered SelectCardInHand(CardInHandTo::PutOnDeck) state
+        assert!(matches!(battle.battle_state, crate::battle::battle_state::BattleState::SelectCardInHand(CardInHandTo::PutOnDeck)));
 
         // Should have cards in hand to select from
         assert!(battle.cards.hand_size() > 0, "Should have cards in hand to select");
@@ -139,8 +128,8 @@ let mut battle = Battle::new_with_shuffle(deck, global_info, player_state, vec![
         let result = battle.play_card(warcry_idx, Entity::Player);
         assert!(result.is_ok(), "Warcry should be playable");
 
-        // Should be in SelectCardInHandToPutOnDeck state
-        assert!(matches!(battle.battle_state, crate::battle::battle_state::BattleState::SelectCardInHandToPutOnDeck));
+        // Should be in SelectCardInHand(CardInHandTo::PutOnDeck) state
+        assert!(matches!(battle.battle_state, crate::battle::battle_state::BattleState::SelectCardInHand(CardInHandTo::PutOnDeck)));
 
         // Store the name of the card we're about to select
         let card_to_select_name = battle.cards.get_hand()[0].get_name().to_string();

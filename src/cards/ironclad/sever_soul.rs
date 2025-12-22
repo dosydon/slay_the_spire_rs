@@ -1,19 +1,13 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Sever Soul - Uncommon Attack Card
 /// Cost: 2 (2 when upgraded)
 /// Effect: Deal 16 damage. Exhaust all non-Attack cards in hand
 pub fn sever_soul() -> Card {
-    Card::new(
-        CardEnum::SeverSoul,
-        2,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::SeverSoul, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTarget { amount: 16, num_attacks: 1, strength_multiplier: 1 },
             Effect::ExhaustNonAttacksInHand,
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
@@ -21,16 +15,10 @@ pub fn sever_soul() -> Card {
 /// Cost: 2
 /// Effect: Deal 22 damage. Exhaust all non-Attack cards in hand
 pub fn sever_soul_upgraded() -> Card {
-    Card::new(
-        CardEnum::SeverSoul,
-        2,
-        CardType::Attack,
-        vec![
+    Card::new(CardEnum::SeverSoul, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
             Effect::AttackToTarget { amount: 22, num_attacks: 1, strength_multiplier: 1 },
             Effect::ExhaustNonAttacksInHand,
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -54,7 +42,7 @@ mod tests {
         let card = sever_soul();
         assert_eq!(card.get_name(), "Sever Soul");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -64,7 +52,7 @@ mod tests {
         let card = sever_soul_upgraded();
         assert_eq!(card.get_name(), "Sever Soul+");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -144,7 +132,7 @@ mod tests {
         // Verify the remaining card is an Attack
         let hand = battle.get_hand();
         assert_eq!(hand.len(), 1);
-        assert_eq!(hand[0].get_card_type(), &CardType::Attack);
+        assert_eq!(hand[0].get_card_type(), CardType::Attack);
     }
 
     #[test]

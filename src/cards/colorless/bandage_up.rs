@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Bandage Up - Colorless Skill Card
 /// Cost: 0 (0 when upgraded)
@@ -7,12 +7,11 @@ pub fn bandage_up() -> Card {
     Card::new(
         CardEnum::BandageUp,
         0,
-        CardType::Skill,
+        CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
             Effect::Heal(4),
             Effect::Exhaust,
-        ],
-        Rarity::Uncommon
+        ]
     )
         .set_playable(true)
 }
@@ -21,12 +20,11 @@ pub fn bandage_up_upgraded() -> Card {
     Card::new(
         CardEnum::BandageUp,
         0,
-        CardType::Skill,
+        CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
             Effect::Heal(6),
             Effect::Exhaust,
-        ],
-        Rarity::Uncommon
+        ]
     )
         .set_upgraded(true)
         .set_playable(true)
@@ -42,7 +40,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Bandage Up");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -54,7 +52,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Bandage Up+");
         assert_eq!(card.get_cost(), 0); // Still costs 0
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

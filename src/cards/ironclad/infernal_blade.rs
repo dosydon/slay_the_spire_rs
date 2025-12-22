@@ -1,19 +1,13 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Infernal Blade - Uncommon Skill Card
 /// Cost: 1 (0 when upgraded)
 /// Effect: Add a random Attack card to your hand. Exhaust.
 pub fn infernal_blade() -> Card {
-    Card::new(
-        CardEnum::InfernalBlade,
-        1,
-        CardType::Skill,
-        vec![
+    Card::new(CardEnum::InfernalBlade, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![
             Effect::AddRandomAttackToHand,
             Effect::Exhaust,
-        ],
-        Rarity::Common
-    )
+        ])
         .set_play_condition(Condition::True)
 }
 
@@ -24,12 +18,11 @@ pub fn infernal_blade_upgraded() -> Card {
     Card::new(
         CardEnum::InfernalBlade,
         0, // Costs 0 when upgraded
-        CardType::Skill,
+        CardClass::IronClad(Rarity::Common, CardType::Skill),
         vec![
             Effect::AddRandomAttackToHand,
             Effect::Exhaust,
-        ],
-        Rarity::Common
+        ]
     )
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -47,7 +40,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Infernal Blade");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -59,7 +52,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Infernal Blade+");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
@@ -138,7 +131,7 @@ mod tests {
         // Verify the new card is an Attack card
         if final_hand_size > 0 {
             let hand = battle.cards.get_hand();
-            let new_card_is_attack = hand.iter().any(|card| card.get_card_type() == &CardType::Attack);
+            let new_card_is_attack = hand.iter().any(|card| card.get_card_type() == CardType::Attack);
             assert!(new_card_is_attack, "Should have added an Attack card to hand");
         }
     }
@@ -184,7 +177,7 @@ mod tests {
         // Verify the new card is an Attack card
         if final_hand_size > 0 {
             let hand = battle.cards.get_hand();
-            let new_card_is_attack = hand.iter().any(|card| card.get_card_type() == &CardType::Attack);
+            let new_card_is_attack = hand.iter().any(|card| card.get_card_type() == CardType::Attack);
             assert!(new_card_is_attack, "Should have added an Attack card to hand");
         }
     }

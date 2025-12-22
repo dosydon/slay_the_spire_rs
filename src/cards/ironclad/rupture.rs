@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::Rarity};
+use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Rupture Listener
@@ -46,13 +46,7 @@ impl EventListener for RuptureListener {
 /// Cost: 1
 /// Effect: Whenever you lose HP, gain 1 Strength.
 pub fn rupture() -> Card {
-    Card::new(
-        CardEnum::Rupture,
-        1,
-        CardType::Power,
-        vec![Effect::ActivateRupture],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::Rupture, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![Effect::ActivateRupture])
         .set_playable(true)
 }
 
@@ -60,13 +54,7 @@ pub fn rupture() -> Card {
 /// Cost: 1
 /// Effect: Whenever you lose HP, gain 1 Strength.
 pub fn rupture_upgraded() -> Card {
-    Card::new(
-        CardEnum::Rupture,
-        1,
-        CardType::Power,
-        vec![Effect::ActivateRupture],
-        Rarity::Uncommon
-    )
+    Card::new(CardEnum::Rupture, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![Effect::ActivateRupture])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -80,7 +68,7 @@ mod tests {
         let card = rupture();
         assert_eq!(card.get_name(), "Rupture");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -91,7 +79,7 @@ mod tests {
         let card = rupture_upgraded();
         assert_eq!(card.get_name(), "Rupture+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

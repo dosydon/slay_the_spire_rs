@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Flash of Steel - Colorless Attack Card
 /// Cost: 0 (0 when upgraded)
@@ -7,12 +7,11 @@ pub fn flash_of_steel() -> Card {
     Card::new(
         CardEnum::FlashOfSteel,
         0,
-        CardType::Attack,
+        CardClass::Colorless(Rarity::Uncommon, CardType::Attack),
         vec![
             Effect::AttackToTarget { amount: 3, num_attacks: 1, strength_multiplier: 0 },
             Effect::DrawCard { count: 1 },
-        ],
-        Rarity::Uncommon
+        ]
     )
         .set_playable(true)
 }
@@ -21,12 +20,11 @@ pub fn flash_of_steel_upgraded() -> Card {
     Card::new(
         CardEnum::FlashOfSteel,
         0,
-        CardType::Attack,
+        CardClass::Colorless(Rarity::Uncommon, CardType::Attack),
         vec![
             Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 0 },
             Effect::DrawCard { count: 1 },
-        ],
-        Rarity::Uncommon
+        ]
     )
         .set_upgraded(true)
         .set_playable(true)
@@ -42,7 +40,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Flash of Steel");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 2);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -54,7 +52,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Flash of Steel+");
         assert_eq!(card.get_cost(), 0); // Still costs 0
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 2);
         assert!(card.is_upgraded());
         assert!(card.is_playable());

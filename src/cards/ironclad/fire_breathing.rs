@@ -1,29 +1,17 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 use crate::battle::{target::Entity, battle_events::BattleEvent, battle_events::EventListener};
 
 pub fn fire_breathing() -> Card {
-    Card::new(
-        CardEnum::FireBreathing,
-        1,
-        CardType::Power,
-        vec![
+    Card::new(CardEnum::FireBreathing, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
             Effect::AddFireBreathing { damage_per_status: 6 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_playable(true)
 }
 
 pub fn fire_breathing_upgraded() -> Card {
-    Card::new(
-        CardEnum::FireBreathing,
-        1,
-        CardType::Power,
-        vec![
+    Card::new(CardEnum::FireBreathing, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
             Effect::AddFireBreathing { damage_per_status: 10 },
-        ],
-        Rarity::Uncommon
-    )
+        ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -37,7 +25,7 @@ mod tests {
         let card = fire_breathing();
         assert_eq!(card.get_name(), "Fire Breathing");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_playable());
@@ -48,7 +36,7 @@ mod tests {
         let card = fire_breathing_upgraded();
         assert_eq!(card.get_name(), "Fire Breathing+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 1);
         assert!(card.is_playable());
@@ -139,7 +127,7 @@ mod integration_tests {
     #[test]
     fn test_fire_breathing_is_power_card() {
         let card = fire_breathing();
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_cost(), 1);
         assert!(!card.is_upgraded());
     }
@@ -147,7 +135,7 @@ mod integration_tests {
     #[test]
     fn test_fire_breathing_upgraded_is_power_card() {
         let card = fire_breathing_upgraded();
-        assert_eq!(card.get_card_type(), &CardType::Power);
+        assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_cost(), 1);
         assert!(card.is_upgraded());
     }

@@ -1,17 +1,17 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 pub fn iron_wave() -> Card {
-    Card::new(CardEnum::IronWave, 1, CardType::Attack, vec![
+    Card::new(CardEnum::IronWave, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
         Effect::GainDefense { amount: 5 },
         Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }
-    ], Rarity::Common)
+    ])
 }
 
 pub fn iron_wave_upgraded() -> Card {
-    Card::new(CardEnum::IronWave, 1, CardType::Attack, vec![
+    Card::new(CardEnum::IronWave, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
         Effect::GainDefense { amount: 8 },
         Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 }
-    ], Rarity::Common)
+    ])
         .set_upgraded(true)
 }
 
@@ -25,7 +25,7 @@ mod tests {
         let card = iron_wave();
         assert_eq!(card.get_name(), "IronWave");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(*card.get_card_type(), CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
     }
@@ -46,7 +46,7 @@ mod tests {
         let card = iron_wave_upgraded();
         assert_eq!(card.get_name(), "IronWave+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(*card.get_card_type(), CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
     }

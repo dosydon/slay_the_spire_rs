@@ -1,54 +1,11 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::Rarity};
-use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
-
-/// Burn Listener
-/// Deals 2 damage to the player at the end of turn
-#[derive(Debug)]
-pub struct BurnListener {
-    owner: Entity,
-    damage: u32,
-    is_active: bool,
-}
-
-impl BurnListener {
-    pub fn new(owner: Entity, damage: u32) -> Self {
-        BurnListener {
-            owner,
-            damage,
-            is_active: true,
-        }
-    }
-}
-
-impl EventListener for BurnListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
-        match event {
-            BattleEvent::EndOfTurn { entity } if *entity == self.owner && self.is_active => {
-                // At end of turn, deal damage to owner
-                vec![Effect::LoseHp(self.damage)]
-            }
-            _ => vec![]
-        }
-    }
-
-    fn is_active(&self) -> bool {
-        self.is_active
-    }
-
-    fn get_owner(&self) -> Entity {
-        self.owner
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
+use crate::game::{card::{Card, CardClass}, effect::Effect, card_enum::CardEnum};
+#[cfg(test)]
+use crate::game::card_type::CardType;
 
 pub fn burn() -> Card {
-    Card::new(CardEnum::Burn, 0, CardType::Status, vec![
-        Effect::ActivateBurn { damage: 2 }, // Activate Burn listener for end-of-turn damage
-    ], Rarity::Basic)
+    Card::new(CardEnum::Burn, 0, CardClass::Status, vec![])
         .set_playable(false)
+        .set_end_of_turn(vec![Effect::LoseHp(2)]) // Deal 2 damage at end of turn
 }
 
 #[cfg(test)]
@@ -61,20 +18,24 @@ mod tests {
 
         assert_eq!(card.get_name(), "Burn");
         assert_eq!(card.get_cost(), 0);
-        assert_eq!(card.get_card_type(), &CardType::Status);
-        assert_eq!(card.get_effects().len(), 1);
-        assert!(matches!(card.get_effects()[0], Effect::ActivateBurn { damage: 2 }));
+        assert_eq!(card.get_card_type(), CardType::Status);
+        assert_eq!(card.get_effects().len(), 0); // No direct effects
         assert!(!card.is_upgraded());
         assert!(!card.is_playable()); // Status cards are not playable
+
+        // Check end of turn effects
+        let end_of_turn_effects = card.get_end_of_turn().unwrap();
+        assert_eq!(end_of_turn_effects.len(), 1);
+        assert!(matches!(end_of_turn_effects[0], Effect::LoseHp(2)));
     }
 
     #[test]
-    fn test_burn_effect() {
+    fn test_burn_end_of_turn_effect() {
         let card = burn();
-        let effects = card.get_effects();
+        let end_of_turn_effects = card.get_end_of_turn().unwrap();
 
-        assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::ActivateBurn { damage: 2 }));
+        assert_eq!(end_of_turn_effects.len(), 1);
+        assert!(matches!(end_of_turn_effects[0], Effect::LoseHp(2)));
     }
 
     #[test]

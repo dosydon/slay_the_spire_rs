@@ -402,6 +402,9 @@ impl CardRewardPool {
             CardEnum::Burn => crate::cards::status::burn::burn(),
             CardEnum::Dazed => crate::cards::status::dazed::dazed(),
             CardEnum::AscendersCurse => crate::cards::curse::ascenders_curse(), // For completeness, though not used in rewards
+            CardEnum::Injury => crate::cards::curse::injury(), // For completeness, though not used in rewards
+            CardEnum::Clumsy => crate::cards::curse::clumsy(), // For completeness, though not used in rewards
+            CardEnum::Regret => crate::cards::curse::regret(), // For completeness, though not used in rewards
         }
     }
 }

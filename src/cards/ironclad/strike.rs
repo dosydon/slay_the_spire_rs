@@ -1,15 +1,15 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 pub fn strike() -> Card {
-    Card::new(CardEnum::Strike, 1, CardType::Attack, vec![
+    Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![
         Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }
-    ], Rarity::Basic)
+    ])
 }
 
 pub fn strike_upgraded() -> Card {
-    Card::new(CardEnum::Strike, 1, CardType::Attack, vec![
+    Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![
         Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }
-    ], Rarity::Basic)
+    ])
         .set_upgraded(true)
 }
 
@@ -22,7 +22,7 @@ mod tests {
         let card = strike();
         assert_eq!(card.get_name(), "Strike");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
@@ -41,7 +41,7 @@ mod tests {
         let card = strike_upgraded();
         assert_eq!(card.get_name(), "Strike+");
         assert_eq!(card.get_cost(), 1);
-        assert_eq!(card.get_card_type(), &CardType::Attack);
+        assert_eq!(card.get_card_type(), CardType::Attack);
         
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);

@@ -1,13 +1,13 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::Rarity};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
 
 /// Shockwave - Skill Card
 /// Cost: 2
 /// Effect: Apply 3 Weak and 3 Vulnerable to ALL enemies.
 pub fn shockwave() -> Card {
-    Card::new(CardEnum::Shockwave, 2, CardType::Skill, vec![
+    Card::new(CardEnum::Shockwave, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
         Effect::ApplyWeakAll { duration: 3 },
         Effect::ApplyVulnerableAll { duration: 3 },
-    ], Rarity::Uncommon)
+    ])
         .set_playable(true)
 }
 
@@ -15,10 +15,10 @@ pub fn shockwave() -> Card {
 /// Cost: 2
 /// Effect: Apply 3 Weak and 3 Vulnerable to ALL enemies.
 pub fn shockwave_upgraded() -> Card {
-    Card::new(CardEnum::Shockwave, 2, CardType::Skill, vec![
+    Card::new(CardEnum::Shockwave, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
         Effect::ApplyWeakAll { duration: 3 },
         Effect::ApplyVulnerableAll { duration: 3 },
-    ], Rarity::Uncommon)
+    ])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -35,7 +35,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Shockwave");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
@@ -47,7 +47,7 @@ mod tests {
 
         assert_eq!(card.get_name(), "Shockwave+");
         assert_eq!(card.get_cost(), 2);
-        assert_eq!(card.get_card_type(), &CardType::Skill);
+        assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
