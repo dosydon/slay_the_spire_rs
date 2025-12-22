@@ -401,6 +401,7 @@ impl CardRewardPool {
             CardEnum::Wound => crate::cards::status::wound::wound(),
             CardEnum::Burn => crate::cards::status::burn::burn(),
             CardEnum::Dazed => crate::cards::status::dazed::dazed(),
+            CardEnum::AscendersCurse => crate::cards::curse::ascenders_curse(), // For completeness, though not used in rewards
         }
     }
 }

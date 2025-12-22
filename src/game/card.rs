@@ -9,6 +9,7 @@ pub enum Rarity {
     Common,     // Most frequent rewards (~75% of pool)
     Uncommon,   // Less frequent rewards (~20% of pool)
     Rare,       // Rare rewards (~5% of pool)
+    Curse,      // Curse cards
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -231,6 +232,7 @@ impl Card {
             CardEnum::GoodInstincts => crate::cards::colorless::good_instincts::good_instincts_upgraded(),
             CardEnum::BandageUp => crate::cards::colorless::bandage_up::bandage_up_upgraded(),
             CardEnum::DeepBreath => crate::cards::colorless::deep_breath::deep_breath_upgraded(),
+            CardEnum::AscendersCurse => crate::cards::curse::ascenders_curse(), // Curse cards don't have upgrades
         };
 
         upgraded_card

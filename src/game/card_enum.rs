@@ -77,6 +77,9 @@ pub enum CardEnum {
     Burn,
     Dazed,
 
+    // Curse Cards
+    AscendersCurse,
+
     // Colorless Cards
     SwiftStrike,
     Finesse,
@@ -165,6 +168,7 @@ impl CardEnum {
             CardEnum::Wound => "Wound",
             CardEnum::Burn => "Burn",
             CardEnum::Dazed => "Dazed",
+            CardEnum::AscendersCurse => "Ascender's Curse",
             CardEnum::SwiftStrike => "Swift Strike",
             CardEnum::Finesse => "Finesse",
             CardEnum::FlashOfSteel => "Flash of Steel",
