@@ -4,7 +4,8 @@ pub fn wound() -> Card {
     Card::new(CardEnum::Wound, 0, CardType::Status, vec![
         // Wound is a pure status card with no effects
         // It's unplayable and should be automatically exhausted
-    ], false, false, Rarity::Basic)
+    ], Rarity::Basic)
+        .set_playable(false)
 }
 
 // Wound cannot be upgraded in the base game

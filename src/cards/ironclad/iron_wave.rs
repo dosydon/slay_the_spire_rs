@@ -4,14 +4,15 @@ pub fn iron_wave() -> Card {
     Card::new(CardEnum::IronWave, 1, CardType::Attack, vec![
         Effect::GainDefense { amount: 5 },
         Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }
-    ], false, true, Rarity::Common)
+    ], Rarity::Common)
 }
 
 pub fn iron_wave_upgraded() -> Card {
     Card::new(CardEnum::IronWave, 1, CardType::Attack, vec![
         Effect::GainDefense { amount: 8 },
         Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 }
-    ], true, true, Rarity::Common)
+    ], Rarity::Common)
+        .set_upgraded(true)
 }
 
 #[cfg(test)]

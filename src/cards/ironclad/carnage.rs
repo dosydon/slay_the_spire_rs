@@ -5,13 +5,14 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 /// Deal 20 damage
 /// Ethereal: Exhausts at end of turn if not played
 pub fn carnage() -> Card {
-    Card::new_with_ethereal(CardEnum::Carnage, 2, CardType::Attack, vec![
+    Card::new(CardEnum::Carnage, 2, CardType::Attack, vec![
         Effect::AttackToTarget {
             amount: 20,
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], false, true, true, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_ethereal(true)
 }
 
 /// Carnage+ (Upgraded)
@@ -19,13 +20,15 @@ pub fn carnage() -> Card {
 /// Deal 28 damage
 /// Ethereal: Exhausts at end of turn if not played
 pub fn carnage_upgraded() -> Card {
-    Card::new_with_ethereal(CardEnum::Carnage, 2, CardType::Attack, vec![
+    Card::new(CardEnum::Carnage, 2, CardType::Attack, vec![
         Effect::AttackToTarget {
             amount: 28,
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], true, true, true, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_ethereal(true)
+        .set_upgraded(true)
 }
 
 #[cfg(test)]

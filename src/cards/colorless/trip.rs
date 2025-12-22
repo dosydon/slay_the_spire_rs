@@ -12,10 +12,9 @@ pub fn trip() -> Card {
             Effect::ApplyVulnerableAll { duration: 2 },
             Effect::Exhaust,
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn trip_upgraded() -> Card {
@@ -27,10 +26,10 @@ pub fn trip_upgraded() -> Card {
             Effect::ApplyVulnerableAll { duration: 2 },
             Effect::Exhaust,
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

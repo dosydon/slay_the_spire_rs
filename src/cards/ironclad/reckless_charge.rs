@@ -12,9 +12,9 @@ pub fn reckless_charge() -> Card {
             Effect::AttackToTarget { amount: 7, num_attacks: 1, strength_multiplier: 1 },
             Effect::AddStatusToDiscard { status_card: crate::game::card_enum::CardEnum::Dazed },
         ],
-        false, // not upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_playable(true)
 }
 
 /// Reckless Charge+ (Upgraded version)
@@ -29,9 +29,10 @@ pub fn reckless_charge_upgraded() -> Card {
             Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
             Effect::AddStatusToDiscard { status_card: crate::game::card_enum::CardEnum::Dazed },
         ],
-        true,  // upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

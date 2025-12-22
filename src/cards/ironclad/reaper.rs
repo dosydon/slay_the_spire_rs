@@ -8,10 +8,9 @@ pub fn reaper() -> Card {
         vec![
             Effect::AttackAllEnemiesAndHeal { amount: 4, num_attacks: 1 },
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn reaper_upgraded() -> Card {
@@ -22,10 +21,10 @@ pub fn reaper_upgraded() -> Card {
         vec![
             Effect::AttackAllEnemiesAndHeal { amount: 5, num_attacks: 1 },
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

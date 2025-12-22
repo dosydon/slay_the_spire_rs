@@ -2,28 +2,27 @@ use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, 
 
 /// Warcry - Draw 1 cards. Put 1 card on top of draw pile
 pub fn warcry() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Warcry,
         0,
         CardType::Skill,
         vec![Effect::DrawCard { count: 1 }, Effect::EnterSelectCardInHandToPutOnDeck],
-        false, // not upgraded
-        Condition::True,
-        Rarity::Uncommon,
+        Rarity::Uncommon
     )
+        .set_play_condition(Condition::True)
 }
 
 /// Warcry+ (upgraded version)
 pub fn warcry_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Warcry,
         0,
         CardType::Skill,
         vec![Effect::DrawCard { count: 2 }, Effect::EnterSelectCardInHandToPutOnDeck],
-        true,  // upgraded
-        Condition::True,
-        Rarity::Uncommon,
+        Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

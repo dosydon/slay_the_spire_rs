@@ -12,10 +12,9 @@ pub fn flash_of_steel() -> Card {
             Effect::AttackToTarget { amount: 3, num_attacks: 1, strength_multiplier: 0 },
             Effect::DrawCard { count: 1 },
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn flash_of_steel_upgraded() -> Card {
@@ -27,10 +26,10 @@ pub fn flash_of_steel_upgraded() -> Card {
             Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 0 },
             Effect::DrawCard { count: 1 },
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

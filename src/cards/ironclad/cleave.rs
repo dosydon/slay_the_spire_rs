@@ -3,13 +3,14 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 pub fn cleave() -> Card {
     Card::new(CardEnum::Cleave, 1, CardType::Attack, vec![
         Effect::AttackAllEnemies { amount: 8, num_attacks: 1 }
-    ], false, true, Rarity::Common)
+    ], Rarity::Common)
 }
 
 pub fn cleave_upgraded() -> Card {
     Card::new(CardEnum::Cleave, 1, CardType::Attack, vec![
         Effect::AttackAllEnemies { amount: 11, num_attacks: 1 }
-    ], true, true, Rarity::Common)
+    ], Rarity::Common)
+        .set_upgraded(true)
 }
 
 #[cfg(test)]

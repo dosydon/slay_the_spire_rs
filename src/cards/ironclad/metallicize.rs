@@ -53,15 +53,18 @@ impl EventListener for MetallicizeListener {
 /// Cost: 1 (1 when upgraded)
 /// Effect: At the end of your turn, gain 3 Block.
 pub fn metallicize() -> Card {
-    Card::new_with_condition(CardEnum::Metallicize, 1, CardType::Power, vec![
+    Card::new(CardEnum::Metallicize, 1, CardType::Power, vec![
         Effect::ActivateMetallicize { amount: 3 },
-    ], false, Condition::True, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_play_condition(Condition::True)
 }
 
 pub fn metallicize_upgraded() -> Card {
-    Card::new_with_condition(CardEnum::Metallicize, 1, CardType::Power, vec![
+    Card::new(CardEnum::Metallicize, 1, CardType::Power, vec![
         Effect::ActivateMetallicize { amount: 4 },
-    ], true, Condition::True, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

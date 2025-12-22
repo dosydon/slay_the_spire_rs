@@ -10,9 +10,9 @@ pub fn power_through() -> Card {
             Effect::AddCardToHand(CardEnum::Wound),
             Effect::GainDefense { amount: 15 },
         ],
-        false, // not upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_playable(true)
 }
 
 pub fn power_through_upgraded() -> Card {
@@ -25,9 +25,10 @@ pub fn power_through_upgraded() -> Card {
             Effect::AddCardToHand(CardEnum::Wound),
             Effect::GainDefense { amount: 20 },
         ],
-        true,  // upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

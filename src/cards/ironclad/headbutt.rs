@@ -7,9 +7,9 @@ pub fn headbutt() -> Card {
         1,
         CardType::Attack,
         vec![Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 0 }, Effect::EnterSelectCardInDiscard],
-        false, // not upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_playable(true)
 }
 
 /// Headbutt+ (upgraded version)
@@ -19,9 +19,10 @@ pub fn headbutt_upgraded() -> Card {
         1,
         CardType::Attack,
         vec![Effect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 0 }, Effect::EnterSelectCardInDiscard],
-        true,  // upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

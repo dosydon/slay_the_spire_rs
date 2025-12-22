@@ -4,40 +4,39 @@ use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::Ca
 /// Cost: 1 (0 when upgraded)
 /// Effect: Gain 5 (8+) Block. Whenever this card is Exhausted, gain 2 (3+) Energy.
 pub fn sentinel() -> Card {
-    Card::new_with_on_exhaust(
+    Card::new(
         CardEnum::Sentinel,
         1,
         CardType::Skill,
         vec![
             Effect::GainDefense { amount: 5 },
         ],
-        false, // not upgraded
-        Condition::True,
-        vec![
-            Effect::GainEnergy { amount: 2 },
-        ],
-        Rarity::Uncommon,
+        Rarity::Uncommon
     )
+        .set_play_condition(Condition::True)
+        .set_on_exhaust(vec![
+            Effect::GainEnergy { amount: 2 },
+        ])
 }
 
 /// Sentinel+ (Upgraded version)
 /// Cost: 0
 /// Effect: Gain 8 Block. Whenever this card is Exhausted, gain 3 Energy.
 pub fn sentinel_upgraded() -> Card {
-    Card::new_with_on_exhaust(
+    Card::new(
         CardEnum::Sentinel,
         0,
         CardType::Skill,
         vec![
             Effect::GainDefense { amount: 8 },
         ],
-        true,  // upgraded
-        Condition::True,
-        vec![
-            Effect::GainEnergy { amount: 3 },
-        ],
-        Rarity::Uncommon,
+        Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
+        .set_on_exhaust(vec![
+            Effect::GainEnergy { amount: 3 },
+        ])
 }
 
 #[cfg(test)]

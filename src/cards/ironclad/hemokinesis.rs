@@ -11,8 +11,8 @@ pub fn hemokinesis() -> Card {
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], false, true,
-        Rarity::Rare)
+    ], Rarity::Rare)
+        .set_playable(true)
 }
 
 /// Hemokinesis+ (Upgraded)
@@ -26,8 +26,9 @@ pub fn hemokinesis_upgraded() -> Card {
             num_attacks: 1,
             strength_multiplier: 1,
         },
-    ], true, true,
-        Rarity::Rare)
+    ], Rarity::Rare)
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

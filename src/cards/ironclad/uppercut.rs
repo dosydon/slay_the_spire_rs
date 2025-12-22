@@ -12,7 +12,8 @@ pub fn uppercut() -> Card {
         },
         Effect::ApplyWeak { duration: 1 },
         Effect::ApplyVulnerable { duration: 1 },
-    ], false, true, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_playable(true)
 }
 
 /// Uppercut+ (Upgraded)
@@ -27,7 +28,9 @@ pub fn uppercut_upgraded() -> Card {
         },
         Effect::ApplyWeak { duration: 2 },
         Effect::ApplyVulnerable { duration: 2 },
-    ], true, true, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

@@ -12,10 +12,9 @@ pub fn deep_breath() -> Card {
             Effect::ShuffleDiscardIntoDraw,
             Effect::DrawCard { count: 1 },
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn deep_breath_upgraded() -> Card {
@@ -27,10 +26,10 @@ pub fn deep_breath_upgraded() -> Card {
             Effect::ShuffleDiscardIntoDraw,
             Effect::DrawCard { count: 2 },
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

@@ -12,10 +12,9 @@ pub fn finesse() -> Card {
             Effect::GainDefense { amount: 2 },
             Effect::DrawCard { count: 1 },
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn finesse_upgraded() -> Card {
@@ -27,10 +26,10 @@ pub fn finesse_upgraded() -> Card {
             Effect::GainDefense { amount: 4 },
             Effect::DrawCard { count: 1 },
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

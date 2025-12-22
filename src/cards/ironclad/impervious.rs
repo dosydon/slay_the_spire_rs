@@ -7,7 +7,8 @@ pub fn impervious() -> Card {
     Card::new(CardEnum::Impervious, 2, CardType::Skill, vec![
         Effect::GainDefense { amount: 30 },
         Effect::Exhaust,
-    ], false, true, Rarity::Rare)
+    ], Rarity::Rare)
+        .set_playable(true)
 }
 
 /// Impervious+ (Upgraded)
@@ -17,7 +18,9 @@ pub fn impervious_upgraded() -> Card {
     Card::new(CardEnum::Impervious, 2, CardType::Skill, vec![
         Effect::GainDefense { amount: 40 },
         Effect::Exhaust,
-    ], true, true, Rarity::Rare)
+    ], Rarity::Rare)
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

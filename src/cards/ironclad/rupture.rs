@@ -51,10 +51,9 @@ pub fn rupture() -> Card {
         1,
         CardType::Power,
         vec![Effect::ActivateRupture],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 /// Rupture+ (Upgraded version)
@@ -66,10 +65,10 @@ pub fn rupture_upgraded() -> Card {
         1,
         CardType::Power,
         vec![Effect::ActivateRupture],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

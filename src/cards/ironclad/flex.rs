@@ -2,17 +2,20 @@ use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, 
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 pub fn flex() -> Card {
-    Card::new_with_condition(CardEnum::Flex, 0, CardType::Skill, vec![
+    Card::new(CardEnum::Flex, 0, CardType::Skill, vec![
         Effect::GainStrength { amount: 2 },        // Gain 2 Strength immediately
         Effect::LoseStrengthAtEndOfTurn(2), // Lose 2 Strength at end of turn
-    ], false, Condition::True, Rarity::Common)
+    ], Rarity::Common)
+        .set_play_condition(Condition::True)
 }
 
 pub fn flex_upgraded() -> Card {
-    Card::new_with_condition(CardEnum::Flex, 0, CardType::Skill, vec![
+    Card::new(CardEnum::Flex, 0, CardType::Skill, vec![
         Effect::GainStrength { amount: 3 },        // Gain 3 Strength immediately (+1)
         Effect::LoseStrengthAtEndOfTurn(3), // Lose 3 Strength at end of turn
-    ], true, Condition::True, Rarity::Common)
+    ], Rarity::Common)
+        .set_play_condition(Condition::True)
+        .set_upgraded(true)
 }
 
 // LoseStrengthListener implementation for Flex card

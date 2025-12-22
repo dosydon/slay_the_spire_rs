@@ -16,10 +16,9 @@ pub fn pummel() -> Card {
             },
             Effect::Exhaust,
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 /// Pummel+ (Upgraded version)
@@ -38,10 +37,10 @@ pub fn pummel_upgraded() -> Card {
             },
             Effect::Exhaust,
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

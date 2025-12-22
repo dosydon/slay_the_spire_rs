@@ -7,7 +7,8 @@ pub fn shockwave() -> Card {
     Card::new(CardEnum::Shockwave, 2, CardType::Skill, vec![
         Effect::ApplyWeakAll { duration: 3 },
         Effect::ApplyVulnerableAll { duration: 3 },
-    ], false, true, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_playable(true)
 }
 
 /// Shockwave+ (Upgraded)
@@ -17,7 +18,9 @@ pub fn shockwave_upgraded() -> Card {
     Card::new(CardEnum::Shockwave, 2, CardType::Skill, vec![
         Effect::ApplyWeakAll { duration: 3 },
         Effect::ApplyVulnerableAll { duration: 3 },
-    ], true, true, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

@@ -5,34 +5,33 @@ use crate::battle::{target::Entity, battle_events::BattleEvent, battle_events::E
 /// Cost: 3 (2 when upgraded)
 /// Effect: At the start of your turn, gain 2 Strength. This card cannot be shuffled back into your draw pile.
 pub fn demon_form() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::DemonForm,
         3,
         CardType::Power,
         vec![
             Effect::ActivateDemonForm { strength_per_turn: 2 },
         ],
-        false, // not upgraded
-        Condition::True,
         Rarity::Rare
     )
+        .set_play_condition(Condition::True)
 }
 
 /// Demon Form+ (Upgraded version)
 /// Cost: 2
 /// Effect: At the start of your turn, gain 3 Strength. This card cannot be shuffled back into your draw pile.
 pub fn demon_form_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::DemonForm,
         2, // Costs 2 when upgraded
         CardType::Power,
         vec![
             Effect::ActivateDemonForm { strength_per_turn: 3 }, // Gain 3 Strength per turn when upgraded
         ],
-        true,  // upgraded
-        Condition::True,
         Rarity::Rare
     )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

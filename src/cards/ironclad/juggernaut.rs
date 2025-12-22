@@ -9,9 +9,9 @@ pub fn juggernaut() -> Card {
         vec![
             Effect::ActivateJuggernaut { damage_per_block: 5 },
         ],
-        false, // not upgraded
-        true,  // playable
-    ,\n        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_playable(true)
 }
 
 pub fn juggernaut_upgraded() -> Card {
@@ -22,9 +22,10 @@ pub fn juggernaut_upgraded() -> Card {
         vec![
             Effect::ActivateJuggernaut { damage_per_block: 7 },
         ],
-        true,  // upgraded
-        true,  // playable
-    ,\n        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 pub struct JuggernautListener {

@@ -4,15 +4,18 @@ use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, 
 /// Cost: 3 (2 when upgraded)
 /// Effect: Skills cost 0. Whenever you play a Skill, Exhaust it.
 pub fn corruption() -> Card {
-    Card::new_with_condition(CardEnum::Corruption, 3, CardType::Power, vec![
+    Card::new(CardEnum::Corruption, 3, CardType::Power, vec![
         Effect::ActivateCorruption,
-    ], false, Condition::True, Rarity::Rare)
+    ], Rarity::Rare)
+        .set_play_condition(Condition::True)
 }
 
 pub fn corruption_upgraded() -> Card {
-    Card::new_with_condition(CardEnum::Corruption, 2, CardType::Power, vec![
+    Card::new(CardEnum::Corruption, 2, CardType::Power, vec![
         Effect::ActivateCorruption,
-    ], true, Condition::True, Rarity::Rare)
+    ], Rarity::Rare)
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

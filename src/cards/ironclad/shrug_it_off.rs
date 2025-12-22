@@ -4,14 +4,15 @@ pub fn shrug_it_off() -> Card {
     Card::new(CardEnum::ShrugItOff, 1, CardType::Skill, vec![
         Effect::GainDefense { amount: 8 },
         Effect::DrawCard { count: 1 }
-    ], false, true, Rarity::Common)
+    ], Rarity::Common)
 }
 
 pub fn shrug_it_off_upgraded() -> Card {
     Card::new(CardEnum::ShrugItOff, 1, CardType::Skill, vec![
         Effect::GainDefense { amount: 11 },
         Effect::DrawCard { count: 1 }
-    ], true, true, Rarity::Common)
+    ], Rarity::Common)
+        .set_upgraded(true)
 }
 
 #[cfg(test)]

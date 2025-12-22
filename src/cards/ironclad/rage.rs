@@ -5,32 +5,33 @@ use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity}
 /// Cost: 0 (0 when upgraded)
 /// Effect: Whenever you play an Attack card this turn, gain 3 Block.
 pub fn rage() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Rage,
         0,
         CardType::Skill,
         vec![
             Effect::ActivateRage { block_per_attack: 3 },
         ],
-        false, // not upgraded
-        Condition::True,
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_play_condition(Condition::True)
 }
 
 /// Rage+ (Upgraded version)
 /// Cost: 0 (0 when upgraded)
 /// Effect: Whenever you play an Attack card this turn, gain 4 Block.
 pub fn rage_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Rage,
         0,
         CardType::Skill,
         vec![
             Effect::ActivateRage { block_per_attack: 4 },
         ],
-        true,  // upgraded
-        Condition::True,
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

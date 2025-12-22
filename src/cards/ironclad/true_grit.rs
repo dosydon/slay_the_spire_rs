@@ -7,9 +7,9 @@ pub fn true_grit() -> Card {
         1,
         CardType::Skill,
         vec![Effect::GainDefense { amount: 7 }, Effect::EnterSelectCardInHand],
-        false, // not upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_playable(true)
 }
 
 /// True Grit+ (upgraded version)
@@ -19,9 +19,10 @@ pub fn true_grit_upgraded() -> Card {
         1,
         CardType::Skill,
         vec![Effect::GainDefense { amount: 9 }, Effect::EnterSelectCardInHand],
-        true,  // upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

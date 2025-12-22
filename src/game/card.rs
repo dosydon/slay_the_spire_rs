@@ -27,8 +27,66 @@ pub struct Card {
 
 impl Card {
 
-    pub fn new(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, playable: bool, rarity: Rarity) -> Self {
-        let play_condition = if playable { Condition::True } else { Condition::False };
+    pub fn new(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, rarity: Rarity) -> Self {
+        Card {
+            card_enum,
+            cost,
+            card_type,
+            effects,
+            upgrade_level: 0, // Default to not upgraded
+            play_condition: Condition::True, // Default to playable
+            ethereal: false,
+            on_exhaust: None,
+            rarity,
+        }
+    }
+
+    /// Builder pattern method to set the upgrade level
+    pub fn set_upgrade_level(mut self, upgrade_level: u32) -> Self {
+        self.upgrade_level = upgrade_level;
+        self
+    }
+
+    /// Builder pattern method to set whether the card is ethereal
+    pub fn set_ethereal(mut self, ethereal: bool) -> Self {
+        self.ethereal = ethereal;
+        self
+    }
+
+    /// Builder pattern method to set the play condition
+    pub fn set_play_condition(mut self, play_condition: Condition) -> Self {
+        self.play_condition = play_condition;
+        self
+    }
+
+    /// Builder pattern method to set on-exhaust effects
+    pub fn set_on_exhaust(mut self, on_exhaust: Vec<Effect>) -> Self {
+        self.on_exhaust = Some(on_exhaust);
+        self
+    }
+
+    /// Convenience method to set upgradable from boolean
+    pub fn set_upgraded(mut self, upgraded: bool) -> Self {
+        if upgraded {
+            self.upgrade_level = 1;
+        } else {
+            self.upgrade_level = 0;
+        }
+        self
+    }
+
+    /// Convenience method to set playable from boolean
+    pub fn set_playable(mut self, playable: bool) -> Self {
+        self.play_condition = if playable { Condition::True } else { Condition::False };
+        self
+    }
+
+    // ========== DEPRECATED CONSTRUCTORS ==========
+    // These are kept for backward compatibility during migration
+    // Use the builder pattern methods instead
+
+    #[deprecated(since = "0.1.0", note = "Use Card::new().set_play_condition() instead")]
+    pub fn new_with_condition(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, play_condition: Condition, rarity: Rarity) -> Self {
         let upgrade_level = if upgraded { 1 } else { 0 };
         Card {
             card_enum,
@@ -43,21 +101,7 @@ impl Card {
         }
     }
 
-    pub fn new_with_upgrade_level(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgrade_level: u32, playable: bool, rarity: Rarity) -> Self {
-        let play_condition = if playable { Condition::True } else { Condition::False };
-        Card {
-            card_enum,
-            cost,
-            card_type,
-            effects,
-            upgrade_level,
-            play_condition,
-            ethereal: false,
-            on_exhaust: None,
-            rarity,
-        }
-    }
-
+    #[deprecated(since = "0.1.0", note = "Use Card::new().set_ethereal() instead")]
     pub fn new_with_ethereal(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, playable: bool, ethereal: bool, rarity: Rarity) -> Self {
         let play_condition = if playable { Condition::True } else { Condition::False };
         let upgrade_level = if upgraded { 1 } else { 0 };
@@ -74,8 +118,9 @@ impl Card {
         }
     }
 
-    pub fn new_with_condition(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, play_condition: Condition, rarity: Rarity) -> Self {
-        let upgrade_level = if upgraded { 1 } else { 0 };
+    #[deprecated(since = "0.1.0", note = "Use Card::new().set_upgrade_level() instead")]
+    pub fn new_with_upgrade_level(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgrade_level: u32, playable: bool, rarity: Rarity) -> Self {
+        let play_condition = if playable { Condition::True } else { Condition::False };
         Card {
             card_enum,
             cost,
@@ -89,6 +134,7 @@ impl Card {
         }
     }
 
+    #[deprecated(since = "0.1.0", note = "Use Card::new().set_on_exhaust() instead")]
     pub fn new_with_on_exhaust(card_enum: CardEnum, cost: u32, card_type: CardType, effects: Vec<Effect>, upgraded: bool, play_condition: Condition, on_exhaust: Vec<Effect>, rarity: Rarity) -> Self {
         let upgrade_level = if upgraded { 1 } else { 0 };
         Card {
@@ -295,7 +341,7 @@ mod tests {
 
     #[test]
     fn test_card_creation() {
-        let card = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], false, true, Rarity::Basic);
+        let card = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], Rarity::Basic);
         assert_eq!(card.get_name(), "Strike");
         assert_eq!(card.get_cost(), 1);
         assert_eq!(matches!(card.get_card_type(), CardType::Attack), true);
@@ -304,7 +350,7 @@ mod tests {
 
     #[test]
     fn test_strike_upgrade() {
-        let strike = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], false, true, Rarity::Basic);
+        let strike = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], Rarity::Basic);
         let upgraded = strike.upgrade();
 
         assert_eq!(upgraded.get_name(), "Strike+");
@@ -325,8 +371,8 @@ mod tests {
 
     #[test]
     fn test_is_upgraded() {
-        let basic = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], false, true, Rarity::Basic);
-        let upgraded = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }], true, true, Rarity::Basic);
+        let basic = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }], Rarity::Basic);
+        let upgraded = Card::new(CardEnum::Strike, 1, CardType::Attack, vec![Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }], Rarity::Basic).set_upgraded(true);
         
         assert!(!basic.is_upgraded());
         assert!(upgraded.is_upgraded());

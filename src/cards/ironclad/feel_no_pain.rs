@@ -54,9 +54,9 @@ pub fn feel_no_pain() -> Card {
         1,
         CardType::Power,
         vec![Effect::ActivateFeelNoPain { block_per_exhaust: 3 }],
-        false,
-        true,
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_playable(true)
 }
 
 /// Feel No Pain+ (Upgraded)
@@ -68,9 +68,10 @@ pub fn feel_no_pain_upgraded() -> Card {
         1,
         CardType::Power,
         vec![Effect::ActivateFeelNoPain { block_per_exhaust: 4 }],
-        true,
-        true,
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

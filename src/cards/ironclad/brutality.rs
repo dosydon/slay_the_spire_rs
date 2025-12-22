@@ -49,7 +49,8 @@ impl EventListener for BrutalityListener {
 pub fn brutality() -> Card {
     Card::new(CardEnum::Brutality, 0, CardType::Power, vec![
         Effect::ActivateBrutality,
-    ], false, true, Rarity::Rare)
+    ], Rarity::Rare)
+        .set_playable(true)
 }
 
 /// Brutality+ (Upgraded)
@@ -58,7 +59,9 @@ pub fn brutality() -> Card {
 pub fn brutality_upgraded() -> Card {
     Card::new(CardEnum::Brutality, 0, CardType::Power, vec![
         Effect::ActivateBrutality,
-    ], true, true, Rarity::Rare)
+    ], Rarity::Rare)
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

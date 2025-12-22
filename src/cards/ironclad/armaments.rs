@@ -2,26 +2,27 @@ use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::
 
 /// Armaments - Gain 5 Block. Upgrade a card in your hand for the rest of combat.
 pub fn armaments() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Armaments,
         1,
         CardType::Skill,
         vec![Effect::GainDefense { amount: 5 }, Effect::EnterSelectCardInHand],
-        false, // not upgraded
-        Condition::True,
-        Rarity::Common)
+        Rarity::Common
+    )
+        .set_play_condition(Condition::True)
 }
 
 /// Armaments+ (Upgraded version) - Gain 5 Block. Upgrade ALL cards in your hand for the rest of combat.
 pub fn armaments_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Armaments,
         1,
         CardType::Skill,
         vec![Effect::GainDefense { amount: 5 }, Effect::UpgradeAllCardsInHand],
-        true,  // upgraded
-        Condition::True,
-        Rarity::Common)
+        Rarity::Common
+    )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

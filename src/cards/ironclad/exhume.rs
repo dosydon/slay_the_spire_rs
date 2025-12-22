@@ -9,10 +9,9 @@ pub fn exhume() -> Card {
             Effect::EnterSelectCardInExhaust, // Transition to select card from exhaust pile
             Effect::Exhaust,
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn exhume_upgraded() -> Card {
@@ -24,10 +23,10 @@ pub fn exhume_upgraded() -> Card {
             Effect::EnterSelectCardInExhaust, // Transition to select card from exhaust pile
             Effect::Exhaust,
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

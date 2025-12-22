@@ -10,10 +10,9 @@ pub fn double_tap() -> Card {
             Effect::ActivateDoubleTap { remaining_attacks: 1 },
             Effect::Exhaust,
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn double_tap_upgraded() -> Card {
@@ -25,10 +24,10 @@ pub fn double_tap_upgraded() -> Card {
             Effect::ActivateDoubleTap { remaining_attacks: 2 },
             Effect::Exhaust,
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 pub struct DoubleTapListener {

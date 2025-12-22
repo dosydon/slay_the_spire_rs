@@ -2,26 +2,27 @@ use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::
 
 /// Seeing Red - Gain 2 Energy. Exhaust.
 pub fn seeing_red() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::SeeingRed,
         1,
         CardType::Skill,
         vec![Effect::GainEnergy { amount: 2 }, Effect::Exhaust],
-        false, // not upgraded
-        Condition::True,
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_play_condition(Condition::True)
 }
 
 /// Seeing Red+ (Upgraded version) - Costs 0
 pub fn seeing_red_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::SeeingRed,
         0, // Cost reduced from 1 to 0
         CardType::Skill,
         vec![Effect::GainEnergy { amount: 2 }, Effect::Exhaust],
-        true,  // upgraded
-        Condition::True,
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

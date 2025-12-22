@@ -10,10 +10,9 @@ pub fn feed() -> Card {
             Effect::HealAndIncreaseMaxHp(3),
             Effect::Exhaust,
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn feed_upgraded() -> Card {
@@ -26,10 +25,10 @@ pub fn feed_upgraded() -> Card {
             Effect::HealAndIncreaseMaxHp(4),
             Effect::Exhaust,
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

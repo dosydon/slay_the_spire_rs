@@ -9,8 +9,8 @@ pub fn offering() -> Card {
         Effect::GainEnergy { amount: 2 },
         Effect::DrawCard { count: 3 },
         Effect::Exhaust,
-    ], false, true,
-        Rarity::Rare)
+    ], Rarity::Rare)
+        .set_playable(true)
 }
 
 /// Offering+ (Upgraded)
@@ -22,8 +22,9 @@ pub fn offering_upgraded() -> Card {
         Effect::GainEnergy { amount: 2 },
         Effect::DrawCard { count: 5 },
         Effect::Exhaust,
-    ], true, true,
-        Rarity::Rare)
+    ], Rarity::Rare)
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

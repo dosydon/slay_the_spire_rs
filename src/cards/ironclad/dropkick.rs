@@ -17,8 +17,6 @@ pub fn dropkick() -> Card {
                 Box::new(Effect::DrawCard { count: 1 })
             ),
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon)
 }
 
@@ -39,9 +37,8 @@ pub fn dropkick_upgraded() -> Card {
                 Box::new(Effect::DrawCard { count: 1 })
             ),
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon)
+        .set_upgraded(true)
 }
 
 #[cfg(test)]

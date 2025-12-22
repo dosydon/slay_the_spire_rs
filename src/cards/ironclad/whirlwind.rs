@@ -4,34 +4,33 @@ use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, 
 /// Cost: 0 (X-cost - spends all available energy)
 /// Effect: Deal 5 damage to ALL enemies, X times (where X is the energy spent)
 pub fn whirlwind() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Whirlwind,
         0, // X-cost - actual cost determined by available energy
         CardType::Attack,
         vec![
             Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit: 5 },
         ],
-        false, // not upgraded
-        Condition::True,
         Rarity::Uncommon
     )
+        .set_play_condition(Condition::True)
 }
 
 /// Whirlwind+ (Upgraded version)
 /// Cost: 0 (X-cost - spends all available energy)
 /// Effect: Deal 8 damage to ALL enemies, X times (where X is the energy spent)
 pub fn whirlwind_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Whirlwind,
         0, // X-cost - actual cost determined by available energy
         CardType::Attack,
         vec![
             Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit: 8 },
         ],
-        true,  // upgraded
-        Condition::True,
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

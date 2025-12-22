@@ -2,26 +2,27 @@ use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::
 
 /// Intimidate - Apply 1 Weak to all enemies. Exhaust.
 pub fn intimidate() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Intimidate,
         0,
         CardType::Skill,
         vec![Effect::ApplyWeakAll { duration: 1 }, Effect::Exhaust],
-        false, // not upgraded
-        Condition::True,
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_play_condition(Condition::True)
 }
 
 /// Intimidate+ (Upgraded version) - Apply 2 Weak to all enemies
 pub fn intimidate_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Intimidate,
         0,
         CardType::Skill,
         vec![Effect::ApplyWeakAll { duration: 2 }, Effect::Exhaust],
-        true,  // upgraded
-        Condition::True,
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

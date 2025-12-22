@@ -47,7 +47,8 @@ impl EventListener for BurnListener {
 pub fn burn() -> Card {
     Card::new(CardEnum::Burn, 0, CardType::Status, vec![
         Effect::ActivateBurn { damage: 2 }, // Activate Burn listener for end-of-turn damage
-    ], false, false, Rarity::Basic) // not upgraded, not playable
+    ], Rarity::Basic)
+        .set_playable(false)
 }
 
 #[cfg(test)]

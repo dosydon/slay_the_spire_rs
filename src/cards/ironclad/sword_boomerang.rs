@@ -10,7 +10,8 @@ pub fn sword_boomerang() -> Card {
             num_attacks: 3,
             strength_multiplier: 1,
         },
-    ], false, true, Rarity::Common)
+    ], Rarity::Common)
+        .set_playable(true)
 }
 
 /// Sword Boomerang+ (Upgraded)
@@ -23,7 +24,9 @@ pub fn sword_boomerang_upgraded() -> Card {
             num_attacks: 3,
             strength_multiplier: 1,
         },
-    ], true, true, Rarity::Common)
+    ], Rarity::Common)
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

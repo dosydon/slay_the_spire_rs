@@ -44,15 +44,18 @@ impl EventListener for EmbraceListener {
 /// Cost: 2 (1 when upgraded)
 /// Effect: Whenever you Exhaust a card, draw 1 card.
 pub fn embrace() -> Card {
-    Card::new_with_condition(CardEnum::Embrace, 2, CardType::Power, vec![
+    Card::new(CardEnum::Embrace, 2, CardType::Power, vec![
         Effect::ActivateEmbrace,
-    ], false, Condition::True, Rarity::Rare)
+    ], Rarity::Rare)
+        .set_play_condition(Condition::True)
 }
 
 pub fn embrace_upgraded() -> Card {
-    Card::new_with_condition(CardEnum::Embrace, 1, CardType::Power, vec![
+    Card::new(CardEnum::Embrace, 1, CardType::Power, vec![
         Effect::ActivateEmbrace,
-    ], true, Condition::True, Rarity::Rare)
+    ], Rarity::Rare)
+        .set_play_condition(Condition::True)
+        .set_upgraded(true)
 }
 
 #[cfg(test)]

@@ -2,7 +2,7 @@ use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, 
 
 /// Anger - Deal 6 damage. Add a copy of this card to your discard pile.
 pub fn anger() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Anger,
         0,
         CardType::Attack,
@@ -10,15 +10,14 @@ pub fn anger() -> Card {
             Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
             Effect::AddCardToDiscard(CardEnum::Anger),
         ],
-        false, // not upgraded
-        Condition::True,
-        Rarity::Common,
+        Rarity::Common
     )
+        .set_play_condition(Condition::True)
 }
 
 /// Anger+ (Upgraded version) - Deal 8 damage. Add a copy of this card to your discard pile.
 pub fn anger_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Anger,
         0,
         CardType::Attack,
@@ -26,10 +25,10 @@ pub fn anger_upgraded() -> Card {
             Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
             Effect::AddUpgradedCardToDiscard(CardEnum::Anger),
         ],
-        true,  // upgraded
-        Condition::True,
-        Rarity::Common,
+        Rarity::Common
     )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

@@ -5,13 +5,18 @@ pub fn ghostly_armor() -> Card {
         Effect::GainDefense { amount: 10 }
         // Note: Ethereal is a card property, not an effect that needs to be in effects list
         // The card should be marked as ethereal via card properties
-    ], false, true, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_ethereal(true)
+        .set_playable(true)
 }
 
 pub fn ghostly_armor_upgraded() -> Card {
     Card::new(CardEnum::GhostlyArmor, 1, CardType::Skill, vec![
         Effect::GainDefense { amount: 13 }
-    ], true, true, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_upgraded(true)
+        .set_ethereal(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

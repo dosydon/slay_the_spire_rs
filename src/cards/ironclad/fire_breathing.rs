@@ -9,10 +9,9 @@ pub fn fire_breathing() -> Card {
         vec![
             Effect::AddFireBreathing { damage_per_status: 6 },
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn fire_breathing_upgraded() -> Card {
@@ -23,10 +22,10 @@ pub fn fire_breathing_upgraded() -> Card {
         vec![
             Effect::AddFireBreathing { damage_per_status: 10 },
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

@@ -7,7 +7,7 @@ pub fn perfected_strike() -> Card {
             base_damage: 6,
             damage_per_strike: 2,
         }
-    ], false, true, Rarity::Common)
+    ], Rarity::Common)
 }
 
 /// Perfected Strike+: Deal 10 damage. Deals an additional 3 damage for ALL Strike cards in your deck.
@@ -17,7 +17,8 @@ pub fn perfected_strike_upgraded() -> Card {
             base_damage: 10,
             damage_per_strike: 3,
         }
-    ], true, true, Rarity::Common)
+    ], Rarity::Common)
+        .set_upgraded(true)
 }
 
 #[cfg(test)]

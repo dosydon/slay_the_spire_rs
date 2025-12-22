@@ -9,10 +9,9 @@ pub fn swift_strike() -> Card {
         0,
         CardType::Attack,
         vec![Effect::AttackToTarget { amount: 7, num_attacks: 1, strength_multiplier: 0 }],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn swift_strike_upgraded() -> Card {
@@ -21,10 +20,10 @@ pub fn swift_strike_upgraded() -> Card {
         0,
         CardType::Attack,
         vec![Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 0 }],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

@@ -54,8 +54,7 @@ impl EventListener for CombustListener {
 pub fn combust() -> Card {
     Card::new(CardEnum::Combust, 1, CardType::Power, vec![
         Effect::ActivateCombust(5),
-    ], false, true,
-        Rarity::Common)
+    ], Rarity::Common)
 }
 
 /// Combust+ (Upgraded)
@@ -64,8 +63,8 @@ pub fn combust() -> Card {
 pub fn combust_upgraded() -> Card {
     Card::new(CardEnum::Combust, 1, CardType::Power, vec![
         Effect::ActivateCombust(7),
-    ], true, true,
-        Rarity::Common)
+    ], Rarity::Common)
+        .set_upgraded(true)
 }
 
 #[cfg(test)]

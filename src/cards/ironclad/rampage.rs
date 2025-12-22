@@ -14,9 +14,9 @@ pub fn rampage() -> Card {
                 scaling: 5,
             },
         ],
-        false, // not upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_playable(true)
 }
 
 /// Rampage+ (Upgraded version)
@@ -33,9 +33,10 @@ pub fn rampage_upgraded() -> Card {
                 scaling: 8, // upgraded version scales by 8 instead of 5
             },
         ],
-        true,  // upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

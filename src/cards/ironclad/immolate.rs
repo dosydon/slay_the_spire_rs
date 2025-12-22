@@ -4,7 +4,7 @@ use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::
 /// Cost: 2 (2 when upgraded)
 /// Effect: Deal 21 damage to ALL enemies. Add a Burn to your discard pile.
 pub fn immolate() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Immolate,
         2,
         CardType::Attack,
@@ -12,16 +12,15 @@ pub fn immolate() -> Card {
             Effect::AttackAllEnemies { amount: 21, num_attacks: 1 },
             Effect::AddCardToDiscard(CardEnum::Burn),
         ],
-        false, // not upgraded
-        Condition::True,
         Rarity::Uncommon)
+        .set_play_condition(Condition::True)
 }
 
 /// Immolate+ (Upgraded version)
 /// Cost: 2 (2 when upgraded)
 /// Effect: Deal 28 damage to ALL enemies. Add a Burn to your discard pile.
 pub fn immolate_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Immolate,
         2,
         CardType::Attack,
@@ -29,9 +28,9 @@ pub fn immolate_upgraded() -> Card {
             Effect::AttackAllEnemies { amount: 28, num_attacks: 1 },
             Effect::AddCardToDiscard(CardEnum::Burn),
         ],
-        true,  // upgraded
-        Condition::True,
         Rarity::Uncommon)
+        .set_play_condition(Condition::True)
+        .set_upgraded(true)
 }
 
 #[cfg(test)]

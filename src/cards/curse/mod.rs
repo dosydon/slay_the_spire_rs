@@ -4,7 +4,8 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, card::Ra
 /// This card is typically gained in higher ascension levels
 /// Ethereal: Exhausts at end of turn if not played
 pub fn ascenders_curse() -> Card {
-    Card::new_with_ethereal(CardEnum::AscendersCurse, 1, CardType::Curse, vec![], false, false, true, Rarity::Curse)
+    Card::new(CardEnum::AscendersCurse, 1, CardType::Curse, vec![], Rarity::Curse)
+        .set_ethereal(true)
 }
 
 /// Note: Ascender's Curse doesn't have an upgraded version in the original game

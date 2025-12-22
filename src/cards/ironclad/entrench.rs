@@ -6,8 +6,8 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 pub fn entrench() -> Card {
     Card::new(CardEnum::Entrench, 2, CardType::Skill, vec![
         Effect::DoubleBlock,
-    ], false, true,
-        Rarity::Common)
+    ], Rarity::Common)
+        .set_playable(true)
 }
 
 /// Entrench+ (Upgraded)
@@ -16,8 +16,9 @@ pub fn entrench() -> Card {
 pub fn entrench_upgraded() -> Card {
     Card::new(CardEnum::Entrench, 1, CardType::Skill, vec![
         Effect::DoubleBlock,
-    ], true, true,
-        Rarity::Common)
+    ], Rarity::Common)
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

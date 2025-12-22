@@ -12,10 +12,9 @@ pub fn sever_soul() -> Card {
             Effect::AttackToTarget { amount: 16, num_attacks: 1, strength_multiplier: 1 },
             Effect::ExhaustNonAttacksInHand,
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 /// Sever Soul+ (Upgraded version)
@@ -30,10 +29,10 @@ pub fn sever_soul_upgraded() -> Card {
             Effect::AttackToTarget { amount: 22, num_attacks: 1, strength_multiplier: 1 },
             Effect::ExhaustNonAttacksInHand,
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

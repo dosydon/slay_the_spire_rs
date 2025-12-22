@@ -9,10 +9,9 @@ pub fn good_instincts() -> Card {
         0,
         CardType::Skill,
         vec![Effect::GainDefense { amount: 6 }],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn good_instincts_upgraded() -> Card {
@@ -21,10 +20,10 @@ pub fn good_instincts_upgraded() -> Card {
         0,
         CardType::Skill,
         vec![Effect::GainDefense { amount: 9 }],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

@@ -52,17 +52,20 @@ impl EventListener for FlameBarrierListener {
 /// Cost: 2 (2 when upgraded)
 /// Effect: Gain 12 Block. This turn, when attacked, deal 4 damage to the attacker.
 pub fn flame_barrier() -> Card {
-    Card::new_with_condition(CardEnum::FlameBarrier, 2, CardType::Skill, vec![
+    Card::new(CardEnum::FlameBarrier, 2, CardType::Skill, vec![
         Effect::GainDefense { amount: 12 },
         Effect::ActivateFlameBarrier { damage: 4 },
-    ], false, Condition::True, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_play_condition(Condition::True)
 }
 
 pub fn flame_barrier_upgraded() -> Card {
-    Card::new_with_condition(CardEnum::FlameBarrier, 2, CardType::Skill, vec![
+    Card::new(CardEnum::FlameBarrier, 2, CardType::Skill, vec![
         Effect::GainDefense { amount: 16 },
         Effect::ActivateFlameBarrier { damage: 6 },
-    ], true, Condition::True, Rarity::Uncommon)
+    ], Rarity::Uncommon)
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

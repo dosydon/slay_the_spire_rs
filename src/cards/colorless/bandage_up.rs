@@ -12,10 +12,9 @@ pub fn bandage_up() -> Card {
             Effect::Heal(4),
             Effect::Exhaust,
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn bandage_up_upgraded() -> Card {
@@ -27,10 +26,10 @@ pub fn bandage_up_upgraded() -> Card {
             Effect::Heal(6),
             Effect::Exhaust,
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

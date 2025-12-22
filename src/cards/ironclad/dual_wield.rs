@@ -2,26 +2,27 @@ use crate::game::{card::{Card, Rarity}, effect::{Effect, Condition}, card_type::
 
 /// Dual Wield - Duplicate a card in your hand into the discard pile
 pub fn dual_wield() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::DualWield,
         1,
         CardType::Skill,
         vec![Effect::EnterSelectCardToDuplicate { copies: 1 }],
-        false, // not upgraded
-        Condition::True,
-        Rarity::Common)
+        Rarity::Common
+    )
+        .set_play_condition(Condition::True)
 }
 
 /// Dual Wield+ (Upgraded version) - Duplicate a card in your hand twice into the discard pile
 pub fn dual_wield_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::DualWield,
         1,
         CardType::Skill,
         vec![Effect::EnterSelectCardToDuplicate { copies: 2 }],
-        true,  // upgraded
-        Condition::True,
-        Rarity::Common)
+        Rarity::Common
+    )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

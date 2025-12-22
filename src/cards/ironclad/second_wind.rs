@@ -9,10 +9,9 @@ pub fn second_wind() -> Card {
         1,
         CardType::Skill,
         vec![Effect::ExhaustNonAttackCardsFromHand { block_per_card: 5 }],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 /// Second Wind+ (Upgraded version)
@@ -24,10 +23,10 @@ pub fn second_wind_upgraded() -> Card {
         1,
         CardType::Skill,
         vec![Effect::ExhaustNonAttackCardsFromHand { block_per_card: 8 }],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

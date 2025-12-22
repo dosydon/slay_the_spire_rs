@@ -7,9 +7,9 @@ pub fn havoc() -> Card {
         1,
         CardType::Skill,
         vec![Effect::PlayTopCardAndExhaust],
-        false, // not upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_playable(true)
 }
 
 /// Havoc+ (upgraded version)
@@ -19,9 +19,10 @@ pub fn havoc_upgraded() -> Card {
         0, // Cost reduced from 1 to 0
         CardType::Skill,
         vec![Effect::PlayTopCardAndExhaust],
-        true,  // upgraded
-        true,  // playable
-        Rarity::Uncommon)
+        Rarity::Uncommon
+    )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

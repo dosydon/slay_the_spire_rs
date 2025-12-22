@@ -4,7 +4,7 @@ use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, 
 /// Cost: 1 (0 when upgraded)
 /// Effect: Add a random Attack card to your hand. Exhaust.
 pub fn infernal_blade() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::InfernalBlade,
         1,
         CardType::Skill,
@@ -12,17 +12,16 @@ pub fn infernal_blade() -> Card {
             Effect::AddRandomAttackToHand,
             Effect::Exhaust,
         ],
-        false, // not upgraded
-        Condition::True,
-        Rarity::Common,
+        Rarity::Common
     )
+        .set_play_condition(Condition::True)
 }
 
 /// Infernal Blade+ (Upgraded version)
 /// Cost: 0
 /// Effect: Add a random Attack card to your hand. Exhaust.
 pub fn infernal_blade_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::InfernalBlade,
         0, // Costs 0 when upgraded
         CardType::Skill,
@@ -30,10 +29,10 @@ pub fn infernal_blade_upgraded() -> Card {
             Effect::AddRandomAttackToHand,
             Effect::Exhaust,
         ],
-        true,  // upgraded
-        Condition::True,
-        Rarity::Common,
+        Rarity::Common
     )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

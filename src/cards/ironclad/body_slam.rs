@@ -7,8 +7,6 @@ pub fn body_slam() -> Card {
         1,
         CardType::Attack,
         vec![Effect::AttackToTargetWithBlock],
-        false, // not upgraded
-        true,  // playable
         Rarity::Common,
     )
 }
@@ -20,10 +18,9 @@ pub fn body_slam_upgraded() -> Card {
         0, // Cost reduced from 1 to 0
         CardType::Attack,
         vec![Effect::AttackToTargetWithBlock],
-        true,  // upgraded
-        true,  // playable
         Rarity::Common,
     )
+        .set_upgraded(true)
 }
 
 #[cfg(test)]

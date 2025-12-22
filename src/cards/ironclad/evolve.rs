@@ -4,34 +4,33 @@ use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, 
 /// Cost: 1 (0 when upgraded)
 /// Effect: Draw 1 card. (In the full game, would draw cards when Status cards are drawn)
 pub fn evolve() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Evolve,
         1,
         CardType::Power,
         vec![
             Effect::DrawCard { count: 1 },
         ],
-        false, // not upgraded
-        Condition::True,
         Rarity::Uncommon
     )
+        .set_play_condition(Condition::True)
 }
 
 /// Evolve+ (Upgraded version)
 /// Cost: 0
 /// Effect: Draw 1 card. (In the full game, would draw cards when Status cards are drawn)
 pub fn evolve_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::Evolve,
         0, // Costs 0 when upgraded
         CardType::Power,
         vec![
             Effect::DrawCard { count: 1 },
         ],
-        true,  // upgraded
-        Condition::True,
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_play_condition(Condition::True)
 }
 
 #[cfg(test)]

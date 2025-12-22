@@ -4,34 +4,33 @@ use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, 
 /// Cost: 1 (1 when upgraded)
 /// Effect: If enemy is attacking, gain 3 Strength. Exhaust
 pub fn spot_weakness() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::SpotWeakness,
         1,
         CardType::Skill,
         vec![
             Effect::GainStrengthIfEnemyAttacking { amount: 3 },
         ],
-        false, // not upgraded
-        Condition::EnemyIsAttacking,
-        Rarity::Uncommon,
+        Rarity::Uncommon
     )
+        .set_play_condition(Condition::EnemyIsAttacking)
 }
 
 /// Spot Weakness+ (Upgraded version)
 /// Cost: 1
 /// Effect: If enemy is attacking, gain 4 Strength. Exhaust
 pub fn spot_weakness_upgraded() -> Card {
-    Card::new_with_condition(
+    Card::new(
         CardEnum::SpotWeakness,
         1,
         CardType::Skill,
         vec![
             Effect::GainStrengthIfEnemyAttacking { amount: 4 },
         ],
-        true,  // upgraded
-        Condition::EnemyIsAttacking,
-        Rarity::Uncommon,
+        Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_play_condition(Condition::EnemyIsAttacking)
 }
 
 #[cfg(test)]

@@ -10,10 +10,9 @@ pub fn fiend_fire() -> Card {
             Effect::Exhaust,
             Effect::ExhaustHandForDamage { damage_per_card: 7, target: Entity::Player },
         ],
-        false, // not upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_playable(true)
 }
 
 pub fn fiend_fire_upgraded() -> Card {
@@ -25,10 +24,10 @@ pub fn fiend_fire_upgraded() -> Card {
             Effect::Exhaust,
             Effect::ExhaustHandForDamage { damage_per_card: 10, target: Entity::Player },
         ],
-        true,  // upgraded
-        true,  // playable
         Rarity::Uncommon
     )
+        .set_upgraded(true)
+        .set_playable(true)
 }
 
 #[cfg(test)]

@@ -4,14 +4,15 @@ pub fn pommel_strike() -> Card {
     Card::new(CardEnum::PommelStrike, 1, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 },
         Effect::DrawCard { count: 1 }
-    ], false, true, Rarity::Common)
+    ], Rarity::Common)
 }
 
 pub fn pommel_strike_upgraded() -> Card {
     Card::new(CardEnum::PommelStrike, 1, CardType::Attack, vec![
         Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
         Effect::DrawCard { count: 2 }
-    ], true, true, Rarity::Common)
+    ], Rarity::Common)
+        .set_upgraded(true)
 }
 
 #[cfg(test)]

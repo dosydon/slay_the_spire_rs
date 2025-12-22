@@ -22,17 +22,17 @@ fn calculate_searing_blow_damage(upgrade_level: u32) -> u32 {
 fn searing_blow_with_level(upgrade_level: u32) -> Card {
     let damage = calculate_searing_blow_damage(upgrade_level);
 
-    Card::new_with_upgrade_level(
+    Card::new(
         CardEnum::SearingBlow,
         2,
         CardType::Attack,
         vec![
             Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
         ],
-        upgrade_level,
-        true,  // playable
-        Rarity::Uncommon,
+        Rarity::Uncommon
     )
+        .set_upgrade_level(upgrade_level)
+        .set_playable(true)
 }
 
 /// Searing Blow - Uncommon Attack Card (Level 0)
