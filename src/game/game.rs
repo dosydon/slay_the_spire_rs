@@ -1,32 +1,11 @@
-use crate::{events::SLSEvent, game::{action::{GameAction, RestSiteAction}, card_reward::CardRewardPool, deck::Deck, game_event::{GameEvent, GameEventListener}, global_info::GlobalInfo, game_result::{GameResult, GameOutcome}, game_state::GameState, reward_state::RewardState}};
+use crate::{events::SLSEvent, game::{action::{GameAction, RestSiteAction}, card_reward::CardRewardPool, deck::Deck, game_error::GameError, game_event::{GameEvent, GameEventListener}, global_info::GlobalInfo, game_result::{GameResult, GameOutcome}, game_state::GameState, reward_state::RewardState}};
 use crate::map::{Map, MapError, NodeType, MapNode};
 use crate::battle::{Battle, BattleResult, BattleError, enemy_in_battle::EnemyInBattle};
 use crate::events::map_events::{MapEvent, EventChoice, EventOutcome};
 use log::{info, debug};
 
-
-/// Errors that can occur during game actions
-#[derive(Debug, Clone, PartialEq)]
-pub enum GameError {
-    /// Battle-specific error
-    Battle(BattleError),
-    /// Map-specific error
-    Map(MapError),
-    /// Action not valid in current game state
-    InvalidState,
-    /// Invalid card index
-    InvalidCardIndex,
-    /// Invalid choice index
-    InvalidChoice,
-    /// Not enough gold to purchase
-    NotEnoughGold,
-    /// No active battle
-    NoBattle,
-}
-
 pub struct Game {
     pub global_info: GlobalInfo,
-    pub state: GameState,
     pub deck: Deck,
     pub battle: Option<Battle>,
     pub map: Map,
@@ -40,6 +19,7 @@ pub struct Game {
     relics: Vec<crate::relics::Relic>,
     game_event_listeners: Vec<Box<dyn GameEventListener>>,
     event_history: Vec<SLSEvent>,
+    state_stack: Vec<GameState>,
 }
 
 impl Game {
@@ -51,7 +31,6 @@ impl Game {
 
         Game {
             global_info,
-            state: GameState::OnMap,
             deck: starting_deck,
             battle: None,
             map,
@@ -65,6 +44,7 @@ impl Game {
             relics: Vec::new(),
             game_event_listeners: Vec::new(),
             event_history: Vec::new(),
+            state_stack: vec![GameState::OnMap],
         }
     }
 
@@ -160,7 +140,7 @@ impl Game {
 
                                     // Create reward state based on the node type that was just completed
                                     let reward_state = self.create_reward_state_for_current_node(rng);
-                                    self.state = GameState::Reward(reward_state);
+                                    self.set_game_state(GameState::Reward(reward_state));
 
                                     GameOutcome::Continue
                                 },
@@ -174,7 +154,7 @@ impl Game {
                                         self.potions = final_state.potions;
                                     }
                                     self.battle = None;
-                                    self.state = GameState::OnMap; // For now, just return to map
+                                    self.set_game_state(GameState::OnMap); // For now, just return to map
                                     GameOutcome::Defeat
                                 },
                             };
@@ -198,7 +178,7 @@ impl Game {
             
             GameAction::ChoosePath(path_choice) => {
                 // Only valid when on map
-                if !matches!(self.state, GameState::OnMap) {
+                if !matches!(self.current_state(), GameState::OnMap) {
                     return Err(GameError::InvalidState);
                 }
                 
@@ -239,7 +219,7 @@ impl Game {
                             // Start a battle
                             let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, player_state, enemies, rng);
                             self.battle = Some(battle);
-                            self.state = GameState::InBattle;
+                            self.set_game_state(GameState::InBattle);
                         },
                         NodeType::Elite => {
                             // Elite encounters - sample from elite pool
@@ -261,7 +241,7 @@ impl Game {
                             // Start a battle
                             let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, player_state, enemies, rng);
                             self.battle = Some(battle);
-                            self.state = GameState::InBattle;
+                            self.set_game_state(GameState::InBattle);
                         },
                         NodeType::Boss => {
                             // Boss encounters - for now use regular encounters (TODO: implement boss)
@@ -283,7 +263,7 @@ impl Game {
                             // Start a battle
                             let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, player_state, enemies, rng);
                             self.battle = Some(battle);
-                            self.state = GameState::InBattle;
+                            self.set_game_state(GameState::InBattle);
                         },
                         NodeType::Event => {
                             // SLS Event - sample and start an event
@@ -294,7 +274,7 @@ impl Game {
                         },
                         NodeType::RestSite => {
                             // Rest site - enter rest site state
-                            self.state = GameState::RestSite;
+                            self.set_game_state(GameState::RestSite);
                         },
                         NodeType::Shop => {
                             // Shop - enter shop state with 5 cards for sale
@@ -312,7 +292,7 @@ impl Game {
 
             GameAction::ClaimGold => {
                 // Only valid when in Reward state with unclaimed gold
-                let mut reward_state = match &self.state {
+                let mut reward_state = match self.current_state() {
                     GameState::Reward(reward) if !reward.gold_claimed => reward.clone(),
                     GameState::Reward(_) => return Err(GameError::InvalidState), // Gold already claimed
                     _ => return Err(GameError::InvalidState),
@@ -324,14 +304,14 @@ impl Game {
 
                 // Mark gold as claimed
                 reward_state.gold_claimed = true;
-                self.state = GameState::Reward(reward_state);
+                self.set_game_state(GameState::Reward(reward_state));
 
                 Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
             },
 
             GameAction::ClaimPotion => {
                 // Only valid when in Reward state with unclaimed potion
-                let mut reward_state = match &self.state {
+                let mut reward_state = match self.current_state() {
                     GameState::Reward(reward) if !reward.potion_claimed && reward.potion_reward.is_some() => reward.clone(),
                     GameState::Reward(_) => return Err(GameError::InvalidState), // No potion or already claimed
                     _ => return Err(GameError::InvalidState),
@@ -351,7 +331,7 @@ impl Game {
 
                     // Mark potion as claimed
                     reward_state.potion_claimed = true;
-                    self.state = GameState::Reward(reward_state);
+                    self.set_game_state(GameState::Reward(reward_state));
 
                     Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
                 } else {
@@ -361,7 +341,7 @@ impl Game {
 
             GameAction::RequestCardSelection => {
                 // Only valid when in Reward state with card selection available
-                match &self.state {
+                match self.current_state() {
                     GameState::Reward(reward) if reward.card_selection_available => {
                         // Transition to card selection
                         self.start_card_reward_selection(rng, reward.clone());
@@ -372,23 +352,29 @@ impl Game {
                 }
             },
 
-            GameAction::SkipRewards => {
-                // Only valid when in Reward state
-                if !matches!(self.state, GameState::Reward(_)) {
-                    return Err(GameError::InvalidState);
+            GameAction::Skip => {
+                // Only valid when in Reward state or Shop state
+                match self.current_state() {
+                    GameState::Reward(_) => {
+                        // Return to map without claiming remaining rewards
+                        self.set_game_state(GameState::OnMap);
+                        info!("Skipped remaining rewards, returning to map");
+                        Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
+                    },
+                    GameState::Shop(_) => {
+                        // Leave shop and return to map
+                        self.set_game_state(GameState::OnMap);
+                        info!("Left shop, returning to map");
+                        Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
+                    },
+                    _ => return Err(GameError::InvalidState),
                 }
-
-                // Return to map without claiming remaining rewards
-                self.state = GameState::OnMap;
-                info!("Skipped remaining rewards, returning to map");
-
-                Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
             },
 
             GameAction::SelectCardReward(card_index) => {
                 // Only valid when in CardRewardSelection state
-                let (reward_options, original_reward_state) = match &self.state {
-                    GameState::CardRewardSelection(options, reward_state) => (options.clone(), reward_state.clone()),
+                let reward_options = match self.current_state() {
+                    GameState::CardRewardSelection(options) => options.clone(),
                     _ => return Err(GameError::InvalidState),
                 };
 
@@ -401,19 +387,21 @@ impl Game {
                 let selected_card = reward_options[card_index].clone();
                 self.deck.add_card(selected_card);
 
-                // Update the original reward state to mark card selection as no longer available
-                let mut updated_reward_state = original_reward_state;
-                updated_reward_state.card_selection_available = false; // Card selection no longer available
-
-                // Return to reward state to show completion status
-                self.state = GameState::Reward(updated_reward_state);
+                // Pop back to reward state
+                if let Some(GameState::Reward(mut reward_state)) = self.pop_state() {
+                    reward_state.card_selection_available = false;
+                    self.set_game_state(GameState::Reward(reward_state));
+                } else {
+                    // Fallback if stack is empty
+                    self.set_game_state(GameState::OnMap);
+                }
 
                 Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
             },
 
             GameAction::ChooseEvent(choice_index) => {
                 // Only valid when in event state
-                let (event, mut choices) = match &self.state {
+                let (event, mut choices) = match self.current_state() {
                     GameState::InEvent(event, choices) => (event.clone(), choices.clone()),
                     _ => return Err(GameError::InvalidState),
                 };
@@ -433,61 +421,91 @@ impl Game {
                         }
 
                         // Event is complete, return to map
-                        self.state = GameState::OnMap;
+                        self.set_game_state(GameState::OnMap);
                         Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
                     },
                     EventOutcome::NextChoices(new_choices) => {
                         // Transition to next set of choices
-                        self.state = GameState::InEvent(event, new_choices);
+                        self.set_game_state(GameState::InEvent(event, new_choices));
                         Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
                     },
                 }
             },
 
-            GameAction::SelectCardToUpgrade(card_index) => {
-                // Only valid when in SelectUpgradeFromDeck state
-                if !matches!(self.state, GameState::SelectUpgradeFromDeck) {
-                    return Err(GameError::InvalidState);
-                }
+            GameAction::SelectCardFromDeck(card_index) => {
+                // Only valid when in SelectingCardFromDeck state
+                let card_operation = match self.current_state() {
+                    GameState::SelectingCardFromDeck(operation) => operation.clone(),
+                    _ => return Err(GameError::InvalidState),
+                };
 
                 // Validate card index
                 if card_index >= self.deck.size() {
                     return Err(GameError::InvalidCardIndex);
                 }
 
-                // Get the card to upgrade
-                let card_to_upgrade = self.deck.get_card(card_index).cloned();
-                if let Some(card) = card_to_upgrade {
-                    // Check if card is already upgraded
-                    if card.is_upgraded() {
-                        info!("Card '{}' is already upgraded", card.get_name());
-                        return Err(GameError::InvalidCardIndex); // Or create a new error type
-                    }
+                match card_operation {
+                    crate::game::game_state::CardFromDeckTo::Upgrade => {
+                        // Get the card to upgrade
+                        let card_to_upgrade = self.deck.get_card(card_index).cloned();
+                        if let Some(card) = card_to_upgrade {
+                            // Check if card is already upgraded
+                            if card.is_upgraded() {
+                                info!("Card '{}' is already upgraded", card.get_name());
+                                return Err(GameError::InvalidCardIndex);
+                            }
 
-                    // Get names before upgrade
-                    let old_name = card.get_name();
+                            // Get names before upgrade
+                            let old_name = card.get_name();
 
-                    // Upgrade the card
-                    let upgraded_card = card.upgrade();
-                    let new_name = upgraded_card.get_name();
+                            // Upgrade the card
+                            let upgraded_card = card.upgrade();
+                            let new_name = upgraded_card.get_name();
 
-                    // Remove the old card and add the upgraded version at the same position
-                    self.deck.remove_card(card_index);
-                    self.deck.insert_card(card_index, upgraded_card);
+                            // Remove the old card and add the upgraded version at the same position
+                            self.deck.remove_card(card_index);
+                            self.deck.insert_card(card_index, upgraded_card);
 
-                    info!("Upgraded '{}' to '{}'", old_name, new_name);
-                } else {
-                    return Err(GameError::InvalidCardIndex);
+                            info!("Upgraded '{}' to '{}'", old_name, new_name);
+                        } else {
+                            return Err(GameError::InvalidCardIndex);
+                        }
+
+                        // Card upgrade is complete, return to map
+                        self.set_game_state(GameState::OnMap);
+                        Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
+                    },
+                    crate::game::game_state::CardFromDeckTo::Remove => {
+                        // Get the card to remove
+                        let card_to_remove = self.deck.get_card(card_index).cloned();
+                        if let Some(card) = card_to_remove {
+                            info!("Removing '{}' from deck", card.get_name());
+
+                            // Remove the card from deck
+                            self.deck.remove_card(card_index);
+
+                            info!("Card '{}' removed from deck. Deck size: {}", card.get_name(), self.deck.size());
+                        } else {
+                            return Err(GameError::InvalidCardIndex);
+                        }
+
+                        // Card removal is complete, return to shop
+                        // Pop the SelectingCardFromDeck state to reveal the Shop state below
+                        if let Some(GameState::Shop(shop_state)) = self.pop_state() {
+                            self.set_game_state(GameState::Shop(shop_state));
+                        } else {
+                            // Fallback if shop state not found
+                            info!("Shop state not found in stack, returning to map");
+                            self.set_game_state(GameState::OnMap);
+                        }
+                        Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
+                    },
                 }
-
-                // Card upgrade is complete, return to map
-                self.state = GameState::OnMap;
-                Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
             },
 
             GameAction::RestSiteChoice(rest_site_action) => {
                 // Only valid when in RestSite state
-                if !matches!(self.state, GameState::RestSite) {
+                if !matches!(self.current_state(), GameState::RestSite) {
                     return Err(GameError::InvalidState);
                 }
 
@@ -499,26 +517,11 @@ impl Game {
                         info!("Player rested and healed {} HP", heal_amount);
 
                         // Rest site is complete, return to map
-                        self.state = GameState::OnMap;
-                    },
-                    RestSiteAction::ObtainGold => {
-                        // Obtain 15 gold
-                        self.gold += 15;
-                        info!("Player obtained 15 gold");
-
-                        // Rest site is complete, return to map
-                        self.state = GameState::OnMap;
-                    },
-                    RestSiteAction::Remove => {
-                        // TODO: Implement card removal UI and logic
-                        info!("Card removal option chosen (not implemented)");
-
-                        // Rest site is complete, return to map
-                        self.state = GameState::OnMap;
+                        self.set_game_state(GameState::OnMap);
                     },
                     RestSiteAction::Upgrade => {
                         // Start card upgrade selection - don't return to map yet
-                        self.state = GameState::SelectUpgradeFromDeck;
+                        self.set_game_state(GameState::SelectingCardFromDeck(crate::game::game_state::CardFromDeckTo::Upgrade));
                         info!("Card upgrade option chosen - select a card to upgrade");
 
                         // Don't return to map yet - wait for card selection
@@ -530,7 +533,7 @@ impl Game {
 
             GameAction::BuyCard(card_index) => {
                 // Only valid when in Shop state
-                let mut shop_state = match &self.state {
+                let mut shop_state = match self.current_state() {
                     GameState::Shop(shop_state) => shop_state.clone(),
                     _ => return Err(GameError::InvalidState),
                 };
@@ -560,31 +563,100 @@ impl Game {
                 info!("Purchased card for {} gold. Remaining gold: {}", card_price, self.gold);
 
                 // Update shop state
-                self.state = GameState::Shop(shop_state);
+                self.set_game_state(GameState::Shop(shop_state));
 
                 Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
             },
 
-            GameAction::LeaveShop => {
+            GameAction::ShopAction(shop_action) => {
                 // Only valid when in Shop state
-                match &self.state {
-                    GameState::Shop(_) => {
-                        // Leave shop and return to map
-                        self.state = GameState::OnMap;
-                        info!("Left shop, returning to map");
+                let mut shop_state = match self.current_state() {
+                    GameState::Shop(shop_state) => shop_state.clone(),
+                    _ => return Err(GameError::InvalidState),
+                };
+
+                match shop_action {
+                    crate::game::action::ShopAction::BuyCard(card_index) => {
+                        // This should use the existing BuyCard action instead
+                        // For now, return an error
+                        Err(GameError::InvalidState)
+                    },
+                    crate::game::action::ShopAction::EnterCardRemoval => {
+                        // Check if player has enough gold
+                        if self.gold < shop_state.card_removal_cost {
+                            info!("Insufficient gold for card removal (have {}, need {})",
+                                self.gold, shop_state.card_removal_cost);
+                            return Err(GameError::NotEnoughGold);
+                        }
+
+                        // Check if card removal hasn't been used yet
+                        if !shop_state.can_remove_card() {
+                            info!("Card removal already used this shop visit");
+                            return Err(GameError::InvalidState);
+                        }
+
+                        // Store the cost before moving shop_state
+                        let removal_cost = shop_state.card_removal_cost;
+
+                        // Deduct gold and mark removal as used
+                        self.gold -= removal_cost;
+                        shop_state.use_card_removal();
+
+                        // Update shop state with removal marked as used
+                        self.set_game_state(GameState::Shop(shop_state));
+
+                        // Transition to card removal state
+                        self.set_game_state(GameState::SelectingCardFromDeck(crate::game::game_state::CardFromDeckTo::Remove));
+                        info!("Entered card removal from shop (paid {} gold)", removal_cost);
                         Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
                     },
-                    _ => return Err(GameError::InvalidState),
                 }
             },
         }
     }
     
-    /// Get the current game state
-    pub fn get_state(&self) -> &GameState {
-        &self.state
+    /// Get the current game state (top of the stack)
+    fn current_state(&self) -> &GameState {
+        self.state_stack.last().unwrap_or(&GameState::OnMap)
     }
-    
+
+    /// Get the current game state (legacy method, use get_game_state instead)
+    pub fn get_state(&self) -> &GameState {
+        self.current_state()
+    }
+
+    /// Get the current game state
+    pub fn get_game_state(&self) -> &GameState {
+        self.current_state()
+    }
+
+    /// Set the game state (replace the top of the stack)
+    pub fn set_game_state(&mut self, new_state: GameState) {
+        if self.state_stack.is_empty() {
+            self.state_stack.push(new_state);
+        } else {
+            self.state_stack.pop();
+            self.state_stack.push(new_state);
+        }
+    }
+
+    /// Push a new state onto the stack
+    fn push_state(&mut self, new_state: GameState) {
+        self.state_stack.push(new_state);
+    }
+
+    /// Pop the current state from the stack and return it
+    fn pop_state(&mut self) -> Option<GameState> {
+        if self.state_stack.len() > 1 {
+            self.state_stack.pop()
+        } else {
+            // Never pop the last state, replace with OnMap instead
+            self.state_stack.pop();
+            self.state_stack.push(GameState::OnMap);
+            None
+        }
+    }
+
     /// Check if the game is over
     pub fn is_game_over(&self) -> bool {
         // For the simplified version, game is never truly over
@@ -685,13 +757,13 @@ impl Game {
         for (i, card) in reward_options.iter().enumerate() {
             debug!("  Option {}: {} (Cost: {})", i + 1, card.get_name(), card.get_cost());
         }
-        self.state = GameState::CardRewardSelection(reward_options, reward_state);
+        self.push_state(GameState::CardRewardSelection(reward_options));
     }
 
     /// Get the current card reward options (only valid in CardRewardSelection state)
     pub fn get_card_reward_options(&self) -> &[crate::game::card::Card] {
-        match &self.state {
-            GameState::CardRewardSelection(options, _) => options,
+        match self.current_state() {
+            GameState::CardRewardSelection(options) => options,
             _ => &[],
         }
     }
@@ -699,13 +771,13 @@ impl Game {
     /// Start an SLS Event
     pub fn start_event(&mut self, event: MapEvent) {
         let choices = event.get_choices();
-        self.state = GameState::InEvent(event, choices);
+        self.set_game_state(GameState::InEvent(event, choices));
         info!("Started event: {}", event.get_description());
     }
 
     /// Get the current event (only valid in InEvent state)
     pub fn get_current_event(&self) -> Option<&MapEvent> {
-        match &self.state {
+        match self.current_state() {
             GameState::InEvent(event, _) => Some(event),
             _ => None,
         }
@@ -713,7 +785,7 @@ impl Game {
 
     /// Get the current event choices (only valid in InEvent state)
     pub fn get_current_event_choices(&self) -> &[EventChoice] {
-        match &self.state {
+        match self.current_state() {
             GameState::InEvent(_, choices) => choices,
             _ => &[],
         }
@@ -728,12 +800,12 @@ impl Game {
                 debug!("  Card {}: {} - Cost: {}, Price: {} gold", i + 1, card.get_name(), card.get_cost(), price);
             }
         }
-        self.state = GameState::Shop(shop_state);
+        self.set_game_state(GameState::Shop(shop_state));
     }
 
     /// Get the current shop state (only valid in Shop state)
     pub fn get_shop_state(&self) -> Option<&crate::game::shop::ShopState> {
-        match &self.state {
+        match self.current_state() {
             GameState::Shop(shop_state) => Some(shop_state),
             _ => None,
         }
@@ -850,7 +922,7 @@ mod tests {
         let (map, _) = create_test_map();
         let game = Game::new(deck, global_info, map, 80, 80);
         
-        assert_eq!(game.get_state(), &GameState::OnMap);
+        assert_eq!(game.get_game_state(), &GameState::OnMap);
         assert!(!game.is_game_over());
         assert!(game.get_battle().is_none());
         assert_eq!(game.current_node_position, (0, 0));
@@ -872,7 +944,7 @@ mod tests {
         assert_eq!(result.unwrap().outcome, GameOutcome::Continue);
         
         // Game should now be in battle (moved to combat node)
-        assert!(matches!(game.get_state(), GameState::InBattle));
+        assert!(matches!(game.get_game_state(), GameState::InBattle));
         assert!(game.get_battle().is_some());
         assert_eq!(game.current_node_position, (1, 0)); // Moved to combat node
     }
@@ -992,7 +1064,7 @@ mod tests {
         assert_eq!(result.unwrap().outcome, GameOutcome::Continue);
         
         // Should now be in battle with GremlinNob
-        assert_eq!(game.get_state(), &GameState::InBattle);
+        assert_eq!(game.get_game_state(), &GameState::InBattle);
         
         if let Some(battle) = game.get_battle() {
             let enemies = battle.get_enemies();
@@ -1019,7 +1091,7 @@ mod tests {
         let mut rng = rand::rng();
 
         // Initially should not be in card reward selection
-        assert!(!matches!(game.get_state(), GameState::CardRewardSelection(..)));
+        assert!(!matches!(game.get_game_state(), GameState::CardRewardSelection(..)));
         assert!(game.get_card_reward_options().is_empty());
 
         // Start card reward selection with dummy reward state
@@ -1033,7 +1105,7 @@ mod tests {
         game.start_card_reward_selection(&mut rng, test_reward_state);
 
         // Should now be in card reward selection state
-        assert!(matches!(game.get_state(), GameState::CardRewardSelection(_, _)));
+        assert!(matches!(game.get_game_state(), GameState::CardRewardSelection(_)));
         assert_eq!(game.get_card_reward_options().len(), 3);
 
         // Verify all reward options are valid cards
@@ -1068,7 +1140,7 @@ mod tests {
         assert_eq!(result.unwrap().outcome, GameOutcome::Continue);
 
         // Should return to map state
-        assert!(matches!(game.get_state(), GameState::OnMap));
+        assert!(matches!(game.get_game_state(), GameState::OnMap));
 
         // Card should be added to deck
         assert_eq!(game.deck.size(), initial_deck_size + 1);
@@ -1138,7 +1210,7 @@ mod tests {
         };
         game.start_card_reward_selection(&mut rng, test_reward_state.clone());
         let first_options = game.get_card_reward_options().to_vec();
-        game.state = GameState::OnMap; // Reset state
+        game.set_game_state(GameState::OnMap); // Reset state
 
         game.start_card_reward_selection(&mut rng, test_reward_state);
         let second_options = game.get_card_reward_options().to_vec();
@@ -1187,7 +1259,7 @@ mod tests {
         game.start_event(MapEvent::BigFish);
 
         // Should now be in event state
-        assert!(matches!(game.get_state(), GameState::InEvent(_, _)));
+        assert!(matches!(game.get_game_state(), GameState::InEvent(_, _)));
 
         // Should have current event set
         assert!(game.get_current_event().is_some());
@@ -1223,7 +1295,7 @@ mod tests {
         assert_eq!(result.unwrap().outcome, GameOutcome::Continue);
 
         // Should return to map state
-        assert_eq!(game.get_state(), &GameState::OnMap);
+        assert_eq!(game.get_game_state(), &GameState::OnMap);
 
         // Should have gained 5 Max HP and healed to full
         assert_eq!(game.get_player_max_hp(), initial_max_hp + 5);
@@ -1254,7 +1326,7 @@ mod tests {
         assert_eq!(result.unwrap().outcome, GameOutcome::Continue);
 
         // Should return to map state
-        assert_eq!(game.get_state(), &GameState::OnMap);
+        assert_eq!(game.get_game_state(), &GameState::OnMap);
 
         // Should have healed 1/3 of Max HP (90 / 3 = 30)
         assert_eq!(game.get_player_max_hp(), initial_max_hp); // Max HP unchanged
@@ -1324,7 +1396,7 @@ mod tests {
         assert_eq!(result.unwrap().outcome, GameOutcome::Continue);
 
         // Should now be in event state
-        assert!(matches!(game.get_state(), GameState::InEvent(_, _)));
+        assert!(matches!(game.get_game_state(), GameState::InEvent(_, _)));
 
         // Should have BigFish event started
         assert!(game.get_current_event().is_some());
@@ -1362,7 +1434,7 @@ mod tests {
         assert_eq!(result.unwrap().outcome, GameOutcome::Continue);
 
         // Should now be in upgrade selection state
-        assert_eq!(game.get_state(), &GameState::SelectUpgradeFromDeck);
+        assert_eq!(game.get_game_state(), &GameState::SelectingCardFromDeck(crate::game::game_state::CardFromDeckTo::Upgrade));
     }
 
     #[test]
@@ -1374,7 +1446,7 @@ mod tests {
         let mut rng = rand::rng();
 
         // Set to upgrade selection state
-        game.state = GameState::SelectUpgradeFromDeck;
+        game.set_game_state(GameState::SelectingCardFromDeck(crate::game::game_state::CardFromDeckTo::Upgrade));
 
         // Get initial deck size and cards
         let initial_deck_size = game.deck.size();
@@ -1390,12 +1462,12 @@ mod tests {
         assert_eq!(original_name, "Strike");
 
         // Upgrade the card
-        let result = game.eval_action(GameAction::SelectCardToUpgrade(card_index), &mut rng);
+        let result = game.eval_action(GameAction::SelectCardFromDeck(card_index), &mut rng);
         assert!(result.is_ok());
         assert_eq!(result.unwrap().outcome, GameOutcome::Continue);
 
         // Should return to map state
-        assert_eq!(game.get_state(), &GameState::OnMap);
+        assert_eq!(game.get_game_state(), &GameState::OnMap);
 
         // Deck size should remain the same
         assert_eq!(game.deck.size(), initial_deck_size);
@@ -1416,7 +1488,7 @@ mod tests {
         let mut rng = rand::rng();
 
         // Try to upgrade card without being in upgrade selection state
-        let result = game.eval_action(GameAction::SelectCardToUpgrade(0), &mut rng);
+        let result = game.eval_action(GameAction::SelectCardFromDeck(0), &mut rng);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), GameError::InvalidState);
     }
@@ -1430,10 +1502,10 @@ mod tests {
         let mut rng = rand::rng();
 
         // Set to upgrade selection state
-        game.state = GameState::SelectUpgradeFromDeck;
+        game.set_game_state(GameState::SelectingCardFromDeck(crate::game::game_state::CardFromDeckTo::Upgrade));
 
         // Try to upgrade with invalid index
-        let result = game.eval_action(GameAction::SelectCardToUpgrade(999), &mut rng);
+        let result = game.eval_action(GameAction::SelectCardFromDeck(999), &mut rng);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), GameError::InvalidCardIndex);
     }
@@ -1495,10 +1567,10 @@ mod tests {
         let upgraded_card_index = game.deck.size() - 1;
 
         // Set to upgrade selection state
-        game.state = GameState::SelectUpgradeFromDeck;
+        game.set_game_state(GameState::SelectingCardFromDeck(crate::game::game_state::CardFromDeckTo::Upgrade));
 
         // Try to upgrade the already upgraded card
-        let result = game.eval_action(GameAction::SelectCardToUpgrade(upgraded_card_index), &mut rng);
+        let result = game.eval_action(GameAction::SelectCardFromDeck(upgraded_card_index), &mut rng);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), GameError::InvalidCardIndex);
     }
@@ -1581,7 +1653,7 @@ mod tests {
             potion_reward: Some(Potion::StrengthPotion),
             potion_claimed: false,
         };
-        game.state = GameState::Reward(reward_state);
+        game.set_game_state(GameState::Reward(reward_state));
 
         // Initially no potions in inventory
         assert_eq!(game.potions.potion_count(), 0);
@@ -1595,7 +1667,7 @@ mod tests {
         assert_eq!(game.potions.get_potion(0), Some(Potion::StrengthPotion));
 
         // Potion should be marked as claimed
-        if let GameState::Reward(reward) = &game.state {
+        if let GameState::Reward(reward) = game.current_state() {
             assert!(reward.potion_claimed);
         }
 
@@ -1628,7 +1700,7 @@ mod tests {
             potion_reward: Some(Potion::StrengthPotion),
             potion_claimed: false,
         };
-        game.state = GameState::Reward(reward_state);
+        game.set_game_state(GameState::Reward(reward_state));
 
         // Trying to claim potion should fail when inventory is full
         let result = game.eval_action(GameAction::ClaimPotion, &mut rng);

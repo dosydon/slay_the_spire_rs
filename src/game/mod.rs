@@ -6,6 +6,7 @@ pub mod card_type;
 pub mod card_enum;
 pub mod global_info;
 pub mod game;
+pub mod game_error;
 pub mod action;
 pub mod card_reward;
 pub mod game_event;

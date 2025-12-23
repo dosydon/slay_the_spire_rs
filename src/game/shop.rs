@@ -7,6 +7,10 @@ pub struct ShopState {
     pub cards_for_sale: Vec<Card>,
     /// Prices for each card (index corresponds to cards_for_sale)
     pub card_prices: Vec<u32>,
+    /// Whether card removal has been used this shop visit
+    pub card_removal_used: bool,
+    /// Cost to remove a card from deck
+    pub card_removal_cost: u32,
 }
 
 impl ShopState {
@@ -18,6 +22,8 @@ impl ShopState {
         Self {
             cards_for_sale: cards,
             card_prices: prices,
+            card_removal_used: false,
+            card_removal_cost: 75,
         }
     }
 
@@ -44,6 +50,16 @@ impl ShopState {
         } else {
             None
         }
+    }
+
+    /// Mark card removal as used
+    pub fn use_card_removal(&mut self) {
+        self.card_removal_used = true;
+    }
+
+    /// Check if card removal is available
+    pub fn can_remove_card(&self) -> bool {
+        !self.card_removal_used
     }
 }
 
@@ -216,5 +232,43 @@ mod tests {
 
             assert!(price >= expected_min);
         }
+    }
+
+    #[test]
+    fn test_card_removal_initially_available() {
+        let mut rng = rand::rng();
+        let shop = ShopState::new(5, &mut rng);
+
+        // Card removal should be available initially
+        assert!(shop.can_remove_card());
+        assert!(!shop.card_removal_used);
+        assert_eq!(shop.card_removal_cost, 75);
+    }
+
+    #[test]
+    fn test_card_removal_can_be_used_once() {
+        let mut rng = rand::rng();
+        let mut shop = ShopState::new(5, &mut rng);
+
+        // Initially available
+        assert!(shop.can_remove_card());
+
+        // Mark as used
+        shop.use_card_removal();
+
+        // Now should be unavailable
+        assert!(!shop.can_remove_card());
+        assert!(shop.card_removal_used);
+    }
+
+    #[test]
+    fn test_card_removal_cost_is_constant() {
+        let mut rng = rand::rng();
+        let shop1 = ShopState::new(3, &mut rng);
+        let shop2 = ShopState::new(7, &mut rng);
+
+        // All shops should have the same card removal cost
+        assert_eq!(shop1.card_removal_cost, 75);
+        assert_eq!(shop2.card_removal_cost, 75);
     }
 }

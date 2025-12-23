@@ -26,9 +26,9 @@ pub enum GameAction {
     /// Only valid when in Reward state with card_selection_available = true
     RequestCardSelection,
 
-    /// Skip all remaining rewards and return to map
-    /// Only valid when in Reward state
-    SkipRewards,
+    /// Skip current interaction (rewards, shop, etc.) and return to map
+    /// Valid when in Reward state or Shop state
+    Skip,
 
     /// Select a card reward (0, 1, or 2)
     /// Only valid when in CardRewardSelection state
@@ -44,15 +44,23 @@ pub enum GameAction {
 
     /// Select a card from deck to upgrade (card index in deck)
     /// Only valid when in SelectUpgradeFromDeck state
-    SelectCardToUpgrade(usize),
+    SelectCardFromDeck(usize),
 
     /// Buy a card from the shop (0-based index)
     /// Only valid when in shop
     BuyCard(usize),
 
-    /// Leave the shop
+    /// Perform a shop action (card removal, etc.)
     /// Only valid when in shop
-    LeaveShop,
+    ShopAction(ShopAction),
+}
+
+/// Rest site actions that can be chosen by the player
+#[derive(Debug, Clone, PartialEq)]
+pub enum ShopAction {
+    /// Buy a card from the shop (0-based index)
+    BuyCard(usize),
+    EnterCardRemoval,
 }
 
 /// Rest site actions that can be chosen by the player
@@ -62,10 +70,6 @@ pub enum RestSiteAction {
     Rest,
     /// Upgrade a card from the deck (remove it, add a better version)
     Upgrade,
-    /// Remove a card from the deck
-    Remove,
-    /// Obtain gold (15 gold)
-    ObtainGold,
 }
 
 /// Result of ending a run
