@@ -10,6 +10,8 @@ pub mod deep_breath;
 pub mod master_of_strategy;
 pub mod dark_shackles;
 pub mod impatience;
+pub mod panic_button;
+pub mod panacea;
 
 // Re-export all colorless cards
 pub use good_instincts::good_instincts;
@@ -34,3 +36,7 @@ pub use dark_shackles::dark_shackles;
 pub use dark_shackles::dark_shackles_upgraded;
 pub use impatience::impatience;
 pub use impatience::impatience_upgraded;
+pub use panic_button::panic_button;
+pub use panic_button::panic_button_upgraded;
+pub use panacea::panacea;
+pub use panacea::panacea_upgraded;

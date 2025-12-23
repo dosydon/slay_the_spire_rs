@@ -96,6 +96,8 @@ pub enum CardEnum {
     MasterOfStrategy,
     DarkShackles,
     Impatience,
+    PanicButton,
+    Panacea,
     // Add more cards as needed
 }
 
@@ -191,6 +193,8 @@ impl CardEnum {
             CardEnum::MasterOfStrategy => "Master of Strategy",
             CardEnum::DarkShackles => "Dark Shackles",
             CardEnum::Impatience => "Impatience",
+            CardEnum::PanicButton => "Panic Button",
+            CardEnum::Panacea => "Panacea",
         }
     }
     
@@ -297,6 +301,8 @@ impl CardEnum {
             CardEnum::MasterOfStrategy => crate::cards::colorless::master_of_strategy::master_of_strategy(),
             CardEnum::DarkShackles => crate::cards::colorless::dark_shackles::dark_shackles(),
             CardEnum::Impatience => crate::cards::colorless::impatience::impatience(),
+            CardEnum::PanicButton => crate::cards::colorless::panic_button::panic_button(),
+            CardEnum::Panacea => crate::cards::colorless::panacea::panacea(),
         }
     }
 }

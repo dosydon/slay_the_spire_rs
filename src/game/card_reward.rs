@@ -398,6 +398,8 @@ impl CardRewardPool {
             CardEnum::MasterOfStrategy => crate::cards::colorless::master_of_strategy::master_of_strategy(),
             CardEnum::DarkShackles => crate::cards::colorless::dark_shackles::dark_shackles(),
             CardEnum::Impatience => crate::cards::colorless::impatience::impatience(),
+            CardEnum::PanicButton => crate::cards::colorless::panic_button::panic_button(),
+            CardEnum::Panacea => crate::cards::colorless::panacea::panacea(),
 
             // Status/Curse Cards (should not be in reward pools but included for completeness)
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),

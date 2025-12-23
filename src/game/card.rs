@@ -259,6 +259,8 @@ impl Card {
             CardEnum::MasterOfStrategy => crate::cards::colorless::master_of_strategy::master_of_strategy_upgraded(),
             CardEnum::DarkShackles => crate::cards::colorless::dark_shackles::dark_shackles_upgraded(),
             CardEnum::Impatience => crate::cards::colorless::impatience::impatience_upgraded(),
+            CardEnum::PanicButton => crate::cards::colorless::panic_button::panic_button_upgraded(),
+            CardEnum::Panacea => crate::cards::colorless::panacea::panacea_upgraded(),
             CardEnum::AscendersCurse => crate::cards::curse::ascenders_curse(), // Curse cards don't have upgrades
             CardEnum::Injury => crate::cards::curse::injury(), // Curse cards don't have upgrades
             CardEnum::Clumsy => crate::cards::curse::clumsy(), // Curse cards don't have upgrades
