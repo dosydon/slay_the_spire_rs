@@ -11,20 +11,20 @@ impl Battle {
         self.sample_enemy_actions(rng);
 
         // Draw new hand (typically 5 cards)
-        // The draw_n method will automatically reshuffle discard pile into deck if needed
+        // Note: Innate cards go to discard at end of turn and are drawn normally like other cards
         self.cards.draw_n(5);
     }
 
-    /// Initialize the first turn of battle (draw cards, sample enemy actions, but don't reset block)
+    /// Initialize the first turn of battle (draw cards with innate, sample enemy actions, but don't reset block)
     pub(crate) fn initialize_first_turn(&mut self, rng: &mut impl rand::Rng) {
         // Don't call player.at_start_of_turn() here to preserve relic block gains
 
         // Sample enemy actions for this turn
         self.sample_enemy_actions(rng);
 
-        // Draw new hand (typically 5 cards)
-        // The draw_n method will automatically reshuffle discard pile into deck if needed
-        self.cards.draw_n(5);
+        // Draw initial hand with innate cards
+        // Innate cards are always in the starting hand at the beginning of combat
+        self.cards.draw_initial_hand(5);
     }
 
     /// End the current player turn and start the enemy turn (for testing)

@@ -46,6 +46,51 @@ impl DeckHandPile {
         }
         cards_drawn
     }
+
+    /// Draw initial hand with innate cards (only used at the start of combat)
+    /// Innate cards are added to hand from deck or discard, then draw additional cards up to n
+    pub(in crate::battle) fn draw_initial_hand(&mut self, n: usize) -> usize {
+        // First, ensure all innate cards are in hand
+        self.ensure_innate_cards_in_hand();
+
+        // Then draw additional cards up to n
+        let current_hand_size = self.hand_size();
+        let cards_to_draw = n.saturating_sub(current_hand_size);
+        self.draw_n(cards_to_draw)
+    }
+
+    /// Ensure all innate cards from deck are in hand
+    /// This is called only at the start of combat
+    fn ensure_innate_cards_in_hand(&mut self) {
+        // Collect indices of innate cards not currently in hand
+        let innate_indices: Vec<usize> = (0..self.deck.size())
+            .filter(|&i| {
+                if let Some(card) = self.deck.get_card(i) {
+                    card.is_innate()
+                } else {
+                    false
+                }
+            })
+            .collect();
+
+        // Move innate cards from deck to hand
+        for i in innate_indices.into_iter().rev() {
+            if let Some(card) = self.deck.remove_card(i) {
+                self.hand.push(card);
+            }
+        }
+
+        // Check discard pile for innate cards
+        let innate_discard_indices: Vec<usize> = (0..self.discard_pile.len())
+            .filter(|&i| self.discard_pile[i].is_innate())
+            .collect();
+
+        // Move innate cards from discard to hand
+        for i in innate_discard_indices.into_iter().rev() {
+            let card = self.discard_pile.remove(i);
+            self.hand.push(card);
+        }
+    }
     
     pub(in crate::battle) fn discard_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
         if hand_index < self.hand.len() {
@@ -431,30 +476,100 @@ mod tests {
     fn test_total_cards_with_exhausted() {
         let deck = Deck::new(vec![strike(), defend(), strike(), defend(), strike()]);
         let mut deck_hand_pile = DeckHandPile::new(deck);
-        
+
         // Initial total should be 5
         assert_eq!(deck_hand_pile.total_cards(), 5);
         assert_eq!(deck_hand_pile.cards_in_play(), 5);
-        
+
         // Draw 2 cards
         deck_hand_pile.draw_n(2);
         assert_eq!(deck_hand_pile.total_cards(), 5); // Still 5 total
         assert_eq!(deck_hand_pile.cards_in_play(), 5); // Still 5 in play
-        
+
         // Exhaust one card from hand
         deck_hand_pile.exhaust_card_from_hand(0);
         assert_eq!(deck_hand_pile.total_cards(), 5); // Still 5 total
         assert_eq!(deck_hand_pile.cards_in_play(), 4); // Now only 4 in play
-        
+
         // Discard one card
         deck_hand_pile.discard_card_from_hand(0);
         assert_eq!(deck_hand_pile.total_cards(), 5); // Still 5 total
         assert_eq!(deck_hand_pile.cards_in_play(), 4); // Still 4 in play
-        
+
         // Check counts
         assert_eq!(deck_hand_pile.hand_size(), 0);
         assert_eq!(deck_hand_pile.deck_size(), 3);
         assert_eq!(deck_hand_pile.discard_pile_size(), 1);
         assert_eq!(deck_hand_pile.exhausted_size(), 1);
+    }
+
+    #[test]
+    fn test_innate_cards_in_starting_hand() {
+        // Create a deck with one innate card
+        let innate_card = strike().set_innate(true);
+        let cards = vec![
+            innate_card.clone(),
+            defend(),
+            strike(),
+            defend(),
+            strike()
+        ];
+        let deck = Deck::new(cards);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+
+        // Draw initial hand - should have innate card + 4 other cards
+        deck_hand_pile.draw_initial_hand(5);
+        assert_eq!(deck_hand_pile.hand_size(), 5);
+
+        // Verify innate card is in hand
+        let hand = deck_hand_pile.get_hand();
+        assert!(hand.iter().any(|c| c.is_innate()), "Innate card should be in starting hand");
+    }
+
+    #[test]
+    fn test_innate_cards_discarded_at_end_of_turn() {
+        // Create a deck with one innate card
+        let innate_card = strike().set_innate(true);
+        let cards = vec![innate_card.clone(), defend()];
+        let deck = Deck::new(cards);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+
+        // Draw initial hand
+        deck_hand_pile.draw_initial_hand(2);
+        assert_eq!(deck_hand_pile.hand_size(), 2);
+        assert!(deck_hand_pile.get_hand().iter().any(|c| c.is_innate()), "Innate card should be in starting hand");
+
+        // Discard entire hand - innate card should go to discard pile
+        deck_hand_pile.discard_entire_hand();
+        assert_eq!(deck_hand_pile.hand_size(), 0);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 2); // Both cards in discard
+    }
+
+    #[test]
+    fn test_innate_cards_drawn_naturally_from_discard() {
+        // Create a deck with one innate card
+        let innate_card = strike().set_innate(true);
+        let cards = vec![innate_card.clone(), defend()];
+        let deck = Deck::new(cards);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+
+        // Draw initial hand
+        deck_hand_pile.draw_initial_hand(2);
+        assert_eq!(deck_hand_pile.hand_size(), 2);
+
+        // Discard entire hand
+        deck_hand_pile.discard_entire_hand();
+        assert_eq!(deck_hand_pile.hand_size(), 0);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 2);
+
+        // Draw normally - innate card should be drawn like any other card
+        let drawn = deck_hand_pile.draw_n(2);
+        assert_eq!(drawn, 2);
+        assert_eq!(deck_hand_pile.hand_size(), 2);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 0);
+
+        // Verify innate card is in hand (it was drawn from discard pile)
+        let hand = deck_hand_pile.get_hand();
+        assert!(hand.iter().any(|c| c.is_innate()), "Innate card should be drawn from discard");
     }
 }

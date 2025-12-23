@@ -31,6 +31,7 @@ pub struct Card {
     on_exhaust: Option<Vec<Effect>>, // Effects that trigger when this card is exhausted
     end_of_turn: Option<Vec<Effect>>, // Effects that trigger at end of turn
     is_removable: bool, // Whether this card can be removed from the deck (false for Ascender's Bane, Curse of the Bell, Necronomicurse)
+    is_innate: bool, // Whether this card is innate (starts in every hand and returns to hand after played)
 }
 
 impl Card {
@@ -47,6 +48,7 @@ impl Card {
             on_exhaust: None,
             end_of_turn: None,
             is_removable: true, // Default to removable
+            is_innate: false, // Default to not innate
         }
     }
 
@@ -99,6 +101,12 @@ impl Card {
     /// Builder pattern method to set whether the card can be removed from the deck
     pub fn set_removable(mut self, is_removable: bool) -> Self {
         self.is_removable = is_removable;
+        self
+    }
+
+    /// Builder pattern method to set whether the card is innate
+    pub fn set_innate(mut self, is_innate: bool) -> Self {
+        self.is_innate = is_innate;
         self
     }
 
@@ -287,6 +295,7 @@ impl Card {
             on_exhaust: self.on_exhaust,
             end_of_turn: self.end_of_turn,
             is_removable: self.is_removable,
+            is_innate: self.is_innate,
         }
     }
 
@@ -312,6 +321,12 @@ impl Card {
     /// Returns false for non-removable curses like Ascender's Bane, Curse of the Bell, and Necronomicurse
     pub fn is_removable(&self) -> bool {
         self.is_removable
+    }
+
+    /// Checks if this card is innate
+    /// Innate cards start in every hand and return to hand after being played
+    pub fn is_innate(&self) -> bool {
+        self.is_innate
     }
 }
 
@@ -378,5 +393,27 @@ mod tests {
 
         let upgraded = non_removable_card.with_upgrade_level(1);
         assert!(!upgraded.is_removable()); // Should preserve non-removable status
+    }
+
+    #[test]
+    fn test_card_innate_default() {
+        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
+        assert!(!card.is_innate()); // Default should be not innate
+    }
+
+    #[test]
+    fn test_card_set_innate() {
+        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }])
+            .set_innate(true);
+        assert!(card.is_innate()); // Should be innate
+    }
+
+    #[test]
+    fn test_card_innate_preserved_in_upgrade() {
+        let innate_card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }])
+            .set_innate(true);
+
+        let upgraded = innate_card.with_upgrade_level(1);
+        assert!(upgraded.is_innate()); // Should preserve innate status
     }
 }
