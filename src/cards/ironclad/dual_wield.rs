@@ -1,14 +1,14 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Dual Wield - Duplicate a card in your hand into the discard pile
 pub fn dual_wield() -> Card {
-    Card::new(CardEnum::DualWield, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::EnterSelectCardToDuplicate { copies: 1 }])
+    Card::new(CardEnum::DualWield, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![BattleEffect::EnterSelectCardToDuplicate { copies: 1 }])
         .set_play_condition(Condition::True)
 }
 
 /// Dual Wield+ (Upgraded version) - Duplicate a card in your hand twice into the discard pile
 pub fn dual_wield_upgraded() -> Card {
-    Card::new(CardEnum::DualWield, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::EnterSelectCardToDuplicate { copies: 2 }])
+    Card::new(CardEnum::DualWield, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![BattleEffect::EnterSelectCardToDuplicate { copies: 2 }])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -28,7 +28,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::EnterSelectCardToDuplicate { copies: 1 });
+        assert_eq!(card.get_effects()[0], BattleEffect::EnterSelectCardToDuplicate { copies: 1 });
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -41,7 +41,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::EnterSelectCardToDuplicate { copies: 2 });
+        assert_eq!(card.get_effects()[0], BattleEffect::EnterSelectCardToDuplicate { copies: 2 });
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -59,10 +59,10 @@ mod tests {
         assert_eq!(upgraded_effects.len(), 1);
 
         // Normal version duplicates 1 copy
-        assert_eq!(normal_effects[0], Effect::EnterSelectCardToDuplicate { copies: 1 });
+        assert_eq!(normal_effects[0], BattleEffect::EnterSelectCardToDuplicate { copies: 1 });
 
         // Upgraded version duplicates 2 copies
-        assert_eq!(upgraded_effects[0], Effect::EnterSelectCardToDuplicate { copies: 2 });
+        assert_eq!(upgraded_effects[0], BattleEffect::EnterSelectCardToDuplicate { copies: 2 });
     }
 
     #[test]

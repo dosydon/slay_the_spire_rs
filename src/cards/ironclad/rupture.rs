@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::BattleEffect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Rupture Listener
@@ -19,11 +19,11 @@ impl RuptureListener {
 }
 
 impl EventListener for RuptureListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::HpLostFromCard { target, amount } if *target == self.owner && *amount > 0 && self.is_active => {
                 // When player loses HP from cards, gain 1 Strength per HP lost
-                vec![Effect::GainStrength { amount: *amount }]
+                vec![BattleEffect::GainStrength { amount: *amount }]
             }
             _ => vec![]
         }
@@ -46,7 +46,7 @@ impl EventListener for RuptureListener {
 /// Cost: 1
 /// Effect: Whenever you lose HP, gain 1 Strength.
 pub fn rupture() -> Card {
-    Card::new(CardEnum::Rupture, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![Effect::ActivateRupture])
+    Card::new(CardEnum::Rupture, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![BattleEffect::ActivateRupture])
         .set_playable(true)
 }
 
@@ -54,7 +54,7 @@ pub fn rupture() -> Card {
 /// Cost: 1
 /// Effect: Whenever you lose HP, gain 1 Strength.
 pub fn rupture_upgraded() -> Card {
-    Card::new(CardEnum::Rupture, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![Effect::ActivateRupture])
+    Card::new(CardEnum::Rupture, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![BattleEffect::ActivateRupture])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -90,7 +90,7 @@ mod tests {
         let card = rupture();
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::ActivateRupture));
+        assert!(matches!(effects[0], BattleEffect::ActivateRupture));
     }
 
     #[test]
@@ -98,7 +98,7 @@ mod tests {
         let card = rupture_upgraded();
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::ActivateRupture));
+        assert!(matches!(effects[0], BattleEffect::ActivateRupture));
     }
 
     #[test]
@@ -120,7 +120,7 @@ mod tests {
 
         let effects = listener.on_event(&hp_loss_event);
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::GainStrength { amount: 5 }));
+        assert!(matches!(effects[0], BattleEffect::GainStrength { amount: 5 }));
     }
 
     #[test]
@@ -135,7 +135,7 @@ mod tests {
 
         let effects = listener.on_event(&hp_loss_event);
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::GainStrength { amount: 1 }));
+        assert!(matches!(effects[0], BattleEffect::GainStrength { amount: 1 }));
     }
 
     

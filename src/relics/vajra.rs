@@ -1,6 +1,6 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 
 /// Vajra relic
 /// At the start of each combat, gain 1 Strength
@@ -20,12 +20,12 @@ impl VajraRelic {
 }
 
 impl EventListener for VajraRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if !self.used && *player == self.owner => {
                 self.used = true;
                 // Gain 1 Strength at combat start
-                vec![Effect::GainStrength { amount: 1 }]
+                vec![BattleEffect::GainStrength { amount: 1 }]
             }
             _ => vec![]
         }
@@ -66,7 +66,7 @@ mod tests {
         let effects = vajra.on_event(&combat_start_event);
 
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainStrength { amount: 1 });
+        assert_eq!(effects[0], BattleEffect::GainStrength { amount: 1 });
         assert!(!vajra.is_active()); // Used up for this combat
     }
 
@@ -79,7 +79,7 @@ mod tests {
         let effects = vajra.on_event(&combat_start_event);
 
         assert_eq!(effects.len(), 1);
-        if let Effect::GainStrength { amount } = effects[0] {
+        if let BattleEffect::GainStrength { amount } = effects[0] {
             assert_eq!(amount, 1, "Should gain exactly 1 Strength");
         } else {
             panic!("Expected GainStrength effect");
@@ -120,7 +120,7 @@ mod tests {
         let player_combat_start = BattleEvent::CombatStart { player };
         let effects = vajra.on_event(&player_combat_start);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainStrength { amount: 1 });
+        assert_eq!(effects[0], BattleEffect::GainStrength { amount: 1 });
         assert!(!vajra.is_active());
     }
 

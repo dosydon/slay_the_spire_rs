@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 use std::any::Any;
@@ -83,29 +83,29 @@ impl AcidSlimeL {
         }
     }
 
-    pub fn get_move_effects(&self, move_type: AcidSlimeLMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: AcidSlimeLMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             AcidSlimeLMove::CorrosiveSpit => {
                 // Large Acid Slime applies 2 Weak instead of 1
-                vec![Effect::ApplyWeak { duration: 2 }]
+                vec![BattleEffect::ApplyWeak { duration: 2 }]
             }
             AcidSlimeLMove::Tackle => {
                 vec![
-                    Effect::AttackToTarget {
+                    BattleEffect::AttackToTarget {
                         amount: Self::calculate_tackle_damage(global_info),
                         num_attacks: 1,
                         strength_multiplier: 1
                     },
                     // Large Acid Slime adds 2 Slimed
-                    Effect::AddSlimed(2)
+                    BattleEffect::AddSlimed(2)
                 ]
             }
         }
     }
 
     /// Get the on-death effects (split into 2 Acid Slime M)
-    pub fn get_on_death_effects() -> Vec<Effect> {
-        vec![Effect::SplitIntoMediumSlimes]
+    pub fn get_on_death_effects() -> Vec<BattleEffect> {
+        vec![BattleEffect::SplitIntoMediumSlimes]
     }
 
     fn choose_next_move(&self) -> CategoricalDistribution<AcidSlimeLMove> {
@@ -139,7 +139,7 @@ impl EnemyTrait for AcidSlimeL {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (AcidSlimeLMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (AcidSlimeLMove, Vec<BattleEffect>) {
         let move_distribution = self.choose_next_move();
         let selected_move = move_distribution.sample_owned(rng);
 
@@ -202,13 +202,13 @@ mod tests {
 
         // Test Corrosive Spit effects (Large applies 2 Weak)
         let corrosive_spit_effects = acid_slime.get_move_effects(AcidSlimeLMove::CorrosiveSpit, &global_info);
-        assert_eq!(corrosive_spit_effects, vec![Effect::ApplyWeak { duration: 2 }]);
+        assert_eq!(corrosive_spit_effects, vec![BattleEffect::ApplyWeak { duration: 2 }]);
 
         // Test Tackle effects (Large deals more damage and adds 2 Slimed)
         let tackle_effects = acid_slime.get_move_effects(AcidSlimeLMove::Tackle, &global_info);
         assert_eq!(tackle_effects, vec![
-            Effect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 1 },
-            Effect::AddSlimed(2)
+            BattleEffect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::AddSlimed(2)
         ]);
     }
 
@@ -235,7 +235,7 @@ mod tests {
 
         // Should have one effect: SplitIntoMediumSlimes
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], crate::game::effect::Effect::SplitIntoMediumSlimes));
+        assert!(matches!(effects[0], crate::game::effect::BattleEffect::SplitIntoMediumSlimes));
     }
 }
 
@@ -255,7 +255,7 @@ impl AcidSlimeLSplitListener {
 }
 
 impl EventListener for AcidSlimeLSplitListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         if !self.active {
             return vec![];
         }

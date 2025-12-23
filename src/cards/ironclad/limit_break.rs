@@ -1,11 +1,11 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Limit Break - Rare Skill Card
 /// Effect: Double your Strength. Exhaust.
 pub fn limit_break() -> Card {
     Card::new(CardEnum::LimitBreak, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-            Effect::DoubleStrength, // Double current Strength
-            Effect::Exhaust,         // Exhaust after use
+            BattleEffect::DoubleStrength, // Double current Strength
+            BattleEffect::Exhaust,         // Exhaust after use
         ])
         .set_play_condition(Condition::True)
 }
@@ -19,7 +19,7 @@ pub fn limit_break_upgraded() -> Card {
         1, // Costs 1 when upgraded
         CardClass::IronClad(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::DoubleStrength, // Double current Strength
+            BattleEffect::DoubleStrength, // Double current Strength
             // No Exhaust when upgraded
         ]
     )
@@ -63,8 +63,8 @@ mod tests {
         let effects = card.get_effects();
 
         assert_eq!(effects.len(), 2);
-        assert_eq!(effects[0], Effect::DoubleStrength);
-        assert_eq!(effects[1], Effect::Exhaust);
+        assert_eq!(effects[0], BattleEffect::DoubleStrength);
+        assert_eq!(effects[1], BattleEffect::Exhaust);
     }
 
     #[test]
@@ -73,7 +73,7 @@ mod tests {
         let effects = card.get_effects();
 
         assert_eq!(effects.len(), 1); // Only DoubleStrength, no Exhaust when upgraded
-        assert_eq!(effects[0], Effect::DoubleStrength);
+        assert_eq!(effects[0], BattleEffect::DoubleStrength);
     }
 
     #[test]
@@ -99,11 +99,11 @@ mod tests {
         assert_eq!(upgraded_effects.len(), 1);
 
         // Both should double Strength
-        assert_eq!(base_effects[0], Effect::DoubleStrength);
-        assert_eq!(upgraded_effects[0], Effect::DoubleStrength);
+        assert_eq!(base_effects[0], BattleEffect::DoubleStrength);
+        assert_eq!(upgraded_effects[0], BattleEffect::DoubleStrength);
 
         // Only base version should exhaust
-        assert_eq!(base_effects[1], Effect::Exhaust);
+        assert_eq!(base_effects[1], BattleEffect::Exhaust);
     }
 
     #[test]

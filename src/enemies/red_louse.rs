@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 #[derive(Clone, Debug)]
@@ -75,17 +75,17 @@ impl RedLouse {
         }
     }
 
-    pub fn get_move_effects(&self, move_type: RedLouseMove) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: RedLouseMove) -> Vec<BattleEffect> {
         match move_type {
             RedLouseMove::Attack => {
-                vec![Effect::AttackToTarget {
+                vec![BattleEffect::AttackToTarget {
                     amount: self.base_damage,
                     num_attacks: 1,
                     strength_multiplier: 1
                 }]
             }
             RedLouseMove::Grow => {
-                vec![Effect::GainStrength { amount: 3 }]
+                vec![BattleEffect::GainStrength { amount: 3 }]
             }
         }
     }
@@ -127,7 +127,7 @@ impl EnemyTrait for RedLouse {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (RedLouseMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (RedLouseMove, Vec<BattleEffect>) {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
         
@@ -166,12 +166,12 @@ impl CurlUpListener {
 }
 
 impl EventListener for CurlUpListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::DamageTaken { target, amount, .. }
                 if *target == self.owner && *amount > 0 && !self.used => {
                 self.used = true;
-                vec![Effect::GainDefense { amount: self.block_amount }]
+                vec![BattleEffect::GainDefense { amount: self.block_amount }]
             }
             _ => vec![]
         }
@@ -289,7 +289,7 @@ mod tests {
         let effects = louse.get_move_effects(RedLouseMove::Attack);
         
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }); 
+        assert_eq!(effects[0], BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }); 
     }
 
     #[test]
@@ -396,7 +396,7 @@ mod tests {
         let (_move, effects) = louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have chosen Grow (since Attack would violate consecutive rule)
-        assert_eq!(effects, vec![Effect::GainStrength { amount: 3 }]);
+        assert_eq!(effects, vec![BattleEffect::GainStrength { amount: 3 }]);
         assert_eq!(louse.last_moves.last().unwrap(), &RedLouseMove::Grow);
     }
 
@@ -437,7 +437,7 @@ mod tests {
 
         let effects = listener.on_event(&damage_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainDefense { amount: expected_block });
+        assert_eq!(effects[0], BattleEffect::GainDefense { amount: expected_block });
         assert!(!listener.is_active()); // Used up
     }
 
@@ -504,7 +504,7 @@ mod tests {
         let (_move, effects) = louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have chosen Attack
-        assert_eq!(effects, vec![Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 }]);
+        assert_eq!(effects, vec![BattleEffect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 }]);
         assert_eq!(louse.last_moves.last().unwrap(), &RedLouseMove::Attack);
     }
 
@@ -520,7 +520,7 @@ mod tests {
         let (_move, effects) = louse.choose_move_and_effects(&global_info, &mut rng);
         
         // Should have chosen Grow
-        assert_eq!(effects, vec![Effect::GainStrength { amount: 3 }]);
+        assert_eq!(effects, vec![BattleEffect::GainStrength { amount: 3 }]);
         assert_eq!(louse.last_moves.last().unwrap(), &RedLouseMove::Grow);
     }
 

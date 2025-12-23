@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}};
+use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}};
 
 #[derive(Clone, Debug)]
 pub struct AcidSlimeS {
@@ -36,13 +36,13 @@ impl AcidSlimeS {
         }
     }
 
-    pub fn get_move_effects(&self, move_type: AcidSlimeSMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: AcidSlimeSMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             AcidSlimeSMove::Lick => {
-                vec![Effect::ApplyWeak { duration: 1 }]
+                vec![BattleEffect::ApplyWeak { duration: 1 }]
             }
             AcidSlimeSMove::Tackle => {
-                vec![Effect::AttackToTarget {
+                vec![BattleEffect::AttackToTarget {
                     amount: Self::calculate_tackle_damage(global_info),
                     num_attacks: 1,
                     strength_multiplier: 1
@@ -81,7 +81,7 @@ impl EnemyTrait for AcidSlimeS {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (AcidSlimeSMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (AcidSlimeSMove, Vec<BattleEffect>) {
         let selected_move = self.choose_next_move();
         let effects = self.get_move_effects(selected_move, global_info);
         (selected_move, effects)
@@ -162,19 +162,19 @@ mod tests {
 
         // Test Lick effects
         let lick_effects = acid_slime.get_move_effects(AcidSlimeSMove::Lick, &global_info);
-        assert_eq!(lick_effects, vec![Effect::ApplyWeak { duration: 1 }]);
+        assert_eq!(lick_effects, vec![BattleEffect::ApplyWeak { duration: 1 }]);
 
         // Test Tackle effects
         let tackle_effects = acid_slime.get_move_effects(AcidSlimeSMove::Tackle, &global_info);
         assert_eq!(tackle_effects, vec![
-            Effect::AttackToTarget { amount: 3, num_attacks: 1, strength_multiplier: 1 }
+            BattleEffect::AttackToTarget { amount: 3, num_attacks: 1, strength_multiplier: 1 }
         ]);
 
         // Test ascension damage scaling
         let global_info_asc2 = GlobalInfo { ascention: 2, current_floor: 1 };
         let tackle_effects_asc2 = acid_slime.get_move_effects(AcidSlimeSMove::Tackle, &global_info_asc2);
         assert_eq!(tackle_effects_asc2, vec![
-            Effect::AttackToTarget { amount: 4, num_attacks: 1, strength_multiplier: 1 }
+            BattleEffect::AttackToTarget { amount: 4, num_attacks: 1, strength_multiplier: 1 }
         ]);
     }
 
@@ -208,6 +208,6 @@ mod tests {
         
         // First move should be Lick (applies Weak)
         assert_eq!(enemy_move, AcidSlimeSMove::Lick);
-        assert_eq!(effects, vec![Effect::ApplyWeak { duration: 1 }]);
+        assert_eq!(effects, vec![BattleEffect::ApplyWeak { duration: 1 }]);
     }
 }

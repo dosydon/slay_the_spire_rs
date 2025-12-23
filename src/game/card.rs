@@ -1,6 +1,6 @@
 use crate::game::card_type::CardType;
 use crate::game::card_enum::CardEnum;
-use crate::game::effect::{Effect, Condition};
+use crate::game::effect::{BattleEffect, Condition};
 
 /// Card rarity for classification and reward generation
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -24,19 +24,19 @@ pub struct Card {
     card_enum: CardEnum,
     cost: u32,
     card_class: CardClass, // Combines card type, rarity, and character class
-    effects: Vec<Effect>,
+    effects: Vec<BattleEffect>,
     upgrade_level: u32, // 0 = not upgraded, 1+ = upgraded level
     play_condition: Condition,
     ethereal: bool,
-    on_exhaust: Option<Vec<Effect>>, // Effects that trigger when this card is exhausted
-    end_of_turn: Option<Vec<Effect>>, // Effects that trigger at end of turn
+    on_exhaust: Option<Vec<BattleEffect>>, // Effects that trigger when this card is exhausted
+    end_of_turn: Option<Vec<BattleEffect>>, // Effects that trigger at end of turn
     is_removable: bool, // Whether this card can be removed from the deck (false for Ascender's Bane, Curse of the Bell, Necronomicurse)
     is_innate: bool, // Whether this card is innate (starts in every hand and returns to hand after played)
 }
 
 impl Card {
 
-    pub fn new(card_enum: CardEnum, cost: u32, card_class: CardClass, effects: Vec<Effect>) -> Self {
+    pub fn new(card_enum: CardEnum, cost: u32, card_class: CardClass, effects: Vec<BattleEffect>) -> Self {
         Card {
             card_enum,
             cost,
@@ -71,13 +71,13 @@ impl Card {
     }
 
     /// Builder pattern method to set on-exhaust effects
-    pub fn set_on_exhaust(mut self, on_exhaust: Vec<Effect>) -> Self {
+    pub fn set_on_exhaust(mut self, on_exhaust: Vec<BattleEffect>) -> Self {
         self.on_exhaust = Some(on_exhaust);
         self
     }
 
     /// Builder pattern method to set end-of-turn effects
-    pub fn set_end_of_turn(mut self, end_of_turn: Vec<Effect>) -> Self {
+    pub fn set_end_of_turn(mut self, end_of_turn: Vec<BattleEffect>) -> Self {
         self.end_of_turn = Some(end_of_turn);
         self
     }
@@ -139,15 +139,15 @@ impl Card {
         &self.card_class
     }
 
-    pub fn get_effects(&self) -> &Vec<Effect> {
+    pub fn get_effects(&self) -> &Vec<BattleEffect> {
         &self.effects
     }
 
-    pub fn get_on_exhaust(&self) -> Option<&Vec<Effect>> {
+    pub fn get_on_exhaust(&self) -> Option<&Vec<BattleEffect>> {
         self.on_exhaust.as_ref()
     }
 
-    pub fn get_end_of_turn(&self) -> Option<&Vec<Effect>> {
+    pub fn get_end_of_turn(&self) -> Option<&Vec<BattleEffect>> {
         self.end_of_turn.as_ref()
     }
 
@@ -342,7 +342,7 @@ mod tests {
 
     #[test]
     fn test_card_creation() {
-        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
+        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
         assert_eq!(card.get_name(), "Strike");
         assert_eq!(card.get_cost(), 1);
         assert_eq!(matches!(card.get_card_type(), CardType::Attack), true);
@@ -351,7 +351,7 @@ mod tests {
 
     #[test]
     fn test_strike_upgrade() {
-        let strike = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
+        let strike = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
         let upgraded = strike.upgrade();
 
         assert_eq!(upgraded.get_name(), "Strike+");
@@ -361,7 +361,7 @@ mod tests {
 
         // Check damage increased to 9
         match &upgraded.get_effects()[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 9);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 1);
@@ -372,8 +372,8 @@ mod tests {
 
     #[test]
     fn test_is_upgraded() {
-        let basic = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
-        let upgraded = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }]).set_upgraded(true);
+        let basic = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
+        let upgraded = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![BattleEffect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }]).set_upgraded(true);
 
         assert!(!basic.is_upgraded());
         assert!(upgraded.is_upgraded());
@@ -381,7 +381,7 @@ mod tests {
 
     #[test]
     fn test_card_removable_default() {
-        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
+        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
         assert!(card.is_removable()); // Default should be removable
     }
 
@@ -403,20 +403,20 @@ mod tests {
 
     #[test]
     fn test_card_innate_default() {
-        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
+        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
         assert!(!card.is_innate()); // Default should be not innate
     }
 
     #[test]
     fn test_card_set_innate() {
-        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }])
+        let card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }])
             .set_innate(true);
         assert!(card.is_innate()); // Should be innate
     }
 
     #[test]
     fn test_card_innate_preserved_in_upgrade() {
-        let innate_card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }])
+        let innate_card = Card::new(CardEnum::Strike, 1, CardClass::IronClad(Rarity::Basic, CardType::Attack), vec![BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }])
             .set_innate(true);
 
         let upgraded = innate_card.with_upgrade_level(1);

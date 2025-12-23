@@ -1,8 +1,8 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 pub fn ghostly_armor() -> Card {
     Card::new(CardEnum::GhostlyArmor, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-        Effect::GainDefense { amount: 10 }
+        BattleEffect::GainDefense { amount: 10 }
         // Note: Ethereal is a card property, not an effect that needs to be in effects list
         // The card should be marked as ethereal via card properties
     ])
@@ -12,7 +12,7 @@ pub fn ghostly_armor() -> Card {
 
 pub fn ghostly_armor_upgraded() -> Card {
     Card::new(CardEnum::GhostlyArmor, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-        Effect::GainDefense { amount: 13 }
+        BattleEffect::GainDefense { amount: 13 }
     ])
         .set_upgraded(true)
         .set_ethereal(true)
@@ -33,7 +33,7 @@ mod tests {
 
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
-        assert!(effects.contains(&Effect::GainDefense { amount: 10 }));
+        assert!(effects.contains(&BattleEffect::GainDefense { amount: 10 }));
     }
 
     #[test]
@@ -46,6 +46,6 @@ mod tests {
 
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
-        assert!(effects.contains(&Effect::GainDefense { amount: 13 }));
+        assert!(effects.contains(&BattleEffect::GainDefense { amount: 13 }));
     }
 }

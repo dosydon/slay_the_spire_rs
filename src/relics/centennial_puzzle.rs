@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Centennial Puzzle - The first time you lose HP each combat, draw 3 cards
@@ -18,7 +18,7 @@ impl CentennialPuzzleRelic {
 }
 
 impl EventListener for CentennialPuzzleRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if *player == self.owner => {
                 self.triggered = false;
@@ -26,11 +26,11 @@ impl EventListener for CentennialPuzzleRelic {
             }
             BattleEvent::HpLostFromCard { target, .. } if *target == self.owner && !self.triggered => {
                 self.triggered = true;
-                vec![Effect::DrawCard { count: 3 }]
+                vec![BattleEffect::DrawCard { count: 3 }]
             }
             BattleEvent::DamageTaken { target, amount, .. } if *target == self.owner && *amount > 0 && !self.triggered => {
                 self.triggered = true;
-                vec![Effect::DrawCard { count: 3 }]
+                vec![BattleEffect::DrawCard { count: 3 }]
             }
             _ => vec![]
         }
@@ -76,7 +76,7 @@ mod tests {
         });
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::DrawCard { count: 3 }));
+        assert!(matches!(effects[0], BattleEffect::DrawCard { count: 3 }));
         assert!(puzzle.triggered);
     }
 

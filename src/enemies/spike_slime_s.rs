@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 
 #[derive(Clone, Debug)]
 pub struct SpikeSlimeS {
@@ -37,10 +37,10 @@ impl SpikeSlimeS {
         }
     }
 
-    pub fn get_move_effects(&self, move_type: SpikeSlimeSMove) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: SpikeSlimeSMove) -> Vec<BattleEffect> {
         match move_type {
             SpikeSlimeSMove::Tackle => {
-                vec![Effect::AttackToTarget { amount: self.base_damage, num_attacks: 1, strength_multiplier: 1 }]
+                vec![BattleEffect::AttackToTarget { amount: self.base_damage, num_attacks: 1, strength_multiplier: 1 }]
             }
         }
     }
@@ -73,7 +73,7 @@ impl EnemyTrait for SpikeSlimeS {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (SpikeSlimeSMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (SpikeSlimeSMove, Vec<BattleEffect>) {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
         
@@ -121,7 +121,7 @@ mod tests {
         for _ in 0..10 {
             let (move_type, effects) = spike_slime.choose_move_and_effects(&global_info, &mut rng);
             assert_eq!(move_type, SpikeSlimeSMove::Tackle);
-            assert_eq!(effects, vec![Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }]);
+            assert_eq!(effects, vec![BattleEffect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }]);
         }
     }
 
@@ -148,6 +148,6 @@ mod tests {
 
         // Test Tackle effects
         let tackle_effects = spike_slime.get_move_effects(SpikeSlimeSMove::Tackle);
-        assert_eq!(tackle_effects, vec![Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }]);
+        assert_eq!(tackle_effects, vec![BattleEffect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }]);
     }
 }

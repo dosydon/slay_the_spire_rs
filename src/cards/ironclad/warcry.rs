@@ -1,14 +1,14 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Warcry - Draw 1 cards. Put 1 card on top of draw pile
 pub fn warcry() -> Card {
-    Card::new(CardEnum::Warcry, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::DrawCard { count: 1 }, Effect::EnterSelectCardInHandToPutOnDeck])
+    Card::new(CardEnum::Warcry, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![BattleEffect::DrawCard { count: 1 }, BattleEffect::EnterSelectCardInHandToPutOnDeck])
         .set_play_condition(Condition::True)
 }
 
 /// Warcry+ (upgraded version)
 pub fn warcry_upgraded() -> Card {
-    Card::new(CardEnum::Warcry, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::DrawCard { count: 2 }, Effect::EnterSelectCardInHandToPutOnDeck])
+    Card::new(CardEnum::Warcry, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![BattleEffect::DrawCard { count: 2 }, BattleEffect::EnterSelectCardInHandToPutOnDeck])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -30,8 +30,8 @@ mod tests {
         assert_eq!(warcry_card.get_card_type(), CardType::Skill);
 
         let effects = warcry_card.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::DrawCard { count: 1 })));
-        assert!(effects.contains(&Effect::EnterSelectCardInHandToPutOnDeck));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::DrawCard { count: 1 })));
+        assert!(effects.contains(&BattleEffect::EnterSelectCardInHandToPutOnDeck));
     }
 
     #[test]
@@ -42,8 +42,8 @@ mod tests {
         assert_eq!(warcry_plus.get_card_type(), CardType::Skill);
 
         let effects = warcry_plus.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::DrawCard { count: 2 })));
-        assert!(effects.contains(&Effect::EnterSelectCardInHandToPutOnDeck));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::DrawCard { count: 2 })));
+        assert!(effects.contains(&BattleEffect::EnterSelectCardInHandToPutOnDeck));
         assert!(warcry_plus.is_upgraded());
     }
 

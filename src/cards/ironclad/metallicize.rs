@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Metallicize Listener
@@ -26,11 +26,11 @@ impl MetallicizeListener {
 }
 
 impl EventListener for MetallicizeListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::EndOfTurn { entity } if *entity == self.owner && self.is_active => {
                 // At end of turn, gain Block
-                vec![Effect::GainDefense { amount: self.block_amount }]
+                vec![BattleEffect::GainDefense { amount: self.block_amount }]
             }
             _ => vec![]
         }
@@ -54,14 +54,14 @@ impl EventListener for MetallicizeListener {
 /// Effect: At the end of your turn, gain 3 Block.
 pub fn metallicize() -> Card {
     Card::new(CardEnum::Metallicize, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
-        Effect::ActivateMetallicize { amount: 3 },
+        BattleEffect::ActivateMetallicize { amount: 3 },
     ])
         .set_play_condition(Condition::True)
 }
 
 pub fn metallicize_upgraded() -> Card {
     Card::new(CardEnum::Metallicize, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
-        Effect::ActivateMetallicize { amount: 4 },
+        BattleEffect::ActivateMetallicize { amount: 4 },
     ])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -114,7 +114,7 @@ mod tests {
 
         let effects = listener.on_event(&end_turn_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainDefense { amount: 3 });
+        assert_eq!(effects[0], BattleEffect::GainDefense { amount: 3 });
         assert!(listener.is_active()); // Still active after triggering
     }
 
@@ -144,10 +144,10 @@ mod tests {
         let upgraded_effects = upgraded_listener.on_event(&end_turn_event);
 
         assert_eq!(base_effects.len(), 1);
-        assert_eq!(base_effects[0], Effect::GainDefense { amount: 3 });
+        assert_eq!(base_effects[0], BattleEffect::GainDefense { amount: 3 });
 
         assert_eq!(upgraded_effects.len(), 1);
-        assert_eq!(upgraded_effects[0], Effect::GainDefense { amount: 4 });
+        assert_eq!(upgraded_effects[0], BattleEffect::GainDefense { amount: 4 });
     }
 
     #[test]
@@ -169,7 +169,7 @@ mod tests {
 
         let effects = listener.on_event(&player_end_turn_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainDefense { amount: 3 });
+        assert_eq!(effects[0], BattleEffect::GainDefense { amount: 3 });
     }
 
     #[test]

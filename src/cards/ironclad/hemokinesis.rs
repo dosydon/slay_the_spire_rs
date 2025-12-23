@@ -1,12 +1,12 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Hemokinesis - Uncommon Attack Card
 /// Cost: 1
 /// Effect: Lose 2 HP. Deal 15 damage
 pub fn hemokinesis() -> Card {
     Card::new(CardEnum::Hemokinesis, 1, CardClass::IronClad(Rarity::Rare, CardType::Attack), vec![
-        Effect::LoseHp(2),
-        Effect::AttackToTarget {
+        BattleEffect::LoseHp(2),
+        BattleEffect::AttackToTarget {
             amount: 15,
             num_attacks: 1,
             strength_multiplier: 1,
@@ -20,8 +20,8 @@ pub fn hemokinesis() -> Card {
 /// Effect: Lose 2 HP. Deal 22 damage
 pub fn hemokinesis_upgraded() -> Card {
     Card::new(CardEnum::Hemokinesis, 1, CardClass::IronClad(Rarity::Rare, CardType::Attack), vec![
-        Effect::LoseHp(2),
-        Effect::AttackToTarget {
+        BattleEffect::LoseHp(2),
+        BattleEffect::AttackToTarget {
             amount: 22,
             num_attacks: 1,
             strength_multiplier: 1,
@@ -45,8 +45,8 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::LoseHp(2));
-        assert_eq!(card.get_effects()[1], Effect::AttackToTarget {
+        assert_eq!(card.get_effects()[0], BattleEffect::LoseHp(2));
+        assert_eq!(card.get_effects()[1], BattleEffect::AttackToTarget {
             amount: 15,
             num_attacks: 1,
             strength_multiplier: 1,
@@ -63,8 +63,8 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::LoseHp(2));
-        assert_eq!(card.get_effects()[1], Effect::AttackToTarget {
+        assert_eq!(card.get_effects()[0], BattleEffect::LoseHp(2));
+        assert_eq!(card.get_effects()[1], BattleEffect::AttackToTarget {
             amount: 22,
             num_attacks: 1,
             strength_multiplier: 1,
@@ -79,8 +79,8 @@ mod tests {
         let effects = card.get_effects();
 
         // Verify that HP loss comes before damage
-        assert_eq!(effects[0], Effect::LoseHp(2));
-        assert_eq!(effects[1], Effect::AttackToTarget {
+        assert_eq!(effects[0], BattleEffect::LoseHp(2));
+        assert_eq!(effects[1], BattleEffect::AttackToTarget {
             amount: 15,
             num_attacks: 1,
             strength_multiplier: 1,

@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Finesse - Colorless Skill Card
 /// Cost: 0 (0 when upgraded)
@@ -9,8 +9,8 @@ pub fn finesse() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::GainDefense { amount: 2 },
-            Effect::DrawCard { count: 1 },
+            BattleEffect::GainDefense { amount: 2 },
+            BattleEffect::DrawCard { count: 1 },
         ]
     )
         .set_playable(true)
@@ -22,8 +22,8 @@ pub fn finesse_upgraded() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::GainDefense { amount: 4 },
-            Effect::DrawCard { count: 1 },
+            BattleEffect::GainDefense { amount: 4 },
+            BattleEffect::DrawCard { count: 1 },
         ]
     )
         .set_upgraded(true)
@@ -67,7 +67,7 @@ mod tests {
 
         // First effect should be GainDefense(2)
         match &effects[0] {
-            Effect::GainDefense { amount } => {
+            BattleEffect::GainDefense { amount } => {
                 assert_eq!(*amount, 2);
             }
             _ => panic!("Expected GainDefense effect as first effect"),
@@ -75,7 +75,7 @@ mod tests {
 
         // Second effect should be DrawCard(1)
         match &effects[1] {
-            Effect::DrawCard { count } => {
+            BattleEffect::DrawCard { count } => {
                 assert_eq!(*count, 1);
             }
             _ => panic!("Expected DrawCard effect as second effect"),
@@ -91,7 +91,7 @@ mod tests {
 
         // First effect should be GainDefense(4) - upgraded
         match &effects[0] {
-            Effect::GainDefense { amount } => {
+            BattleEffect::GainDefense { amount } => {
                 assert_eq!(*amount, 4);
             }
             _ => panic!("Expected GainDefense effect as first effect"),
@@ -99,7 +99,7 @@ mod tests {
 
         // Second effect should be DrawCard(1) - unchanged
         match &effects[1] {
-            Effect::DrawCard { count } => {
+            BattleEffect::DrawCard { count } => {
                 assert_eq!(*count, 1);
             }
             _ => panic!("Expected DrawCard effect as second effect"),

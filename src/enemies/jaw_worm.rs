@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 
 #[derive(Clone, Debug)]
 pub struct JawWorm {
@@ -46,10 +46,10 @@ impl JawWorm {
         if global_info.ascention >= 17 { 9 } else { 6 }
     }
 
-    fn get_move_effects(&self, move_type: JawWormMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    fn get_move_effects(&self, move_type: JawWormMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             JawWormMove::Chomp => {
-                vec![Effect::AttackToTarget {
+                vec![BattleEffect::AttackToTarget {
                     amount: Self::calculate_chomp_damage(global_info),
                     num_attacks: 1,
                     strength_multiplier: 1
@@ -57,18 +57,18 @@ impl JawWorm {
             }
             JawWormMove::Bellow => {
                 vec![
-                    Effect::GainStrength { amount: Self::calculate_bellow_strength(global_info) },
-                    Effect::GainDefense { amount: Self::calculate_bellow_block(global_info) }
+                    BattleEffect::GainStrength { amount: Self::calculate_bellow_strength(global_info) },
+                    BattleEffect::GainDefense { amount: Self::calculate_bellow_block(global_info) }
                 ]
             }
             JawWormMove::Thrash => {
                 vec![
-                    Effect::AttackToTarget {
+                    BattleEffect::AttackToTarget {
                         amount: 7,
                         num_attacks: 1,
                         strength_multiplier: 1
                     },
-                    Effect::GainDefense { amount: 5 }
+                    BattleEffect::GainDefense { amount: 5 }
                 ]
             }
         }
@@ -126,11 +126,11 @@ impl JawWorm {
 
 
     /// Apply initial Bellow effects for Act 3 (called during instantiation)
-    pub fn apply_initial_bellow_effects(&self, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn apply_initial_bellow_effects(&self, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         if self.is_act3 {
             vec![
-                Effect::GainStrength { amount: Self::calculate_bellow_strength(global_info) },
-                Effect::GainDefense { amount: Self::calculate_bellow_block(global_info) }
+                BattleEffect::GainStrength { amount: Self::calculate_bellow_strength(global_info) },
+                BattleEffect::GainDefense { amount: Self::calculate_bellow_block(global_info) }
             ]
         } else {
             Vec::new()
@@ -186,7 +186,7 @@ impl EnemyTrait for JawWorm {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (JawWormMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (JawWormMove, Vec<BattleEffect>) {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
         
@@ -317,7 +317,7 @@ mod tests {
         
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
                 assert_eq!(*amount, 11);
                 assert_eq!(*num_attacks, 1);
             }
@@ -338,11 +338,11 @@ mod tests {
         
         for effect in &effects {
             match effect {
-                Effect::GainStrength { amount } => {
+                BattleEffect::GainStrength { amount } => {
                     assert_eq!(*amount, 3);
                     found_strength = true;
                 }
-                Effect::GainDefense { amount } => {
+                BattleEffect::GainDefense { amount } => {
                     assert_eq!(*amount, 6);
                     found_defense = true;
                 }
@@ -366,12 +366,12 @@ mod tests {
         
         for effect in &effects {
             match effect {
-                Effect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
+                BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
                     assert_eq!(*amount, 7);
                     assert_eq!(*num_attacks, 1);
                     found_attack = true;
                 }
-                Effect::GainDefense { amount } => {
+                BattleEffect::GainDefense { amount } => {
                     assert_eq!(*amount, 5);
                     found_defense = true;
                 }
@@ -445,11 +445,11 @@ mod tests {
         
         for effect in &initial_effects {
             match effect {
-                Effect::GainStrength { amount } => {
+                BattleEffect::GainStrength { amount } => {
                     assert_eq!(*amount, 3);
                     found_strength = true;
                 }
-                Effect::GainDefense { amount } => {
+                BattleEffect::GainDefense { amount } => {
                     assert_eq!(*amount, 6);
                     found_defense = true;
                 }

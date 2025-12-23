@@ -1,5 +1,5 @@
 use crate::game::game_event::{GameEvent, GameEventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 
 /// Pear - Raise your Max HP by 10 (one-time effect on pickup)
 pub struct PearRelic {
@@ -13,12 +13,12 @@ impl PearRelic {
 }
 
 impl GameEventListener for PearRelic {
-    fn on_game_event(&mut self, event: &GameEvent) -> Vec<Effect> {
+    fn on_game_event(&mut self, event: &GameEvent) -> Vec<BattleEffect> {
         match event {
             GameEvent::RelicObtained if !self.applied => {
                 self.applied = true;
                 // Apply Max HP increase
-                vec![Effect::HealAndIncreaseMaxHp(10)]
+                vec![BattleEffect::HealAndIncreaseMaxHp(10)]
             }
             _ => vec![],
         }
@@ -48,7 +48,7 @@ mod tests {
         assert_eq!(effects.len(), 1);
         assert!(matches!(
             effects[0],
-            Effect::HealAndIncreaseMaxHp(10)
+            BattleEffect::HealAndIncreaseMaxHp(10)
         ));
         assert!(pear.applied);
     }

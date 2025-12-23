@@ -1,14 +1,14 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Armaments - Gain 5 Block. Upgrade a card in your hand for the rest of combat.
 pub fn armaments() -> Card {
-    Card::new(CardEnum::Armaments, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![Effect::GainDefense { amount: 5 }, Effect::EnterSelectCardInHand])
+    Card::new(CardEnum::Armaments, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![BattleEffect::GainDefense { amount: 5 }, BattleEffect::EnterSelectCardInHand])
         .set_play_condition(Condition::True)
 }
 
 /// Armaments+ (Upgraded version) - Gain 5 Block. Upgrade ALL cards in your hand for the rest of combat.
 pub fn armaments_upgraded() -> Card {
-    Card::new(CardEnum::Armaments, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![Effect::GainDefense { amount: 5 }, Effect::UpgradeAllCardsInHand])
+    Card::new(CardEnum::Armaments, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![BattleEffect::GainDefense { amount: 5 }, BattleEffect::UpgradeAllCardsInHand])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -26,8 +26,8 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 5 });
-        assert_eq!(card.get_effects()[1], Effect::EnterSelectCardInHand);
+        assert_eq!(card.get_effects()[0], BattleEffect::GainDefense { amount: 5 });
+        assert_eq!(card.get_effects()[1], BattleEffect::EnterSelectCardInHand);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -40,8 +40,8 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 5 });
-        assert_eq!(card.get_effects()[1], Effect::UpgradeAllCardsInHand);
+        assert_eq!(card.get_effects()[0], BattleEffect::GainDefense { amount: 5 });
+        assert_eq!(card.get_effects()[1], BattleEffect::UpgradeAllCardsInHand);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -59,12 +59,12 @@ mod tests {
         assert_eq!(upgraded_effects.len(), 2);
 
         // Both should gain 5 defense
-        assert_eq!(normal_effects[0], Effect::GainDefense { amount: 5 });
-        assert_eq!(upgraded_effects[0], Effect::GainDefense { amount: 5 });
+        assert_eq!(normal_effects[0], BattleEffect::GainDefense { amount: 5 });
+        assert_eq!(upgraded_effects[0], BattleEffect::GainDefense { amount: 5 });
 
         // Normal should enter select card state, upgraded should upgrade all cards
-        assert_eq!(normal_effects[1], Effect::EnterSelectCardInHand);
-        assert_eq!(upgraded_effects[1], Effect::UpgradeAllCardsInHand);
+        assert_eq!(normal_effects[1], BattleEffect::EnterSelectCardInHand);
+        assert_eq!(upgraded_effects[1], BattleEffect::UpgradeAllCardsInHand);
     }
 
     #[test]

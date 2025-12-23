@@ -1,16 +1,16 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 use crate::battle::{target::Entity, battle_events::BattleEvent, battle_events::EventListener};
 
 pub fn fire_breathing() -> Card {
     Card::new(CardEnum::FireBreathing, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
-            Effect::AddFireBreathing { damage_per_status: 6 },
+            BattleEffect::AddFireBreathing { damage_per_status: 6 },
         ])
         .set_playable(true)
 }
 
 pub fn fire_breathing_upgraded() -> Card {
     Card::new(CardEnum::FireBreathing, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
-            Effect::AddFireBreathing { damage_per_status: 10 },
+            BattleEffect::AddFireBreathing { damage_per_status: 10 },
         ])
         .set_upgraded(true)
         .set_playable(true)
@@ -49,7 +49,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AddFireBreathing { damage_per_status } => {
+            BattleEffect::AddFireBreathing { damage_per_status } => {
                 assert_eq!(*damage_per_status, 6);
             }
             _ => panic!("Expected AddFireBreathing effect"),
@@ -63,7 +63,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AddFireBreathing { damage_per_status } => {
+            BattleEffect::AddFireBreathing { damage_per_status } => {
                 assert_eq!(*damage_per_status, 10);
             }
             _ => panic!("Expected AddFireBreathing effect"),
@@ -83,12 +83,12 @@ impl FireBreathingListener {
 }
 
 impl EventListener for FireBreathingListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CardDrawn { card_type: _, is_status_or_curse }
                 if *is_status_or_curse => {
                 vec![
-                    Effect::AttackAllEnemies {
+                    BattleEffect::AttackAllEnemies {
                         amount: self.damage_per_status,
                         num_attacks: 1,
                     }
@@ -192,7 +192,7 @@ mod integration_tests {
         assert_eq!(effects.len(), 1);
 
         match &effects[0] {
-            Effect::AttackAllEnemies { amount, num_attacks } => {
+            BattleEffect::AttackAllEnemies { amount, num_attacks } => {
                 assert_eq!(*amount, 6);
                 assert_eq!(*num_attacks, 1);
             }
@@ -214,7 +214,7 @@ mod integration_tests {
         assert_eq!(effects.len(), 1);
 
         match &effects[0] {
-            Effect::AttackAllEnemies { amount, num_attacks } => {
+            BattleEffect::AttackAllEnemies { amount, num_attacks } => {
                 assert_eq!(*amount, 10);
                 assert_eq!(*num_attacks, 1);
             }

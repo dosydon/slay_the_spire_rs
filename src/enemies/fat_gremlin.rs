@@ -1,4 +1,4 @@
-use crate::game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo};
+use crate::game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo};
 
 #[derive(Clone, Debug)]
 pub struct FatGremlin {
@@ -38,15 +38,15 @@ impl FatGremlin {
         global_info.ascention >= 17
     }
 
-    pub fn get_move_effects(&self, _move_type: FatGremlinMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, _move_type: FatGremlinMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         let damage = Self::calculate_smash_damage(global_info);
         let mut effects = vec![
-            Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
-            Effect::ApplyWeak { duration: 1 },
+            BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::ApplyWeak { duration: 1 },
         ];
 
         if Self::should_apply_frail(global_info) {
-            effects.push(Effect::ApplyFrail { duration: 1 });
+            effects.push(BattleEffect::ApplyFrail { duration: 1 });
         }
 
         effects
@@ -71,7 +71,7 @@ impl EnemyTrait for FatGremlin {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (FatGremlinMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (FatGremlinMove, Vec<BattleEffect>) {
         // Fat Gremlin always uses Smash
         let move_type = FatGremlinMove::Smash;
         let effects = self.get_move_effects(move_type, global_info);
@@ -127,15 +127,15 @@ mod tests {
         // Base effects
         let effects_asc0 = gremlin.get_move_effects(FatGremlinMove::Smash, &global_info_asc0);
         assert_eq!(effects_asc0.len(), 2);
-        assert_eq!(effects_asc0[0], Effect::AttackToTarget { amount: 4, num_attacks: 1, strength_multiplier: 1 });
-        assert_eq!(effects_asc0[1], Effect::ApplyWeak { duration: 1 });
+        assert_eq!(effects_asc0[0], BattleEffect::AttackToTarget { amount: 4, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(effects_asc0[1], BattleEffect::ApplyWeak { duration: 1 });
 
         // With Frail at A17+
         let effects_asc17 = gremlin.get_move_effects(FatGremlinMove::Smash, &global_info_asc17);
         assert_eq!(effects_asc17.len(), 3);
-        assert_eq!(effects_asc17[0], Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 });
-        assert_eq!(effects_asc17[1], Effect::ApplyWeak { duration: 1 });
-        assert_eq!(effects_asc17[2], Effect::ApplyFrail { duration: 1 });
+        assert_eq!(effects_asc17[0], BattleEffect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(effects_asc17[1], BattleEffect::ApplyWeak { duration: 1 });
+        assert_eq!(effects_asc17[2], BattleEffect::ApplyFrail { duration: 1 });
     }
 
     #[test]

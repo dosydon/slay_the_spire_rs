@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Mercury Hourglass - At the start of your turn, deal 3 damage to ALL enemies
@@ -14,11 +14,11 @@ impl MercuryHourglassRelic {
 }
 
 impl EventListener for MercuryHourglassRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::StartOfPlayerTurn => {
                 // Deal 3 damage to ALL enemies
-                vec![Effect::AttackAllEnemies { amount: 3, num_attacks: 1 }]
+                vec![BattleEffect::AttackAllEnemies { amount: 3, num_attacks: 1 }]
             }
             _ => vec![]
         }
@@ -54,7 +54,7 @@ mod tests {
         let effects = hourglass.on_event(&BattleEvent::StartOfPlayerTurn);
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::AttackAllEnemies { amount: 3, num_attacks: 1 }));
+        assert!(matches!(effects[0], BattleEffect::AttackAllEnemies { amount: 3, num_attacks: 1 }));
     }
 
     #[test]

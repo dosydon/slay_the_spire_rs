@@ -1,15 +1,15 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 pub fn reaper() -> Card {
     Card::new(CardEnum::Reaper, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackAllEnemiesAndHeal { amount: 4, num_attacks: 1 },
+            BattleEffect::AttackAllEnemiesAndHeal { amount: 4, num_attacks: 1 },
         ])
         .set_playable(true)
 }
 
 pub fn reaper_upgraded() -> Card {
     Card::new(CardEnum::Reaper, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackAllEnemiesAndHeal { amount: 5, num_attacks: 1 },
+            BattleEffect::AttackAllEnemiesAndHeal { amount: 5, num_attacks: 1 },
         ])
         .set_upgraded(true)
         .set_playable(true)
@@ -48,7 +48,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackAllEnemiesAndHeal { amount, num_attacks } => {
+            BattleEffect::AttackAllEnemiesAndHeal { amount, num_attacks } => {
                 assert_eq!(*amount, 4);
                 assert_eq!(*num_attacks, 1);
             }
@@ -63,7 +63,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackAllEnemiesAndHeal { amount, num_attacks } => {
+            BattleEffect::AttackAllEnemiesAndHeal { amount, num_attacks } => {
                 assert_eq!(*amount, 5);
                 assert_eq!(*num_attacks, 1);
             }

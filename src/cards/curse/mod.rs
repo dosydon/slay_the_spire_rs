@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_enum::CardEnum, card::CardClass, effect::Effect};
+use crate::game::{card::Card, card_enum::CardEnum, card::CardClass, effect::BattleEffect};
 
 #[cfg(test)]
 use crate::game::card_type::CardType;
@@ -34,7 +34,7 @@ pub fn regret() -> Card {
     Card::new(CardEnum::Regret, 0, CardClass::Curse, vec![])
         .set_playable(false)
         .set_ethereal(true)
-        .set_end_of_turn(vec![Effect::LoseHpPerCardInHand { damage_per_card: 1 }])
+        .set_end_of_turn(vec![BattleEffect::LoseHpPerCardInHand { damage_per_card: 1 }])
 }
 
 /// Writhe - A curse card that is innate (starts in every hand)
@@ -114,7 +114,7 @@ mod tests {
         // Check end of turn effects
         let end_of_turn_effects = card.get_end_of_turn().unwrap();
         assert_eq!(end_of_turn_effects.len(), 1);
-        assert!(matches!(end_of_turn_effects[0], Effect::LoseHpPerCardInHand { damage_per_card: 1 }));
+        assert!(matches!(end_of_turn_effects[0], BattleEffect::LoseHpPerCardInHand { damage_per_card: 1 }));
     }
 
     #[test]

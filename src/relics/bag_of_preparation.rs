@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Bag of Preparation - At the start of each combat, draw 2 additional cards
@@ -14,10 +14,10 @@ impl BagOfPreparationRelic {
 }
 
 impl EventListener for BagOfPreparationRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if *player == self.owner => {
-                vec![Effect::DrawCard { count: 2 }]
+                vec![BattleEffect::DrawCard { count: 2 }]
             }
             _ => vec![]
         }
@@ -55,7 +55,7 @@ mod tests {
         });
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::DrawCard { count: 2 }));
+        assert!(matches!(effects[0], BattleEffect::DrawCard { count: 2 }));
     }
 
     #[test]

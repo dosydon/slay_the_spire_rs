@@ -1,4 +1,4 @@
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Represents different types of potions available in the game
@@ -18,6 +18,18 @@ pub enum Potion {
     SwiftPotion,
     /// Blood Potion: Heal 25% of max HP
     BloodPotion,
+    /// Explosive Potion: Deals 10 damage to ALL enemies
+    ExplosivePotion,
+    /// Fear Potion: Apply 3 Vulnerable to target enemy
+    FearPotion,
+    /// Weak Potion: Apply 3 Weak to target enemy
+    WeakPotion,
+    /// Ancient Potion: Gain 1 Artifact
+    AncientPotion,
+    /// Regen Potion: Gain 5 Regeneration (heals 5 HP at end of turn, decreases by 1)
+    RegenPotion,
+    /// Essence of Steel: Gain 4 Plated Armor
+    EssenceOfSteelPotion,
 }
 
 impl Potion {
@@ -31,6 +43,12 @@ impl Potion {
             Potion::FirePotion => "Fire Potion",
             Potion::SwiftPotion => "Swift Potion",
             Potion::BloodPotion => "Blood Potion",
+            Potion::ExplosivePotion => "Explosive Potion",
+            Potion::FearPotion => "Fear Potion",
+            Potion::WeakPotion => "Weak Potion",
+            Potion::AncientPotion => "Ancient Potion",
+            Potion::RegenPotion => "Regen Potion",
+            Potion::EssenceOfSteelPotion => "Essence of Steel",
         }
     }
 
@@ -44,33 +62,39 @@ impl Potion {
             Potion::FirePotion => "Deal 20 damage to ALL enemies",
             Potion::SwiftPotion => "Gain 2 Artifact and 2 Dexterity",
             Potion::BloodPotion => "Heal 25% of your missing HP",
+            Potion::ExplosivePotion => "Deal 10 damage to ALL enemies",
+            Potion::FearPotion => "Apply 3 Vulnerable",
+            Potion::WeakPotion => "Apply 3 Weak",
+            Potion::AncientPotion => "Gain 1 Artifact",
+            Potion::RegenPotion => "Gain 5 Regeneration",
+            Potion::EssenceOfSteelPotion => "Gain 4 Plated Armor",
         }
     }
 
     /// Get the effects that this potion produces when used
     /// Returns a tuple of (target, effects)
     /// target: None means the potion requires target selection, Some(Entity) means fixed target
-    pub fn get_effects(&self) -> (Option<Entity>, Vec<Effect>) {
+    pub fn get_effects(&self) -> (Option<Entity>, Vec<BattleEffect>) {
         match self {
             Potion::StrengthPotion => {
                 // Strength potion always targets the player
                 (Some(Entity::Player), vec![
-                    Effect::GainStrength { amount: 2 }
+                    BattleEffect::GainStrength { amount: 2 }
                 ])
             }
             Potion::BlockPotion => {
                 (Some(Entity::Player), vec![
-                    Effect::GainDefense { amount: 12 }
+                    BattleEffect::GainDefense { amount: 12 }
                 ])
             }
             Potion::EnergyPotion => {
                 (Some(Entity::Player), vec![
-                    Effect::GainEnergy { amount: 2 }
+                    BattleEffect::GainEnergy { amount: 2 }
                 ])
             }
             Potion::DexterityPotion => {
                 (Some(Entity::Player), vec![
-                    Effect::GainDexterity { amount: 2 }
+                    BattleEffect::GainDexterity { amount: 2 }
                 ])
             }
             Potion::FirePotion => {
@@ -78,19 +102,57 @@ impl Potion {
                 // For now, we'll use AttackToTarget since Fire potion should hit all enemies
                 // This would need special handling in the battle system
                 (None, vec![
-                    Effect::AttackAllEnemies { amount: 20, num_attacks: 1 }
+                    BattleEffect::AttackAllEnemies { amount: 20, num_attacks: 1 }
                 ])
             }
             Potion::SwiftPotion => {
                 (Some(Entity::Player), vec![
-                    Effect::GainArtifact { amount: 2 },
-                    Effect::GainDexterity { amount: 2 }
+                    BattleEffect::GainArtifact { amount: 2 },
+                    BattleEffect::GainDexterity { amount: 2 }
                 ])
             }
             Potion::BloodPotion => {
                 // Blood potion heals based on max HP - this is simplified
                 (Some(Entity::Player), vec![
-                    Effect::Heal(15) // Simplified - should be 25% of max HP
+                    BattleEffect::Heal(15) // Simplified - should be 25% of max HP
+                ])
+            }
+            Potion::ExplosivePotion => {
+                // Explosive potion hits all enemies
+                (None, vec![
+                    BattleEffect::AttackAllEnemies { amount: 10, num_attacks: 1 }
+                ])
+            }
+            Potion::FearPotion => {
+                // Fear potion applies Vulnerable to target enemy
+                (None, vec![
+                    BattleEffect::ApplyVulnerable { duration: 3 }
+                ])
+            }
+            Potion::WeakPotion => {
+                // Weak potion applies Weak to target enemy
+                (None, vec![
+                    BattleEffect::ApplyWeak { duration: 3 }
+                ])
+            }
+            Potion::AncientPotion => {
+                // Ancient potion grants Artifact (prevents debuffs)
+                (Some(Entity::Player), vec![
+                    BattleEffect::GainArtifact { amount: 1 }
+                ])
+            }
+            Potion::RegenPotion => {
+                // Regen potion - note: Regen is not yet implemented as a BattleEffect
+                // For now, we'll use Heal as a substitute
+                // TODO: Add proper Regen support
+                (Some(Entity::Player), vec![
+                    BattleEffect::Heal(10) // Simplified - should be 5 Regen
+                ])
+            }
+            Potion::EssenceOfSteelPotion => {
+                // Essence of Steel grants Plated Armor (permanent armor)
+                (Some(Entity::Player), vec![
+                    BattleEffect::GainPlatedArmor(4)
                 ])
             }
         }
@@ -267,16 +329,43 @@ impl PotionPool {
         // Common: 75%, Uncommon: 20%, Rare: 5%
         let roll = rng.random::<f64>();
 
-        // For now, we only have StrengthPotion implemented (Common)
-        // TODO: Add more potions and implement proper rarity distribution
-        if roll < 0.75 {
-            // Common potion
-            Some(Potion::StrengthPotion)
+        // Define available potions by rarity
+        let common_potions = vec![
+            Potion::StrengthPotion,
+            Potion::BlockPotion,
+            Potion::EnergyPotion,
+            Potion::DexterityPotion,
+            Potion::FirePotion,
+            Potion::ExplosivePotion,
+            Potion::FearPotion,
+            Potion::WeakPotion,
+        ];
+
+        let uncommon_potions = vec![
+            Potion::SwiftPotion,
+            Potion::BloodPotion,
+            Potion::AncientPotion,
+            Potion::RegenPotion,
+            Potion::EssenceOfSteelPotion,
+        ];
+
+        // TODO: Add rare potions
+        let rare_potions = vec![
+            Potion::SwiftPotion, // Placeholder - use uncommon for now
+        ];
+
+        let potion = if roll < 0.75 {
+            // Common potion (75%)
+            common_potions[rng.random_range(0..common_potions.len())]
+        } else if roll < 0.95 {
+            // Uncommon potion (20%)
+            uncommon_potions[rng.random_range(0..uncommon_potions.len())]
         } else {
-            // Uncommon/Rare - for now also return StrengthPotion
-            // Will be replaced when more potions are implemented
-            Some(Potion::StrengthPotion)
-        }
+            // Rare potion (5%)
+            rare_potions[rng.random_range(0..rare_potions.len())]
+        };
+
+        Some(potion)
     }
 
     /// Get the number of combats since last potion drop
@@ -322,7 +411,7 @@ mod tests {
 
         assert_eq!(target, Some(Entity::Player));
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::GainStrength { amount: 2 }));
+        assert!(matches!(effects[0], BattleEffect::GainStrength { amount: 2 }));
     }
 
     #[test]

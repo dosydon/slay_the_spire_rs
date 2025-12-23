@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Swift Strike - Colorless Attack Card
 /// Cost: 0 (0 when upgraded)
@@ -8,7 +8,7 @@ pub fn swift_strike() -> Card {
         CardEnum::SwiftStrike,
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Attack),
-        vec![Effect::AttackToTarget { amount: 7, num_attacks: 1, strength_multiplier: 0 }]
+        vec![BattleEffect::AttackToTarget { amount: 7, num_attacks: 1, strength_multiplier: 0 }]
     )
         .set_playable(true)
 }
@@ -18,7 +18,7 @@ pub fn swift_strike_upgraded() -> Card {
         CardEnum::SwiftStrike,
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Attack),
-        vec![Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 0 }]
+        vec![BattleEffect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 0 }]
     )
         .set_upgraded(true)
         .set_playable(true)
@@ -59,7 +59,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 7);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 0);
@@ -75,7 +75,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 10);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 0);

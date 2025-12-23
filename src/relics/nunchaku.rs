@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Nunchaku - Every time you play 10 Attacks, gain 1 Energy
@@ -18,7 +18,7 @@ impl NunchakuRelic {
 }
 
 impl EventListener for NunchakuRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if *player == self.owner => {
                 self.attack_count = 0;
@@ -30,7 +30,7 @@ impl EventListener for NunchakuRelic {
                     self.attack_count += 1;
                     if self.attack_count >= 10 {
                         self.attack_count = 0;
-                        vec![Effect::GainEnergy { amount: 1 }]
+                        vec![BattleEffect::GainEnergy { amount: 1 }]
                     } else {
                         vec![]
                     }
@@ -112,7 +112,7 @@ mod tests {
         });
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::GainEnergy { amount: 1 }));
+        assert!(matches!(effects[0], BattleEffect::GainEnergy { amount: 1 }));
         assert_eq!(nunchaku.attack_count, 0); // Reset after triggering
     }
 

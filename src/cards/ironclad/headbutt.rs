@@ -1,14 +1,14 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::BattleEffect, card_type::CardType, card_enum::CardEnum};
 
 /// Headbutt - Deal 9 damage. Put a card from discard pile on top of draw pile
 pub fn headbutt() -> Card {
-    Card::new(CardEnum::Headbutt, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 0 }, Effect::EnterSelectCardInDiscard])
+    Card::new(CardEnum::Headbutt, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![BattleEffect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 0 }, BattleEffect::EnterSelectCardInDiscard])
         .set_playable(true)
 }
 
 /// Headbutt+ (upgraded version)
 pub fn headbutt_upgraded() -> Card {
-    Card::new(CardEnum::Headbutt, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![Effect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 0 }, Effect::EnterSelectCardInDiscard])
+    Card::new(CardEnum::Headbutt, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![BattleEffect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 0 }, BattleEffect::EnterSelectCardInDiscard])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -29,8 +29,8 @@ mod tests {
         assert_eq!(headbutt_card.get_card_type(), CardType::Attack);
 
         let effects = headbutt_card.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 9, .. })));
-        assert!(effects.contains(&Effect::EnterSelectCardInDiscard));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::AttackToTarget { amount: 9, .. })));
+        assert!(effects.contains(&BattleEffect::EnterSelectCardInDiscard));
     }
 
     #[test]
@@ -41,8 +41,8 @@ mod tests {
         assert_eq!(headbutt_plus.get_card_type(), CardType::Attack);
 
         let effects = headbutt_plus.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 12, .. })));
-        assert!(effects.contains(&Effect::EnterSelectCardInDiscard));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::AttackToTarget { amount: 12, .. })));
+        assert!(effects.contains(&BattleEffect::EnterSelectCardInDiscard));
         assert!(headbutt_plus.is_upgraded());
     }
 

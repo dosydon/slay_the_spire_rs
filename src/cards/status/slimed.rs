@@ -1,10 +1,10 @@
-use crate::game::{card::{Card, CardClass}, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::{Card, CardClass}, card_enum::CardEnum, effect::BattleEffect};
 #[cfg(test)]
 use crate::game::card_type::CardType;
 
 pub fn slimed() -> Card {
     Card::new(CardEnum::Slimed, 1, CardClass::Status, vec![
-        Effect::Exhaust
+        BattleEffect::Exhaust
     ])
         .set_playable(true)
 }
@@ -24,7 +24,7 @@ mod tests {
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::Exhaust => {
+            BattleEffect::Exhaust => {
                 // Test passes
             }
             _ => panic!("Expected Exhaust effect"),
@@ -39,7 +39,7 @@ mod tests {
         assert_eq!(card.get_name(), "Slimed");
         assert_eq!(card.cost(), 1);
         assert_eq!(card.get_card_type(), CardType::Status);
-        assert_eq!(card.get_effects(), &vec![Effect::Exhaust]);
+        assert_eq!(card.get_effects(), &vec![BattleEffect::Exhaust]);
     }
 
     #[test]

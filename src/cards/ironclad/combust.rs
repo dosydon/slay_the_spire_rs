@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Combust Power Listener
@@ -19,16 +19,16 @@ impl CombustListener {
 }
 
 impl EventListener for CombustListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::EndOfTurn { entity } if *entity == self.owner => {
                 // Lose 1 HP and deal damage to all enemies at end of player's turn
                 vec![
-                    Effect::AttackAllEnemies {
+                    BattleEffect::AttackAllEnemies {
                         amount: self.damage,
                         num_attacks: 1,
                     },
-                    Effect::LoseHp(1),
+                    BattleEffect::LoseHp(1),
                 ]
             }
             _ => vec![]
@@ -53,7 +53,7 @@ impl EventListener for CombustListener {
 /// Effect: At the end of your turn, lose 1 HP and deal 5 damage to ALL enemies.
 pub fn combust() -> Card {
     Card::new(CardEnum::Combust, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
-        Effect::ActivateCombust(5),
+        BattleEffect::ActivateCombust(5),
     ])
 }
 
@@ -62,7 +62,7 @@ pub fn combust() -> Card {
 /// Effect: At the end of your turn, lose 1 HP and deal 7 damage to ALL enemies.
 pub fn combust_upgraded() -> Card {
     Card::new(CardEnum::Combust, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
-        Effect::ActivateCombust(7),
+        BattleEffect::ActivateCombust(7),
     ])
         .set_upgraded(true)
 }
@@ -81,7 +81,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::ActivateCombust(5));
+        assert_eq!(card.get_effects()[0], BattleEffect::ActivateCombust(5));
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -94,7 +94,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::ActivateCombust(7));
+        assert_eq!(card.get_effects()[0], BattleEffect::ActivateCombust(7));
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -116,11 +116,11 @@ mod tests {
 
         let effects = listener.on_event(&end_turn_event);
         assert_eq!(effects.len(), 2);
-        assert_eq!(effects[0], Effect::AttackAllEnemies {
+        assert_eq!(effects[0], BattleEffect::AttackAllEnemies {
             amount: 5,
             num_attacks: 1,
         });
-        assert_eq!(effects[1], Effect::LoseHp(1));
+        assert_eq!(effects[1], BattleEffect::LoseHp(1));
         assert!(listener.is_active()); // Still active after triggering
     }
 
@@ -150,20 +150,20 @@ mod tests {
         // First end of turn
         let effects1 = listener.on_event(&end_turn_event);
         assert_eq!(effects1.len(), 2);
-        assert_eq!(effects1[0], Effect::AttackAllEnemies {
+        assert_eq!(effects1[0], BattleEffect::AttackAllEnemies {
             amount: 5,
             num_attacks: 1,
         });
-        assert_eq!(effects1[1], Effect::LoseHp(1));
+        assert_eq!(effects1[1], BattleEffect::LoseHp(1));
 
         // Second end of turn should also trigger
         let effects2 = listener.on_event(&end_turn_event);
         assert_eq!(effects2.len(), 2);
-        assert_eq!(effects2[0], Effect::AttackAllEnemies {
+        assert_eq!(effects2[0], BattleEffect::AttackAllEnemies {
             amount: 5,
             num_attacks: 1,
         });
-        assert_eq!(effects2[1], Effect::LoseHp(1));
+        assert_eq!(effects2[1], BattleEffect::LoseHp(1));
 
         assert!(listener.is_active()); // Always active
     }
@@ -187,11 +187,11 @@ mod tests {
 
         let effects = listener.on_event(&player_end_turn_event);
         assert_eq!(effects.len(), 2);
-        assert_eq!(effects[0], Effect::AttackAllEnemies {
+        assert_eq!(effects[0], BattleEffect::AttackAllEnemies {
             amount: 5,
             num_attacks: 1,
         });
-        assert_eq!(effects[1], Effect::LoseHp(1));
+        assert_eq!(effects[1], BattleEffect::LoseHp(1));
     }
 
     #[test]
@@ -207,18 +207,18 @@ mod tests {
         let upgraded_effects = upgraded_listener.on_event(&end_turn_event);
 
         assert_eq!(normal_effects.len(), 2);
-        assert_eq!(normal_effects[0], Effect::AttackAllEnemies {
+        assert_eq!(normal_effects[0], BattleEffect::AttackAllEnemies {
             amount: 5,
             num_attacks: 1,
         });
-        assert_eq!(normal_effects[1], Effect::LoseHp(1));
+        assert_eq!(normal_effects[1], BattleEffect::LoseHp(1));
 
         assert_eq!(upgraded_effects.len(), 2);
-        assert_eq!(upgraded_effects[0], Effect::AttackAllEnemies {
+        assert_eq!(upgraded_effects[0], BattleEffect::AttackAllEnemies {
             amount: 7,
             num_attacks: 1,
         });
-        assert_eq!(upgraded_effects[1], Effect::LoseHp(1));
+        assert_eq!(upgraded_effects[1], BattleEffect::LoseHp(1));
     }
 
     #[test]

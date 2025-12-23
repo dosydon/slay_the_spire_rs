@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 
 #[derive(Clone, Debug)]
 pub struct GreenLouse {
@@ -67,17 +67,17 @@ impl GreenLouse {
         self.last_moves.push(selected_move);
     }
 
-    fn get_move_effects(&self, move_type: GreenLouseMove) -> Vec<Effect> {
+    fn get_move_effects(&self, move_type: GreenLouseMove) -> Vec<BattleEffect> {
         match move_type {
             GreenLouseMove::Attack => {
-                vec![Effect::AttackToTarget {
+                vec![BattleEffect::AttackToTarget {
                     amount: self.base_damage,
                     num_attacks: 1,
                     strength_multiplier: 1
                 }]
             }
             GreenLouseMove::Weaken => {
-                vec![Effect::ApplyWeak { duration: 2 }] // Apply 2 turns of weak
+                vec![BattleEffect::ApplyWeak { duration: 2 }] // Apply 2 turns of weak
             }
         }
     }
@@ -118,7 +118,7 @@ impl EnemyTrait for GreenLouse {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (GreenLouseMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (GreenLouseMove, Vec<BattleEffect>) {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
         
@@ -188,7 +188,7 @@ mod tests {
         
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
                 assert_eq!(*amount, 4);
                 assert_eq!(*num_attacks, 1);
             }
@@ -203,7 +203,7 @@ mod tests {
         
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::ApplyWeak { duration: turns } => {
+            BattleEffect::ApplyWeak { duration: turns } => {
                 assert_eq!(*turns, 2);
             }
             _ => panic!("Expected ApplyWeak effect"),
@@ -244,7 +244,7 @@ mod tests {
         // Should be forced to attack
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier: 1 } => {
                 assert_eq!(*amount, 4);
                 assert_eq!(*num_attacks, 1);
             }
@@ -291,7 +291,7 @@ mod tests {
         assert!(!character.is_weak());
         
         // Apply the weak effect
-        if let Effect::ApplyWeak { duration: turns } = effects[0] {
+        if let BattleEffect::ApplyWeak { duration: turns } = effects[0] {
             character.apply_weak(turns);
             assert!(character.is_weak());
             assert_eq!(character.get_weak_turns(), 2);

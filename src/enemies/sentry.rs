@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, battle::{battle_events::{BattleEvent, EventListener}, target::Entity}};
+use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, battle::{battle_events::{BattleEvent, EventListener}, target::Entity}};
 use std::any::Any;
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -73,19 +73,19 @@ impl Sentry {
     }
 
     /// Get the effects for a specific move
-    pub fn get_move_effects(&self, move_type: SentryMove) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: SentryMove) -> Vec<BattleEffect> {
         match move_type {
             SentryMove::Bolt => {
                 // Add Dazed cards to discard pile
                 let dazed_count = Self::calculate_bolt_dazed_count(self.ascension);
-                vec![Effect::AddStatusToDiscard {
+                vec![BattleEffect::AddStatusToDiscard {
                     status_card: crate::game::card_enum::CardEnum::Dazed
                 }; dazed_count as usize]
             }
             SentryMove::Beam => {
                 // Deal damage to player
                 let damage = Self::calculate_beam_damage(self.ascension);
-                vec![Effect::AttackToTarget {
+                vec![BattleEffect::AttackToTarget {
                     amount: damage,
                     num_attacks: 1,
                     strength_multiplier: 0,
@@ -149,7 +149,7 @@ impl EnemyTrait for Sentry {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, _global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (Self::MoveType, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, _global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (Self::MoveType, Vec<BattleEffect>) {
         let move_type = self.next_turn();
         let effects = self.get_move_effects(move_type);
         (move_type, effects)
@@ -173,11 +173,11 @@ impl SentryListener {
 }
 
 impl EventListener for SentryListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { .. } if !self.has_given_artifact => {
                 self.has_given_artifact = true;
-                vec![Effect::GainArtifact { amount: 1 }]
+                vec![BattleEffect::GainArtifact { amount: 1 }]
             }
             _ => vec![],
         }
@@ -315,7 +315,7 @@ mod tests {
 
         // Should return exactly one GainArtifact effect
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainArtifact { amount: 1 });
+        assert_eq!(effects[0], BattleEffect::GainArtifact { amount: 1 });
 
         // Should mark as having given artifact
         assert!(listener.has_given_artifact);

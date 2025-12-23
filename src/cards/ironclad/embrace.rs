@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Embrace Power Listener
@@ -17,11 +17,11 @@ impl EmbraceListener {
 }
 
 impl EventListener for EmbraceListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CardExhausted { source } if *source == self.owner => {
                 // When the owner exhausts a card, draw 1 card
-                vec![Effect::DrawCard { count: 1 }]
+                vec![BattleEffect::DrawCard { count: 1 }]
             }
             _ => vec![]
         }
@@ -45,14 +45,14 @@ impl EventListener for EmbraceListener {
 /// Effect: Whenever you Exhaust a card, draw 1 card.
 pub fn embrace() -> Card {
     Card::new(CardEnum::Embrace, 2, CardClass::IronClad(Rarity::Rare, CardType::Power), vec![
-        Effect::ActivateEmbrace,
+        BattleEffect::ActivateEmbrace,
     ])
         .set_play_condition(Condition::True)
 }
 
 pub fn embrace_upgraded() -> Card {
     Card::new(CardEnum::Embrace, 1, CardClass::IronClad(Rarity::Rare, CardType::Power), vec![
-        Effect::ActivateEmbrace,
+        BattleEffect::ActivateEmbrace,
     ])
         .set_play_condition(Condition::True)
         .set_upgraded(true)
@@ -70,7 +70,7 @@ mod tests {
         assert_eq!(card.get_cost(), 2);
         assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::ActivateEmbrace);
+        assert_eq!(card.get_effects()[0], BattleEffect::ActivateEmbrace);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -83,7 +83,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1);  // Upgraded cost is 1
         assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::ActivateEmbrace);
+        assert_eq!(card.get_effects()[0], BattleEffect::ActivateEmbrace);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -142,7 +142,7 @@ let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng)
 
         let effects = listener.on_event(&exhaust_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::DrawCard { count: 1 });
+        assert_eq!(effects[0], BattleEffect::DrawCard { count: 1 });
         assert!(listener.is_active()); // Still active after triggering
     }
 
@@ -172,12 +172,12 @@ let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng)
         // First exhaust
         let effects1 = listener.on_event(&exhaust_event);
         assert_eq!(effects1.len(), 1);
-        assert_eq!(effects1[0], Effect::DrawCard { count: 1 });
+        assert_eq!(effects1[0], BattleEffect::DrawCard { count: 1 });
 
         // Second exhaust should also trigger
         let effects2 = listener.on_event(&exhaust_event);
         assert_eq!(effects2.len(), 1);
-        assert_eq!(effects2[0], Effect::DrawCard { count: 1 });
+        assert_eq!(effects2[0], BattleEffect::DrawCard { count: 1 });
 
         assert!(listener.is_active()); // Always active
     }
@@ -201,7 +201,7 @@ let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng)
 
         let effects = listener.on_event(&player_exhaust_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::DrawCard { count: 1 });
+        assert_eq!(effects[0], BattleEffect::DrawCard { count: 1 });
     }
 
     #[test]

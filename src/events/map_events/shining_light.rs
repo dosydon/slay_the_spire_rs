@@ -1,4 +1,4 @@
-use crate::game::effect::Effect;
+use crate::game::effect::{Effect, BattleEffect, GameEffect};
 use crate::events::map_events::{EventChoice, EventOutcome};
 
 /// Shining Light event choices
@@ -15,8 +15,8 @@ pub fn shining_light_choices(player_max_hp: u32, ascension: u32) -> Vec<EventCho
         EventChoice {
             text: format!("Pray (Upgrade 2 random cards, take {} damage)", damage),
             outcome: EventOutcome::Effects(vec![
-                Effect::UpgradeRandomCards { count: 2 },
-                Effect::LoseHp(damage),
+                Effect::Game(GameEffect::UpgradeRandomCards { count: 2 }),
+                Effect::Battle(BattleEffect::LoseHp(damage)),
             ]),
         },
         EventChoice {
@@ -55,8 +55,8 @@ mod tests {
         match &pray.outcome {
             EventOutcome::Effects(effects) => {
                 assert_eq!(effects.len(), 2);
-                assert_eq!(effects[0], Effect::UpgradeRandomCards { count: 2 });
-                assert_eq!(effects[1], Effect::LoseHp(16));
+                assert_eq!(effects[0], Effect::Game(GameEffect::UpgradeRandomCards { count: 2 }));
+                assert_eq!(effects[1], Effect::Battle(BattleEffect::LoseHp(16)));
             }
             _ => panic!("Expected Effects outcome"),
         }
@@ -73,8 +73,8 @@ mod tests {
         match &pray.outcome {
             EventOutcome::Effects(effects) => {
                 assert_eq!(effects.len(), 2);
-                assert_eq!(effects[0], Effect::UpgradeRandomCards { count: 2 });
-                assert_eq!(effects[1], Effect::LoseHp(24));
+                assert_eq!(effects[0], Effect::Game(GameEffect::UpgradeRandomCards { count: 2 }));
+                assert_eq!(effects[1], Effect::Battle(BattleEffect::LoseHp(24)));
             }
             _ => panic!("Expected Effects outcome"),
         }

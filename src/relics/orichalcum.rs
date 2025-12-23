@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Orichalcum - If you end your turn without Block, gain 6 Block
@@ -14,12 +14,12 @@ impl OrichalcumRelic {
 }
 
 impl EventListener for OrichalcumRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::EndOfTurn { entity } if *entity == self.owner => {
                 // The relic itself doesn't know current block, so it always tries to gain block
                 // The battle system should check if player has block and prevent this if they do
-                vec![Effect::GainDefense { amount: 6 }]
+                vec![BattleEffect::GainDefense { amount: 6 }]
             }
             _ => vec![]
         }
@@ -57,7 +57,7 @@ mod tests {
         });
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::GainDefense { amount: 6 }));
+        assert!(matches!(effects[0], BattleEffect::GainDefense { amount: 6 }));
     }
 
     #[test]

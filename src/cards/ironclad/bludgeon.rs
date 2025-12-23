@@ -1,11 +1,11 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Bludgeon - Rare Attack Card
 /// Cost: 3
 /// Effect: Deal 32 damage
 pub fn bludgeon() -> Card {
     Card::new(CardEnum::Bludgeon, 3, CardClass::IronClad(Rarity::Rare, CardType::Attack), vec![
-        Effect::AttackToTarget {
+        BattleEffect::AttackToTarget {
             amount: 32,
             num_attacks: 1,
             strength_multiplier: 1,
@@ -19,7 +19,7 @@ pub fn bludgeon() -> Card {
 /// Effect: Deal 42 damage
 pub fn bludgeon_upgraded() -> Card {
     Card::new(CardEnum::Bludgeon, 2, CardClass::IronClad(Rarity::Rare, CardType::Attack), vec![
-        Effect::AttackToTarget {
+        BattleEffect::AttackToTarget {
             amount: 42,
             num_attacks: 1,
             strength_multiplier: 1,
@@ -43,7 +43,7 @@ mod tests {
         assert_eq!(card.get_cost(), 3);
         assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::AttackToTarget {
+        assert_eq!(card.get_effects()[0], BattleEffect::AttackToTarget {
             amount: 32,
             num_attacks: 1,
             strength_multiplier: 1,
@@ -60,7 +60,7 @@ mod tests {
         assert_eq!(card.get_cost(), 3);
         assert_eq!(card.get_card_type(), CardType::Attack);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::AttackToTarget {
+        assert_eq!(card.get_effects()[0], BattleEffect::AttackToTarget {
             amount: 42,
             num_attacks: 1,
             strength_multiplier: 1,

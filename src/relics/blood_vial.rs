@@ -1,6 +1,6 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 
 #[derive(Debug)]
 pub struct BloodVialRelic {
@@ -18,11 +18,11 @@ impl BloodVialRelic {
 }
 
 impl EventListener for BloodVialRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if !self.used && *player == self.owner => {
                 self.used = true;
-                vec![Effect::Heal(2)]
+                vec![BattleEffect::Heal(2)]
             }
             _ => vec![]
         }
@@ -64,7 +64,7 @@ mod tests {
         let effects = blood_vial.on_event(&combat_start_event);
 
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::Heal(2));
+        assert_eq!(effects[0], BattleEffect::Heal(2));
         assert!(!blood_vial.is_active()); // Used up
     }
 
@@ -99,7 +99,7 @@ mod tests {
         let player_combat_start = BattleEvent::CombatStart { player };
         let effects = blood_vial.on_event(&player_combat_start);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::Heal(2));
+        assert_eq!(effects[0], BattleEffect::Heal(2));
         assert!(!blood_vial.is_active());
     }
 

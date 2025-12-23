@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Whirlwind - Uncommon Attack Card
 /// Cost: 0 (X-cost - spends all available energy)
@@ -9,7 +9,7 @@ pub fn whirlwind() -> Card {
         0, // X-cost - actual cost determined by available energy
         CardClass::IronClad(Rarity::Uncommon, CardType::Attack),
         vec![
-            Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit: 5 },
+            BattleEffect::AttackAllEnemiesForCurrentEnergy { amount_per_hit: 5 },
         ]
     )
         .set_play_condition(Condition::True)
@@ -24,7 +24,7 @@ pub fn whirlwind_upgraded() -> Card {
         0, // X-cost - actual cost determined by available energy
         CardClass::IronClad(Rarity::Uncommon, CardType::Attack),
         vec![
-            Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit: 8 },
+            BattleEffect::AttackAllEnemiesForCurrentEnergy { amount_per_hit: 8 },
         ]
     )
         .set_upgraded(true)
@@ -68,7 +68,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit } => {
+            BattleEffect::AttackAllEnemiesForCurrentEnergy { amount_per_hit } => {
                 assert_eq!(*amount_per_hit, 5);
             }
             _ => panic!("Expected AttackAllEnemiesForCurrentEnergy effect"),
@@ -82,7 +82,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackAllEnemiesForCurrentEnergy { amount_per_hit } => {
+            BattleEffect::AttackAllEnemiesForCurrentEnergy { amount_per_hit } => {
                 assert_eq!(*amount_per_hit, 8);
             }
             _ => panic!("Expected AttackAllEnemiesForCurrentEnergy effect"),

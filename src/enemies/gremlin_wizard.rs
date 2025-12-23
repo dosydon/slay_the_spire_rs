@@ -1,4 +1,4 @@
-use crate::game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo};
+use crate::game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo};
 
 #[derive(Clone, Debug)]
 pub struct GremlinWizard {
@@ -45,7 +45,7 @@ impl GremlinWizard {
         global_info.ascention >= 17
     }
 
-    pub fn get_move_effects(&self, move_type: GremlinWizardMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: GremlinWizardMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             GremlinWizardMove::Charging => {
                 // Charging does nothing
@@ -53,7 +53,7 @@ impl GremlinWizard {
             }
             GremlinWizardMove::UltimateBlast => {
                 let damage = Self::calculate_blast_damage(global_info);
-                vec![Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
+                vec![BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
             }
         }
     }
@@ -77,7 +77,7 @@ impl EnemyTrait for GremlinWizard {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (GremlinWizardMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (GremlinWizardMove, Vec<BattleEffect>) {
         // Pattern:
         // - First cycle: Charges twice (turns 1-2), then Ultimate Blast (turn 3)
         // - Subsequent cycles (normal): Charges 3 times, then blast (repeats)
@@ -179,7 +179,7 @@ mod tests {
         let (move3, effects3) = wizard.choose_move_and_effects(&global_info, &mut rng);
         assert_eq!(move3, GremlinWizardMove::UltimateBlast);
         assert_eq!(effects3.len(), 1);
-        assert_eq!(effects3[0], Effect::AttackToTarget { amount: 25, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(effects3[0], BattleEffect::AttackToTarget { amount: 25, num_attacks: 1, strength_multiplier: 1 });
         assert_eq!(wizard.charge_count, 0);
         assert!(wizard.has_used_first_blast);
     }
@@ -256,11 +256,11 @@ mod tests {
         // Ultimate Blast damage
         let blast_effects_asc0 = wizard.get_move_effects(GremlinWizardMove::UltimateBlast, &global_info_asc0);
         assert_eq!(blast_effects_asc0.len(), 1);
-        assert_eq!(blast_effects_asc0[0], Effect::AttackToTarget { amount: 25, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(blast_effects_asc0[0], BattleEffect::AttackToTarget { amount: 25, num_attacks: 1, strength_multiplier: 1 });
 
         let blast_effects_asc2 = wizard.get_move_effects(GremlinWizardMove::UltimateBlast, &global_info_asc2);
         assert_eq!(blast_effects_asc2.len(), 1);
-        assert_eq!(blast_effects_asc2[0], Effect::AttackToTarget { amount: 30, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(blast_effects_asc2[0], BattleEffect::AttackToTarget { amount: 30, num_attacks: 1, strength_multiplier: 1 });
     }
 
     #[test]

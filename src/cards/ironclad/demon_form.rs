@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{target::Entity, battle_events::BattleEvent, battle_events::EventListener};
 
 /// Demon Form - Rare Power Card
@@ -6,7 +6,7 @@ use crate::battle::{target::Entity, battle_events::BattleEvent, battle_events::E
 /// Effect: At the start of your turn, gain 2 Strength. This card cannot be shuffled back into your draw pile.
 pub fn demon_form() -> Card {
     Card::new(CardEnum::DemonForm, 3, CardClass::IronClad(Rarity::Rare, CardType::Power), vec![
-            Effect::ActivateDemonForm { strength_per_turn: 2 },
+            BattleEffect::ActivateDemonForm { strength_per_turn: 2 },
         ])
         .set_play_condition(Condition::True)
 }
@@ -20,7 +20,7 @@ pub fn demon_form_upgraded() -> Card {
         2, // Costs 2 when upgraded
         CardClass::IronClad(Rarity::Rare, CardType::Power),
         vec![
-            Effect::ActivateDemonForm { strength_per_turn: 3 }, // Gain 3 Strength per turn when upgraded
+            BattleEffect::ActivateDemonForm { strength_per_turn: 3 }, // Gain 3 Strength per turn when upgraded
         ]
     )
         .set_upgraded(true)
@@ -71,7 +71,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::ActivateDemonForm { strength_per_turn } => {
+            BattleEffect::ActivateDemonForm { strength_per_turn } => {
                 assert_eq!(*strength_per_turn, 2);
             }
             _ => panic!("Expected ActivateDemonForm effect"),
@@ -85,7 +85,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::ActivateDemonForm { strength_per_turn } => {
+            BattleEffect::ActivateDemonForm { strength_per_turn } => {
                 assert_eq!(*strength_per_turn, 3); // Upgraded version gives 3 Strength per turn
             }
             _ => panic!("Expected ActivateDemonForm effect"),
@@ -115,7 +115,7 @@ mod tests {
 
         // Base version gives 2 Strength per turn
         match &base_effects[0] {
-            Effect::ActivateDemonForm { strength_per_turn } => {
+            BattleEffect::ActivateDemonForm { strength_per_turn } => {
                 assert_eq!(*strength_per_turn, 2);
             }
             _ => panic!("Expected ActivateDemonForm effect"),
@@ -123,7 +123,7 @@ mod tests {
 
         // Upgraded version gives 3 Strength per turn
         match &upgraded_effects[0] {
-            Effect::ActivateDemonForm { strength_per_turn } => {
+            BattleEffect::ActivateDemonForm { strength_per_turn } => {
                 assert_eq!(*strength_per_turn, 3);
             }
             _ => panic!("Expected ActivateDemonForm effect"),
@@ -360,11 +360,11 @@ impl DemonFormListener {
 }
 
 impl EventListener for DemonFormListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::StartOfPlayerTurn if self.source == Entity::Player => {
                 // Return a GainStrength effect to be processed
-                vec![Effect::GainStrength { amount: self.strength_per_turn }]
+                vec![BattleEffect::GainStrength { amount: self.strength_per_turn }]
             }
             _ => vec![]
         }

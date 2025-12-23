@@ -1,5 +1,5 @@
 use crate::game::enemy::EnemyTrait;
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::game::global_info::GlobalInfo;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -58,25 +58,25 @@ impl RedSlaver {
     }
 
     /// Get the effects for a given move
-    pub fn get_move_effects(&self, move_type: RedSlaverMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: RedSlaverMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             RedSlaverMove::Stab => {
                 let damage = Self::calculate_stab_damage(global_info);
                 vec![
-                    Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
+                    BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
                 ]
             }
             RedSlaverMove::Scrape => {
                 let damage = Self::calculate_scrape_damage(global_info);
                 let vulnerable_duration = Self::calculate_scrape_vulnerable(global_info);
                 vec![
-                    Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
-                    Effect::ApplyVulnerable { duration: vulnerable_duration },
+                    BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
+                    BattleEffect::ApplyVulnerable { duration: vulnerable_duration },
                 ]
             }
             RedSlaverMove::Entangle => {
                 vec![
-                    Effect::ApplyEntangled { duration: 1 },
+                    BattleEffect::ApplyEntangled { duration: 1 },
                 ]
             }
         }
@@ -238,7 +238,7 @@ impl EnemyTrait for RedSlaver {
         &mut self,
         global_info: &GlobalInfo,
         rng: &mut impl rand::Rng,
-    ) -> (RedSlaverMove, Vec<Effect>) {
+    ) -> (RedSlaverMove, Vec<BattleEffect>) {
         let move_type = self.choose_move(global_info, rng);
 
         // Mark Entangle as used
@@ -314,7 +314,7 @@ mod tests {
 
         // Should have Attack only
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::AttackToTarget { amount: 13, .. }));
+        assert!(matches!(effects[0], BattleEffect::AttackToTarget { amount: 13, .. }));
     }
 
     #[test]
@@ -327,8 +327,8 @@ mod tests {
 
         // Should have Attack and ApplyVulnerable
         assert_eq!(effects.len(), 2);
-        assert!(matches!(effects[0], Effect::AttackToTarget { amount: 8, .. }));
-        assert!(matches!(effects[1], Effect::ApplyVulnerable { duration: 1 }));
+        assert!(matches!(effects[0], BattleEffect::AttackToTarget { amount: 8, .. }));
+        assert!(matches!(effects[1], BattleEffect::ApplyVulnerable { duration: 1 }));
     }
 
     #[test]
@@ -341,7 +341,7 @@ mod tests {
 
         // Should have ApplyEntangled only
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::ApplyEntangled { duration: 1 }));
+        assert!(matches!(effects[0], BattleEffect::ApplyEntangled { duration: 1 }));
     }
 
     #[test]

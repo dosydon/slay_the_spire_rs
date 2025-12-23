@@ -1,5 +1,5 @@
 use crate::game::enemy::EnemyTrait;
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::game::global_info::GlobalInfo;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -56,20 +56,20 @@ impl BlueSlaver {
     }
 
     /// Get the effects for a given move
-    pub fn get_move_effects(&self, move_type: BlueSlaverMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: BlueSlaverMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             BlueSlaverMove::Stab => {
                 let damage = Self::calculate_stab_damage(global_info);
                 vec![
-                    Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
+                    BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
                 ]
             }
             BlueSlaverMove::Rake => {
                 let damage = Self::calculate_rake_damage(global_info);
                 let weak_duration = Self::calculate_rake_weak(global_info);
                 vec![
-                    Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
-                    Effect::ApplyWeak { duration: weak_duration },
+                    BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
+                    BattleEffect::ApplyWeak { duration: weak_duration },
                 ]
             }
         }
@@ -121,7 +121,7 @@ impl EnemyTrait for BlueSlaver {
         &mut self,
         global_info: &GlobalInfo,
         rng: &mut impl rand::Rng,
-    ) -> (BlueSlaverMove, Vec<Effect>) {
+    ) -> (BlueSlaverMove, Vec<BattleEffect>) {
         // Pattern: 40% chance to use Rake, 60% chance to use Stab
         // Cannot use the same move 3 times in a row
         // A17+: Cannot use Rake twice in a row
@@ -231,7 +231,7 @@ mod tests {
 
         // Should have Attack only
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::AttackToTarget { amount: 12, .. }));
+        assert!(matches!(effects[0], BattleEffect::AttackToTarget { amount: 12, .. }));
     }
 
     #[test]
@@ -244,8 +244,8 @@ mod tests {
 
         // Should have Attack and ApplyWeak
         assert_eq!(effects.len(), 2);
-        assert!(matches!(effects[0], Effect::AttackToTarget { amount: 7, .. }));
-        assert!(matches!(effects[1], Effect::ApplyWeak { duration: 1 }));
+        assert!(matches!(effects[0], BattleEffect::AttackToTarget { amount: 7, .. }));
+        assert!(matches!(effects[1], BattleEffect::ApplyWeak { duration: 1 }));
     }
 
     #[test]

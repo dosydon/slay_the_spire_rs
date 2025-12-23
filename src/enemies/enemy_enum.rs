@@ -1,4 +1,4 @@
-use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, spike_slime_l::{SpikeSlimeL, SpikeSlimeLMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, acid_slime_l::{AcidSlimeL, AcidSlimeLMove}, gremlin_nob::{GremlinNob, GremlinNobMove}, lagavulin::{Lagavulin, LagavulinMove}, sentry::{Sentry, SentryMove}, fat_gremlin::{FatGremlin, FatGremlinMove}, sneaky_gremlin::{SneakyGremlin, SneakyGremlinMove}, mad_gremlin::{MadGremlin, MadGremlinMove}, shield_gremlin::{ShieldGremlin, ShieldGremlinMove}, gremlin_wizard::{GremlinWizard, GremlinWizardMove}, looter::{Looter, LooterMove}, fungi_beast::{FungiBeast, FungiBeastMove}, blue_slaver::{BlueSlaver, BlueSlaverMove}, red_slaver::{RedSlaver, RedSlaverMove}}, game::{effect::Effect, global_info::GlobalInfo, enemy::EnemyTrait}};
+use crate::{enemies::{red_louse::{RedLouse, RedLouseMove}, green_louse::{GreenLouse, GreenLouseMove}, jaw_worm::{JawWorm, JawWormMove}, cultist::{Cultist, CultistMove}, spike_slime_s::{SpikeSlimeS, SpikeSlimeSMove}, spike_slime_m::{SpikeSlimeM, SpikeSlimeMMove}, spike_slime_l::{SpikeSlimeL, SpikeSlimeLMove}, acid_slime_s::{AcidSlimeS, AcidSlimeSMove}, acid_slime_m::{AcidSlimeM, AcidSlimeMMove}, acid_slime_l::{AcidSlimeL, AcidSlimeLMove}, gremlin_nob::{GremlinNob, GremlinNobMove}, lagavulin::{Lagavulin, LagavulinMove}, sentry::{Sentry, SentryMove}, fat_gremlin::{FatGremlin, FatGremlinMove}, sneaky_gremlin::{SneakyGremlin, SneakyGremlinMove}, mad_gremlin::{MadGremlin, MadGremlinMove}, shield_gremlin::{ShieldGremlin, ShieldGremlinMove}, gremlin_wizard::{GremlinWizard, GremlinWizardMove}, looter::{Looter, LooterMove}, fungi_beast::{FungiBeast, FungiBeastMove}, blue_slaver::{BlueSlaver, BlueSlaverMove}, red_slaver::{RedSlaver, RedSlaverMove}}, game::{effect::BattleEffect, global_info::GlobalInfo, enemy::EnemyTrait}};
 
 #[derive(Debug, Clone)]
 pub enum EnemyEnum {
@@ -57,7 +57,7 @@ pub enum EnemyMove {
 
 impl EnemyEnum {
     /// Sample a move and return both the move type and its effects
-    pub fn sample_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (EnemyMove, Vec<Effect>) {
+    pub fn sample_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (EnemyMove, Vec<BattleEffect>) {
         match self {
             EnemyEnum::RedLouse(red_louse) => {
                 let (selected_move, effects) = red_louse.choose_move_and_effects(global_info, rng);

@@ -1,4 +1,4 @@
-use crate::game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo};
+use crate::game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo};
 
 #[derive(Clone, Debug)]
 pub struct SneakyGremlin {
@@ -33,9 +33,9 @@ impl SneakyGremlin {
         }
     }
 
-    pub fn get_move_effects(&self, _move_type: SneakyGremlinMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, _move_type: SneakyGremlinMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         let damage = Self::calculate_puncture_damage(global_info);
-        vec![Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
+        vec![BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
     }
 }
 
@@ -57,7 +57,7 @@ impl EnemyTrait for SneakyGremlin {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (SneakyGremlinMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (SneakyGremlinMove, Vec<BattleEffect>) {
         // Sneaky Gremlin always uses Puncture
         let move_type = SneakyGremlinMove::Puncture;
         let effects = self.get_move_effects(move_type, global_info);
@@ -103,11 +103,11 @@ mod tests {
 
         let effects_asc0 = gremlin.get_move_effects(SneakyGremlinMove::Puncture, &global_info_asc0);
         assert_eq!(effects_asc0.len(), 1);
-        assert_eq!(effects_asc0[0], Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(effects_asc0[0], BattleEffect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 });
 
         let effects_asc2 = gremlin.get_move_effects(SneakyGremlinMove::Puncture, &global_info_asc2);
         assert_eq!(effects_asc2.len(), 1);
-        assert_eq!(effects_asc2[0], Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(effects_asc2[0], BattleEffect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 });
     }
 
     #[test]

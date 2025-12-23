@@ -18,7 +18,7 @@ mod eval_effect;
 mod enemy_manager;
 mod listener_manager;
 
-use crate::{enemies::enemy_enum::EnemyMove, game::{card::Card, deck::Deck, effect::{BaseEffect, Effect}, global_info::GlobalInfo, player_run_state::PlayerRunState}, relics::Relic};
+use crate::{enemies::enemy_enum::EnemyMove, game::{card::Card, deck::Deck, effect::{BaseEffect, BattleEffect}, global_info::GlobalInfo, player_run_state::PlayerRunState}, relics::Relic};
 use self::{battle_events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
 use crate::battle::battle_state::BattleState;
 
@@ -41,7 +41,7 @@ pub struct Battle {
     event_listeners: Vec<Box<dyn EventListener>>,
     global_info: GlobalInfo,
     /// Stores the next move and effects for each enemy (index corresponds to enemies Vec)
-    enemy_actions: Vec<Option<(EnemyMove, Vec<Effect>)>>,
+    enemy_actions: Vec<Option<(EnemyMove, Vec<BattleEffect>)>>,
     relics: Vec<Relic>,
     /// Stores all powers played during the current battle
     powers: Vec<crate::game::card::Card>,

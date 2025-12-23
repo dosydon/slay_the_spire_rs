@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Trip - Colorless Skill Card
 /// Cost: 0 (0 when upgraded)
@@ -9,8 +9,8 @@ pub fn trip() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::ApplyVulnerableAll { duration: 2 },
-            Effect::Exhaust,
+            BattleEffect::ApplyVulnerableAll { duration: 2 },
+            BattleEffect::Exhaust,
         ]
     )
         .set_playable(true)
@@ -22,8 +22,8 @@ pub fn trip_upgraded() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::ApplyVulnerableAll { duration: 2 },
-            Effect::Exhaust,
+            BattleEffect::ApplyVulnerableAll { duration: 2 },
+            BattleEffect::Exhaust,
         ]
     )
         .set_upgraded(true)
@@ -67,14 +67,14 @@ mod tests {
 
         // First effect should be ApplyVulnerableAll
         match &effects[0] {
-            Effect::ApplyVulnerableAll { duration } => {
+            BattleEffect::ApplyVulnerableAll { duration } => {
                 assert_eq!(*duration, 2);
             }
             _ => panic!("Expected ApplyVulnerableAll effect as first effect"),
         }
 
         // Second effect should be Exhaust
-        assert_eq!(effects[1], Effect::Exhaust);
+        assert_eq!(effects[1], BattleEffect::Exhaust);
     }
 
     #[test]
@@ -86,13 +86,13 @@ mod tests {
 
         // First effect should be ApplyVulnerableAll (same as base)
         match &effects[0] {
-            Effect::ApplyVulnerableAll { duration } => {
+            BattleEffect::ApplyVulnerableAll { duration } => {
                 assert_eq!(*duration, 2);
             }
             _ => panic!("Expected ApplyVulnerableAll effect as first effect"),
         }
 
         // Second effect should be Exhaust (same as base)
-        assert_eq!(effects[1], Effect::Exhaust);
+        assert_eq!(effects[1], BattleEffect::Exhaust);
     }
 }

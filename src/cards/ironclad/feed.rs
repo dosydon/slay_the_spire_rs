@@ -1,19 +1,19 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 pub fn feed() -> Card {
     Card::new(CardEnum::Feed, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
-            Effect::HealAndIncreaseMaxHp(3),
-            Effect::Exhaust,
+            BattleEffect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::HealAndIncreaseMaxHp(3),
+            BattleEffect::Exhaust,
         ])
         .set_playable(true)
 }
 
 pub fn feed_upgraded() -> Card {
     Card::new(CardEnum::Feed, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 1 },
-            Effect::HealAndIncreaseMaxHp(4),
-            Effect::Exhaust,
+            BattleEffect::AttackToTarget { amount: 12, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::HealAndIncreaseMaxHp(4),
+            BattleEffect::Exhaust,
         ])
         .set_upgraded(true)
         .set_playable(true)
@@ -52,7 +52,7 @@ mod tests {
 
         assert_eq!(effects.len(), 3);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 10);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 1);
@@ -60,12 +60,12 @@ mod tests {
             _ => panic!("Expected AttackToTarget effect"),
         }
         match &effects[1] {
-            Effect::HealAndIncreaseMaxHp(amount) => {
+            BattleEffect::HealAndIncreaseMaxHp(amount) => {
                 assert_eq!(*amount, 3);
             }
             _ => panic!("Expected HealAndIncreaseMaxHp effect"),
         }
-        assert_eq!(effects[2], Effect::Exhaust);
+        assert_eq!(effects[2], BattleEffect::Exhaust);
     }
 
     #[test]
@@ -75,7 +75,7 @@ mod tests {
 
         assert_eq!(effects.len(), 3);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 12);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 1);
@@ -83,12 +83,12 @@ mod tests {
             _ => panic!("Expected AttackToTarget effect"),
         }
         match &effects[1] {
-            Effect::HealAndIncreaseMaxHp(amount) => {
+            BattleEffect::HealAndIncreaseMaxHp(amount) => {
                 assert_eq!(*amount, 4);
             }
             _ => panic!("Expected HealAndIncreaseMaxHp effect"),
         }
-        assert_eq!(effects[2], Effect::Exhaust);
+        assert_eq!(effects[2], BattleEffect::Exhaust);
     }
 }
 

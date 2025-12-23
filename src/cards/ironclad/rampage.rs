@@ -1,11 +1,11 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::BattleEffect, card_type::CardType, card_enum::CardEnum};
 
 /// Rampage - Uncommon Attack Card
 /// Cost: 1
 /// Effect: Deal 8 damage. Increases by 5 each use
 pub fn rampage() -> Card {
     Card::new(CardEnum::Rampage, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTargetWithScaling {
+            BattleEffect::AttackToTargetWithScaling {
                 base_damage: 8,
                 scaling: 5,
             },
@@ -18,7 +18,7 @@ pub fn rampage() -> Card {
 /// Effect: Deal 8 damage. Increases by 8 each use
 pub fn rampage_upgraded() -> Card {
     Card::new(CardEnum::Rampage, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTargetWithScaling {
+            BattleEffect::AttackToTargetWithScaling {
                 base_damage: 8,
                 scaling: 8, // upgraded version scales by 8 instead of 5
             },
@@ -61,7 +61,7 @@ mod tests {
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTargetWithScaling { base_damage, scaling } => {
+            BattleEffect::AttackToTargetWithScaling { base_damage, scaling } => {
                 assert_eq!(*base_damage, 8);
                 assert_eq!(*scaling, 5);
             }
@@ -75,7 +75,7 @@ mod tests {
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTargetWithScaling { base_damage, scaling } => {
+            BattleEffect::AttackToTargetWithScaling { base_damage, scaling } => {
                 assert_eq!(*base_damage, 8);
                 assert_eq!(*scaling, 8); // upgraded version scales by 8
             }

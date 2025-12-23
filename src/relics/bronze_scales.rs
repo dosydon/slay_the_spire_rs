@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Bronze Scales - Whenever you take damage, deal 3 damage back (Thorns)
@@ -14,11 +14,11 @@ impl BronzeScalesRelic {
 }
 
 impl EventListener for BronzeScalesRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::DamageTaken { target, amount, .. } if *target == self.owner && *amount > 0 => {
                 // Deal 3 damage back to the source
-                vec![Effect::AttackToTarget {
+                vec![BattleEffect::AttackToTarget {
                     amount: 3,
                     num_attacks: 1,
                     strength_multiplier: 0,
@@ -62,7 +62,7 @@ mod tests {
         });
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::AttackToTarget { amount: 3, num_attacks: 1, strength_multiplier: 0 }));
+        assert!(matches!(effects[0], BattleEffect::AttackToTarget { amount: 3, num_attacks: 1, strength_multiplier: 0 }));
     }
 
     #[test]

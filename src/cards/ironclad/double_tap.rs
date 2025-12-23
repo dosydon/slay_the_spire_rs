@@ -1,18 +1,18 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 pub fn double_tap() -> Card {
     Card::new(CardEnum::DoubleTap, 1, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
-            Effect::ActivateDoubleTap { remaining_attacks: 1 },
-            Effect::Exhaust,
+            BattleEffect::ActivateDoubleTap { remaining_attacks: 1 },
+            BattleEffect::Exhaust,
         ])
         .set_playable(true)
 }
 
 pub fn double_tap_upgraded() -> Card {
     Card::new(CardEnum::DoubleTap, 1, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
-            Effect::ActivateDoubleTap { remaining_attacks: 2 },
-            Effect::Exhaust,
+            BattleEffect::ActivateDoubleTap { remaining_attacks: 2 },
+            BattleEffect::Exhaust,
         ])
         .set_upgraded(true)
         .set_playable(true)
@@ -33,7 +33,7 @@ impl DoubleTapListener {
 }
 
 impl EventListener for DoubleTapListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CardPlayed { source, card_type }
                 if *source == self.source
@@ -74,8 +74,8 @@ mod tests {
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(!card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::ActivateDoubleTap { remaining_attacks: 1 });
-        assert_eq!(card.get_effects()[1], Effect::Exhaust);
+        assert_eq!(card.get_effects()[0], BattleEffect::ActivateDoubleTap { remaining_attacks: 1 });
+        assert_eq!(card.get_effects()[1], BattleEffect::Exhaust);
     }
 
     #[test]
@@ -86,8 +86,8 @@ mod tests {
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert!(card.is_upgraded());
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::ActivateDoubleTap { remaining_attacks: 2 });
-        assert_eq!(card.get_effects()[1], Effect::Exhaust);
+        assert_eq!(card.get_effects()[0], BattleEffect::ActivateDoubleTap { remaining_attacks: 2 });
+        assert_eq!(card.get_effects()[1], BattleEffect::Exhaust);
     }
 
     #[test]
@@ -168,7 +168,7 @@ mod integration_tests {
         let effects = card.get_effects();
 
         match &effects[0] {
-            Effect::ActivateDoubleTap { remaining_attacks } => {
+            BattleEffect::ActivateDoubleTap { remaining_attacks } => {
                 assert_eq!(*remaining_attacks, 2);
             }
             _ => panic!("Expected ActivateDoubleTap effect"),

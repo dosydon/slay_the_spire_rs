@@ -1,11 +1,11 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Disarm - Skill Card
 /// Cost: 1
 /// Effect: Target enemy loses 2 Strength.
 pub fn disarm() -> Card {
     Card::new(CardEnum::Disarm, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-        Effect::LoseStrengthTarget(2),
+        BattleEffect::LoseStrengthTarget(2),
     ])
 }
 
@@ -14,7 +14,7 @@ pub fn disarm() -> Card {
 /// Effect: Target enemy loses 3 Strength.
 pub fn disarm_upgraded() -> Card {
     Card::new(CardEnum::Disarm, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-        Effect::LoseStrengthTarget(3),
+        BattleEffect::LoseStrengthTarget(3),
     ])
         .set_upgraded(true)
 }
@@ -33,7 +33,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::LoseStrengthTarget(2));
+        assert_eq!(card.get_effects()[0], BattleEffect::LoseStrengthTarget(2));
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -46,7 +46,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1);
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::LoseStrengthTarget(3));
+        assert_eq!(card.get_effects()[0], BattleEffect::LoseStrengthTarget(3));
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -59,8 +59,8 @@ mod tests {
         let normal_effects = normal_card.get_effects();
         let upgraded_effects = upgraded_card.get_effects();
 
-        assert_eq!(normal_effects[0], Effect::LoseStrengthTarget(2));
-        assert_eq!(upgraded_effects[0], Effect::LoseStrengthTarget(3));
+        assert_eq!(normal_effects[0], BattleEffect::LoseStrengthTarget(2));
+        assert_eq!(upgraded_effects[0], BattleEffect::LoseStrengthTarget(3));
     }
 
     #[test]

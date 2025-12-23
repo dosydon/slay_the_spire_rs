@@ -1,6 +1,6 @@
 use super::Battle;
 use crate::battle::{battle_action::BattleAction, battle_state::CardInHandTo, target::Entity, BattleResult, BattleError};
-use crate::game::{effect::Effect, card::Card, card_type::CardType};
+use crate::game::{effect::BattleEffect, card::Card, card_type::CardType};
 
 impl Battle {
     /// Evaluate a player action and return the battle result
@@ -237,23 +237,23 @@ impl Battle {
         
         // Check if any effect attacks all enemies (doesn't need specific targeting)
         let attacks_all_enemies = card.get_effects().iter().any(|effect| {
-            matches!(effect, Effect::AttackAllEnemies { .. })
+            matches!(effect, BattleEffect::AttackAllEnemies { .. })
         });
         
         // Check if any effect targets specific enemies
         let targets_specific_enemies = card.get_effects().iter().any(|effect| {
             matches!(effect, 
-                Effect::AttackToTarget { .. } |
-                Effect::ApplyVulnerable { .. } |
-                Effect::ApplyWeak { .. }
+                BattleEffect::AttackToTarget { .. } |
+                BattleEffect::ApplyVulnerable { .. } |
+                BattleEffect::ApplyWeak { .. }
             )
         });
         
         // Check if any effect targets self/player  
         let targets_self = card.get_effects().iter().any(|effect| {
             matches!(effect,
-                Effect::GainDefense { amount: _ } |
-                Effect::GainStrength { amount: _ }
+                BattleEffect::GainDefense { amount: _ } |
+                BattleEffect::GainStrength { amount: _ }
             )
         });
         

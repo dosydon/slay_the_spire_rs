@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 use crate::game::card_type::CardType;
 
@@ -19,7 +19,7 @@ impl KunaiRelic {
 }
 
 impl EventListener for KunaiRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if *player == self.owner => {
                 self.attacks_this_turn = 0;
@@ -35,7 +35,7 @@ impl EventListener for KunaiRelic {
                     self.attacks_this_turn += 1;
                     // Check if we've played 3, 6, 9, etc. attacks this turn
                     if self.attacks_this_turn % 3 == 0 && self.attacks_this_turn > 0 {
-                        vec![Effect::GainDexterity { amount: 1 }]
+                        vec![BattleEffect::GainDexterity { amount: 1 }]
                     } else {
                         vec![]
                     }
@@ -100,7 +100,7 @@ mod tests {
             card_type: CardType::Attack,
         });
         assert_eq!(effects3.len(), 1);
-        assert!(matches!(effects3[0], Effect::GainDexterity { amount: 1 }));
+        assert!(matches!(effects3[0], BattleEffect::GainDexterity { amount: 1 }));
     }
 
     #[test]

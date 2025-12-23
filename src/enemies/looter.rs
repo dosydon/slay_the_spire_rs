@@ -1,5 +1,5 @@
 use crate::game::enemy::EnemyTrait;
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::game::global_info::GlobalInfo;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -66,33 +66,33 @@ impl Looter {
     }
 
     /// Get the effects for a given move
-    pub fn get_move_effects(&self, move_type: LooterMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: LooterMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             LooterMove::Mug => {
                 let damage = Self::calculate_mug_damage(global_info);
                 let gold = Self::calculate_thievery_amount(global_info);
                 vec![
-                    Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
-                    Effect::StealGold { amount: gold },
+                    BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
+                    BattleEffect::StealGold { amount: gold },
                 ]
             }
             LooterMove::Lunge => {
                 let damage = Self::calculate_lunge_damage(global_info);
                 let gold = Self::calculate_thievery_amount(global_info);
                 vec![
-                    Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
-                    Effect::StealGold { amount: gold },
+                    BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
+                    BattleEffect::StealGold { amount: gold },
                 ]
             }
             LooterMove::SmokeBomb => {
                 let block = Self::calculate_smoke_bomb_block();
                 vec![
-                    Effect::GainDefense { amount: block },
+                    BattleEffect::GainDefense { amount: block },
                 ]
             }
             LooterMove::Escape => {
                 vec![
-                    Effect::EnemyEscape,
+                    BattleEffect::EnemyEscape,
                 ]
             }
         }
@@ -124,7 +124,7 @@ impl EnemyTrait for Looter {
         &mut self,
         global_info: &GlobalInfo,
         rng: &mut impl rand::Rng,
-    ) -> (LooterMove, Vec<Effect>) {
+    ) -> (LooterMove, Vec<BattleEffect>) {
         self.turn_count += 1;
 
         let move_type = if self.has_used_smoke_bomb {
@@ -250,8 +250,8 @@ mod tests {
 
         // Should have Attack and StealGold
         assert_eq!(effects.len(), 2);
-        assert!(matches!(effects[0], Effect::AttackToTarget { amount: 10, .. }));
-        assert!(matches!(effects[1], Effect::StealGold { amount: 15 }));
+        assert!(matches!(effects[0], BattleEffect::AttackToTarget { amount: 10, .. }));
+        assert!(matches!(effects[1], BattleEffect::StealGold { amount: 15 }));
     }
 
     #[test]
@@ -264,8 +264,8 @@ mod tests {
 
         // Should have Attack and StealGold
         assert_eq!(effects.len(), 2);
-        assert!(matches!(effects[0], Effect::AttackToTarget { amount: 12, .. }));
-        assert!(matches!(effects[1], Effect::StealGold { amount: 15 }));
+        assert!(matches!(effects[0], BattleEffect::AttackToTarget { amount: 12, .. }));
+        assert!(matches!(effects[1], BattleEffect::StealGold { amount: 15 }));
     }
 
     #[test]
@@ -278,7 +278,7 @@ mod tests {
 
         // Should grant block
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::GainDefense { amount: 6 }));
+        assert!(matches!(effects[0], BattleEffect::GainDefense { amount: 6 }));
     }
 
     #[test]
@@ -291,7 +291,7 @@ mod tests {
 
         // Should trigger enemy escape
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::EnemyEscape));
+        assert!(matches!(effects[0], BattleEffect::EnemyEscape));
     }
 
     #[test]

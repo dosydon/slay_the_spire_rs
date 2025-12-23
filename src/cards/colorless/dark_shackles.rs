@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Dark Shackles - Colorless Skill Card (Uncommon)
 /// Cost: 0 (0 when upgraded)
@@ -9,12 +9,12 @@ pub fn dark_shackles() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::LoseStrengthTarget(9),
-            Effect::Exhaust,
+            BattleEffect::LoseStrengthTarget(9),
+            BattleEffect::Exhaust,
         ]
     )
         .set_playable(true)
-        .set_end_of_turn(vec![Effect::GainStrength { amount: 9 }])
+        .set_end_of_turn(vec![BattleEffect::GainStrength { amount: 9 }])
 }
 
 pub fn dark_shackles_upgraded() -> Card {
@@ -23,13 +23,13 @@ pub fn dark_shackles_upgraded() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::LoseStrengthTarget(15),
-            Effect::Exhaust,
+            BattleEffect::LoseStrengthTarget(15),
+            BattleEffect::Exhaust,
         ]
     )
         .set_upgraded(true)
         .set_playable(true)
-        .set_end_of_turn(vec![Effect::GainStrength { amount: 15 }])
+        .set_end_of_turn(vec![BattleEffect::GainStrength { amount: 15 }])
 }
 
 #[cfg(test)]
@@ -69,14 +69,14 @@ mod tests {
 
         // First effect should be LoseStrengthTarget(9)
         match &effects[0] {
-            Effect::LoseStrengthTarget(amount) => {
+            BattleEffect::LoseStrengthTarget(amount) => {
                 assert_eq!(*amount, 9);
             }
             _ => panic!("Expected LoseStrengthTarget effect as first effect"),
         }
 
         // Second effect should be Exhaust
-        assert_eq!(effects[1], Effect::Exhaust);
+        assert_eq!(effects[1], BattleEffect::Exhaust);
 
         // Check end-of-turn effects
         let end_of_turn_effects = card.get_end_of_turn();
@@ -86,7 +86,7 @@ mod tests {
 
         // End-of-turn effect should restore the strength
         match &eot_effects[0] {
-            Effect::GainStrength { amount } => {
+            BattleEffect::GainStrength { amount } => {
                 assert_eq!(*amount, 9);
             }
             _ => panic!("Expected GainStrength effect at end of turn"),
@@ -102,14 +102,14 @@ mod tests {
 
         // First effect should be LoseStrengthTarget(15) - upgraded
         match &effects[0] {
-            Effect::LoseStrengthTarget(amount) => {
+            BattleEffect::LoseStrengthTarget(amount) => {
                 assert_eq!(*amount, 15);
             }
             _ => panic!("Expected LoseStrengthTarget effect as first effect"),
         }
 
         // Second effect should be Exhaust (same as base)
-        assert_eq!(effects[1], Effect::Exhaust);
+        assert_eq!(effects[1], BattleEffect::Exhaust);
 
         // Check end-of-turn effects
         let end_of_turn_effects = card.get_end_of_turn();
@@ -119,7 +119,7 @@ mod tests {
 
         // End-of-turn effect should restore the strength (upgraded amount)
         match &eot_effects[0] {
-            Effect::GainStrength { amount } => {
+            BattleEffect::GainStrength { amount } => {
                 assert_eq!(*amount, 15);
             }
             _ => panic!("Expected GainStrength effect at end of turn"),

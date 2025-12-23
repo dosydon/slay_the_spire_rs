@@ -1,4 +1,4 @@
-use crate::game::effect::Effect;
+use crate::game::effect::{Effect, BattleEffect, GameEffect};
 use crate::events::map_events::{EventChoice, EventOutcome};
 use crate::game::card_enum::CardEnum;
 
@@ -11,12 +11,12 @@ pub fn world_of_goop_choices() -> Vec<EventChoice> {
         EventChoice {
             text: "Take the gold (75 gold, gain 5 Slimed cards)".to_string(),
             outcome: EventOutcome::Effects(vec![
-                Effect::GainGold { amount: 75 },
-                Effect::AddCardToDrawPile(CardEnum::Slimed),
-                Effect::AddCardToDrawPile(CardEnum::Slimed),
-                Effect::AddCardToDrawPile(CardEnum::Slimed),
-                Effect::AddCardToDrawPile(CardEnum::Slimed),
-                Effect::AddCardToDrawPile(CardEnum::Slimed),
+                Effect::Game(GameEffect::GainGold { amount: 75 }),
+                Effect::Battle(BattleEffect::AddCardToDrawPile(CardEnum::Slimed)),
+                Effect::Battle(BattleEffect::AddCardToDrawPile(CardEnum::Slimed)),
+                Effect::Battle(BattleEffect::AddCardToDrawPile(CardEnum::Slimed)),
+                Effect::Battle(BattleEffect::AddCardToDrawPile(CardEnum::Slimed)),
+                Effect::Battle(BattleEffect::AddCardToDrawPile(CardEnum::Slimed)),
             ]),
         },
         EventChoice {

@@ -1,16 +1,16 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 pub fn pommel_strike() -> Card {
     Card::new(CardEnum::PommelStrike, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-        Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 },
-        Effect::DrawCard { count: 1 }
+        BattleEffect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 },
+        BattleEffect::DrawCard { count: 1 }
     ])
 }
 
 pub fn pommel_strike_upgraded() -> Card {
     Card::new(CardEnum::PommelStrike, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-        Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
-        Effect::DrawCard { count: 2 }
+        BattleEffect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
+        BattleEffect::DrawCard { count: 2 }
     ])
         .set_upgraded(true)
 }
@@ -37,8 +37,8 @@ mod tests {
 
         // Should have 2 effects: AttackToTarget { amount: 9, num_attacks: 1 } and DrawCard(1)
         assert_eq!(effects.len(), 2);
-        assert!(effects.contains(&Effect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }));
-        assert!(effects.contains(&Effect::DrawCard { count: 1 }));
+        assert!(effects.contains(&BattleEffect::AttackToTarget { amount: 9, num_attacks: 1, strength_multiplier: 1 }));
+        assert!(effects.contains(&BattleEffect::DrawCard { count: 1 }));
     }
 
     #[test]
@@ -58,8 +58,8 @@ mod tests {
 
         // Should have 2 effects: AttackToTarget { amount: 10, num_attacks: 1 } and DrawCard(2)
         assert_eq!(effects.len(), 2);
-        assert!(effects.contains(&Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 }));
-        assert!(effects.contains(&Effect::DrawCard { count: 2 }));
+        assert!(effects.contains(&BattleEffect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 }));
+        assert!(effects.contains(&BattleEffect::DrawCard { count: 2 }));
     }
 
     #[test]

@@ -1,14 +1,14 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Offering - Rare Skill Card
 /// Cost: 0
 /// Effect: Lose 6 HP. Gain 2 Energy. Draw 3 cards. Exhaust.
 pub fn offering() -> Card {
     Card::new(CardEnum::Offering, 0, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
-        Effect::LoseHp(6),
-        Effect::GainEnergy { amount: 2 },
-        Effect::DrawCard { count: 3 },
-        Effect::Exhaust,
+        BattleEffect::LoseHp(6),
+        BattleEffect::GainEnergy { amount: 2 },
+        BattleEffect::DrawCard { count: 3 },
+        BattleEffect::Exhaust,
     ])
         .set_playable(true)
 }
@@ -18,10 +18,10 @@ pub fn offering() -> Card {
 /// Effect: Lose 4 HP. Gain 2 Energy. Draw 5 cards. Exhaust.
 pub fn offering_upgraded() -> Card {
     Card::new(CardEnum::Offering, 0, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
-        Effect::LoseHp(4),
-        Effect::GainEnergy { amount: 2 },
-        Effect::DrawCard { count: 5 },
-        Effect::Exhaust,
+        BattleEffect::LoseHp(4),
+        BattleEffect::GainEnergy { amount: 2 },
+        BattleEffect::DrawCard { count: 5 },
+        BattleEffect::Exhaust,
     ])
         .set_upgraded(true)
         .set_playable(true)
@@ -41,10 +41,10 @@ mod tests {
         assert_eq!(card.get_cost(), 0);
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 4);
-        assert_eq!(card.get_effects()[0], Effect::LoseHp(6));
-        assert_eq!(card.get_effects()[1], Effect::GainEnergy { amount: 2 });
-        assert_eq!(card.get_effects()[2], Effect::DrawCard { count: 3 });
-        assert_eq!(card.get_effects()[3], Effect::Exhaust);
+        assert_eq!(card.get_effects()[0], BattleEffect::LoseHp(6));
+        assert_eq!(card.get_effects()[1], BattleEffect::GainEnergy { amount: 2 });
+        assert_eq!(card.get_effects()[2], BattleEffect::DrawCard { count: 3 });
+        assert_eq!(card.get_effects()[3], BattleEffect::Exhaust);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -57,10 +57,10 @@ mod tests {
         assert_eq!(card.get_cost(), 0);
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 4);
-        assert_eq!(card.get_effects()[0], Effect::LoseHp(4));
-        assert_eq!(card.get_effects()[1], Effect::GainEnergy { amount: 2 });
-        assert_eq!(card.get_effects()[2], Effect::DrawCard { count: 5 });
-        assert_eq!(card.get_effects()[3], Effect::Exhaust);
+        assert_eq!(card.get_effects()[0], BattleEffect::LoseHp(4));
+        assert_eq!(card.get_effects()[1], BattleEffect::GainEnergy { amount: 2 });
+        assert_eq!(card.get_effects()[2], BattleEffect::DrawCard { count: 5 });
+        assert_eq!(card.get_effects()[3], BattleEffect::Exhaust);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -77,15 +77,15 @@ mod tests {
         assert_eq!(normal_effects.len(), 4);
         assert_eq!(upgraded_effects.len(), 4);
 
-        assert_eq!(normal_effects[0], Effect::LoseHp(6));
-        assert_eq!(upgraded_effects[0], Effect::LoseHp(4));
+        assert_eq!(normal_effects[0], BattleEffect::LoseHp(6));
+        assert_eq!(upgraded_effects[0], BattleEffect::LoseHp(4));
 
-        assert_eq!(normal_effects[1], Effect::GainEnergy { amount: 2 });
-        assert_eq!(upgraded_effects[1], Effect::GainEnergy { amount: 2 });
-        assert_eq!(normal_effects[2], Effect::DrawCard { count: 3 });
-        assert_eq!(upgraded_effects[2], Effect::DrawCard { count: 5 });
-        assert_eq!(normal_effects[3], Effect::Exhaust);
-        assert_eq!(upgraded_effects[3], Effect::Exhaust);
+        assert_eq!(normal_effects[1], BattleEffect::GainEnergy { amount: 2 });
+        assert_eq!(upgraded_effects[1], BattleEffect::GainEnergy { amount: 2 });
+        assert_eq!(normal_effects[2], BattleEffect::DrawCard { count: 3 });
+        assert_eq!(upgraded_effects[2], BattleEffect::DrawCard { count: 5 });
+        assert_eq!(normal_effects[3], BattleEffect::Exhaust);
+        assert_eq!(upgraded_effects[3], BattleEffect::Exhaust);
     }
 
     #[test]

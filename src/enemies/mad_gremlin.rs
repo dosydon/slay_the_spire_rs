@@ -1,4 +1,4 @@
-use crate::game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo};
+use crate::game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 #[derive(Clone, Debug)]
@@ -44,9 +44,9 @@ impl MadGremlin {
         }
     }
 
-    pub fn get_move_effects(&self, _move_type: MadGremlinMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, _move_type: MadGremlinMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         let damage = Self::calculate_scratch_damage(global_info);
-        vec![Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
+        vec![BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
     }
 
     pub fn get_angry_stacks(&self) -> u32 {
@@ -73,7 +73,7 @@ impl EnemyTrait for MadGremlin {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (MadGremlinMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (MadGremlinMove, Vec<BattleEffect>) {
         // Mad Gremlin always uses Scratch
         let move_type = MadGremlinMove::Scratch;
         let effects = self.get_move_effects(move_type, global_info);
@@ -100,11 +100,11 @@ impl AngryListener {
 }
 
 impl EventListener for AngryListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::DamageTaken { target, amount, source: _ } if *target == self.owner && *amount > 0 => {
                 // When the Mad Gremlin takes damage, it gains Strength
-                vec![Effect::GainStrength { amount: self.angry_amount }]
+                vec![BattleEffect::GainStrength { amount: self.angry_amount }]
             }
             _ => vec![]
         }
@@ -170,11 +170,11 @@ mod tests {
 
         let effects_asc0 = gremlin.get_move_effects(MadGremlinMove::Scratch, &global_info_asc0);
         assert_eq!(effects_asc0.len(), 1);
-        assert_eq!(effects_asc0[0], Effect::AttackToTarget { amount: 4, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(effects_asc0[0], BattleEffect::AttackToTarget { amount: 4, num_attacks: 1, strength_multiplier: 1 });
 
         let effects_asc2 = gremlin.get_move_effects(MadGremlinMove::Scratch, &global_info_asc2);
         assert_eq!(effects_asc2.len(), 1);
-        assert_eq!(effects_asc2[0], Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(effects_asc2[0], BattleEffect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 });
     }
 
     #[test]
@@ -238,7 +238,7 @@ mod tests {
 
         let effects = listener.on_event(&damage_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainStrength { amount: 1 });
+        assert_eq!(effects[0], BattleEffect::GainStrength { amount: 1 });
         assert!(listener.is_active());
     }
 
@@ -283,12 +283,12 @@ mod tests {
         // First damage
         let effects1 = listener.on_event(&damage_event);
         assert_eq!(effects1.len(), 1);
-        assert_eq!(effects1[0], Effect::GainStrength { amount: 2 });
+        assert_eq!(effects1[0], BattleEffect::GainStrength { amount: 2 });
 
         // Second damage should also trigger
         let effects2 = listener.on_event(&damage_event);
         assert_eq!(effects2.len(), 1);
-        assert_eq!(effects2[0], Effect::GainStrength { amount: 2 });
+        assert_eq!(effects2[0], BattleEffect::GainStrength { amount: 2 });
 
         assert!(listener.is_active());
     }
@@ -311,9 +311,9 @@ mod tests {
         };
 
         let effects_1 = listener_1.on_event(&damage_event_0);
-        assert_eq!(effects_1, vec![Effect::GainStrength { amount: 1 }]);
+        assert_eq!(effects_1, vec![BattleEffect::GainStrength { amount: 1 }]);
 
         let effects_2 = listener_2.on_event(&damage_event_1);
-        assert_eq!(effects_2, vec![Effect::GainStrength { amount: 2 }]);
+        assert_eq!(effects_2, vec![BattleEffect::GainStrength { amount: 2 }]);
     }
 }

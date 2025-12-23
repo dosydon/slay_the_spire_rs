@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 use crate::game::card_type::CardType;
 
@@ -21,7 +21,7 @@ impl ArtOfWarRelic {
 }
 
 impl EventListener for ArtOfWarRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if *player == self.owner => {
                 self.played_attack_this_turn = false;
@@ -32,7 +32,7 @@ impl EventListener for ArtOfWarRelic {
                 // Grant energy if we didn't play attacks last turn
                 if self.should_grant_energy {
                     self.should_grant_energy = false;
-                    vec![Effect::GainEnergy { amount: 1 }]
+                    vec![BattleEffect::GainEnergy { amount: 1 }]
                 } else {
                     vec![]
                 }
@@ -101,7 +101,7 @@ mod tests {
         // Turn 2 starts - should gain energy
         let effects2 = art.on_event(&BattleEvent::StartOfPlayerTurn);
         assert_eq!(effects2.len(), 1);
-        assert!(matches!(effects2[0], Effect::GainEnergy { amount: 1 }));
+        assert!(matches!(effects2[0], BattleEffect::GainEnergy { amount: 1 }));
     }
 
     #[test]

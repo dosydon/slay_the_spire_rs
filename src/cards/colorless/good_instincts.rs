@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Good Instincts - Colorless Skill Card
 /// Cost: 0 (0 when upgraded)
@@ -8,7 +8,7 @@ pub fn good_instincts() -> Card {
         CardEnum::GoodInstincts,
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
-        vec![Effect::GainDefense { amount: 6 }]
+        vec![BattleEffect::GainDefense { amount: 6 }]
     )
         .set_playable(true)
 }
@@ -18,7 +18,7 @@ pub fn good_instincts_upgraded() -> Card {
         CardEnum::GoodInstincts,
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
-        vec![Effect::GainDefense { amount: 9 }]
+        vec![BattleEffect::GainDefense { amount: 9 }]
     )
         .set_upgraded(true)
         .set_playable(true)
@@ -59,7 +59,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::GainDefense { amount } => {
+            BattleEffect::GainDefense { amount } => {
                 assert_eq!(*amount, 6);
             }
             _ => panic!("Expected GainDefense effect"),
@@ -73,7 +73,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::GainDefense { amount } => {
+            BattleEffect::GainDefense { amount } => {
                 assert_eq!(*amount, 9);
             }
             _ => panic!("Expected GainDefense effect"),

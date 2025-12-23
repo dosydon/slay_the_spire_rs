@@ -1,16 +1,16 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Dropkick - Deal 5 damage. If enemy Vulnerable: gain 1 Energy, draw 1 card
 pub fn dropkick() -> Card {
     Card::new(CardEnum::Dropkick, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 0 },
-            Effect::ConditionalEffect(
+            BattleEffect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 0 },
+            BattleEffect::ConditionalEffect(
                 Condition::TargetIsVulnerable,
-                Box::new(Effect::GainEnergy { amount: 1 })
+                Box::new(BattleEffect::GainEnergy { amount: 1 })
             ),
-            Effect::ConditionalEffect(
+            BattleEffect::ConditionalEffect(
                 Condition::TargetIsVulnerable,
-                Box::new(Effect::DrawCard { count: 1 })
+                Box::new(BattleEffect::DrawCard { count: 1 })
             ),
         ])
 }
@@ -18,14 +18,14 @@ pub fn dropkick() -> Card {
 /// Dropkick+ (upgraded version)
 pub fn dropkick_upgraded() -> Card {
     Card::new(CardEnum::Dropkick, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 0 },
-            Effect::ConditionalEffect(
+            BattleEffect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 0 },
+            BattleEffect::ConditionalEffect(
                 Condition::TargetIsVulnerable,
-                Box::new(Effect::GainEnergy { amount: 1 })
+                Box::new(BattleEffect::GainEnergy { amount: 1 })
             ),
-            Effect::ConditionalEffect(
+            BattleEffect::ConditionalEffect(
                 Condition::TargetIsVulnerable,
-                Box::new(Effect::DrawCard { count: 1 })
+                Box::new(BattleEffect::DrawCard { count: 1 })
             ),
         ])
         .set_upgraded(true)
@@ -50,7 +50,7 @@ mod tests {
         assert_eq!(dropkick_card.get_card_type(), CardType::Attack);
 
         let effects = dropkick_card.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 0 })));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 0 })));
     }
 
     #[test]
@@ -61,7 +61,7 @@ mod tests {
         assert_eq!(dropkick_plus.get_card_type(), CardType::Attack);
 
         let effects = dropkick_plus.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 0 })));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 0 })));
         assert!(dropkick_plus.is_upgraded());
     }
 

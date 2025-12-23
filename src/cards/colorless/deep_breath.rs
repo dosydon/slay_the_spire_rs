@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Deep Breath - Colorless Skill Card
 /// Cost: 0 (0 when upgraded)
@@ -9,8 +9,8 @@ pub fn deep_breath() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::ShuffleDiscardIntoDraw,
-            Effect::DrawCard { count: 1 },
+            BattleEffect::ShuffleDiscardIntoDraw,
+            BattleEffect::DrawCard { count: 1 },
         ]
     )
         .set_playable(true)
@@ -22,8 +22,8 @@ pub fn deep_breath_upgraded() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::ShuffleDiscardIntoDraw,
-            Effect::DrawCard { count: 2 },
+            BattleEffect::ShuffleDiscardIntoDraw,
+            BattleEffect::DrawCard { count: 2 },
         ]
     )
         .set_upgraded(true)
@@ -67,7 +67,7 @@ mod tests {
 
         // First effect should be ShuffleDiscardIntoDraw
         match &effects[0] {
-            Effect::ShuffleDiscardIntoDraw => {
+            BattleEffect::ShuffleDiscardIntoDraw => {
                 // No additional validation needed for this effect type
             }
             _ => panic!("Expected ShuffleDiscardIntoDraw effect as first effect"),
@@ -75,7 +75,7 @@ mod tests {
 
         // Second effect should be DrawCard(1)
         match &effects[1] {
-            Effect::DrawCard { count } => {
+            BattleEffect::DrawCard { count } => {
                 assert_eq!(*count, 1);
             }
             _ => panic!("Expected DrawCard effect as second effect"),
@@ -91,7 +91,7 @@ mod tests {
 
         // First effect should be ShuffleDiscardIntoDraw (same as base)
         match &effects[0] {
-            Effect::ShuffleDiscardIntoDraw => {
+            BattleEffect::ShuffleDiscardIntoDraw => {
                 // No additional validation needed for this effect type
             }
             _ => panic!("Expected ShuffleDiscardIntoDraw effect as first effect"),
@@ -99,7 +99,7 @@ mod tests {
 
         // Second effect should be DrawCard(2) - upgraded
         match &effects[1] {
-            Effect::DrawCard { count } => {
+            BattleEffect::DrawCard { count } => {
                 assert_eq!(*count, 2);
             }
             _ => panic!("Expected DrawCard effect as second effect"),

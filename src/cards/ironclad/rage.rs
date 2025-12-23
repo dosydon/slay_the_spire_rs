@@ -1,4 +1,4 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Rage - Uncommon Skill Card
@@ -6,7 +6,7 @@ use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity}
 /// Effect: Whenever you play an Attack card this turn, gain 3 Block.
 pub fn rage() -> Card {
     Card::new(CardEnum::Rage, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-            Effect::ActivateRage { block_per_attack: 3 },
+            BattleEffect::ActivateRage { block_per_attack: 3 },
         ])
         .set_play_condition(Condition::True)
 }
@@ -16,7 +16,7 @@ pub fn rage() -> Card {
 /// Effect: Whenever you play an Attack card this turn, gain 4 Block.
 pub fn rage_upgraded() -> Card {
     Card::new(CardEnum::Rage, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-            Effect::ActivateRage { block_per_attack: 4 },
+            BattleEffect::ActivateRage { block_per_attack: 4 },
         ])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -59,7 +59,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::ActivateRage { block_per_attack } => {
+            BattleEffect::ActivateRage { block_per_attack } => {
                 assert_eq!(*block_per_attack, 3);
             }
             _ => panic!("Expected ActivateRage effect"),
@@ -73,7 +73,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::ActivateRage { block_per_attack } => {
+            BattleEffect::ActivateRage { block_per_attack } => {
                 assert_eq!(*block_per_attack, 4);
             }
             _ => panic!("Expected ActivateRage effect"),
@@ -275,14 +275,14 @@ impl RageListener {
 }
 
 impl EventListener for RageListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CardPlayed { source, card_type }
                 if *source == self.source
                 && *card_type == crate::game::card_type::CardType::Attack
                 && self.is_active => {
                 // When an Attack card is played, gain Block
-                vec![Effect::GainDefense { amount: self.block_per_attack }]
+                vec![BattleEffect::GainDefense { amount: self.block_per_attack }]
             }
             BattleEvent::EndOfTurn { entity } if *entity == self.source => {
                 // Rage effect expires at end of turn

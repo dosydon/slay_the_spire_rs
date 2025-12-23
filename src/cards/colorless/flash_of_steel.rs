@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Flash of Steel - Colorless Attack Card
 /// Cost: 0 (0 when upgraded)
@@ -9,8 +9,8 @@ pub fn flash_of_steel() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Attack),
         vec![
-            Effect::AttackToTarget { amount: 3, num_attacks: 1, strength_multiplier: 0 },
-            Effect::DrawCard { count: 1 },
+            BattleEffect::AttackToTarget { amount: 3, num_attacks: 1, strength_multiplier: 0 },
+            BattleEffect::DrawCard { count: 1 },
         ]
     )
         .set_playable(true)
@@ -22,8 +22,8 @@ pub fn flash_of_steel_upgraded() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Attack),
         vec![
-            Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 0 },
-            Effect::DrawCard { count: 1 },
+            BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 0 },
+            BattleEffect::DrawCard { count: 1 },
         ]
     )
         .set_upgraded(true)
@@ -67,7 +67,7 @@ mod tests {
 
         // First effect should be AttackToTarget(3)
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 3);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 0);
@@ -77,7 +77,7 @@ mod tests {
 
         // Second effect should be DrawCard(1)
         match &effects[1] {
-            Effect::DrawCard { count } => {
+            BattleEffect::DrawCard { count } => {
                 assert_eq!(*count, 1);
             }
             _ => panic!("Expected DrawCard effect as second effect"),
@@ -93,7 +93,7 @@ mod tests {
 
         // First effect should be AttackToTarget(6) - upgraded
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 6);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 0);
@@ -103,7 +103,7 @@ mod tests {
 
         // Second effect should be DrawCard(1) - unchanged
         match &effects[1] {
-            Effect::DrawCard { count } => {
+            BattleEffect::DrawCard { count } => {
                 assert_eq!(*count, 1);
             }
             _ => panic!("Expected DrawCard effect as second effect"),

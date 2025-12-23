@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Panacea - Colorless Skill Card (Uncommon)
 /// Cost: 0 (0 when upgraded)
@@ -9,8 +9,8 @@ pub fn panacea() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::GainArtifact { amount: 1 },
-            Effect::Exhaust,
+            BattleEffect::GainArtifact { amount: 1 },
+            BattleEffect::Exhaust,
         ]
     )
         .set_playable(true)
@@ -22,8 +22,8 @@ pub fn panacea_upgraded() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::GainArtifact { amount: 2 },
-            Effect::Exhaust,
+            BattleEffect::GainArtifact { amount: 2 },
+            BattleEffect::Exhaust,
         ]
     )
         .set_upgraded(true)
@@ -67,14 +67,14 @@ mod tests {
 
         // First effect should be GainArtifact(1)
         match &effects[0] {
-            Effect::GainArtifact { amount } => {
+            BattleEffect::GainArtifact { amount } => {
                 assert_eq!(*amount, 1);
             }
             _ => panic!("Expected GainArtifact effect as first effect"),
         }
 
         // Second effect should be Exhaust
-        assert_eq!(effects[1], Effect::Exhaust);
+        assert_eq!(effects[1], BattleEffect::Exhaust);
     }
 
     #[test]
@@ -86,13 +86,13 @@ mod tests {
 
         // First effect should be GainArtifact(2) - upgraded
         match &effects[0] {
-            Effect::GainArtifact { amount } => {
+            BattleEffect::GainArtifact { amount } => {
                 assert_eq!(*amount, 2);
             }
             _ => panic!("Expected GainArtifact effect as first effect"),
         }
 
         // Second effect should be Exhaust (same as base)
-        assert_eq!(effects[1], Effect::Exhaust);
+        assert_eq!(effects[1], BattleEffect::Exhaust);
     }
 }

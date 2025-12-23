@@ -1,11 +1,11 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Entrench - Skill Card
 /// Cost: 2
 /// Effect: Double your current Block.
 pub fn entrench() -> Card {
     Card::new(CardEnum::Entrench, 2, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![
-        Effect::DoubleBlock,
+        BattleEffect::DoubleBlock,
     ])
         .set_playable(true)
 }
@@ -15,7 +15,7 @@ pub fn entrench() -> Card {
 /// Effect: Double your current Block.
 pub fn entrench_upgraded() -> Card {
     Card::new(CardEnum::Entrench, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![
-        Effect::DoubleBlock,
+        BattleEffect::DoubleBlock,
     ])
         .set_upgraded(true)
         .set_playable(true)
@@ -35,7 +35,7 @@ mod tests {
         assert_eq!(card.get_cost(), 2);
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::DoubleBlock);
+        assert_eq!(card.get_effects()[0], BattleEffect::DoubleBlock);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -48,7 +48,7 @@ mod tests {
         assert_eq!(card.get_cost(), 1); // Upgraded cost is 1
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::DoubleBlock);
+        assert_eq!(card.get_effects()[0], BattleEffect::DoubleBlock);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }

@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Happy Flower - Every 3 turns, gain 1 Energy
@@ -18,7 +18,7 @@ impl HappyFlowerRelic {
 }
 
 impl EventListener for HappyFlowerRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if *player == self.owner => {
                 self.turn_count = 0;
@@ -27,7 +27,7 @@ impl EventListener for HappyFlowerRelic {
             BattleEvent::StartOfPlayerTurn if self.owner == Entity::Player => {
                 self.turn_count += 1;
                 if self.turn_count % 3 == 0 {
-                    vec![Effect::GainEnergy { amount: 1 }]
+                    vec![BattleEffect::GainEnergy { amount: 1 }]
                 } else {
                     vec![]
                 }
@@ -79,7 +79,7 @@ mod tests {
         // Turn 3 - gain energy
         let effects3 = flower.on_event(&BattleEvent::StartOfPlayerTurn);
         assert_eq!(effects3.len(), 1);
-        assert!(matches!(effects3[0], Effect::GainEnergy { amount: 1 }));
+        assert!(matches!(effects3[0], BattleEffect::GainEnergy { amount: 1 }));
     }
 
     #[test]

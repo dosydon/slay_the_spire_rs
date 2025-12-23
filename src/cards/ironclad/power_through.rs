@@ -1,19 +1,19 @@
-use crate::game::{card::{Card, Rarity, CardClass}, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::{Card, Rarity, CardClass}, card_type::CardType, card_enum::CardEnum, effect::BattleEffect};
 
 pub fn power_through() -> Card {
     Card::new(CardEnum::PowerThrough, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-            Effect::AddCardToHand(CardEnum::Wound),
-            Effect::AddCardToHand(CardEnum::Wound),
-            Effect::GainDefense { amount: 15 },
+            BattleEffect::AddCardToHand(CardEnum::Wound),
+            BattleEffect::AddCardToHand(CardEnum::Wound),
+            BattleEffect::GainDefense { amount: 15 },
         ])
         .set_playable(true)
 }
 
 pub fn power_through_upgraded() -> Card {
     Card::new(CardEnum::PowerThrough, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-            Effect::AddCardToHand(CardEnum::Wound),
-            Effect::AddCardToHand(CardEnum::Wound),
-            Effect::GainDefense { amount: 20 },
+            BattleEffect::AddCardToHand(CardEnum::Wound),
+            BattleEffect::AddCardToHand(CardEnum::Wound),
+            BattleEffect::GainDefense { amount: 20 },
         ])
         .set_upgraded(true)
         .set_playable(true)
@@ -52,9 +52,9 @@ mod tests {
 
         assert_eq!(effects.len(), 3);
         // Should add 2 Wounds and gain 15 Block
-        assert_eq!(effects[0], Effect::AddCardToHand(CardEnum::Wound));
-        assert_eq!(effects[1], Effect::AddCardToHand(CardEnum::Wound));
-        assert_eq!(effects[2], Effect::GainDefense { amount: 15 });
+        assert_eq!(effects[0], BattleEffect::AddCardToHand(CardEnum::Wound));
+        assert_eq!(effects[1], BattleEffect::AddCardToHand(CardEnum::Wound));
+        assert_eq!(effects[2], BattleEffect::GainDefense { amount: 15 });
     }
 
     #[test]
@@ -64,9 +64,9 @@ mod tests {
 
         assert_eq!(effects.len(), 3);
         // Should add 2 Wounds and gain 20 Block
-        assert_eq!(effects[0], Effect::AddCardToHand(CardEnum::Wound));
-        assert_eq!(effects[1], Effect::AddCardToHand(CardEnum::Wound));
-        assert_eq!(effects[2], Effect::GainDefense { amount: 20 });
+        assert_eq!(effects[0], BattleEffect::AddCardToHand(CardEnum::Wound));
+        assert_eq!(effects[1], BattleEffect::AddCardToHand(CardEnum::Wound));
+        assert_eq!(effects[2], BattleEffect::GainDefense { amount: 20 });
     }
 }
 

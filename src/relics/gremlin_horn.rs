@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Gremlin Horn - Whenever an enemy dies, gain 1 Energy and draw 1 card
@@ -14,13 +14,13 @@ impl GremlinHornRelic {
 }
 
 impl EventListener for GremlinHornRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::EnemyDeath { enemy } => {
                 // Trigger on any enemy death (regardless of who killed it)
                 vec![
-                    Effect::GainEnergy { amount: 1 },
-                    Effect::DrawCard { count: 1 },
+                    BattleEffect::GainEnergy { amount: 1 },
+                    BattleEffect::DrawCard { count: 1 },
                 ]
             }
             _ => vec![]
@@ -59,8 +59,8 @@ mod tests {
         });
 
         assert_eq!(effects.len(), 2);
-        assert!(matches!(effects[0], Effect::GainEnergy { amount: 1 }));
-        assert!(matches!(effects[1], Effect::DrawCard { count: 1 }));
+        assert!(matches!(effects[0], BattleEffect::GainEnergy { amount: 1 }));
+        assert!(matches!(effects[1], BattleEffect::DrawCard { count: 1 }));
     }
 
     #[test]
@@ -73,8 +73,8 @@ mod tests {
 
         assert_eq!(effects.len(), 2);
         // Check both effects are present
-        let has_energy = effects.iter().any(|e| matches!(e, Effect::GainEnergy { amount: 1 }));
-        let has_draw = effects.iter().any(|e| matches!(e, Effect::DrawCard { count: 1 }));
+        let has_energy = effects.iter().any(|e| matches!(e, BattleEffect::GainEnergy { amount: 1 }));
+        let has_draw = effects.iter().any(|e| matches!(e, BattleEffect::DrawCard { count: 1 }));
         assert!(has_energy);
         assert!(has_draw);
     }

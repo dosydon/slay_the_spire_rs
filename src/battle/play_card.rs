@@ -40,7 +40,7 @@ impl Battle {
             is_skill_card = card.get_card_type() == CardType::Skill;
             is_power_card = card.get_card_type() == CardType::Power;
             // A card has exhaust if it naturally has the Exhaust effect OR if it's a Skill with Corruption active
-            has_exhaust = card_effects.contains(&crate::game::effect::Effect::Exhaust)
+            has_exhaust = card_effects.contains(&crate::game::effect::BattleEffect::Exhaust)
                 || (is_skill_card && self.has_corruption_active());
 
             // Emit SkillCardPlayed event if this is a Skill card
@@ -79,7 +79,7 @@ impl Battle {
             // Queue all effects, with special handling for Exhaust to include the hand index
             let mut has_exhaust_effect = false;
             for effect in card_effects {
-                if effect == crate::game::effect::Effect::Exhaust {
+                if effect == crate::game::effect::BattleEffect::Exhaust {
                     // Create Exhaust effect with hand index
                     self.queue_effect(BaseEffect::Exhaust {
                         hand_index: idx,

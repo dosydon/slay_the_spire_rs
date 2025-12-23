@@ -1,11 +1,11 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Evolve - Uncommon Power Card
 /// Cost: 1 (0 when upgraded)
 /// Effect: Draw 1 card. (In the full game, would draw cards when Status cards are drawn)
 pub fn evolve() -> Card {
     Card::new(CardEnum::Evolve, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Power), vec![
-            Effect::DrawCard { count: 1 },
+            BattleEffect::DrawCard { count: 1 },
         ])
         .set_play_condition(Condition::True)
 }
@@ -19,7 +19,7 @@ pub fn evolve_upgraded() -> Card {
         0, // Costs 0 when upgraded
         CardClass::IronClad(Rarity::Uncommon, CardType::Power),
         vec![
-            Effect::DrawCard { count: 1 },
+            BattleEffect::DrawCard { count: 1 },
         ]
     )
         .set_upgraded(true)
@@ -63,7 +63,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::DrawCard { count } => {
+            BattleEffect::DrawCard { count } => {
                 assert_eq!(*count, 1);
             }
             _ => panic!("Expected DrawCard effect"),
@@ -77,7 +77,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::DrawCard { count } => {
+            BattleEffect::DrawCard { count } => {
                 assert_eq!(*count, 1);
             }
             _ => panic!("Expected DrawCard effect"),

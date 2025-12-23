@@ -1,12 +1,12 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Immolate - Rare Attack Card
 /// Cost: 2 (2 when upgraded)
 /// Effect: Deal 21 damage to ALL enemies. Add a Burn to your discard pile.
 pub fn immolate() -> Card {
     Card::new(CardEnum::Immolate, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackAllEnemies { amount: 21, num_attacks: 1 },
-            Effect::AddCardToDiscard(CardEnum::Burn),
+            BattleEffect::AttackAllEnemies { amount: 21, num_attacks: 1 },
+            BattleEffect::AddCardToDiscard(CardEnum::Burn),
         ])
         .set_play_condition(Condition::True)
 }
@@ -16,8 +16,8 @@ pub fn immolate() -> Card {
 /// Effect: Deal 28 damage to ALL enemies. Add a Burn to your discard pile.
 pub fn immolate_upgraded() -> Card {
     Card::new(CardEnum::Immolate, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackAllEnemies { amount: 28, num_attacks: 1 },
-            Effect::AddCardToDiscard(CardEnum::Burn),
+            BattleEffect::AttackAllEnemies { amount: 28, num_attacks: 1 },
+            BattleEffect::AddCardToDiscard(CardEnum::Burn),
         ])
         .set_play_condition(Condition::True)
         .set_upgraded(true)
@@ -59,8 +59,8 @@ mod tests {
         let effects = card.get_effects();
 
         assert_eq!(effects.len(), 2);
-        assert_eq!(effects[0], Effect::AttackAllEnemies { amount: 21, num_attacks: 1 });
-        assert_eq!(effects[1], Effect::AddCardToDiscard(CardEnum::Burn));
+        assert_eq!(effects[0], BattleEffect::AttackAllEnemies { amount: 21, num_attacks: 1 });
+        assert_eq!(effects[1], BattleEffect::AddCardToDiscard(CardEnum::Burn));
     }
 
     #[test]
@@ -69,8 +69,8 @@ mod tests {
         let effects = card.get_effects();
 
         assert_eq!(effects.len(), 2);
-        assert_eq!(effects[0], Effect::AttackAllEnemies { amount: 28, num_attacks: 1 });
-        assert_eq!(effects[1], Effect::AddCardToDiscard(CardEnum::Burn));
+        assert_eq!(effects[0], BattleEffect::AttackAllEnemies { amount: 28, num_attacks: 1 });
+        assert_eq!(effects[1], BattleEffect::AddCardToDiscard(CardEnum::Burn));
     }
 
     #[test]
@@ -91,12 +91,12 @@ mod tests {
         let upgraded_effects = upgraded_card.get_effects();
 
         // Check damage amounts
-        assert_eq!(base_effects[0], Effect::AttackAllEnemies { amount: 21, num_attacks: 1 });
-        assert_eq!(upgraded_effects[0], Effect::AttackAllEnemies { amount: 28, num_attacks: 1 });
+        assert_eq!(base_effects[0], BattleEffect::AttackAllEnemies { amount: 21, num_attacks: 1 });
+        assert_eq!(upgraded_effects[0], BattleEffect::AttackAllEnemies { amount: 28, num_attacks: 1 });
 
         // Both should add Burn to discard
-        assert_eq!(base_effects[1], Effect::AddCardToDiscard(CardEnum::Burn));
-        assert_eq!(upgraded_effects[1], Effect::AddCardToDiscard(CardEnum::Burn));
+        assert_eq!(base_effects[1], BattleEffect::AddCardToDiscard(CardEnum::Burn));
+        assert_eq!(upgraded_effects[1], BattleEffect::AddCardToDiscard(CardEnum::Burn));
     }
 
     #[test]

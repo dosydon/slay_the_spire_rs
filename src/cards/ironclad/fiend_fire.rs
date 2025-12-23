@@ -1,18 +1,18 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 use crate::battle::target::Entity;
 
 pub fn fiend_fire() -> Card {
     Card::new(CardEnum::FiendFire, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::Exhaust,
-            Effect::ExhaustHandForDamage { damage_per_card: 7, target: Entity::Player },
+            BattleEffect::Exhaust,
+            BattleEffect::ExhaustHandForDamage { damage_per_card: 7, target: Entity::Player },
         ])
         .set_playable(true)
 }
 
 pub fn fiend_fire_upgraded() -> Card {
     Card::new(CardEnum::FiendFire, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::Exhaust,
-            Effect::ExhaustHandForDamage { damage_per_card: 10, target: Entity::Player },
+            BattleEffect::Exhaust,
+            BattleEffect::ExhaustHandForDamage { damage_per_card: 10, target: Entity::Player },
         ])
         .set_upgraded(true)
         .set_playable(true)
@@ -50,9 +50,9 @@ mod tests {
         let effects = card.get_effects();
 
         assert_eq!(effects.len(), 2);
-        assert_eq!(effects[0], Effect::Exhaust);
+        assert_eq!(effects[0], BattleEffect::Exhaust);
         match &effects[1] {
-            Effect::ExhaustHandForDamage { damage_per_card, target } => {
+            BattleEffect::ExhaustHandForDamage { damage_per_card, target } => {
                 assert_eq!(*damage_per_card, 7);
                 assert_eq!(*target, Entity::Player);
             }
@@ -66,9 +66,9 @@ mod tests {
         let effects = card.get_effects();
 
         assert_eq!(effects.len(), 2);
-        assert_eq!(effects[0], Effect::Exhaust);
+        assert_eq!(effects[0], BattleEffect::Exhaust);
         match &effects[1] {
-            Effect::ExhaustHandForDamage { damage_per_card, target } => {
+            BattleEffect::ExhaustHandForDamage { damage_per_card, target } => {
                 assert_eq!(*damage_per_card, 10);
                 assert_eq!(*target, Entity::Player);
             }

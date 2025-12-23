@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Carnage - Uncommon Attack Card
 /// Cost: 2
@@ -6,7 +6,7 @@ use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::
 /// Ethereal: Exhausts at end of turn if not played
 pub fn carnage() -> Card {
     Card::new(CardEnum::Carnage, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-        Effect::AttackToTarget {
+        BattleEffect::AttackToTarget {
             amount: 20,
             num_attacks: 1,
             strength_multiplier: 1,
@@ -21,7 +21,7 @@ pub fn carnage() -> Card {
 /// Ethereal: Exhausts at end of turn if not played
 pub fn carnage_upgraded() -> Card {
     Card::new(CardEnum::Carnage, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-        Effect::AttackToTarget {
+        BattleEffect::AttackToTarget {
             amount: 28,
             num_attacks: 1,
             strength_multiplier: 1,
@@ -70,7 +70,7 @@ mod tests {
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 20);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 1);
@@ -86,7 +86,7 @@ mod tests {
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 28);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 1);

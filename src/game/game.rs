@@ -64,6 +64,11 @@ impl Game {
         }
     }
 
+    /// Get a reference to all relics
+    pub fn get_relics(&self) -> &[crate::relics::Relic] {
+        &self.relics
+    }
+
     /// Get the length of the event history
     pub fn get_event_history_len(&self) -> usize {
         self.event_history.len()
@@ -94,7 +99,7 @@ impl Game {
         // Apply healing effects directly to player HP
         for effect in new_effects {
             match effect {
-                crate::game::effect::Effect::Heal(amount) => {
+                crate::game::effect::BattleEffect::Heal(amount) => {
                     self.player_hp = (self.player_hp + amount).min(self.player_max_hp);
                 }
                 // Handle other effects as needed
@@ -356,9 +361,12 @@ impl Game {
 
                 // Get the relic rarity and claim it
                 if let Some(relic_rarity) = reward_state.claim_relic() {
-                    // TODO: When relic system is implemented, sample an actual relic of the given rarity
-                    // For now, just log the relic rarity that would be obtained
-                    info!("Claimed {:?} rarity relic from treasure chest", relic_rarity);
+                    // Sample a relic of the given rarity
+                    let relic = crate::relics::Relic::sample_relic(relic_rarity, rng);
+                    info!("Claimed {:?} rarity relic: {}", relic_rarity, relic.name());
+
+                    // Add the relic to the game
+                    self.add_relic(relic.clone());
 
                     self.set_game_state(GameState::Reward(reward_state));
 
@@ -446,7 +454,7 @@ impl Game {
                     EventOutcome::Effects(effects) => {
                         // Apply all effects from the event choice
                         for effect in effects {
-                            self.apply_event_effect(effect);
+                            self.eval_effect(effect, rng);
                         }
 
                         // Event is complete, return to map
@@ -762,11 +770,19 @@ impl Game {
             }
         };
 
-        // Determine gold reward and card selection based on node type
-        let (gold_reward, card_selection_available) = match node.map(|n| &n.node_type) {
-            Some(NodeType::Elite) => (rng.random_range(25..=35), true),
-            Some(NodeType::Boss) => (rng.random_range(95..=105), true),
-            Some(NodeType::Combat) | _ => (rng.random_range(10..=20), true),
+        // Determine gold reward, card selection, and relic reward based on node type
+        let (gold_reward, card_selection_available, relic_reward) = match node.map(|n| &n.node_type) {
+            Some(NodeType::Elite) => {
+                // Elite combat: guaranteed relic (85% uncommon, 15% rare)
+                let relic_rarity = if rng.random_range(0.0..1.0) < 0.85 {
+                    crate::game::reward_state::RelicRarity::Uncommon
+                } else {
+                    crate::game::reward_state::RelicRarity::Rare
+                };
+                (rng.random_range(25..=35), true, Some(relic_rarity))
+            },
+            Some(NodeType::Boss) => (rng.random_range(95..=105), true, None), // TODO: Boss relics
+            Some(NodeType::Combat) | _ => (rng.random_range(10..=20), true, None),
         };
 
         RewardState {
@@ -775,7 +791,7 @@ impl Game {
             gold_claimed: false,
             potion_reward: potion_drop.flatten(), // Convert Option<Option<Potion>> to Option<Potion>
             potion_claimed: false,
-            relic_reward: None,
+            relic_reward,
             relic_claimed: false,
         }
     }
@@ -857,34 +873,133 @@ impl Game {
         }
     }
 
-    /// Apply a single event effect to the player/game
-    fn apply_event_effect(&mut self, effect: crate::game::effect::Effect) {
-        use crate::game::effect::Effect;
+    /// Evaluate a single effect and apply it to the player/game
+    fn eval_effect(&mut self, effect: crate::game::effect::Effect, rng: &mut impl rand::Rng) {
+        use crate::game::effect::{Effect, BattleEffect, GameEffect};
 
         match effect {
-            Effect::Heal(amount) => {
-                // Handle special case: amount 0 means heal 1/3 of max HP
-                let heal_amount = if amount == 0 {
-                    self.player_max_hp / 3
-                } else {
-                    amount
-                };
-                self.player_hp = (self.player_hp + heal_amount).min(self.player_max_hp);
-                info!("Healed {} HP", heal_amount);
+            Effect::Battle(battle_effect) => {
+                match battle_effect {
+                    BattleEffect::Heal(amount) => {
+                        // Handle special case: amount 0 means heal 1/3 of max HP
+                        let heal_amount = if amount == 0 {
+                            self.player_max_hp / 3
+                        } else {
+                            amount
+                        };
+                        self.player_hp = (self.player_hp + heal_amount).min(self.player_max_hp);
+                        info!("Healed {} HP", heal_amount);
+                    },
+                    BattleEffect::HealAndIncreaseMaxHp(amount) => {
+                        self.player_hp = (self.player_hp + amount).min(self.player_max_hp + amount);
+                        self.player_max_hp += amount;
+                        info!("Gained {} Max HP and healed to full", amount);
+                    },
+                    BattleEffect::LoseHp(amount) => {
+                        self.player_hp = self.player_hp.saturating_sub(amount);
+                        info!("Lost {} HP", amount);
+                    },
+                    BattleEffect::AddCardToDrawPile(card_enum) => {
+                        // Add card to draw pile (will be added to deck when battle starts)
+                        // For now, just add directly to deck
+                        use crate::cards::status::slimed::slimed;
+                        use crate::cards::ironclad::strike::strike;
+                        use crate::cards::ironclad::defend::defend;
+
+                        let card = match card_enum {
+                            crate::game::card_enum::CardEnum::Slimed => slimed(),
+                            crate::game::card_enum::CardEnum::Strike => strike(),
+                            crate::game::card_enum::CardEnum::Defend => defend(),
+                            _ => {
+                                info!("Cannot add card {:?} to deck (not yet implemented)", card_enum);
+                                return;
+                            }
+                        };
+                        self.deck.add_card(card);
+                        info!("Added {} to deck", card_enum.name());
+                    },
+                    // TODO: Implement other battle effects as needed
+                    _ => {
+                        info!("Battle effect not yet implemented: {:?}", battle_effect);
+                    }
+                }
             },
-            Effect::HealAndIncreaseMaxHp(amount) => {
-                self.player_hp = (self.player_hp + amount).min(self.player_max_hp + amount);
-                self.player_max_hp += amount;
-                info!("Gained {} Max HP and healed to full", amount);
-            },
-            Effect::LoseHp(amount) => {
-                self.player_hp = self.player_hp.saturating_sub(amount);
-                info!("Lost {} HP", amount);
-            },
-            // TODO: Implement other event effects as needed
-            // For now, most effects are logged but not implemented
-            _ => {
-                info!("Event effect not yet implemented: {:?}", effect);
+            Effect::Game(game_effect) => {
+                match game_effect {
+                    GameEffect::GainGold { amount } => {
+                        self.gold += amount;
+                        info!("Gained {} gold", amount);
+                    },
+                    GameEffect::SpendGold { amount } => {
+                        if self.gold < amount {
+                            info!("Not enough gold to spend {} (have {})", amount, self.gold);
+                            // For now, we'll just spend what we can
+                            self.gold = 0;
+                        } else {
+                            self.gold -= amount;
+                            info!("Spent {} gold", amount);
+                        }
+                    },
+                    GameEffect::ObtainRandomRelic => {
+                        // TODO: Implement relic system
+                        info!("Obtained a random relic (not yet implemented)");
+                    },
+                    GameEffect::EnterSelectCardsToUpgrade { count } => {
+                        // For now, just transition to upgrade state
+                        // TODO: Handle multi-card selection
+                        self.set_game_state(GameState::SelectingCardFromDeck(crate::game::game_state::CardFromDeckTo::Upgrade));
+                        info!("Enter card upgrade selection (count: {})", count);
+                    },
+                    GameEffect::EnterSelectCardsToRemove { count } => {
+                        // For now, just transition to remove state
+                        // TODO: Handle multi-card selection and shop context
+                        self.set_game_state(GameState::SelectingCardFromDeck(crate::game::game_state::CardFromDeckTo::Remove));
+                        info!("Enter card removal selection (count: {})", count);
+                    },
+                    GameEffect::EnterSelectCardsToTransform { count } => {
+                        // TODO: Implement card transformation
+                        info!("Enter card transform selection (count: {}) - not yet implemented", count);
+                    },
+                    GameEffect::UpgradeRandomCards { count } => {
+                        let mut upgradeable_indices: Vec<usize> = self.deck.get_cards()
+                            .iter()
+                            .enumerate()
+                            .filter(|(_, card)| !card.is_upgraded())
+                            .map(|(i, _)| i)
+                            .collect();
+
+                        if upgradeable_indices.is_empty() {
+                            info!("No cards to upgrade");
+                            return;
+                        }
+
+                        // Sample random cards to upgrade (without replacement)
+                        let num_to_upgrade = count.min(upgradeable_indices.len() as u32) as usize;
+                        let mut indices_to_upgrade = Vec::new();
+
+                        for _ in 0..num_to_upgrade {
+                            let random_idx = rng.random_range(0..upgradeable_indices.len());
+                            indices_to_upgrade.push(upgradeable_indices[random_idx]);
+                            upgradeable_indices.remove(random_idx);
+                        }
+
+                        // Upgrade the selected cards
+                        for &idx in &indices_to_upgrade {
+                            if let Some(card) = self.deck.get_card(idx) {
+                                let old_name = card.get_name();
+                                let upgraded_card = card.clone().upgrade();
+                                let new_name = upgraded_card.get_name();
+                                self.deck.remove_card(idx);
+                                self.deck.insert_card(idx, upgraded_card);
+                                info!("Upgraded '{}' to '{}'", old_name, new_name);
+                            }
+                        }
+                    },
+                    GameEffect::TriggerCombatEvent => {
+                        // TODO: Implement combat event triggering
+                        info!("Trigger combat event - not yet implemented");
+                    },
+                }
             }
         }
     }
@@ -2087,5 +2202,115 @@ mod tests {
 
         // Potion should not have been claimed
         assert_eq!(game.potions.potion_count(), 0);
+    }
+
+    #[test]
+    fn test_elite_combat_includes_relic_reward() {
+        use crate::game::reward_state::RelicRarity;
+
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let mut rng = rand::rng();
+
+        // Create a map with an elite encounter
+        let mut map = Map::new();
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        let elite_node = MapNode::new(1, 0, NodeType::Elite);
+        map.add_node(start_node);
+        map.add_node(elite_node);
+        map.add_edge((0, 0), (1, 0)).unwrap();
+        map.set_starting_position((0, 0)).unwrap();
+
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+
+        // Set the current position to the elite node
+        game.current_node_position = (1, 0);
+
+        // Create a reward state for the elite node
+        let reward_state = game.create_reward_state_for_current_node(&mut rng);
+
+        // Elite should always have a relic reward
+        assert!(reward_state.relic_reward.is_some(), "Elite combat should always have a relic reward");
+
+        // Relic should be either Uncommon or Rare
+        match reward_state.relic_reward.unwrap() {
+            RelicRarity::Common => panic!("Elite should not give common relics"),
+            RelicRarity::Uncommon => {}, // Expected
+            RelicRarity::Rare => {}, // Expected
+        }
+
+        // Elite should also have card selection and gold
+        assert!(reward_state.card_selection_available);
+        assert!(reward_state.gold_reward >= 25 && reward_state.gold_reward <= 35);
+    }
+
+    #[test]
+    fn test_normal_combat_no_relic_reward() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, _) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let mut rng = rand::rng();
+
+        // Set current node to a combat node (position 1, 0 in test map)
+        game.current_node_position = (1, 0);
+
+        // Create a reward state for the combat node
+        let reward_state = game.create_reward_state_for_current_node(&mut rng);
+
+        // Normal combat should not have a relic reward
+        assert!(reward_state.relic_reward.is_none(), "Normal combat should not have a relic reward");
+
+        // But should still have card selection and gold
+        assert!(reward_state.card_selection_available);
+        assert!(reward_state.gold_reward >= 10 && reward_state.gold_reward <= 20);
+    }
+
+    #[test]
+    fn test_elite_relic_rarity_distribution() {
+        use crate::game::reward_state::RelicRarity;
+
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let mut rng = rand::rng();
+
+        // Create a map with an elite encounter
+        let mut map = Map::new();
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        let elite_node = MapNode::new(1, 0, NodeType::Elite);
+        map.add_node(start_node);
+        map.add_node(elite_node);
+        map.add_edge((0, 0), (1, 0)).unwrap();
+        map.set_starting_position((0, 0)).unwrap();
+
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+
+        // Set the current position to the elite node
+        game.current_node_position = (1, 0);
+
+        // Run many trials to check distribution
+        let mut uncommon_count = 0;
+        let mut rare_count = 0;
+        let trials = 1000;
+
+        for _ in 0..trials {
+            let reward_state = game.create_reward_state_for_current_node(&mut rng);
+            if let Some(relic_rarity) = reward_state.relic_reward {
+                match relic_rarity {
+                    RelicRarity::Uncommon => uncommon_count += 1,
+                    RelicRarity::Rare => rare_count += 1,
+                    RelicRarity::Common => panic!("Elite should not give common relics"),
+                }
+            } else {
+                panic!("Elite should always have a relic reward");
+            }
+        }
+
+        // Check distribution is roughly 85% uncommon, 15% rare (allow 10% margin)
+        let uncommon_ratio = uncommon_count as f64 / trials as f64;
+        let rare_ratio = rare_count as f64 / trials as f64;
+
+        assert!((uncommon_ratio - 0.85).abs() < 0.10, "Uncommon ratio was {}, expected ~0.85", uncommon_ratio);
+        assert!((rare_ratio - 0.15).abs() < 0.10, "Rare ratio was {}, expected ~0.15", rare_ratio);
     }
 }

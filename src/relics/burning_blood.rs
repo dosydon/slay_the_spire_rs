@@ -1,5 +1,5 @@
 use crate::game::game_event::{GameEvent, GameEventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 
 #[derive(Debug)]
 pub struct BurningBloodRelic {
@@ -15,11 +15,11 @@ impl BurningBloodRelic {
 }
 
 impl GameEventListener for BurningBloodRelic {
-    fn on_game_event(&mut self, event: &GameEvent) -> Vec<Effect> {
+    fn on_game_event(&mut self, event: &GameEvent) -> Vec<BattleEffect> {
         match event {
             GameEvent::CombatVictory if !self.used => {
                 self.used = true;
-                vec![Effect::Heal(6)]
+                vec![BattleEffect::Heal(6)]
             }
             _ => vec![]
         }
@@ -48,7 +48,7 @@ mod tests {
         let effects = relic.on_game_event(&combat_victory_event);
 
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::Heal(6));
+        assert_eq!(effects[0], BattleEffect::Heal(6));
         assert!(!relic.is_active()); // Used up
     }
 

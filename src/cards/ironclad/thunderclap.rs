@@ -1,16 +1,16 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 pub fn thunderclap() -> Card {
     Card::new(CardEnum::Thunderclap, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-        Effect::AttackAllEnemies { amount: 4, num_attacks: 1 },
-        Effect::ApplyVulnerableAll { duration: 1 }
+        BattleEffect::AttackAllEnemies { amount: 4, num_attacks: 1 },
+        BattleEffect::ApplyVulnerableAll { duration: 1 }
     ])
 }
 
 pub fn thunderclap_upgraded() -> Card {
     Card::new(CardEnum::Thunderclap, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-        Effect::AttackAllEnemies { amount: 7, num_attacks: 1 }, // +2 damage
-        Effect::ApplyVulnerableAll { duration: 1 } //
+        BattleEffect::AttackAllEnemies { amount: 7, num_attacks: 1 }, // +2 damage
+        BattleEffect::ApplyVulnerableAll { duration: 1 } //
     ])
         .set_upgraded(true)
 }

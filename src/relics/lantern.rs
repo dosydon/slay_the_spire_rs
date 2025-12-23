@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Lantern - Gain 1 Energy on the first turn of each combat
@@ -18,11 +18,11 @@ impl LanternRelic {
 }
 
 impl EventListener for LanternRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::StartOfPlayerTurn if !self.used => {
                 self.used = true;
-                vec![Effect::GainEnergy { amount: 1 }]
+                vec![BattleEffect::GainEnergy { amount: 1 }]
             }
             _ => vec![]
         }
@@ -59,7 +59,7 @@ mod tests {
         let effects = lantern.on_event(&BattleEvent::StartOfPlayerTurn);
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::GainEnergy { amount: 1 }));
+        assert!(matches!(effects[0], BattleEffect::GainEnergy { amount: 1 }));
         assert!(lantern.used);
     }
 

@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Oddly Smooth Stone - At the start of each combat, gain 1 Dexterity
@@ -14,10 +14,10 @@ impl OddlySmoothStoneRelic {
 }
 
 impl EventListener for OddlySmoothStoneRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if *player == self.owner => {
-                vec![Effect::GainDexterity { amount: 1 }]
+                vec![BattleEffect::GainDexterity { amount: 1 }]
             }
             _ => vec![]
         }
@@ -55,7 +55,7 @@ mod tests {
         });
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::GainDexterity { amount: 1 }));
+        assert!(matches!(effects[0], BattleEffect::GainDexterity { amount: 1 }));
     }
 
     #[test]

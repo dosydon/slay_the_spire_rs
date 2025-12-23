@@ -1,18 +1,18 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Corruption - Power Card
 /// Cost: 3 (2 when upgraded)
 /// Effect: Skills cost 0. Whenever you play a Skill, Exhaust it.
 pub fn corruption() -> Card {
     Card::new(CardEnum::Corruption, 3, CardClass::IronClad(Rarity::Rare, CardType::Power), vec![
-        Effect::ActivateCorruption,
+        BattleEffect::ActivateCorruption,
     ])
         .set_play_condition(Condition::True)
 }
 
 pub fn corruption_upgraded() -> Card {
     Card::new(CardEnum::Corruption, 2, CardClass::IronClad(Rarity::Rare, CardType::Power), vec![
-        Effect::ActivateCorruption,
+        BattleEffect::ActivateCorruption,
     ])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -32,7 +32,7 @@ mod tests {
         assert_eq!(card.get_cost(), 3);
         assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::ActivateCorruption);
+        assert_eq!(card.get_effects()[0], BattleEffect::ActivateCorruption);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -45,7 +45,7 @@ mod tests {
         assert_eq!(card.get_cost(), 2);  // Upgraded cost is 2
         assert_eq!(card.get_card_type(), CardType::Power);
         assert_eq!(card.get_effects().len(), 1);
-        assert_eq!(card.get_effects()[0], Effect::ActivateCorruption);
+        assert_eq!(card.get_effects()[0], BattleEffect::ActivateCorruption);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }

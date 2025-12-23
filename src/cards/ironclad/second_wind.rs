@@ -1,10 +1,10 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::BattleEffect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Second Wind - Uncommon Skill Card
 /// Cost: 1
 /// Effect: Exhaust all non-Attack cards from your hand. Gain 5 Block per card exhausted.
 pub fn second_wind() -> Card {
-    Card::new(CardEnum::SecondWind, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::ExhaustNonAttackCardsFromHand { block_per_card: 5 }])
+    Card::new(CardEnum::SecondWind, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![BattleEffect::ExhaustNonAttackCardsFromHand { block_per_card: 5 }])
         .set_playable(true)
 }
 
@@ -12,7 +12,7 @@ pub fn second_wind() -> Card {
 /// Cost: 1
 /// Effect: Exhaust all non-Attack cards from your hand. Gain 8 Block per card exhausted.
 pub fn second_wind_upgraded() -> Card {
-    Card::new(CardEnum::SecondWind, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::ExhaustNonAttackCardsFromHand { block_per_card: 8 }])
+    Card::new(CardEnum::SecondWind, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![BattleEffect::ExhaustNonAttackCardsFromHand { block_per_card: 8 }])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -50,7 +50,7 @@ mod tests {
         let card = second_wind();
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::ExhaustNonAttackCardsFromHand { block_per_card: 5 }));
+        assert!(matches!(effects[0], BattleEffect::ExhaustNonAttackCardsFromHand { block_per_card: 5 }));
     }
 
     #[test]
@@ -58,7 +58,7 @@ mod tests {
         let card = second_wind_upgraded();
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::ExhaustNonAttackCardsFromHand { block_per_card: 8 }));
+        assert!(matches!(effects[0], BattleEffect::ExhaustNonAttackCardsFromHand { block_per_card: 8 }));
     }
 
     #[test]

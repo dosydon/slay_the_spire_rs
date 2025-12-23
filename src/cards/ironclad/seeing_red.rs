@@ -1,8 +1,8 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Seeing Red - Gain 2 Energy. Exhaust.
 pub fn seeing_red() -> Card {
-    Card::new(CardEnum::SeeingRed, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::GainEnergy { amount: 2 }, Effect::Exhaust])
+    Card::new(CardEnum::SeeingRed, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![BattleEffect::GainEnergy { amount: 2 }, BattleEffect::Exhaust])
         .set_play_condition(Condition::True)
 }
 
@@ -12,7 +12,7 @@ pub fn seeing_red_upgraded() -> Card {
         CardEnum::SeeingRed,
         0, // Cost reduced from 1 to 0
         CardClass::IronClad(Rarity::Uncommon, CardType::Skill),
-        vec![Effect::GainEnergy { amount: 2 }, Effect::Exhaust]
+        vec![BattleEffect::GainEnergy { amount: 2 }, BattleEffect::Exhaust]
     )
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -34,8 +34,8 @@ mod tests {
         assert!(!seeing_red_card.is_upgraded());
 
         let effects = seeing_red_card.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::GainEnergy { amount: 2 })));
-        assert!(effects.iter().any(|e| matches!(e, Effect::Exhaust)));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::GainEnergy { amount: 2 })));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::Exhaust)));
     }
 
     #[test]
@@ -47,8 +47,8 @@ mod tests {
         assert!(seeing_red_plus.is_upgraded());
 
         let effects = seeing_red_plus.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::GainEnergy { amount: 2 })));
-        assert!(effects.iter().any(|e| matches!(e, Effect::Exhaust)));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::GainEnergy { amount: 2 })));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::Exhaust)));
     }
 
     #[test]

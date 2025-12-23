@@ -1,10 +1,10 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Anger - Deal 6 damage. Add a copy of this card to your discard pile.
 pub fn anger() -> Card {
     Card::new(CardEnum::Anger, 0, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-            Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
-            Effect::AddCardToDiscard(CardEnum::Anger),
+            BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::AddCardToDiscard(CardEnum::Anger),
         ])
         .set_play_condition(Condition::True)
 }
@@ -12,8 +12,8 @@ pub fn anger() -> Card {
 /// Anger+ (Upgraded version) - Deal 8 damage. Add a copy of this card to your discard pile.
 pub fn anger_upgraded() -> Card {
     Card::new(CardEnum::Anger, 0, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-            Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
-            Effect::AddUpgradedCardToDiscard(CardEnum::Anger),
+            BattleEffect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::AddUpgradedCardToDiscard(CardEnum::Anger),
         ])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -35,8 +35,8 @@ mod tests {
         assert!(!anger_card.is_upgraded());
 
         let effects = anger_card.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 6, .. })));
-        assert!(effects.iter().any(|e| matches!(e, Effect::AddCardToDiscard(CardEnum::Anger))));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::AttackToTarget { amount: 6, .. })));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::AddCardToDiscard(CardEnum::Anger))));
     }
 
     #[test]
@@ -48,8 +48,8 @@ mod tests {
         assert!(anger_plus.is_upgraded());
 
         let effects = anger_plus.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 8, .. })));
-        assert!(effects.iter().any(|e| matches!(e, Effect::AddUpgradedCardToDiscard(CardEnum::Anger))));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::AttackToTarget { amount: 8, .. })));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::AddUpgradedCardToDiscard(CardEnum::Anger))));
     }
 
     #[test]

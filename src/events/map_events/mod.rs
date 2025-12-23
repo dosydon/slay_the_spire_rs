@@ -164,7 +164,7 @@ mod tests {
         match &banana.outcome {
             EventOutcome::Effects(effects) => {
                 assert_eq!(effects.len(), 1);
-                assert_eq!(effects[0], Effect::HealAndIncreaseMaxHp(5));
+                assert_eq!(effects[0], Effect::Battle(crate::game::effect::BattleEffect::HealAndIncreaseMaxHp(5)));
             }
             _ => panic!("Expected Effects outcome"),
         }
@@ -184,7 +184,7 @@ mod tests {
             EventOutcome::Effects(effects) => {
                 assert_eq!(effects.len(), 1);
                 // Heal(0) is a placeholder that means: calculate as max_hp / 3
-                assert_eq!(effects[0], Effect::Heal(0));
+                assert_eq!(effects[0], Effect::Battle(crate::game::effect::BattleEffect::Heal(0)));
             }
             _ => panic!("Expected Effects outcome"),
         }
@@ -203,7 +203,7 @@ mod tests {
             EventOutcome::Effects(effects) => {
                 // Box should give a random relic
                 assert_eq!(effects.len(), 1);
-                assert_eq!(effects[0], Effect::ObtainRandomRelic);
+                assert_eq!(effects[0], Effect::Game(crate::game::effect::GameEffect::ObtainRandomRelic));
             }
             _ => panic!("Expected Effects outcome"),
         }

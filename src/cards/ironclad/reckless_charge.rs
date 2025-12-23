@@ -1,12 +1,12 @@
-use crate::game::{card::{Card, Rarity, CardClass}, card_type::CardType, card_enum::CardEnum, effect::Effect};
+use crate::game::{card::{Card, Rarity, CardClass}, card_type::CardType, card_enum::CardEnum, effect::BattleEffect};
 
 /// Reckless Charge - Common Attack Card
 /// Cost: 0
 /// Effect: Deal 7 damage. Add Dazed to discard pile
 pub fn reckless_charge() -> Card {
     Card::new(CardEnum::RecklessCharge, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTarget { amount: 7, num_attacks: 1, strength_multiplier: 1 },
-            Effect::AddStatusToDiscard { status_card: crate::game::card_enum::CardEnum::Dazed },
+            BattleEffect::AttackToTarget { amount: 7, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::AddStatusToDiscard { status_card: crate::game::card_enum::CardEnum::Dazed },
         ])
         .set_playable(true)
 }
@@ -16,8 +16,8 @@ pub fn reckless_charge() -> Card {
 /// Effect: Deal 10 damage. Add Dazed to discard pile
 pub fn reckless_charge_upgraded() -> Card {
     Card::new(CardEnum::RecklessCharge, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
-            Effect::AddStatusToDiscard { status_card: crate::game::card_enum::CardEnum::Dazed },
+            BattleEffect::AttackToTarget { amount: 10, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::AddStatusToDiscard { status_card: crate::game::card_enum::CardEnum::Dazed },
         ])
         .set_upgraded(true)
         .set_playable(true)
@@ -61,7 +61,7 @@ mod tests {
 
         assert_eq!(effects.len(), 2);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 7);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 1);
@@ -70,7 +70,7 @@ mod tests {
         }
 
         match &effects[1] {
-            Effect::AddStatusToDiscard { status_card } => {
+            BattleEffect::AddStatusToDiscard { status_card } => {
                 assert_eq!(status_card.name(), "Dazed");
             }
             _ => panic!("Expected AddStatusToDiscard effect"),
@@ -84,7 +84,7 @@ mod tests {
 
         assert_eq!(effects.len(), 2);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 10);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 1);

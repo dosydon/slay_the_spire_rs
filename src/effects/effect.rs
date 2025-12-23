@@ -1,9 +1,20 @@
 use crate::battle::target::Entity;
 use crate::game::card_enum::CardEnum;
 use super::condition::Condition;
+use super::game_effect::GameEffect;
 
+/// Unified effect type that can be either a battle effect or a game effect
+/// This provides type-level safety to prevent using game effects in battle context
 #[derive(Debug, Clone, PartialEq)]
 pub enum Effect {
+    Battle(BattleEffect),
+    Game(GameEffect),
+}
+
+/// Battle-specific effects that operate within combat context
+/// These effects modify battle state, deal damage, apply buffs/debuffs, etc.
+#[derive(Debug, Clone, PartialEq)]
+pub enum BattleEffect {
     AttackToTarget {
         amount: u32,
         num_attacks: u32,
@@ -60,7 +71,7 @@ pub enum Effect {
     PutCardOnTopOfDrawPile(CardEnum), // Put a card on top of the draw pile
     EnterSelectCardInDiscard, // Transition to SelectCardInDiscard state
     PutRandomDiscardCardOnTop, // Put a random card from discard on top of draw pile
-    ConditionalEffect(Condition, Box<Effect>), // Conditional effect that only triggers if condition is met
+    ConditionalEffect(Condition, Box<BattleEffect>), // Conditional effect that only triggers if condition is met
     ActivateCorruption, // Activates Corruption power for making skills cost 0 and exhaust them
     ActivateMetallicize { amount: u32 }, // Activates Metallicize power for end-of-turn block generation
     ActivateFlameBarrier { damage: u32 }, // Activates Flame Barrier for retaliation damage
@@ -96,14 +107,4 @@ pub enum Effect {
     EnemyEscape, // Enemy escapes from combat (used by Looter)
     SplitIntoMediumSlimes, // Split into 2 medium slimes (used by large slimes on death)
     LoseHpPerCardInHand { damage_per_card: u32 }, // Lose HP for each card in hand (used by Regret)
-
-    // Event-specific effects
-    GainGold { amount: u32 }, // Gain gold (for events)
-    SpendGold { amount: u32 }, // Spend/lose gold (for events)
-    ObtainRandomRelic, // Obtain a random relic
-    EnterSelectCardsToUpgrade { count: u32 }, // Transition to SelectCardsToUpgrade state (for upgrading multiple cards)
-    UpgradeRandomCards { count: u32 }, // Upgrade random cards from deck (no player selection)
-    EnterSelectCardsToRemove { count: u32 }, // Transition to SelectCardsToRemove state (for removing cards from deck)
-    EnterSelectCardsToTransform { count: u32 }, // Transition to SelectCardsToTransform state (for transforming cards)
-    TriggerCombatEvent, // Trigger a combat encounter from an event
 }

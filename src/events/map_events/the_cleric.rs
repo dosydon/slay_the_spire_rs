@@ -1,4 +1,4 @@
-use crate::game::effect::Effect;
+use crate::game::effect::{Effect, BattleEffect, GameEffect};
 use crate::events::map_events::{EventChoice, EventOutcome};
 
 /// The Cleric event choices
@@ -16,8 +16,8 @@ pub fn the_cleric_choices(floor: u32, player_hp: u32, player_max_hp: u32) -> Vec
         EventChoice {
             text: format!("Heal {} HP (costs {} gold)", heal_amount, gold_cost),
             outcome: EventOutcome::Effects(vec![
-                Effect::SpendGold { amount: gold_cost },
-                Effect::Heal(0),  // 0 = full heal
+                Effect::Game(GameEffect::SpendGold { amount: gold_cost }),
+                Effect::Battle(BattleEffect::Heal(0)),  // 0 = full heal
             ]),
         },
         EventChoice {

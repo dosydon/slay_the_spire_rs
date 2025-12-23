@@ -1,12 +1,12 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Impervious - Rare Skill Card
 /// Cost: 2
 /// Effect: Gain 30 Block. Exhaust.
 pub fn impervious() -> Card {
     Card::new(CardEnum::Impervious, 2, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
-        Effect::GainDefense { amount: 30 },
-        Effect::Exhaust,
+        BattleEffect::GainDefense { amount: 30 },
+        BattleEffect::Exhaust,
     ])
         .set_playable(true)
 }
@@ -16,8 +16,8 @@ pub fn impervious() -> Card {
 /// Effect: Gain 40 Block. Exhaust.
 pub fn impervious_upgraded() -> Card {
     Card::new(CardEnum::Impervious, 2, CardClass::IronClad(Rarity::Rare, CardType::Skill), vec![
-        Effect::GainDefense { amount: 40 },
-        Effect::Exhaust,
+        BattleEffect::GainDefense { amount: 40 },
+        BattleEffect::Exhaust,
     ])
         .set_upgraded(true)
         .set_playable(true)
@@ -37,8 +37,8 @@ mod tests {
         assert_eq!(card.get_cost(), 2);
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 30 });
-        assert_eq!(card.get_effects()[1], Effect::Exhaust);
+        assert_eq!(card.get_effects()[0], BattleEffect::GainDefense { amount: 30 });
+        assert_eq!(card.get_effects()[1], BattleEffect::Exhaust);
         assert!(!card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -51,8 +51,8 @@ mod tests {
         assert_eq!(card.get_cost(), 2);
         assert_eq!(card.get_card_type(), CardType::Skill);
         assert_eq!(card.get_effects().len(), 2);
-        assert_eq!(card.get_effects()[0], Effect::GainDefense { amount: 40 });
-        assert_eq!(card.get_effects()[1], Effect::Exhaust);
+        assert_eq!(card.get_effects()[0], BattleEffect::GainDefense { amount: 40 });
+        assert_eq!(card.get_effects()[1], BattleEffect::Exhaust);
         assert!(card.is_upgraded());
         assert!(card.is_playable());
     }
@@ -66,12 +66,12 @@ mod tests {
         let upgraded_effects = upgraded_card.get_effects();
 
         // Both should have Exhaust effect
-        assert_eq!(normal_effects[1], Effect::Exhaust);
-        assert_eq!(upgraded_effects[1], Effect::Exhaust);
+        assert_eq!(normal_effects[1], BattleEffect::Exhaust);
+        assert_eq!(upgraded_effects[1], BattleEffect::Exhaust);
 
         // Normal should grant 30 block, upgraded should grant 40
-        assert_eq!(normal_effects[0], Effect::GainDefense { amount: 30 });
-        assert_eq!(upgraded_effects[0], Effect::GainDefense { amount: 40 });
+        assert_eq!(normal_effects[0], BattleEffect::GainDefense { amount: 30 });
+        assert_eq!(upgraded_effects[0], BattleEffect::GainDefense { amount: 40 });
     }
 
     #[test]

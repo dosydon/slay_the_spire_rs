@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 use crate::game::card_type::CardType;
 
@@ -19,7 +19,7 @@ impl PenNibRelic {
 }
 
 impl EventListener for PenNibRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if *player == self.owner => {
                 self.attack_count = 0;
@@ -32,7 +32,7 @@ impl EventListener for PenNibRelic {
                     if self.attack_count % 10 == 0 {
                         // Return a marker effect that the damage system should interpret
                         // For now, we'll use a special effect to indicate double damage
-                        vec![Effect::AttackToTarget {
+                        vec![BattleEffect::AttackToTarget {
                             amount: 0,
                             num_attacks: 0,
                             strength_multiplier: 0,

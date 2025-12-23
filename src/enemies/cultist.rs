@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 
 #[derive(Clone, Debug)]
 pub struct Cultist {
@@ -63,15 +63,15 @@ impl Cultist {
         }
     }
 
-    pub fn get_move_effects(&self, move_type: CultistMove) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: CultistMove) -> Vec<BattleEffect> {
         match move_type {
             CultistMove::Incantation => {
                 // Gain Ritual (which grants Strength every turn)
-                vec![Effect::GainRitual(self.ritual_amount)]
+                vec![BattleEffect::GainRitual(self.ritual_amount)]
             }
             CultistMove::DarkStrike => {
                 // Deal 6 damage
-                vec![Effect::AttackToTarget { amount: self.base_damage, num_attacks: 1, strength_multiplier: 1 }]
+                vec![BattleEffect::AttackToTarget { amount: self.base_damage, num_attacks: 1, strength_multiplier: 1 }]
             }
         }
     }
@@ -110,7 +110,7 @@ impl EnemyTrait for Cultist {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (CultistMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (CultistMove, Vec<BattleEffect>) {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
         
@@ -177,10 +177,10 @@ mod tests {
 
         // Test Incantation effects
         let incantation_effects = cultist.get_move_effects(CultistMove::Incantation);
-        assert_eq!(incantation_effects, vec![Effect::GainRitual(3)]);
+        assert_eq!(incantation_effects, vec![BattleEffect::GainRitual(3)]);
 
         // Test Dark Strike effects
         let dark_strike_effects = cultist.get_move_effects(CultistMove::DarkStrike);
-        assert_eq!(dark_strike_effects, vec![Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
+        assert_eq!(dark_strike_effects, vec![BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 }]);
     }
 }

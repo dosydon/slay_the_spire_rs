@@ -1,11 +1,11 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Spot Weakness - Uncommon Skill Card
 /// Cost: 1 (1 when upgraded)
 /// Effect: If enemy is attacking, gain 3 Strength. Exhaust
 pub fn spot_weakness() -> Card {
     Card::new(CardEnum::SpotWeakness, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-            Effect::GainStrengthIfEnemyAttacking { amount: 3 },
+            BattleEffect::GainStrengthIfEnemyAttacking { amount: 3 },
         ])
         .set_play_condition(Condition::EnemyIsAttacking)
 }
@@ -15,7 +15,7 @@ pub fn spot_weakness() -> Card {
 /// Effect: If enemy is attacking, gain 4 Strength. Exhaust
 pub fn spot_weakness_upgraded() -> Card {
     Card::new(CardEnum::SpotWeakness, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-            Effect::GainStrengthIfEnemyAttacking { amount: 4 },
+            BattleEffect::GainStrengthIfEnemyAttacking { amount: 4 },
         ])
         .set_upgraded(true)
         .set_play_condition(Condition::EnemyIsAttacking)
@@ -60,7 +60,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::GainStrengthIfEnemyAttacking { amount } => {
+            BattleEffect::GainStrengthIfEnemyAttacking { amount } => {
                 assert_eq!(*amount, 3);
             }
             _ => panic!("Expected GainStrengthIfEnemyAttacking effect"),
@@ -74,7 +74,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::GainStrengthIfEnemyAttacking { amount } => {
+            BattleEffect::GainStrengthIfEnemyAttacking { amount } => {
                 assert_eq!(*amount, 4);
             }
             _ => panic!("Expected GainStrengthIfEnemyAttacking effect"),

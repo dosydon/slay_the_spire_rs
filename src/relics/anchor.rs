@@ -1,6 +1,6 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 
 #[derive(Debug)]
 pub struct AnchorRelic {
@@ -18,11 +18,11 @@ impl AnchorRelic {
 }
 
 impl EventListener for AnchorRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if !self.used && *player == self.owner => {
                 self.used = true;
-                vec![Effect::GainDefense { amount: 10 }]
+                vec![BattleEffect::GainDefense { amount: 10 }]
             }
             _ => vec![]
         }
@@ -63,7 +63,7 @@ mod tests {
         let effects = anchor.on_event(&combat_start_event);
 
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainDefense { amount: 10 });
+        assert_eq!(effects[0], BattleEffect::GainDefense { amount: 10 });
         assert!(!anchor.is_active()); // Used up
     }
 
@@ -98,7 +98,7 @@ mod tests {
         let player_combat_start = BattleEvent::CombatStart { player };
         let effects = anchor.on_event(&player_combat_start);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainDefense { amount: 10 });
+        assert_eq!(effects[0], BattleEffect::GainDefense { amount: 10 });
         assert!(!anchor.is_active());
     }
 

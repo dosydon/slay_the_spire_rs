@@ -1,4 +1,4 @@
-use crate::game::effect::Effect;
+use crate::game::effect::{Effect, BattleEffect, GameEffect};
 use crate::events::map_events::{EventChoice, EventOutcome};
 
 /// Dead Adventurer event choices
@@ -10,7 +10,7 @@ pub fn dead_adventurer_choices() -> Vec<EventChoice> {
         EventChoice {
             text: "Fight the creature (Enter combat)".to_string(),
             outcome: EventOutcome::Effects(vec![
-                Effect::TriggerCombatEvent,  // This should trigger a Lagavulin fight
+                Effect::Game(GameEffect::TriggerCombatEvent),  // This should trigger a Lagavulin fight
             ]),
         },
         EventChoice {

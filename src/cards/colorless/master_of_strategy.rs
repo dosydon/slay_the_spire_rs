@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Master of Strategy - Colorless Skill Card (Rare)
 /// Cost: 0 (0 when upgraded)
@@ -9,8 +9,8 @@ pub fn master_of_strategy() -> Card {
         0,
         CardClass::Colorless(Rarity::Rare, CardType::Skill),
         vec![
-            Effect::DrawCard { count: 3 },
-            Effect::Exhaust,
+            BattleEffect::DrawCard { count: 3 },
+            BattleEffect::Exhaust,
         ]
     )
         .set_playable(true)
@@ -22,8 +22,8 @@ pub fn master_of_strategy_upgraded() -> Card {
         0,
         CardClass::Colorless(Rarity::Rare, CardType::Skill),
         vec![
-            Effect::DrawCard { count: 4 },
-            Effect::Exhaust,
+            BattleEffect::DrawCard { count: 4 },
+            BattleEffect::Exhaust,
         ]
     )
         .set_upgraded(true)
@@ -67,14 +67,14 @@ mod tests {
 
         // First effect should be DrawCard(3)
         match &effects[0] {
-            Effect::DrawCard { count } => {
+            BattleEffect::DrawCard { count } => {
                 assert_eq!(*count, 3);
             }
             _ => panic!("Expected DrawCard effect as first effect"),
         }
 
         // Second effect should be Exhaust
-        assert_eq!(effects[1], Effect::Exhaust);
+        assert_eq!(effects[1], BattleEffect::Exhaust);
     }
 
     #[test]
@@ -86,13 +86,13 @@ mod tests {
 
         // First effect should be DrawCard(4) - upgraded
         match &effects[0] {
-            Effect::DrawCard { count } => {
+            BattleEffect::DrawCard { count } => {
                 assert_eq!(*count, 4);
             }
             _ => panic!("Expected DrawCard effect as first effect"),
         }
 
         // Second effect should be Exhaust (same as base)
-        assert_eq!(effects[1], Effect::Exhaust);
+        assert_eq!(effects[1], BattleEffect::Exhaust);
     }
 }

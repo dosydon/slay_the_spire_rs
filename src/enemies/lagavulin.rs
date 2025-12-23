@@ -1,6 +1,6 @@
 use crate::game::enemy::EnemyTrait;
 use crate::game::global_info::GlobalInfo;
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::utils::CategoricalDistribution;
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
@@ -148,14 +148,14 @@ impl Lagavulin {
         }
     }
 
-    pub fn get_move_effects(&self, move_type: LagavulinMove) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: LagavulinMove) -> Vec<BattleEffect> {
         match move_type {
             LagavulinMove::Asleep | LagavulinMove::Stunned => {
                 // No effects for sleeping or stunned
                 vec![]
             }
             LagavulinMove::Attack => {
-                vec![Effect::AttackToTarget {
+                vec![BattleEffect::AttackToTarget {
                     amount: self.get_attack_damage(),
                     num_attacks: 1,
                     strength_multiplier: 1,
@@ -164,8 +164,8 @@ impl Lagavulin {
             LagavulinMove::SiphonSoul => {
                 let (dex_loss, str_loss) = self.get_siphon_amounts();
                 vec![
-                    Effect::LoseDexterityTarget(dex_loss),
-                    Effect::LoseStrengthTarget(str_loss),
+                    BattleEffect::LoseDexterityTarget(dex_loss),
+                    BattleEffect::LoseStrengthTarget(str_loss),
                 ]
             }
         }
@@ -212,7 +212,7 @@ impl EnemyTrait for Lagavulin {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (LagavulinMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (LagavulinMove, Vec<BattleEffect>) {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
 
@@ -247,21 +247,21 @@ impl LagavulinListener {
 }
 
 impl EventListener for LagavulinListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { .. } if !self.has_given_initial_block => {
                 self.has_given_initial_block = true;
-                vec![Effect::GainDefense { amount: 8 }]
+                vec![BattleEffect::GainDefense { amount: 8 }]
             }
             BattleEvent::DamageTaken { target, amount, .. }
                 if *target == Entity::Enemy(self.enemy_index) && *amount > 0 && !self.has_woken => {
                 self.has_woken = true;
                 // Wake Lagavulin to Stunned state
-                vec![Effect::WakeLagavulin { enemy_index: self.enemy_index }]
+                vec![BattleEffect::WakeLagavulin { enemy_index: self.enemy_index }]
             }
             BattleEvent::StartOfEnemyTurn { enemy_index } if *enemy_index == self.enemy_index => {
                 // Transition Lagavulin from Stunned to Awake at start of turn
-                vec![Effect::TransitionLagavulinStunnedToAwake { enemy_index: self.enemy_index }]
+                vec![BattleEffect::TransitionLagavulinStunnedToAwake { enemy_index: self.enemy_index }]
             }
             _ => vec![]
         }
@@ -388,12 +388,12 @@ mod tests {
 
         // Check attack damage
         match &effects_base[0] {
-            Effect::AttackToTarget { amount, .. } => assert_eq!(*amount, 18),
+            BattleEffect::AttackToTarget { amount, .. } => assert_eq!(*amount, 18),
             _ => panic!("Expected AttackToTarget"),
         }
 
         match &effects_a3[0] {
-            Effect::AttackToTarget { amount, .. } => assert_eq!(*amount, 20),
+            BattleEffect::AttackToTarget { amount, .. } => assert_eq!(*amount, 20),
             _ => panic!("Expected AttackToTarget"),
         }
     }
@@ -421,22 +421,22 @@ mod tests {
         // Base: -1 Dexterity, -1 Strength
         assert_eq!(effects_base.len(), 2);
         match &effects_base[0] {
-            Effect::LoseDexterityTarget(amount) => assert_eq!(*amount, 1),
+            BattleEffect::LoseDexterityTarget(amount) => assert_eq!(*amount, 1),
             _ => panic!("Expected LoseDexterityTarget"),
         }
         match &effects_base[1] {
-            Effect::LoseStrengthTarget(amount) => assert_eq!(*amount, 1),
+            BattleEffect::LoseStrengthTarget(amount) => assert_eq!(*amount, 1),
             _ => panic!("Expected LoseStrengthTarget"),
         }
 
         // A18+: -2 Dexterity, -2 Strength
         assert_eq!(effects_a18.len(), 2);
         match &effects_a18[0] {
-            Effect::LoseDexterityTarget(amount) => assert_eq!(*amount, 2),
+            BattleEffect::LoseDexterityTarget(amount) => assert_eq!(*amount, 2),
             _ => panic!("Expected LoseDexterityTarget"),
         }
         match &effects_a18[1] {
-            Effect::LoseStrengthTarget(amount) => assert_eq!(*amount, 2),
+            BattleEffect::LoseStrengthTarget(amount) => assert_eq!(*amount, 2),
             _ => panic!("Expected LoseStrengthTarget"),
         }
     }

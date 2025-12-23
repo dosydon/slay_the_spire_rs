@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// The Boot - Whenever you deal 4 or less unblocked Attack damage, increase it to 5
@@ -17,7 +17,7 @@ impl TheBootRelic {
 }
 
 impl EventListener for TheBootRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         // This relic would need to hook into damage calculation to work properly
         // For now, we'll mark it as implemented but the actual damage modification
         // would need to be done at the damage calculation level

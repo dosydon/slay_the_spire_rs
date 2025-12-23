@@ -1,12 +1,12 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Shockwave - Skill Card
 /// Cost: 2
 /// Effect: Apply 3 Weak and 3 Vulnerable to ALL enemies.
 pub fn shockwave() -> Card {
     Card::new(CardEnum::Shockwave, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-        Effect::ApplyWeakAll { duration: 3 },
-        Effect::ApplyVulnerableAll { duration: 3 },
+        BattleEffect::ApplyWeakAll { duration: 3 },
+        BattleEffect::ApplyVulnerableAll { duration: 3 },
     ])
         .set_playable(true)
 }
@@ -16,8 +16,8 @@ pub fn shockwave() -> Card {
 /// Effect: Apply 3 Weak and 3 Vulnerable to ALL enemies.
 pub fn shockwave_upgraded() -> Card {
     Card::new(CardEnum::Shockwave, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-        Effect::ApplyWeakAll { duration: 3 },
-        Effect::ApplyVulnerableAll { duration: 3 },
+        BattleEffect::ApplyWeakAll { duration: 3 },
+        BattleEffect::ApplyVulnerableAll { duration: 3 },
     ])
         .set_upgraded(true)
         .set_playable(true)
@@ -66,12 +66,12 @@ mod tests {
         assert_eq!(upgraded_effects.len(), 2);
 
         // Both should apply Weak to all enemies
-        assert_eq!(normal_effects[0], Effect::ApplyWeakAll { duration: 3 });
-        assert_eq!(upgraded_effects[0], Effect::ApplyWeakAll { duration: 3 });
+        assert_eq!(normal_effects[0], BattleEffect::ApplyWeakAll { duration: 3 });
+        assert_eq!(upgraded_effects[0], BattleEffect::ApplyWeakAll { duration: 3 });
 
         // Both should apply Vulnerable to all enemies
-        assert_eq!(normal_effects[1], Effect::ApplyVulnerableAll { duration: 3 });
-        assert_eq!(upgraded_effects[1], Effect::ApplyVulnerableAll { duration: 3 });
+        assert_eq!(normal_effects[1], BattleEffect::ApplyVulnerableAll { duration: 3 });
+        assert_eq!(upgraded_effects[1], BattleEffect::ApplyVulnerableAll { duration: 3 });
     }
 
     #[test]

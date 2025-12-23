@@ -1,4 +1,4 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{Effect, Condition}, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::{BattleEffect, Condition}, card::{Rarity, CardClass}};
 
 /// Impatience - Colorless Skill Card (Uncommon)
 /// Cost: 0 (0 when upgraded)
@@ -9,9 +9,9 @@ pub fn impatience() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::ConditionalEffect(
+            BattleEffect::ConditionalEffect(
                 Condition::HandNoAttacks,
-                Box::new(Effect::DrawCard { count: 2 }),
+                Box::new(BattleEffect::DrawCard { count: 2 }),
             ),
         ]
     )
@@ -24,9 +24,9 @@ pub fn impatience_upgraded() -> Card {
         0,
         CardClass::Colorless(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::ConditionalEffect(
+            BattleEffect::ConditionalEffect(
                 Condition::HandNoAttacks,
-                Box::new(Effect::DrawCard { count: 3 }),
+                Box::new(BattleEffect::DrawCard { count: 3 }),
             ),
         ]
     )
@@ -71,10 +71,10 @@ mod tests {
 
         // Should be a ConditionalEffect
         match &effects[0] {
-            Effect::ConditionalEffect(condition, effect) => {
+            BattleEffect::ConditionalEffect(condition, effect) => {
                 assert_eq!(*condition, Condition::HandNoAttacks);
                 match **effect {
-                    Effect::DrawCard { count } => {
+                    BattleEffect::DrawCard { count } => {
                         assert_eq!(count, 2);
                     }
                     _ => panic!("Expected DrawCard effect inside ConditionalEffect"),
@@ -93,10 +93,10 @@ mod tests {
 
         // Should be a ConditionalEffect
         match &effects[0] {
-            Effect::ConditionalEffect(condition, effect) => {
+            BattleEffect::ConditionalEffect(condition, effect) => {
                 assert_eq!(*condition, Condition::HandNoAttacks);
                 match **effect {
-                    Effect::DrawCard { count } => {
+                    BattleEffect::DrawCard { count } => {
                         assert_eq!(count, 3);
                     }
                     _ => panic!("Expected DrawCard effect inside ConditionalEffect"),

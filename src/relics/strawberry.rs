@@ -1,5 +1,5 @@
 use crate::game::game_event::{GameEvent, GameEventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 
 /// Strawberry - Raise your Max HP by 7 (one-time effect on pickup)
 pub struct StrawberryRelic {
@@ -13,12 +13,12 @@ impl StrawberryRelic {
 }
 
 impl GameEventListener for StrawberryRelic {
-    fn on_game_event(&mut self, event: &GameEvent) -> Vec<Effect> {
+    fn on_game_event(&mut self, event: &GameEvent) -> Vec<BattleEffect> {
         match event {
             GameEvent::RelicObtained if !self.applied => {
                 self.applied = true;
                 // Apply Max HP increase
-                vec![Effect::HealAndIncreaseMaxHp(7)]
+                vec![BattleEffect::HealAndIncreaseMaxHp(7)]
             }
             _ => vec![],
         }
@@ -48,7 +48,7 @@ mod tests {
         assert_eq!(effects.len(), 1);
         assert!(matches!(
             effects[0],
-            Effect::HealAndIncreaseMaxHp(7)
+            BattleEffect::HealAndIncreaseMaxHp(7)
         ));
         assert!(strawberry.applied);
     }

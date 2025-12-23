@@ -554,7 +554,7 @@ impl Battle {
                     self.cards.add_card_to_hand(card.clone());
 
                     // Check if the card has Exhaust effect
-                    let has_exhaust = card.get_effects().contains(&crate::game::effect::Effect::Exhaust);
+                    let has_exhaust = card.get_effects().contains(&crate::game::effect::BattleEffect::Exhaust);
 
                     // Play the card (this will handle cost, effects, etc.)
                     let _ = self.play_card(hand_index, *target);

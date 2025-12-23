@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Ink Bottle - Every time you play 10 cards, draw 1 card
@@ -18,7 +18,7 @@ impl InkBottleRelic {
 }
 
 impl EventListener for InkBottleRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if *player == self.owner => {
                 self.card_count = 0;
@@ -27,7 +27,7 @@ impl EventListener for InkBottleRelic {
             BattleEvent::CardPlayed { source, .. } if *source == self.owner => {
                 self.card_count += 1;
                 if self.card_count % 10 == 0 && self.card_count > 0 {
-                    vec![Effect::DrawCard { count: 1 }]
+                    vec![BattleEffect::DrawCard { count: 1 }]
                 } else {
                     vec![]
                 }

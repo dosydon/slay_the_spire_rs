@@ -83,6 +83,38 @@ pub enum Relic {
 }
 
 impl Relic {
+    /// Get the display name for this relic
+    pub fn name(&self) -> &'static str {
+        match self {
+            Relic::BurningBlood => "Burning Blood",
+            Relic::Anchor => "Anchor",
+            Relic::BloodVial => "Blood Vial",
+            Relic::BagOfMarbles => "Bag of Marbles",
+            Relic::Vajra => "Vajra",
+            Relic::Lantern => "Lantern",
+            Relic::Strawberry => "Strawberry",
+            Relic::Pear => "Pear",
+            Relic::MercuryHourglass => "Mercury Hourglass",
+            Relic::HornCleat => "Horn Cleat",
+            Relic::BronzeScales => "Bronze Scales",
+            Relic::BagOfPreparation => "Bag of Preparation",
+            Relic::OddlySmoothStone => "Oddly Smooth Stone",
+            Relic::Mango => "Mango",
+            Relic::CentennialPuzzle => "Centennial Puzzle",
+            Relic::Orichalcum => "Orichalcum",
+            Relic::Nunchaku => "Nunchaku",
+            Relic::Akabeko => "Akabeko",
+            Relic::TheBoot => "The Boot",
+            Relic::GremlinHorn => "Gremlin Horn",
+            Relic::HappyFlower => "Happy Flower",
+            Relic::PenNib => "Pen Nib",
+            Relic::ArtOfWar => "Art of War",
+            Relic::InkBottle => "Ink Bottle",
+            Relic::Kunai => "Kunai",
+            Relic::LetterOpener => "Letter Opener",
+        }
+    }
+
     /// Convert this relic to a game event listener
     pub fn to_game_event_listener(self) -> Option<Box<dyn crate::game::game_event::GameEventListener>> {
         match self {
@@ -121,5 +153,51 @@ impl Relic {
             Relic::LetterOpener => Some(Box::new(LetterOpenerRelic::new(crate::battle::target::Entity::Player))),
             _ => None,
         }
+    }
+
+    /// Sample a random relic of the given rarity
+    pub fn sample_relic(rarity: crate::game::reward_state::RelicRarity, rng: &mut impl rand::Rng) -> Self {
+        use crate::game::reward_state::RelicRarity;
+
+        // Define relic pools by rarity (using arrays instead of vecs)
+        const COMMON_RELICS: [Relic; 4] = [
+            Relic::Anchor,
+            Relic::BagOfPreparation,
+            Relic::BloodVial,
+            Relic::TheBoot,
+        ];
+
+        const UNCOMMON_RELICS: [Relic; 8] = [
+            Relic::BagOfMarbles,
+            Relic::BronzeScales,
+            Relic::HornCleat,
+            Relic::Lantern,
+            Relic::MercuryHourglass,
+            Relic::OddlySmoothStone,
+            Relic::PenNib,
+            Relic::Vajra,
+        ];
+
+        const RARE_RELICS: [Relic; 10] = [
+            Relic::Akabeko,
+            Relic::ArtOfWar,
+            Relic::CentennialPuzzle,
+            Relic::GremlinHorn,
+            Relic::HappyFlower,
+            Relic::InkBottle,
+            Relic::Kunai,
+            Relic::LetterOpener,
+            Relic::Nunchaku,
+            Relic::Orichalcum,
+        ];
+
+        let relics = match rarity {
+            RelicRarity::Common => &COMMON_RELICS[..],
+            RelicRarity::Uncommon => &UNCOMMON_RELICS[..],
+            RelicRarity::Rare => &RARE_RELICS[..],
+        };
+
+        // Sample a random relic from the pool
+        relics[rng.random_range(0..relics.len())].clone()
     }
 }

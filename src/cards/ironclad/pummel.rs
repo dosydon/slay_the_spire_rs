@@ -1,16 +1,16 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::BattleEffect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Pummel - Uncommon Attack Card
 /// Cost: 1
 /// Effect: Deal 2 damage 4 times. Exhaust.
 pub fn pummel() -> Card {
     Card::new(CardEnum::Pummel, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTarget {
+            BattleEffect::AttackToTarget {
                 amount: 2,
                 num_attacks: 4,
                 strength_multiplier: 1,
             },
-            Effect::Exhaust,
+            BattleEffect::Exhaust,
         ])
         .set_playable(true)
 }
@@ -20,12 +20,12 @@ pub fn pummel() -> Card {
 /// Effect: Deal 2 damage 5 times. Exhaust.
 pub fn pummel_upgraded() -> Card {
     Card::new(CardEnum::Pummel, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTarget {
+            BattleEffect::AttackToTarget {
                 amount: 2,
                 num_attacks: 5, // upgraded version deals damage 5 times instead of 4
                 strength_multiplier: 1,
             },
-            Effect::Exhaust,
+            BattleEffect::Exhaust,
         ])
         .set_upgraded(true)
         .set_playable(true)
@@ -65,14 +65,14 @@ mod tests {
         let effects = card.get_effects();
         assert_eq!(effects.len(), 2);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 2);
                 assert_eq!(*num_attacks, 4);
                 assert_eq!(*strength_multiplier, 1);
             }
             _ => panic!("Expected AttackToTarget effect"),
         }
-        assert_eq!(effects[1], Effect::Exhaust);
+        assert_eq!(effects[1], BattleEffect::Exhaust);
     }
 
     #[test]
@@ -81,14 +81,14 @@ mod tests {
         let effects = card.get_effects();
         assert_eq!(effects.len(), 2);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 2);
                 assert_eq!(*num_attacks, 5); // upgraded version hits 5 times
                 assert_eq!(*strength_multiplier, 1);
             }
             _ => panic!("Expected AttackToTarget effect"),
         }
-        assert_eq!(effects[1], Effect::Exhaust);
+        assert_eq!(effects[1], BattleEffect::Exhaust);
     }
 
     #[test]

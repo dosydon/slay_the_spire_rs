@@ -1,16 +1,16 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 pub fn shrug_it_off() -> Card {
     Card::new(CardEnum::ShrugItOff, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![
-        Effect::GainDefense { amount: 8 },
-        Effect::DrawCard { count: 1 }
+        BattleEffect::GainDefense { amount: 8 },
+        BattleEffect::DrawCard { count: 1 }
     ])
 }
 
 pub fn shrug_it_off_upgraded() -> Card {
     Card::new(CardEnum::ShrugItOff, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![
-        Effect::GainDefense { amount: 11 },
-        Effect::DrawCard { count: 1 }
+        BattleEffect::GainDefense { amount: 11 },
+        BattleEffect::DrawCard { count: 1 }
     ])
         .set_upgraded(true)
 }
@@ -37,8 +37,8 @@ mod tests {
 
         // Should have 2 effects: GainDefense(8) and DrawCard(1)
         assert_eq!(effects.len(), 2);
-        assert!(effects.contains(&Effect::GainDefense { amount: 8 }));
-        assert!(effects.contains(&Effect::DrawCard { count: 1 }));
+        assert!(effects.contains(&BattleEffect::GainDefense { amount: 8 }));
+        assert!(effects.contains(&BattleEffect::DrawCard { count: 1 }));
     }
 
     #[test]
@@ -58,8 +58,8 @@ mod tests {
 
         // Should have 2 effects: GainDefense(11) and DrawCard(1)
         assert_eq!(effects.len(), 2);
-        assert!(effects.contains(&Effect::GainDefense { amount: 11 }));
-        assert!(effects.contains(&Effect::DrawCard { count: 1 }));
+        assert!(effects.contains(&BattleEffect::GainDefense { amount: 11 }));
+        assert!(effects.contains(&BattleEffect::DrawCard { count: 1 }));
     }
 
     #[test]

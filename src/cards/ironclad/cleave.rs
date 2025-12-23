@@ -1,14 +1,14 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 pub fn cleave() -> Card {
     Card::new(CardEnum::Cleave, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-        Effect::AttackAllEnemies { amount: 8, num_attacks: 1 }
+        BattleEffect::AttackAllEnemies { amount: 8, num_attacks: 1 }
     ])
 }
 
 pub fn cleave_upgraded() -> Card {
     Card::new(CardEnum::Cleave, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-        Effect::AttackAllEnemies { amount: 11, num_attacks: 1 }
+        BattleEffect::AttackAllEnemies { amount: 11, num_attacks: 1 }
     ])
         .set_upgraded(true)
 }
@@ -29,7 +29,7 @@ mod tests {
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackAllEnemies { amount, num_attacks } => {
+            BattleEffect::AttackAllEnemies { amount, num_attacks } => {
                 assert_eq!(*amount, 8);
                 assert_eq!(*num_attacks, 1);
             }
@@ -47,7 +47,7 @@ mod tests {
         let effects = card.get_effects();
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::AttackAllEnemies { amount, num_attacks } => {
+            BattleEffect::AttackAllEnemies { amount, num_attacks } => {
                 assert_eq!(*amount, 11); // +3 damage over regular Cleave
                 assert_eq!(*num_attacks, 1);
             }

@@ -1,4 +1,4 @@
-use crate::game::effect::Effect;
+use crate::game::effect::{Effect, BattleEffect, GameEffect};
 use crate::events::map_events::{EventChoice, EventOutcome};
 
 /// Wing Statue event choices
@@ -11,13 +11,13 @@ pub fn wing_statue_choices() -> Vec<EventChoice> {
         EventChoice {
             text: "Place the wing (Obtain a random relic)".to_string(),
             outcome: EventOutcome::Effects(vec![
-                Effect::ObtainRandomRelic,
+                Effect::Game(GameEffect::ObtainRandomRelic),
             ]),
         },
         EventChoice {
             text: "Destroy the statue (Lose 7 Max HP)".to_string(),
             outcome: EventOutcome::Effects(vec![
-                Effect::LoseHp(7),
+                Effect::Battle(BattleEffect::LoseHp(7)),
             ]),
         },
         EventChoice {

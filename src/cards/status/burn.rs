@@ -1,11 +1,11 @@
-use crate::game::{card::{Card, CardClass}, effect::Effect, card_enum::CardEnum};
+use crate::game::{card::{Card, CardClass}, effect::BattleEffect, card_enum::CardEnum};
 #[cfg(test)]
 use crate::game::card_type::CardType;
 
 pub fn burn() -> Card {
     Card::new(CardEnum::Burn, 0, CardClass::Status, vec![])
         .set_playable(false)
-        .set_end_of_turn(vec![Effect::LoseHp(2)]) // Deal 2 damage at end of turn
+        .set_end_of_turn(vec![BattleEffect::LoseHp(2)]) // Deal 2 damage at end of turn
 }
 
 #[cfg(test)]
@@ -26,7 +26,7 @@ mod tests {
         // Check end of turn effects
         let end_of_turn_effects = card.get_end_of_turn().unwrap();
         assert_eq!(end_of_turn_effects.len(), 1);
-        assert!(matches!(end_of_turn_effects[0], Effect::LoseHp(2)));
+        assert!(matches!(end_of_turn_effects[0], BattleEffect::LoseHp(2)));
     }
 
     #[test]
@@ -35,7 +35,7 @@ mod tests {
         let end_of_turn_effects = card.get_end_of_turn().unwrap();
 
         assert_eq!(end_of_turn_effects.len(), 1);
-        assert!(matches!(end_of_turn_effects[0], Effect::LoseHp(2)));
+        assert!(matches!(end_of_turn_effects[0], BattleEffect::LoseHp(2)));
     }
 
     #[test]

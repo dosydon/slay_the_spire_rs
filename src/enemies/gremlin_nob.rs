@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 #[derive(Clone, Debug)]
@@ -143,23 +143,23 @@ impl GremlinNob {
         }
     }
 
-    pub fn get_move_effects(&self, move_type: GremlinNobMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: GremlinNobMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             GremlinNobMove::Bellow => {
                 // Bellow activates Enrage - no immediate strength gain
                 let enrage_amount = Self::calculate_enrage_amount(global_info);
-                vec![Effect::ActivateEnrage(enrage_amount)]
+                vec![BattleEffect::ActivateEnrage(enrage_amount)]
             }
             GremlinNobMove::SkullBash => {
                 let damage = Self::calculate_skull_bash_damage(global_info);
                 vec![
-                    Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
-                    Effect::ApplyVulnerable { duration: 2 },
+                    BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 },
+                    BattleEffect::ApplyVulnerable { duration: 2 },
                 ]
             }
             GremlinNobMove::BullRush => {
                 let damage = Self::calculate_bull_rush_damage(global_info);
-                vec![Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
+                vec![BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
             }
         }
     }
@@ -206,7 +206,7 @@ impl EnemyTrait for GremlinNob {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (GremlinNobMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (GremlinNobMove, Vec<BattleEffect>) {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
         
@@ -237,11 +237,11 @@ impl EnrageListener {
 }
 
 impl EventListener for EnrageListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::SkillCardPlayed { source } if *source == Entity::Player => {
                 // When the player plays a Skill card, the Gremlin Nob (this listener's owner) gains Strength
-                vec![Effect::GainStrength { amount: self.enrage_amount }]
+                vec![BattleEffect::GainStrength { amount: self.enrage_amount }]
             }
             _ => vec![]
         }
@@ -310,7 +310,7 @@ mod tests {
         // First move should always be Bellow
         let (first_move, first_effects) = gremlin_nob.choose_move_and_effects(&global_info, &mut rng);
         assert_eq!(first_move, GremlinNobMove::Bellow);
-        assert_eq!(first_effects, vec![Effect::ActivateEnrage(2)]);
+        assert_eq!(first_effects, vec![BattleEffect::ActivateEnrage(2)]);
         assert!(gremlin_nob.has_used_first_move);
     }
 
@@ -394,30 +394,30 @@ mod tests {
         
         // Test Bellow effects
         let bellow_effects_asc0 = gremlin_nob.get_move_effects(GremlinNobMove::Bellow, &global_info_asc0);
-        assert_eq!(bellow_effects_asc0, vec![Effect::ActivateEnrage(2)]);
+        assert_eq!(bellow_effects_asc0, vec![BattleEffect::ActivateEnrage(2)]);
         
         let bellow_effects_asc18 = gremlin_nob.get_move_effects(GremlinNobMove::Bellow, &global_info_asc18);
-        assert_eq!(bellow_effects_asc18, vec![Effect::ActivateEnrage(3)]);
+        assert_eq!(bellow_effects_asc18, vec![BattleEffect::ActivateEnrage(3)]);
         
         // Test Skull Bash effects
         let skull_bash_effects_asc0 = gremlin_nob.get_move_effects(GremlinNobMove::SkullBash, &global_info_asc0);
         assert_eq!(skull_bash_effects_asc0, vec![
-            Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
-            Effect::ApplyVulnerable { duration: 2 },
+            BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::ApplyVulnerable { duration: 2 },
         ]);
         
         let skull_bash_effects_asc3 = gremlin_nob.get_move_effects(GremlinNobMove::SkullBash, &global_info_asc3);
         assert_eq!(skull_bash_effects_asc3, vec![
-            Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
-            Effect::ApplyVulnerable { duration: 2 },
+            BattleEffect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::ApplyVulnerable { duration: 2 },
         ]);
         
         // Test Bull Rush effects
         let bull_rush_effects_asc0 = gremlin_nob.get_move_effects(GremlinNobMove::BullRush, &global_info_asc0);
-        assert_eq!(bull_rush_effects_asc0, vec![Effect::AttackToTarget { amount: 14, num_attacks: 1, strength_multiplier: 1 }]);
+        assert_eq!(bull_rush_effects_asc0, vec![BattleEffect::AttackToTarget { amount: 14, num_attacks: 1, strength_multiplier: 1 }]);
         
         let bull_rush_effects_asc3 = gremlin_nob.get_move_effects(GremlinNobMove::BullRush, &global_info_asc3);
-        assert_eq!(bull_rush_effects_asc3, vec![Effect::AttackToTarget { amount: 16, num_attacks: 1, strength_multiplier: 1 }]);
+        assert_eq!(bull_rush_effects_asc3, vec![BattleEffect::AttackToTarget { amount: 16, num_attacks: 1, strength_multiplier: 1 }]);
     }
 
     #[test]
@@ -485,19 +485,19 @@ mod tests {
         
         // First move should always be Bellow
         assert_eq!(enemy_move, GremlinNobMove::Bellow);
-        assert_eq!(effects, vec![Effect::ActivateEnrage(2)]);
+        assert_eq!(effects, vec![BattleEffect::ActivateEnrage(2)]);
         
         // Second move should be either SkullBash or BullRush
         let (second_move, second_effects) = test_nob.choose_move_and_effects(&global_info, &mut rng);
         match second_move {
             GremlinNobMove::SkullBash => {
                 assert_eq!(second_effects, vec![
-                    Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
-                    Effect::ApplyVulnerable { duration: 2 },
+                    BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 },
+                    BattleEffect::ApplyVulnerable { duration: 2 },
                 ]);
             }
             GremlinNobMove::BullRush => {
-                assert_eq!(second_effects, vec![Effect::AttackToTarget { amount: 14, num_attacks: 1, strength_multiplier: 1 }]);
+                assert_eq!(second_effects, vec![BattleEffect::AttackToTarget { amount: 14, num_attacks: 1, strength_multiplier: 1 }]);
             }
             GremlinNobMove::Bellow => {
                 panic!("Second move should not be Bellow again");
@@ -560,7 +560,7 @@ mod tests {
 
         let effects = listener.on_event(&skill_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::GainStrength { amount: 2 });
+        assert_eq!(effects[0], BattleEffect::GainStrength { amount: 2 });
         assert!(listener.is_active()); // Still active after triggering
     }
 
@@ -590,12 +590,12 @@ mod tests {
         // First skill card
         let effects1 = listener.on_event(&skill_event);
         assert_eq!(effects1.len(), 1);
-        assert_eq!(effects1[0], Effect::GainStrength { amount: 3 });
+        assert_eq!(effects1[0], BattleEffect::GainStrength { amount: 3 });
 
         // Second skill card should also trigger
         let effects2 = listener.on_event(&skill_event);
         assert_eq!(effects2.len(), 1);
-        assert_eq!(effects2[0], Effect::GainStrength { amount: 3 });
+        assert_eq!(effects2[0], BattleEffect::GainStrength { amount: 3 });
 
         assert!(listener.is_active()); // Always active
     }
@@ -610,10 +610,10 @@ mod tests {
         };
 
         let effects_2 = listener_2.on_event(&skill_event);
-        assert_eq!(effects_2, vec![Effect::GainStrength { amount: 2 }]);
+        assert_eq!(effects_2, vec![BattleEffect::GainStrength { amount: 2 }]);
 
         let effects_3 = listener_3.on_event(&skill_event);
-        assert_eq!(effects_3, vec![Effect::GainStrength { amount: 3 }]);
+        assert_eq!(effects_3, vec![BattleEffect::GainStrength { amount: 3 }]);
     }
 
     #[test]
@@ -634,7 +634,7 @@ mod tests {
         assert_eq!(first_effects.len(), 1, "Bellow should have exactly one effect");
         
         match &first_effects[0] {
-            crate::game::effect::Effect::ActivateEnrage(amount) => {
+            crate::game::effect::BattleEffect::ActivateEnrage(amount) => {
                 assert_eq!(*amount, GremlinNob::calculate_enrage_amount(&global_info), "ActivateEnrage amount should be correct");
             }
             _ => panic!("Bellow should generate ActivateEnrage effect, got {:?}", first_effects[0]),

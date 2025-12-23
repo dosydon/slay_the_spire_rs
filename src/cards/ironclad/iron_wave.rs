@@ -1,16 +1,16 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 pub fn iron_wave() -> Card {
     Card::new(CardEnum::IronWave, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-        Effect::GainDefense { amount: 5 },
-        Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }
+        BattleEffect::GainDefense { amount: 5 },
+        BattleEffect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }
     ])
 }
 
 pub fn iron_wave_upgraded() -> Card {
     Card::new(CardEnum::IronWave, 1, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-        Effect::GainDefense { amount: 8 },
-        Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 }
+        BattleEffect::GainDefense { amount: 8 },
+        BattleEffect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 }
     ])
         .set_upgraded(true)
 }
@@ -37,8 +37,8 @@ mod tests {
 
         // Should have 2 effects: GainDefense(5) and AttackToTarget { amount: 5, num_attacks: 1 }
         assert_eq!(effects.len(), 2);
-        assert!(effects.contains(&Effect::GainDefense { amount: 5 }));
-        assert!(effects.contains(&Effect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }));
+        assert!(effects.contains(&BattleEffect::GainDefense { amount: 5 }));
+        assert!(effects.contains(&BattleEffect::AttackToTarget { amount: 5, num_attacks: 1, strength_multiplier: 1 }));
     }
 
     #[test]
@@ -58,8 +58,8 @@ mod tests {
 
         // Should have 2 effects: GainDefense(8) and AttackToTarget { amount: 8, num_attacks: 1 }
         assert_eq!(effects.len(), 2);
-        assert!(effects.contains(&Effect::GainDefense { amount: 8 }));
-        assert!(effects.contains(&Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 }));
+        assert!(effects.contains(&BattleEffect::GainDefense { amount: 8 }));
+        assert!(effects.contains(&BattleEffect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 }));
     }
 
     #[test]

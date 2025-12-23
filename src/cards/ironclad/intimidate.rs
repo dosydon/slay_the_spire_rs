@@ -1,14 +1,14 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Intimidate - Apply 1 Weak to all enemies. Exhaust.
 pub fn intimidate() -> Card {
-    Card::new(CardEnum::Intimidate, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::ApplyWeakAll { duration: 1 }, Effect::Exhaust])
+    Card::new(CardEnum::Intimidate, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![BattleEffect::ApplyWeakAll { duration: 1 }, BattleEffect::Exhaust])
         .set_play_condition(Condition::True)
 }
 
 /// Intimidate+ (Upgraded version) - Apply 2 Weak to all enemies
 pub fn intimidate_upgraded() -> Card {
-    Card::new(CardEnum::Intimidate, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::ApplyWeakAll { duration: 2 }, Effect::Exhaust])
+    Card::new(CardEnum::Intimidate, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![BattleEffect::ApplyWeakAll { duration: 2 }, BattleEffect::Exhaust])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
 }
@@ -29,8 +29,8 @@ mod tests {
         assert!(!intimidate_card.is_upgraded());
 
         let effects = intimidate_card.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::ApplyWeakAll { duration: 1 })));
-        assert!(effects.iter().any(|e| matches!(e, Effect::Exhaust)));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::ApplyWeakAll { duration: 1 })));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::Exhaust)));
     }
 
     #[test]
@@ -42,8 +42,8 @@ mod tests {
         assert!(intimidate_plus.is_upgraded());
 
         let effects = intimidate_plus.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::ApplyWeakAll { duration: 2 })));
-        assert!(effects.iter().any(|e| matches!(e, Effect::Exhaust)));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::ApplyWeakAll { duration: 2 })));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::Exhaust)));
     }
 
     #[test]

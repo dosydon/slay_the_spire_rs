@@ -1,4 +1,4 @@
-use crate::{battle::target::Entity, game::effect::Effect};
+use crate::{battle::target::Entity, game::effect::BattleEffect};
 use std::any::Any;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -52,7 +52,7 @@ pub enum BattleEvent {
 }
 
 pub trait EventListener: Any + Send + Sync {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect>;
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect>;
     fn is_active(&self) -> bool;
     fn get_owner(&self) -> Entity;
 

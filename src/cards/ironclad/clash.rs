@@ -1,4 +1,4 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum};
 
 /// Clash - Deal 14 damage. Can only be played if hand is all Attacks
 pub fn clash() -> Card {
@@ -6,7 +6,7 @@ pub fn clash() -> Card {
         CardEnum::Clash,
         0,
         CardClass::IronClad(Rarity::Common, CardType::Attack),
-        vec![Effect::AttackToTarget { amount: 14, num_attacks: 1, strength_multiplier: 1 }])
+        vec![BattleEffect::AttackToTarget { amount: 14, num_attacks: 1, strength_multiplier: 1 }])
         .set_play_condition(Condition::HandAllAttacks)
 }
 
@@ -16,7 +16,7 @@ pub fn clash_upgraded() -> Card {
         CardEnum::Clash,
         0,
         CardClass::IronClad(Rarity::Common, CardType::Attack),
-        vec![Effect::AttackToTarget { amount: 18, num_attacks: 1, strength_multiplier: 1 }])
+        vec![BattleEffect::AttackToTarget { amount: 18, num_attacks: 1, strength_multiplier: 1 }])
         .set_play_condition(Condition::HandAllAttacks)
         .set_upgraded(true)
 }
@@ -37,7 +37,7 @@ mod tests {
         assert!(!clash_card.is_upgraded());
 
         let effects = clash_card.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 14, .. })));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::AttackToTarget { amount: 14, .. })));
     }
 
     #[test]
@@ -49,7 +49,7 @@ mod tests {
         assert!(clash_plus.is_upgraded());
 
         let effects = clash_plus.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::AttackToTarget { amount: 18, .. })));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::AttackToTarget { amount: 18, .. })));
     }
 
     #[test]

@@ -1,6 +1,6 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 
 /// Bag of Marbles relic
 /// At the start of each combat, apply 1 Vulnerable to ALL enemies
@@ -20,12 +20,12 @@ impl BagOfMarblesRelic {
 }
 
 impl EventListener for BagOfMarblesRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if !self.used && *player == self.owner => {
                 self.used = true;
                 // Apply 1 Vulnerable to ALL enemies
-                vec![Effect::ApplyVulnerableAll { duration: 1 }]
+                vec![BattleEffect::ApplyVulnerableAll { duration: 1 }]
             }
             _ => vec![]
         }
@@ -66,7 +66,7 @@ mod tests {
         let effects = bag.on_event(&combat_start_event);
 
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::ApplyVulnerableAll { duration: 1 });
+        assert_eq!(effects[0], BattleEffect::ApplyVulnerableAll { duration: 1 });
         assert!(!bag.is_active()); // Used up for this combat
     }
 
@@ -146,7 +146,7 @@ mod tests {
         let player_combat_start = BattleEvent::CombatStart { player };
         let effects = bag.on_event(&player_combat_start);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::ApplyVulnerableAll { duration: 1 });
+        assert_eq!(effects[0], BattleEffect::ApplyVulnerableAll { duration: 1 });
         assert!(!bag.is_active());
     }
 
@@ -159,7 +159,7 @@ mod tests {
         let effects = bag.on_event(&combat_start_event);
 
         assert_eq!(effects.len(), 1);
-        if let Effect::ApplyVulnerableAll { duration } = effects[0] {
+        if let BattleEffect::ApplyVulnerableAll { duration } = effects[0] {
             assert_eq!(duration, 1, "Vulnerable should last 1 turn");
         } else {
             panic!("Expected ApplyVulnerableAll effect");

@@ -1,4 +1,4 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Flame Barrier Listener
@@ -21,12 +21,12 @@ impl FlameBarrierListener {
 }
 
 impl EventListener for FlameBarrierListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::DamageTaken { target, source, amount: _ }
                 if *target == self.owner && self.is_active && matches!(source, Entity::Enemy(_)) => {
                 // When player takes damage from enemy, retaliate with damage
-                vec![Effect::AttackAllEnemies {
+                vec![BattleEffect::AttackAllEnemies {
                     amount: self.damage_to_deal,
                     num_attacks: 1,
                 }]
@@ -53,16 +53,16 @@ impl EventListener for FlameBarrierListener {
 /// Effect: Gain 12 Block. This turn, when attacked, deal 4 damage to the attacker.
 pub fn flame_barrier() -> Card {
     Card::new(CardEnum::FlameBarrier, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-        Effect::GainDefense { amount: 12 },
-        Effect::ActivateFlameBarrier { damage: 4 },
+        BattleEffect::GainDefense { amount: 12 },
+        BattleEffect::ActivateFlameBarrier { damage: 4 },
     ])
         .set_play_condition(Condition::True)
 }
 
 pub fn flame_barrier_upgraded() -> Card {
     Card::new(CardEnum::FlameBarrier, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-        Effect::GainDefense { amount: 16 },
-        Effect::ActivateFlameBarrier { damage: 6 },
+        BattleEffect::GainDefense { amount: 16 },
+        BattleEffect::ActivateFlameBarrier { damage: 6 },
     ])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
@@ -115,7 +115,7 @@ mod tests {
 
         let effects = listener.on_event(&damage_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::AttackAllEnemies { amount: 4, num_attacks: 1 });
+        assert_eq!(effects[0], BattleEffect::AttackAllEnemies { amount: 4, num_attacks: 1 });
         assert!(listener.is_active()); // Still active after triggering
     }
 
@@ -164,10 +164,10 @@ mod tests {
         let upgraded_effects = upgraded_listener.on_event(&damage_event);
 
         assert_eq!(base_effects.len(), 1);
-        assert_eq!(base_effects[0], Effect::AttackAllEnemies { amount: 4, num_attacks: 1 });
+        assert_eq!(base_effects[0], BattleEffect::AttackAllEnemies { amount: 4, num_attacks: 1 });
 
         assert_eq!(upgraded_effects.len(), 1);
-        assert_eq!(upgraded_effects[0], Effect::AttackAllEnemies { amount: 6, num_attacks: 1 });
+        assert_eq!(upgraded_effects[0], BattleEffect::AttackAllEnemies { amount: 6, num_attacks: 1 });
     }
 
     #[test]
@@ -193,7 +193,7 @@ mod tests {
 
         let effects = listener.on_event(&player_damage_event);
         assert_eq!(effects.len(), 1);
-        assert_eq!(effects[0], Effect::AttackAllEnemies { amount: 4, num_attacks: 1 });
+        assert_eq!(effects[0], BattleEffect::AttackAllEnemies { amount: 4, num_attacks: 1 });
     }
 
     #[test]
@@ -202,8 +202,8 @@ mod tests {
         let effects = card.get_effects();
 
         assert_eq!(effects.len(), 2);
-        assert_eq!(effects[0], Effect::GainDefense { amount: 12 });
-        assert_eq!(effects[1], Effect::ActivateFlameBarrier { damage: 4 });
+        assert_eq!(effects[0], BattleEffect::GainDefense { amount: 12 });
+        assert_eq!(effects[1], BattleEffect::ActivateFlameBarrier { damage: 4 });
     }
 
     #[test]
@@ -212,8 +212,8 @@ mod tests {
         let effects = card.get_effects();
 
         assert_eq!(effects.len(), 2);
-        assert_eq!(effects[0], Effect::GainDefense { amount: 16 });
-        assert_eq!(effects[1], Effect::ActivateFlameBarrier { damage: 6 });
+        assert_eq!(effects[0], BattleEffect::GainDefense { amount: 16 });
+        assert_eq!(effects[1], BattleEffect::ActivateFlameBarrier { damage: 6 });
     }
 
     #[test]
@@ -234,11 +234,11 @@ mod tests {
         let upgraded_effects = upgraded_card.get_effects();
 
         // Check block amounts
-        assert_eq!(base_effects[0], Effect::GainDefense { amount: 12 });
-        assert_eq!(upgraded_effects[0], Effect::GainDefense { amount: 16 });
+        assert_eq!(base_effects[0], BattleEffect::GainDefense { amount: 12 });
+        assert_eq!(upgraded_effects[0], BattleEffect::GainDefense { amount: 16 });
 
         // Check retaliation damage amounts
-        assert_eq!(base_effects[1], Effect::ActivateFlameBarrier { damage: 4 });
-        assert_eq!(upgraded_effects[1], Effect::ActivateFlameBarrier { damage: 6 });
+        assert_eq!(base_effects[1], BattleEffect::ActivateFlameBarrier { damage: 4 });
+        assert_eq!(upgraded_effects[1], BattleEffect::ActivateFlameBarrier { damage: 6 });
     }
 }

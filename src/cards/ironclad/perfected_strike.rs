@@ -1,9 +1,9 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Perfected Strike: Deal 6 damage. Deals an additional 2 damage for ALL Strike cards in your deck.
 pub fn perfected_strike() -> Card {
     Card::new(CardEnum::PerfectedStrike, 2, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-        Effect::PerfectedStrike {
+        BattleEffect::PerfectedStrike {
             base_damage: 6,
             damage_per_strike: 2,
         }
@@ -13,7 +13,7 @@ pub fn perfected_strike() -> Card {
 /// Perfected Strike+: Deal 10 damage. Deals an additional 3 damage for ALL Strike cards in your deck.
 pub fn perfected_strike_upgraded() -> Card {
     Card::new(CardEnum::PerfectedStrike, 2, CardClass::IronClad(Rarity::Common, CardType::Attack), vec![
-        Effect::PerfectedStrike {
+        BattleEffect::PerfectedStrike {
             base_damage: 10,
             damage_per_strike: 3,
         }

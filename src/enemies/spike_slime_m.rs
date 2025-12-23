@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 
 #[derive(Clone, Debug)]
 pub struct SpikeSlimeM {
@@ -87,19 +87,19 @@ impl SpikeSlimeM {
         }
     }
 
-    pub fn get_move_effects(&self, move_type: SpikeSlimeMMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: SpikeSlimeMMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             SpikeSlimeMMove::Lick => {
-                vec![Effect::ApplyFrail { duration: 1 }]
+                vec![BattleEffect::ApplyFrail { duration: 1 }]
             }
             SpikeSlimeMMove::FlameTackle => {
                 vec![
-                    Effect::AttackToTarget {
+                    BattleEffect::AttackToTarget {
                         amount: Self::calculate_flame_tackle_damage(global_info),
                         num_attacks: 1,
                         strength_multiplier: 1
                     },
-                    Effect::AddSlimed(1)
+                    BattleEffect::AddSlimed(1)
                 ]
             }
         }
@@ -136,7 +136,7 @@ impl EnemyTrait for SpikeSlimeM {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (SpikeSlimeMMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (SpikeSlimeMMove, Vec<BattleEffect>) {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
         
@@ -218,13 +218,13 @@ mod tests {
 
         // Test Lick effects
         let lick_effects = spike_slime.get_move_effects(SpikeSlimeMMove::Lick, &global_info);
-        assert_eq!(lick_effects, vec![Effect::ApplyFrail { duration: 1 }]);
+        assert_eq!(lick_effects, vec![BattleEffect::ApplyFrail { duration: 1 }]);
 
         // Test Flame Tackle effects
         let flame_tackle_effects = spike_slime.get_move_effects(SpikeSlimeMMove::FlameTackle, &global_info);
         assert_eq!(flame_tackle_effects, vec![
-            Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
-            Effect::AddSlimed(1)
+            BattleEffect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::AddSlimed(1)
         ]);
     }
 

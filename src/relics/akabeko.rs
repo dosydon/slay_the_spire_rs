@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Akabeko - Your first Attack each combat deals 8 additional damage
@@ -18,7 +18,7 @@ impl AkabekoRelic {
 }
 
 impl EventListener for AkabekoRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if *player == self.owner => {
                 self.triggered = false;
@@ -30,7 +30,7 @@ impl EventListener for AkabekoRelic {
                     self.triggered = true;
                     // Add a temporary effect that increases damage
                     // Since we can't directly modify the card being played, we add a damage bonus effect
-                    vec![Effect::AttackToTarget {
+                    vec![BattleEffect::AttackToTarget {
                         amount: 8,
                         num_attacks: 1,
                         strength_multiplier: 0,
@@ -83,7 +83,7 @@ mod tests {
         });
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 0 }));
+        assert!(matches!(effects[0], BattleEffect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 0 }));
         assert!(akabeko.triggered);
     }
 

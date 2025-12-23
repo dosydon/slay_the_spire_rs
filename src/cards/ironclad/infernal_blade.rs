@@ -1,12 +1,12 @@
-use crate::game::{card::Card, effect::{Effect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Infernal Blade - Uncommon Skill Card
 /// Cost: 1 (0 when upgraded)
 /// Effect: Add a random Attack card to your hand. Exhaust.
 pub fn infernal_blade() -> Card {
     Card::new(CardEnum::InfernalBlade, 1, CardClass::IronClad(Rarity::Common, CardType::Skill), vec![
-            Effect::AddRandomAttackToHand,
-            Effect::Exhaust,
+            BattleEffect::AddRandomAttackToHand,
+            BattleEffect::Exhaust,
         ])
         .set_play_condition(Condition::True)
 }
@@ -20,8 +20,8 @@ pub fn infernal_blade_upgraded() -> Card {
         0, // Costs 0 when upgraded
         CardClass::IronClad(Rarity::Common, CardType::Skill),
         vec![
-            Effect::AddRandomAttackToHand,
-            Effect::Exhaust,
+            BattleEffect::AddRandomAttackToHand,
+            BattleEffect::Exhaust,
         ]
     )
         .set_upgraded(true)
@@ -64,8 +64,8 @@ mod tests {
         let effects = card.get_effects();
 
         assert_eq!(effects.len(), 2);
-        assert!(effects.contains(&Effect::AddRandomAttackToHand));
-        assert!(effects.contains(&Effect::Exhaust));
+        assert!(effects.contains(&BattleEffect::AddRandomAttackToHand));
+        assert!(effects.contains(&BattleEffect::Exhaust));
     }
 
     #[test]
@@ -74,8 +74,8 @@ mod tests {
         let effects = card.get_effects();
 
         assert_eq!(effects.len(), 2);
-        assert!(effects.contains(&Effect::AddRandomAttackToHand));
-        assert!(effects.contains(&Effect::Exhaust));
+        assert!(effects.contains(&BattleEffect::AddRandomAttackToHand));
+        assert!(effects.contains(&BattleEffect::Exhaust));
     }
 
     #[test]

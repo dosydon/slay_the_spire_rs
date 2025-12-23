@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 use crate::game::card_type::CardType;
 
@@ -19,7 +19,7 @@ impl LetterOpenerRelic {
 }
 
 impl EventListener for LetterOpenerRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::CombatStart { player } if *player == self.owner => {
                 self.skills_this_turn = 0;
@@ -35,7 +35,7 @@ impl EventListener for LetterOpenerRelic {
                     self.skills_this_turn += 1;
                     // Check if we've played 3, 6, 9, etc. skills this turn
                     if self.skills_this_turn % 3 == 0 && self.skills_this_turn > 0 {
-                        vec![Effect::AttackAllEnemies {
+                        vec![BattleEffect::AttackAllEnemies {
                             amount: 5,
                             num_attacks: 1,
                         }]
@@ -103,7 +103,7 @@ mod tests {
             card_type: CardType::Skill,
         });
         assert_eq!(effects3.len(), 1);
-        assert!(matches!(effects3[0], Effect::AttackAllEnemies { amount: 5, num_attacks: 1 }));
+        assert!(matches!(effects3[0], BattleEffect::AttackAllEnemies { amount: 5, num_attacks: 1 }));
     }
 
     #[test]

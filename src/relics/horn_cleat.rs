@@ -1,5 +1,5 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Horn Cleat - At the start of your 2nd turn, gain 14 Block
@@ -18,13 +18,13 @@ impl HornCleatRelic {
 }
 
 impl EventListener for HornCleatRelic {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         match event {
             BattleEvent::StartOfPlayerTurn => {
                 self.turn_count += 1;
                 // Only trigger on turn 2
                 if self.turn_count == 2 {
-                    vec![Effect::GainDefense { amount: 14 }]
+                    vec![BattleEffect::GainDefense { amount: 14 }]
                 } else {
                     vec![]
                 }
@@ -68,7 +68,7 @@ mod tests {
         // Turn 2 - should trigger
         let effects2 = horn_cleat.on_event(&BattleEvent::StartOfPlayerTurn);
         assert_eq!(effects2.len(), 1);
-        assert!(matches!(effects2[0], Effect::GainDefense { amount: 14 }));
+        assert!(matches!(effects2[0], BattleEffect::GainDefense { amount: 14 }));
         assert_eq!(horn_cleat.turn_count, 2);
     }
 

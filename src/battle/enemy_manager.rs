@@ -1,6 +1,6 @@
 use super::Battle;
 use crate::enemies::enemy_enum::{EnemyEnum, EnemyMove};
-use crate::game::{effect::Effect, global_info::GlobalInfo};
+use crate::game::{effect::BattleEffect, global_info::GlobalInfo};
 use crate::battle::target::Entity;
 use crate::enemies::red_louse::CurlUpListener;
 use crate::enemies::acid_slime_l::AcidSlimeLSplitListener;
@@ -118,7 +118,7 @@ impl Battle {
     }
     
     /// Get the stored move and effects for a specific enemy
-    pub fn get_enemy_move_and_effects(&self, enemy_index: usize) -> Option<(&EnemyMove, &Vec<Effect>)> {
+    pub fn get_enemy_move_and_effects(&self, enemy_index: usize) -> Option<(&EnemyMove, &Vec<BattleEffect>)> {
         self.enemy_actions.get(enemy_index).and_then(|pair| pair.as_ref().map(|(enemy_move, effects)| (enemy_move, effects)))
     }
 }

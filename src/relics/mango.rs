@@ -1,5 +1,5 @@
 use crate::game::game_event::{GameEvent, GameEventListener};
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 
 /// Mango - Raise your Max HP by 14 (one-time effect on pickup)
 pub struct MangoRelic {
@@ -13,11 +13,11 @@ impl MangoRelic {
 }
 
 impl GameEventListener for MangoRelic {
-    fn on_game_event(&mut self, event: &GameEvent) -> Vec<Effect> {
+    fn on_game_event(&mut self, event: &GameEvent) -> Vec<BattleEffect> {
         match event {
             GameEvent::RelicObtained if !self.applied => {
                 self.applied = true;
-                vec![Effect::HealAndIncreaseMaxHp(14)]
+                vec![BattleEffect::HealAndIncreaseMaxHp(14)]
             }
             _ => vec![],
         }
@@ -45,7 +45,7 @@ mod tests {
         let effects = mango.on_game_event(&GameEvent::RelicObtained);
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::HealAndIncreaseMaxHp(14)));
+        assert!(matches!(effects[0], BattleEffect::HealAndIncreaseMaxHp(14)));
         assert!(mango.applied);
     }
 

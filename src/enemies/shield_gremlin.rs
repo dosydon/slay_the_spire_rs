@@ -1,4 +1,4 @@
-use crate::game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo};
+use crate::game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo};
 
 #[derive(Clone, Debug)]
 pub struct ShieldGremlin {
@@ -45,16 +45,16 @@ impl ShieldGremlin {
         }
     }
 
-    pub fn get_move_effects(&self, move_type: ShieldGremlinMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: ShieldGremlinMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             ShieldGremlinMove::Protect => {
                 let block = Self::calculate_protect_block(global_info);
                 // Grant block to a random ally (handled by battle system)
-                vec![Effect::GainDefenseRandomAlly { amount: block }]
+                vec![BattleEffect::GainDefenseRandomAlly { amount: block }]
             }
             ShieldGremlinMove::ShieldBash => {
                 let damage = Self::calculate_shield_bash_damage(global_info);
-                vec![Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
+                vec![BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
             }
         }
     }
@@ -78,7 +78,7 @@ impl EnemyTrait for ShieldGremlin {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (ShieldGremlinMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> (ShieldGremlinMove, Vec<BattleEffect>) {
         // Shield Gremlin uses Protect when allies are alive, Shield Bash when alone
         // This logic needs to be handled externally by checking enemy count
         // For now, default to Protect (the battle system will need to override this based on ally count)
@@ -137,11 +137,11 @@ mod tests {
 
         let effects_asc0 = gremlin.get_move_effects(ShieldGremlinMove::Protect, &global_info_asc0);
         assert_eq!(effects_asc0.len(), 1);
-        assert_eq!(effects_asc0[0], Effect::GainDefenseRandomAlly { amount: 7 });
+        assert_eq!(effects_asc0[0], BattleEffect::GainDefenseRandomAlly { amount: 7 });
 
         let effects_asc17 = gremlin.get_move_effects(ShieldGremlinMove::Protect, &global_info_asc17);
         assert_eq!(effects_asc17.len(), 1);
-        assert_eq!(effects_asc17[0], Effect::GainDefenseRandomAlly { amount: 11 });
+        assert_eq!(effects_asc17[0], BattleEffect::GainDefenseRandomAlly { amount: 11 });
     }
 
     #[test]
@@ -152,11 +152,11 @@ mod tests {
 
         let effects_asc0 = gremlin.get_move_effects(ShieldGremlinMove::ShieldBash, &global_info_asc0);
         assert_eq!(effects_asc0.len(), 1);
-        assert_eq!(effects_asc0[0], Effect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(effects_asc0[0], BattleEffect::AttackToTarget { amount: 6, num_attacks: 1, strength_multiplier: 1 });
 
         let effects_asc2 = gremlin.get_move_effects(ShieldGremlinMove::ShieldBash, &global_info_asc2);
         assert_eq!(effects_asc2.len(), 1);
-        assert_eq!(effects_asc2[0], Effect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 });
+        assert_eq!(effects_asc2[0], BattleEffect::AttackToTarget { amount: 8, num_attacks: 1, strength_multiplier: 1 });
     }
 
     #[test]

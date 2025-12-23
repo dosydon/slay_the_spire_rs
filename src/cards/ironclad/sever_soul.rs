@@ -1,12 +1,12 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::BattleEffect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 
 /// Sever Soul - Uncommon Attack Card
 /// Cost: 2 (2 when upgraded)
 /// Effect: Deal 16 damage. Exhaust all non-Attack cards in hand
 pub fn sever_soul() -> Card {
     Card::new(CardEnum::SeverSoul, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTarget { amount: 16, num_attacks: 1, strength_multiplier: 1 },
-            Effect::ExhaustNonAttacksInHand,
+            BattleEffect::AttackToTarget { amount: 16, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::ExhaustNonAttacksInHand,
         ])
         .set_playable(true)
 }
@@ -16,8 +16,8 @@ pub fn sever_soul() -> Card {
 /// Effect: Deal 22 damage. Exhaust all non-Attack cards in hand
 pub fn sever_soul_upgraded() -> Card {
     Card::new(CardEnum::SeverSoul, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-            Effect::AttackToTarget { amount: 22, num_attacks: 1, strength_multiplier: 1 },
-            Effect::ExhaustNonAttacksInHand,
+            BattleEffect::AttackToTarget { amount: 22, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::ExhaustNonAttacksInHand,
         ])
         .set_upgraded(true)
         .set_playable(true)
@@ -64,7 +64,7 @@ mod tests {
 
         assert_eq!(effects.len(), 2);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 16);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 1);
@@ -73,7 +73,7 @@ mod tests {
         }
 
         match &effects[1] {
-            Effect::ExhaustNonAttacksInHand => {
+            BattleEffect::ExhaustNonAttacksInHand => {
                 // This is the correct effect type
             }
             _ => panic!("Expected ExhaustNonAttacksInHand effect"),
@@ -87,7 +87,7 @@ mod tests {
 
         assert_eq!(effects.len(), 2);
         match &effects[0] {
-            Effect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
+            BattleEffect::AttackToTarget { amount, num_attacks, strength_multiplier } => {
                 assert_eq!(*amount, 22);
                 assert_eq!(*num_attacks, 1);
                 assert_eq!(*strength_multiplier, 1);

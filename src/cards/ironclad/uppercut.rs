@@ -1,17 +1,17 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 /// Uppercut - Attack Card
 /// Cost: 2
 /// Effect: Deal 13 damage. Apply 1 Weak and 1 Vulnerable.
 pub fn uppercut() -> Card {
     Card::new(CardEnum::Uppercut, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-        Effect::AttackToTarget {
+        BattleEffect::AttackToTarget {
             amount: 13,
             num_attacks: 1,
             strength_multiplier: 1,
         },
-        Effect::ApplyWeak { duration: 1 },
-        Effect::ApplyVulnerable { duration: 1 },
+        BattleEffect::ApplyWeak { duration: 1 },
+        BattleEffect::ApplyVulnerable { duration: 1 },
     ])
         .set_playable(true)
 }
@@ -21,13 +21,13 @@ pub fn uppercut() -> Card {
 /// Effect: Deal 13 damage. Apply 2 Weak and 2 Vulnerable.
 pub fn uppercut_upgraded() -> Card {
     Card::new(CardEnum::Uppercut, 2, CardClass::IronClad(Rarity::Uncommon, CardType::Attack), vec![
-        Effect::AttackToTarget {
+        BattleEffect::AttackToTarget {
             amount: 13,
             num_attacks: 1,
             strength_multiplier: 1,
         },
-        Effect::ApplyWeak { duration: 2 },
-        Effect::ApplyVulnerable { duration: 2 },
+        BattleEffect::ApplyWeak { duration: 2 },
+        BattleEffect::ApplyVulnerable { duration: 2 },
     ])
         .set_upgraded(true)
         .set_playable(true)
@@ -76,24 +76,24 @@ mod tests {
         assert_eq!(upgraded_effects.len(), 3);
 
         // Both should deal 13 damage
-        assert_eq!(normal_effects[0], Effect::AttackToTarget {
+        assert_eq!(normal_effects[0], BattleEffect::AttackToTarget {
             amount: 13,
             num_attacks: 1,
             strength_multiplier: 1,
         });
-        assert_eq!(upgraded_effects[0], Effect::AttackToTarget {
+        assert_eq!(upgraded_effects[0], BattleEffect::AttackToTarget {
             amount: 13,
             num_attacks: 1,
             strength_multiplier: 1,
         });
 
         // Normal should apply 1 Weak, upgraded should apply 2 Weak
-        assert_eq!(normal_effects[1], Effect::ApplyWeak { duration: 1 });
-        assert_eq!(upgraded_effects[1], Effect::ApplyWeak { duration: 2 });
+        assert_eq!(normal_effects[1], BattleEffect::ApplyWeak { duration: 1 });
+        assert_eq!(upgraded_effects[1], BattleEffect::ApplyWeak { duration: 2 });
 
         // Normal should apply 1 Vulnerable, upgraded should apply 2 Vulnerable
-        assert_eq!(normal_effects[2], Effect::ApplyVulnerable { duration: 1 });
-        assert_eq!(upgraded_effects[2], Effect::ApplyVulnerable { duration: 2 });
+        assert_eq!(normal_effects[2], BattleEffect::ApplyVulnerable { duration: 1 });
+        assert_eq!(upgraded_effects[2], BattleEffect::ApplyVulnerable { duration: 2 });
     }
 
     #[test]

@@ -1,15 +1,15 @@
-use crate::game::{card::Card, effect::Effect, card_type::CardType, card_enum::CardEnum, effect::Condition, card::{Rarity, CardClass}};
+use crate::game::{card::Card, effect::BattleEffect, card_type::CardType, card_enum::CardEnum, effect::Condition, card::{Rarity, CardClass}};
 
 /// Sentinel - Uncommon Skill Card
 /// Cost: 1 (0 when upgraded)
 /// Effect: Gain 5 (8+) Block. Whenever this card is Exhausted, gain 2 (3+) Energy.
 pub fn sentinel() -> Card {
     Card::new(CardEnum::Sentinel, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-            Effect::GainDefense { amount: 5 },
+            BattleEffect::GainDefense { amount: 5 },
         ])
         .set_play_condition(Condition::True)
         .set_on_exhaust(vec![
-            Effect::GainEnergy { amount: 2 },
+            BattleEffect::GainEnergy { amount: 2 },
         ])
 }
 
@@ -18,12 +18,12 @@ pub fn sentinel() -> Card {
 /// Effect: Gain 8 Block. Whenever this card is Exhausted, gain 3 Energy.
 pub fn sentinel_upgraded() -> Card {
     Card::new(CardEnum::Sentinel, 0, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-            Effect::GainDefense { amount: 8 },
+            BattleEffect::GainDefense { amount: 8 },
         ])
         .set_upgraded(true)
         .set_play_condition(Condition::True)
         .set_on_exhaust(vec![
-            Effect::GainEnergy { amount: 3 },
+            BattleEffect::GainEnergy { amount: 3 },
         ])
 }
 
@@ -66,7 +66,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::GainDefense { amount } => {
+            BattleEffect::GainDefense { amount } => {
                 assert_eq!(*amount, 5);
             }
             _ => panic!("Expected GainDefense effect"),
@@ -78,7 +78,7 @@ mod tests {
         let on_exhaust_effects = on_exhaust.unwrap();
         assert_eq!(on_exhaust_effects.len(), 1);
         match &on_exhaust_effects[0] {
-            Effect::GainEnergy { amount } => {
+            BattleEffect::GainEnergy { amount } => {
                 assert_eq!(*amount, 2);
             }
             _ => panic!("Expected GainEnergy on exhaust effect"),
@@ -92,7 +92,7 @@ mod tests {
 
         assert_eq!(effects.len(), 1);
         match &effects[0] {
-            Effect::GainDefense { amount } => {
+            BattleEffect::GainDefense { amount } => {
                 assert_eq!(*amount, 8);
             }
             _ => panic!("Expected GainDefense effect"),
@@ -104,7 +104,7 @@ mod tests {
         let on_exhaust_effects = on_exhaust.unwrap();
         assert_eq!(on_exhaust_effects.len(), 1);
         match &on_exhaust_effects[0] {
-            Effect::GainEnergy { amount } => {
+            BattleEffect::GainEnergy { amount } => {
                 assert_eq!(*amount, 3);
             }
             _ => panic!("Expected GainEnergy on exhaust effect"),

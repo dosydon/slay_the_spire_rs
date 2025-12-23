@@ -1,9 +1,9 @@
-use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::Effect, card::{Rarity, CardClass}};
+use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 
 pub fn exhume() -> Card {
     Card::new(CardEnum::Exhume, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![
-            Effect::EnterSelectCardInExhaust, // Transition to select card from exhaust pile
-            Effect::Exhaust,
+            BattleEffect::EnterSelectCardInExhaust, // Transition to select card from exhaust pile
+            BattleEffect::Exhaust,
         ])
         .set_playable(true)
 }
@@ -14,8 +14,8 @@ pub fn exhume_upgraded() -> Card {
         0, // costs 0 when upgraded
         CardClass::IronClad(Rarity::Uncommon, CardType::Skill),
         vec![
-            Effect::EnterSelectCardInExhaust, // Transition to select card from exhaust pile
-            Effect::Exhaust,
+            BattleEffect::EnterSelectCardInExhaust, // Transition to select card from exhaust pile
+            BattleEffect::Exhaust,
         ]
     )
         .set_upgraded(true)

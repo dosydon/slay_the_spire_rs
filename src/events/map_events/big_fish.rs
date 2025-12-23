@@ -1,4 +1,4 @@
-use crate::game::effect::Effect;
+use crate::game::effect::{Effect, BattleEffect, GameEffect};
 use crate::events::map_events::{EventChoice, EventOutcome};
 
 /// Big Fish event choices
@@ -14,7 +14,7 @@ pub fn big_fish_choices(player_max_hp: u32) -> Vec<EventChoice> {
         EventChoice {
             text: "Banana (Gain 5 Max HP)".to_string(),
             outcome: EventOutcome::Effects(vec![
-                Effect::HealAndIncreaseMaxHp(5),  // Gain 5 Max HP
+                Effect::Battle(BattleEffect::HealAndIncreaseMaxHp(5)),  // Gain 5 Max HP
             ]),
         },
         EventChoice {
@@ -24,13 +24,13 @@ pub fn big_fish_choices(player_max_hp: u32) -> Vec<EventChoice> {
                 // Note: The actual heal amount needs to be calculated based on player's max HP
                 // This will need special handling in the event resolution system
                 // For now, we use a placeholder value that will need to be overridden
-                Effect::Heal(0),  // 0 indicates: calculate as max_hp / 3
+                Effect::Battle(BattleEffect::Heal(0)),  // 0 indicates: calculate as max_hp / 3
             ]),
         },
         EventChoice {
             text: "Box (Obtain a random relic)".to_string(),
             outcome: EventOutcome::Effects(vec![
-                Effect::ObtainRandomRelic,
+                Effect::Game(GameEffect::ObtainRandomRelic),
             ]),
         },
     ]
@@ -62,7 +62,7 @@ mod tests {
         match &banana.outcome {
             EventOutcome::Effects(effects) => {
                 assert_eq!(effects.len(), 1);
-                assert_eq!(effects[0], Effect::HealAndIncreaseMaxHp(5));
+                assert_eq!(effects[0], Effect::Battle(BattleEffect::HealAndIncreaseMaxHp(5)));
             }
             _ => panic!("Expected Effects outcome"),
         }
@@ -81,7 +81,7 @@ mod tests {
             EventOutcome::Effects(effects) => {
                 assert_eq!(effects.len(), 1);
                 // Heal(0) is a placeholder that means: calculate as max_hp / 3
-                assert_eq!(effects[0], Effect::Heal(0));
+                assert_eq!(effects[0], Effect::Battle(BattleEffect::Heal(0)));
             }
             _ => panic!("Expected Effects outcome"),
         }
@@ -99,7 +99,7 @@ mod tests {
             EventOutcome::Effects(effects) => {
                 // Box should give a random relic
                 assert_eq!(effects.len(), 1);
-                assert_eq!(effects[0], Effect::ObtainRandomRelic);
+                assert_eq!(effects[0], Effect::Game(GameEffect::ObtainRandomRelic));
             }
             _ => panic!("Expected Effects outcome"),
         }

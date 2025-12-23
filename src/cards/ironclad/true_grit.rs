@@ -1,14 +1,14 @@
-use crate::game::{card::{Card, Rarity, CardClass}, effect::Effect, card_type::CardType, card_enum::CardEnum};
+use crate::game::{card::{Card, Rarity, CardClass}, effect::BattleEffect, card_type::CardType, card_enum::CardEnum};
 
 /// True Grit - Gain 7 Block. Exhaust 1 card from hand
 pub fn true_grit() -> Card {
-    Card::new(CardEnum::TrueGrit, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::GainDefense { amount: 7 }, Effect::EnterSelectCardInHand])
+    Card::new(CardEnum::TrueGrit, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![BattleEffect::GainDefense { amount: 7 }, BattleEffect::EnterSelectCardInHand])
         .set_playable(true)
 }
 
 /// True Grit+ (upgraded version)
 pub fn true_grit_upgraded() -> Card {
-    Card::new(CardEnum::TrueGrit, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![Effect::GainDefense { amount: 9 }, Effect::EnterSelectCardInHand])
+    Card::new(CardEnum::TrueGrit, 1, CardClass::IronClad(Rarity::Uncommon, CardType::Skill), vec![BattleEffect::GainDefense { amount: 9 }, BattleEffect::EnterSelectCardInHand])
         .set_upgraded(true)
         .set_playable(true)
 }
@@ -25,8 +25,8 @@ mod tests {
         assert_eq!(true_grit_card.get_card_type(), CardType::Skill);
 
         let effects = true_grit_card.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::GainDefense { amount: 7 })));
-        assert!(effects.contains(&Effect::EnterSelectCardInHand));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::GainDefense { amount: 7 })));
+        assert!(effects.contains(&BattleEffect::EnterSelectCardInHand));
     }
 
     #[test]
@@ -37,8 +37,8 @@ mod tests {
         assert_eq!(true_grit_plus.get_card_type(), CardType::Skill);
 
         let effects = true_grit_plus.get_effects();
-        assert!(effects.iter().any(|e| matches!(e, Effect::GainDefense { amount: 9 })));
-        assert!(effects.contains(&Effect::EnterSelectCardInHand));
+        assert!(effects.iter().any(|e| matches!(e, BattleEffect::GainDefense { amount: 9 })));
+        assert!(effects.contains(&BattleEffect::EnterSelectCardInHand));
         assert!(true_grit_plus.is_upgraded());
     }
 

@@ -1,4 +1,4 @@
-use crate::game::effect::Effect;
+use crate::game::effect::{Effect, BattleEffect, GameEffect};
 use crate::events::map_events::{EventChoice, EventOutcome};
 
 /// Golden Idol event choices
@@ -13,14 +13,14 @@ pub fn golden_idol_choices() -> Vec<EventChoice> {
             outcome: EventOutcome::Effects(vec![
                 // TODO: 25-75% chance of taking damage based on dexterity
                 // For now, we'll just give the relic
-                Effect::ObtainRandomRelic,  // Should specifically be Golden Idol
+                Effect::Game(GameEffect::ObtainRandomRelic),  // Should specifically be Golden Idol
             ]),
         },
         EventChoice {
             text: "Destroy the trap (Take 25 damage, obtain a relic)".to_string(),
             outcome: EventOutcome::Effects(vec![
-                Effect::LoseHp(25),
-                Effect::ObtainRandomRelic,  // Should specifically be Bloody Idol
+                Effect::Battle(BattleEffect::LoseHp(25)),
+                Effect::Game(GameEffect::ObtainRandomRelic),  // Should specifically be Bloody Idol
             ]),
         },
         EventChoice {

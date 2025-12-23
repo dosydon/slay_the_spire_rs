@@ -1,5 +1,5 @@
 use crate::game::enemy::EnemyTrait;
-use crate::game::effect::Effect;
+use crate::game::effect::BattleEffect;
 use crate::game::global_info::GlobalInfo;
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
@@ -55,23 +55,23 @@ impl FungiBeast {
     }
 
     /// Get the effects for a given move
-    pub fn get_move_effects(&self, move_type: FungiBeastMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: FungiBeastMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             FungiBeastMove::Bite => {
                 let damage = Self::calculate_bite_damage();
-                vec![Effect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
+                vec![BattleEffect::AttackToTarget { amount: damage, num_attacks: 1, strength_multiplier: 1 }]
             }
             FungiBeastMove::Grow => {
                 let strength = Self::calculate_grow_strength(global_info);
-                vec![Effect::GainStrength { amount: strength }]
+                vec![BattleEffect::GainStrength { amount: strength }]
             }
         }
     }
 
     /// Get the on-death effects (Spore Cloud)
-    pub fn get_on_death_effects() -> Vec<Effect> {
+    pub fn get_on_death_effects() -> Vec<BattleEffect> {
         let vulnerable = Self::calculate_spore_cloud_vulnerable();
-        vec![Effect::ApplyVulnerable { duration: vulnerable }]
+        vec![BattleEffect::ApplyVulnerable { duration: vulnerable }]
     }
 }
 
@@ -91,7 +91,7 @@ impl SporeCloudListener {
 }
 
 impl EventListener for SporeCloudListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         if !self.active {
             return vec![];
         }
@@ -148,7 +148,7 @@ impl EnemyTrait for FungiBeast {
         &mut self,
         global_info: &GlobalInfo,
         rng: &mut impl rand::Rng,
-    ) -> (FungiBeastMove, Vec<Effect>) {
+    ) -> (FungiBeastMove, Vec<BattleEffect>) {
         let move_type = match self.last_move {
             None => {
                 // First turn: use weighted random (60% Bite, 40% Grow)
@@ -272,7 +272,7 @@ mod tests {
         let effects = fungi.get_move_effects(FungiBeastMove::Bite, &global_info);
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::AttackToTarget { amount: 6, .. }));
+        assert!(matches!(effects[0], BattleEffect::AttackToTarget { amount: 6, .. }));
     }
 
     #[test]
@@ -284,7 +284,7 @@ mod tests {
         let effects = fungi.get_move_effects(FungiBeastMove::Grow, &global_info);
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::GainStrength { amount: 3 }));
+        assert!(matches!(effects[0], BattleEffect::GainStrength { amount: 3 }));
     }
 
     #[test]
@@ -292,6 +292,6 @@ mod tests {
         let effects = FungiBeast::get_on_death_effects();
 
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0], Effect::ApplyVulnerable { duration: 2 }));
+        assert!(matches!(effects[0], BattleEffect::ApplyVulnerable { duration: 2 }));
     }
 }

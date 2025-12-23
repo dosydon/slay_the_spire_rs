@@ -1,4 +1,4 @@
-use crate::{game::{effect::Effect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 use std::any::Any;
@@ -90,27 +90,27 @@ impl SpikeSlimeL {
         }
     }
 
-    pub fn get_move_effects(&self, move_type: SpikeSlimeLMove, global_info: &GlobalInfo) -> Vec<Effect> {
+    pub fn get_move_effects(&self, move_type: SpikeSlimeLMove, global_info: &GlobalInfo) -> Vec<BattleEffect> {
         match move_type {
             SpikeSlimeLMove::Lick => {
-                vec![Effect::ApplyFrail { duration: 2 }]
+                vec![BattleEffect::ApplyFrail { duration: 2 }]
             }
             SpikeSlimeLMove::FlameTackle => {
                 vec![
-                    Effect::AttackToTarget {
+                    BattleEffect::AttackToTarget {
                         amount: Self::calculate_flame_tackle_damage(global_info),
                         num_attacks: 1,
                         strength_multiplier: 1
                     },
-                    Effect::AddSlimed(2)
+                    BattleEffect::AddSlimed(2)
                 ]
             }
         }
     }
 
     /// Get the on-death effects (split into 2 Spike Slime M)
-    pub fn get_on_death_effects() -> Vec<Effect> {
-        vec![Effect::SplitIntoMediumSlimes]
+    pub fn get_on_death_effects() -> Vec<BattleEffect> {
+        vec![BattleEffect::SplitIntoMediumSlimes]
     }
 
     fn choose_next_move(&self, global_info: &GlobalInfo) -> CategoricalDistribution<SpikeSlimeLMove> {
@@ -144,7 +144,7 @@ impl EnemyTrait for SpikeSlimeL {
         self.hp
     }
 
-    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (SpikeSlimeLMove, Vec<Effect>) {
+    fn choose_move_and_effects(&mut self, global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> (SpikeSlimeLMove, Vec<BattleEffect>) {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
 
@@ -207,13 +207,13 @@ mod tests {
 
         // Test Lick effects (Large applies 2 Frail instead of 1)
         let lick_effects = spike_slime.get_move_effects(SpikeSlimeLMove::Lick, &global_info);
-        assert_eq!(lick_effects, vec![Effect::ApplyFrail { duration: 2 }]);
+        assert_eq!(lick_effects, vec![BattleEffect::ApplyFrail { duration: 2 }]);
 
         // Test Flame Tackle effects (Large adds 2 Slimed instead of 1)
         let flame_tackle_effects = spike_slime.get_move_effects(SpikeSlimeLMove::FlameTackle, &global_info);
         assert_eq!(flame_tackle_effects, vec![
-            Effect::AttackToTarget { amount: 16, num_attacks: 1, strength_multiplier: 1 },
-            Effect::AddSlimed(2)
+            BattleEffect::AttackToTarget { amount: 16, num_attacks: 1, strength_multiplier: 1 },
+            BattleEffect::AddSlimed(2)
         ]);
     }
 
@@ -268,7 +268,7 @@ impl SpikeSlimeLSplitListener {
 }
 
 impl EventListener for SpikeSlimeLSplitListener {
-    fn on_event(&mut self, event: &BattleEvent) -> Vec<Effect> {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
         if !self.active {
             return vec![];
         }
