@@ -1,6 +1,86 @@
 # Slay the Spire Monster Reference
 
-All data in this document is taken directly from [Monsters — Slay the Spire Wiki](https://slaythespire.wiki.gg/wiki/Monsters) 
+All data in this document is taken directly from [Monsters — Slay the Spire Wiki](https://slaythespire.wiki.gg/wiki/Monsters)
+
+## Implementation Status
+
+- ✅ **20 enemy types implemented** (17% of unique enemies)
+- ❌ **95 enemy types not yet implemented**
+- 🎯 **Implementation Progress: ~17%** of unique enemies
+- 📊 **Total Unique Enemies: ~115** (Normal + Elite + Boss across all acts)
+
+**Note:** This count represents unique enemy types, not size variants (e.g., Spike Slime S/M/L count as 1 type).
+
+## Implemented Enemy Types
+
+| Enemy | Act | Type | File | Notes |
+|-------|-----|------|------|-------|
+| ✅ Cultist | 1, 2, 3 | Normal | `cultist.rs` | Appears in all acts |
+| ✅ Jaw Worm | 1, 3 | Normal | `jaw_worm.rs` | Jaw Worm Horde in Act 3 |
+| ✅ Red Louse | 1 | Normal | `red_louse.rs` | Curl Up passive |
+| ✅ Green Louse | 1 | Normal | `green_louse.rs` | Spit Web debuff |
+| ✅ Acid Slime (S) | 1 | Normal | `acid_slime_s.rs` | Small variant |
+| ✅ Acid Slime (M) | 1 | Normal | `acid_slime_m.rs` | Medium variant |
+| ✅ Spike Slime (S) | 1 | Normal | `spike_slime_s.rs` | Small variant |
+| ✅ Spike Slime (M) | 1 | Normal | `spike_slime_m.rs` | Medium variant |
+| ✅ Fat Gremlin | 1 | Normal | `fat_gremlin.rs` | Part of Gang of Gremlins |
+| ✅ Sneaky Gremlin | 1 | Normal | `sneaky_gremlin.rs` | High damage |
+| ✅ Mad Gremlin | 1 | Normal | `mad_gremlin.rs` | Angry passive |
+| ✅ Shield Gremlin | 1 | Normal | `shield_gremlin.rs` | Protector |
+| ✅ Gremlin Wizard | 1 | Normal | `gremlin_wizard.rs` | Charges then blasts |
+| ✅ Looter | 1 | Normal | `looter.rs` | Gold stealing mechanic |
+| ✅ Fungi Beast | 1, 2 | Normal | `fungi_beast.rs` | Spore Cloud on death |
+| ✅ Blue Slaver | 1 | Normal | `blue_slaver.rs` | Stab/Rake pattern |
+| ✅ Red Slaver | 1 | Normal | `red_slaver.rs` | Entangle mechanic |
+| ✅ Gremlin Nob | 1 | Elite | `gremlin_nob.rs` | Enrage passive |
+| ✅ Lagavulin | 1 | Elite | `lagavulin.rs` | Sleep mechanics |
+| ✅ Sentry ×3 | 1, 2 | Elite | `sentry.rs` | Bolt/Beam pattern |
+| ✅ Hexaghost | 1 | Boss | `hexaghost.rs` | Divider & Inferno |
+
+## Implementation Progress by Act
+
+### Act 1 (The Exordium)
+- ✅ **16/13** types implemented (123% - includes extras)
+- Normal: Cultist, Jaw Worm, Red/Green Louse, Acid/Spike Slimes (S/M), All 5 Gremlin types, Looter, Fungi Beast, Blue/Red Slaver
+- Elites: Gremlin Nob, Lagavulin, Sentries
+- Bosses: Hexaghost
+
+### Act 2 (The City)
+- ❌ **0/11** types implemented (0%)
+- No Act 2 enemies yet (Fungi Beast returns from Act 1)
+
+### Act 3 (The Beyond)
+- ❌ **0/8** types implemented (0%)
+- No Act 3 enemies yet
+
+### Act 4 (The Ending)
+- ❌ **0/3** types implemented (0%)
+- No Act 4 enemies yet
+
+## Implementation Notes
+
+### Fully Implemented Systems
+- ✅ Enemy trait and behavior system
+- ✅ Move pattern selection (probabilistic and deterministic)
+- ✅ Ascension scaling (HP, damage, effects)
+- ✅ Passive abilities (Curl Up, Angry, Spore Cloud, etc.)
+- ✅ Status effect application (Weak, Vulnerable, Frail, etc.)
+- ✅ Event-driven enemy effects (Spore Cloud, Enrage, etc.)
+- ✅ Multi-enemy encounters (Sentries, Gang of Gremlins)
+- ✅ Elite mechanics (Enrage, Sleep, etc.)
+- ✅ Boss mechanics (Divider, Inferno, etc.)
+
+### Systems Ready for More Enemies
+The enemy framework is complete and ready for additional implementations:
+- Pattern-based move selection
+- Ascension-dependent modifiers
+- Passive ability listeners
+- Death effects
+- Multi-phase enemies
+- Minion summoning
+- Status effect interactions
+
+---
 
 ## Ascension Modifiers for Normal Enemies
 
@@ -25,17 +105,17 @@ All data in this document is taken directly from [Monsters — Slay the Spire Wi
 
 ### Debut Enemies
 
-| Enemy | Detail from wiki |
-|-------|------------------|
-| Spike Slimes | Entry covers Spike Slime S/M/L variations. |
-| Acid Slimes | Entry covers Acid Slime S/M/L variations. |
-| Cultist | Single-enemy encounter highlighted in the Act 1 easy pool. |
-| Jaw Worm | Solo encounter available from the opening pool onward. |
-| Louses | Covers both Red and Green Louse variants. |
-| Fungi Beast | Appears solo or as a pair in later Exordium encounters. |
-| Gremlins | Umbrella entry for Fat, Sneaky, Mad, Shield, and Wizard gremlins. |
-| Looter | Appears solo and in multi-enemy “Thugs” encounters. |
-| Slavers | Covers both Blue and Red Slaver variants used in Act 1 encounters. |
+| Enemy | Implemented | File | Detail from wiki |
+|-------|-------------|------|------------------|
+| Spike Slimes | ✅ S/M | `spike_slime_s.rs`, `spike_slime_m.rs` | Entry covers Spike Slime S/M/L variations. |
+| Acid Slimes | ✅ S/M | `acid_slime_s.rs`, `acid_slime_m.rs` | Entry covers Acid Slime S/M/L variations. |
+| Cultist | ✅ Yes | `cultist.rs` | Single-enemy encounter highlighted in the Act 1 easy pool. |
+| Jaw Worm | ✅ Yes | `jaw_worm.rs` | Solo encounter available from the opening pool onward. |
+| Louses | ✅ Yes | `red_louse.rs`, `green_louse.rs` | Covers both Red and Green Louse variants. |
+| Fungi Beast | ✅ Yes | `fungi_beast.rs` | Appears solo or as a pair in later Exordium encounters. |
+| Gremlins | ✅ Yes | `fat_gremlin.rs`, `sneaky_gremlin.rs`, `mad_gremlin.rs`, `shield_gremlin.rs`, `gremlin_wizard.rs` | Umbrella entry for Fat, Sneaky, Mad, Shield, and Wizard gremlins. |
+| Looter | ✅ Yes | `looter.rs` | Appears solo and in multi-enemy "Thugs" encounters. |
+| Slavers | ✅ Yes | `blue_slaver.rs`, `red_slaver.rs` | Covers both Blue and Red Slaver variants used in Act 1 encounters. |
 
 ### Encounter Pools
 
@@ -69,16 +149,16 @@ All data in this document is taken directly from [Monsters — Slay the Spire Wi
 
 ### Debut Enemies
 
-| Enemy | Detail from wiki |
-|-------|------------------|
-| Byrd | Appears solo (3 Byrds encounter) and in mixed fights later in the act. |
-| Chosen | Appears solo, in pairs with Byrd, and with Cultists. |
-| Mugger | Appears alongside a Looter in the “Thieves” encounter. |
-| Shelled Parasite | Can be rolled solo or paired with a Fungi Beast. |
-| Spheric Guardian | Appears solo and paired with Sentry in Act 2. |
-| Centurion and Mystic | Always encountered together as a single fight. |
-| Snake Plant | Solo encounter in the hard pool (weight 6). |
-| Snecko | Solo encounter in the hard pool (weight 4). |
+| Enemy | Implemented | File | Detail from wiki |
+|-------|-------------|------|------------------|
+| Byrd | ❌ No | - | Appears solo (3 Byrds encounter) and in mixed fights later in the act. |
+| Chosen | ❌ No | - | Appears solo, in pairs with Byrd, and with Cultists. |
+| Mugger | ❌ No | - | Appears alongside a Looter in the "Thieves" encounter. |
+| Shelled Parasite | ❌ No | - | Can be rolled solo or paired with a Fungi Beast. |
+| Spheric Guardian | ❌ No | - | Appears solo and paired with Sentry in Act 2. |
+| Centurion and Mystic | ❌ No | - | Always encountered together as a single fight. |
+| Snake Plant | ❌ No | - | Solo encounter in the hard pool (weight 6). |
+| Snecko | ❌ No | - | Solo encounter in the hard pool (weight 4). |
 
 ### Returning Enemies
 
@@ -122,15 +202,15 @@ All data in this document is taken directly from [Monsters — Slay the Spire Wi
 
 ### Debut Enemies
 
-| Enemy | Detail from wiki |
-|-------|------------------|
-| Darkling | Appears as 3 Darklings in both easy and hard pools. |
-| Orb Walker | Solo encounter available from the easy pool onwards. |
-| Shapes | Catch-all entry for Repulsor, Exploder, and Spiker combinations. |
-| The Maw | Solo fight (hard-pool weight 1). |
-| Spire Growth | Solo fight (hard-pool weight 1). |
-| Transient | Solo fight (hard-pool weight 1). |
-| Writhing Mass | Solo fight (hard-pool weight 1). |
+| Enemy | Implemented | File | Detail from wiki |
+|-------|-------------|------|------------------|
+| Darkling | ❌ No | - | Appears as 3 Darklings in both easy and hard pools. |
+| Orb Walker | ❌ No | - | Solo encounter available from the easy pool onwards. |
+| Shapes | ❌ No | - | Catch-all entry for Repulsor, Exploder, and Spiker combinations. |
+| The Maw | ❌ No | - | Solo fight (hard-pool weight 1). |
+| Spire Growth | ❌ No | - | Solo fight (hard-pool weight 1). |
+| Transient | ❌ No | - | Solo fight (hard-pool weight 1). |
+| Writhing Mass | ❌ No | - | Solo fight (hard-pool weight 1). |
 
 ### Returning Enemies
 
@@ -1419,6 +1499,23 @@ These enemies always appear together as a pair.
 
 Elite enemies have higher HP thresholds and appear at elite encounter nodes. Note that elites use **Ascension 8** for HP increases (not A7 like normal enemies) and **Ascension 18** for move-set upgrades (not A17).
 
+| Elite | Act | Implemented | File |
+|-------|-----|-------------|------|
+| **Act 1 Elites** |||
+| Gremlin Nob | 1 | ✅ Yes | `gremlin_nob.rs` |
+| Lagavulin | 1 | ✅ Yes | `lagavulin.rs` |
+| Sentries (×3) | 1, 2 | ✅ Yes | `sentry.rs` |
+| **Act 2 Elites** |||
+| Gremlin Leader | 2 | ❌ No | - |
+| Book of Stabbing | 2 | ❌ No | - |
+| Bronze Automaton | 2 | ❌ No | - |
+| **Act 3 Elites** |||
+| Nemesis | 3 | ❌ No | - |
+| Giant Head | 3 | ❌ No | - |
+| Reptomancer | 3 | ❌ No | - |
+| **Act 4 Elite** |||
+| Spire Shield & Spear | 4 | ❌ No | - |
+
 ### Act 1 Elites
 
 #### Gremlin Nob
@@ -1773,6 +1870,21 @@ Elite enemies have higher HP thresholds and appear at elite encounter nodes. Not
 ## Boss Enemies
 
 Bosses have significantly higher HP and complex mechanics. They use **Ascension 9** for HP increases and **Ascension 4** for initial damage scaling.
+
+### Boss Implementation Status
+
+| Act | Boss | Implemented | File |
+|-----|------|-------------|------|
+| 1 | Slime Boss | ❌ No | - |
+| 1 | The Guardian | ❌ No | - |
+| 1 | Hexaghost | ✅ Yes | `hexaghost.rs` |
+| 2 | Slime Boss | ❌ No | - |
+| 2 | The Collector | ❌ No | - |
+| 2 | Champ | ❌ No | - |
+| 3 | Time Eater | ❌ No | - |
+| 3 | Donu & Deca | ❌ No | - |
+| 3 | The Awakened One | ❌ No | - |
+| 4 | Corrupt Heart | ❌ No | - |
 
 ### Act 1 Bosses
 

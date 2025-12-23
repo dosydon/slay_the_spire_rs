@@ -2,6 +2,63 @@
 
 This document lists all potions available in Slay the Spire, organized by rarity and character availability.
 
+## Implementation Status
+
+| Potion Name | Rarity | Character | Status |
+|------------|--------|-----------|---------|
+| **Common Potions** |
+| Attack Potion | Common | All | ❌ Not Implemented |
+| Blessing of the Forge | Common | All | ❌ Not Implemented |
+| Block Potion | Common | All | ✅ Implemented |
+| Colorless Potion | Common | All | ❌ Not Implemented |
+| Dexterity Potion | Common | All | ✅ Implemented |
+| Energy Potion | Common | All | ✅ Implemented |
+| Explosive Potion | Common | All | ❌ Not Implemented |
+| Fear Potion | Common | All | ❌ Not Implemented |
+| Fire Potion | Common | All | ✅ Implemented |
+| Flex Potion | Common | All | ❌ Not Implemented |
+| Power Potion | Common | All | ❌ Not Implemented |
+| Skill Potion | Common | All | ❌ Not Implemented |
+| Speed Potion | Common | All | ❌ Not Implemented |
+| Strength Potion | Common | All | ✅ Implemented |
+| Swift Potion | Common | All | ✅ Implemented |
+| Weak Potion | Common | All | ❌ Not Implemented |
+| **Character-Specific Common** |
+| Blood Potion | Common | Ironclad | ✅ Implemented |
+| Poison Potion | Common | Silent | ❌ Not Implemented |
+| Focus Potion | Common | Defect | ❌ Not Implemented |
+| Bottled Miracle | Common | Watcher | ❌ Not Implemented |
+| **Uncommon Potions** |
+| Ancient Potion | Uncommon | All | ❌ Not Implemented |
+| Distilled Chaos | Uncommon | All | ❌ Not Implemented |
+| Duplication Potion | Uncommon | All | ❌ Not Implemented |
+| Essence of Steel | Uncommon | All | ❌ Not Implemented |
+| Gambler's Brew | Uncommon | All | ❌ Not Implemented |
+| Liquid Bronze | Uncommon | All | ❌ Not Implemented |
+| Liquid Memories | Uncommon | All | ❌ Not Implemented |
+| Regen Potion | Uncommon | All | ❌ Not Implemented |
+| Smoke Bomb | Uncommon | All | ❌ Not Implemented |
+| Snecko Oil | Uncommon | All | ❌ Not Implemented |
+| **Character-Specific Uncommon** |
+| Elixir | Uncommon | Ironclad | ❌ Not Implemented |
+| Cunning Potion | Uncommon | Silent | ❌ Not Implemented |
+| Potion of Capacity | Uncommon | Defect | ❌ Not Implemented |
+| Stance Potion | Uncommon | Watcher | ❌ Not Implemented |
+| **Rare Potions** |
+| Cultist Potion | Rare | All | ❌ Not Implemented |
+| Entropic Brew | Rare | All | ❌ Not Implemented |
+| Fairy in a Bottle | Rare | All | ❌ Not Implemented |
+| Fruit Juice | Rare | All | ❌ Not Implemented |
+| **Character-Specific Rare** |
+| Heart of Iron | Rare | Ironclad | ❌ Not Implemented |
+| Ghost in a Jar | Rare | Silent | ❌ Not Implemented |
+| Essence of Darkness | Rare | Defect | ❌ Not Implemented |
+| Ambrosia | Rare | Watcher | ❌ Not Implemented |
+
+**Summary**: 7 / 45 potions implemented (15.6%)
+
+---
+
 ## Potion Mechanics
 
 - **Potion Slots**: Players start with 3 potion slots (can be increased with certain relics)

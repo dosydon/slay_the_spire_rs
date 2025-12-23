@@ -4,9 +4,9 @@ This document tracks the implementation status of all Colorless cards in the Sla
 
 ## Summary
 
-- ❌ **0 cards implemented**
+- ✅ **13 cards implemented**
 - 🎯 **57 total Colorless cards** (22 Uncommon + 18 Rare + 17 Special)
-- 📋 **Implementation Progress: 0%** of Colorless cards
+- 📋 **Implementation Progress: 22.8%** of Colorless cards
 
 **Note:** All tables include Cost, Cost+ (upgraded cost), Base Effects, and Upgraded Effects columns for clarity.
 
@@ -26,26 +26,26 @@ Unlike character-specific cards, colorless cards do not appear in normal card re
 
 | Card Name | Type | Cost | Cost+ | Implemented | File Location | Base Effects | Upgraded Effects | Acquisition |
 |-----------|------|------|-------|-------------|---------------|--------------|------------------|-------------|
-| ❌ Bandage Up | Skill | 0 | 0 | No | - | Heal 4 HP. Exhaust | Heal 6 HP. Exhaust | Shop |
-| ❌ Blind | Skill | 0 | 0 | No | - | Apply 2 Weak to ALL enemies | Apply 2 Weak to ALL enemies | Shop |
-| ❌ Dark Shackles | Skill | 0 | 0 | No | - | Enemy loses 9 Strength this turn. Exhaust | Enemy loses 15 Strength this turn. Exhaust | Shop |
-| ❌ Deep Breath | Skill | 0 | 0 | No | - | Shuffle discard pile into draw pile. Draw 1 card | Shuffle discard pile into draw pile. Draw 2 cards | Shop |
+| ✅ Bandage Up | Skill | 0 | 0 | Yes | [bandage_up.rs](src/cards/colorless/bandage_up.rs) | Heal 4 HP. Exhaust | Heal 6 HP. Exhaust | Shop |
+| ✅ Blind | Skill | 0 | 0 | Yes | [blind.rs](src/cards/colorless/blind.rs) | Apply 2 Weak to ALL enemies | Apply 2 Weak to ALL enemies | Shop |
+| ✅ Dark Shackles | Skill | 0 | 0 | Yes | [dark_shackles.rs](src/cards/colorless/dark_shackles.rs) | Enemy loses 9 Strength this turn (restored at end of turn). Exhaust | Enemy loses 15 Strength this turn (restored at end of turn). Exhaust | Shop |
+| ✅ Deep Breath | Skill | 0 | 0 | Yes | [deep_breath.rs](src/cards/colorless/deep_breath.rs) | Shuffle discard pile into draw pile. Draw 1 card | Shuffle discard pile into draw pile. Draw 2 cards | Shop |
 | ❌ Discovery | Skill | 1 | 1 | No | - | Discover 1 of 3 random cards to add to hand, costs 0 this turn. Exhaust | Discover 1 of 3 random cards to add to hand, costs 0 this turn. Exhaust | Shop |
 | ❌ Dramatic Entrance | Attack | 0 | 0 | No | - | Innate. Deal 8 damage to ALL enemies. Exhaust | Innate. Deal 12 damage to ALL enemies. Exhaust | Shop |
 | ❌ Enlightenment | Skill | 0 | 0 | No | - | Reduce cost of cards in hand to 1 this turn | Reduce cost of cards in hand to 1 this combat | Shop |
-| ❌ Finesse | Skill | 0 | 0 | No | - | Gain 2 Block. Draw 1 card | Gain 4 Block. Draw 1 card | Shop |
-| ❌ Flash of Steel | Attack | 0 | 0 | No | - | Deal 3 damage. Draw 1 card | Deal 6 damage. Draw 1 card | Shop |
+| ✅ Finesse | Skill | 0 | 0 | Yes | [finesse.rs](src/cards/colorless/finesse.rs) | Gain 2 Block. Draw 1 card | Gain 4 Block. Draw 1 card | Shop |
+| ✅ Flash of Steel | Attack | 0 | 0 | Yes | [flash_of_steel.rs](src/cards/colorless/flash_of_steel.rs) | Deal 3 damage. Draw 1 card | Deal 6 damage. Draw 1 card | Shop |
 | ❌ Forethought | Skill | 0 | 0 | No | - | Place card(s) from hand on bottom of draw pile. Those cards cost 0 until played | Place card(s) from hand on bottom of draw pile. Those cards cost 0 until played | Shop |
-| ❌ Good Instincts | Skill | 0 | 0 | No | - | Gain 6 Block | Gain 9 Block | Shop |
-| ❌ Impatience | Skill | 0 | 0 | No | - | If you have no Attack cards in hand, draw 2 cards | If you have no Attack cards in hand, draw 3 cards | Shop |
+| ✅ Good Instincts | Skill | 0 | 0 | Yes | [good_instincts.rs](src/cards/colorless/good_instincts.rs) | Gain 6 Block | Gain 9 Block | Shop |
+| ✅ Impatience | Skill | 0 | 0 | Yes | [impatience.rs](src/cards/colorless/impatience.rs) | If you have no Attack cards in hand, draw 2 cards | If you have no Attack cards in hand, draw 3 cards | Shop |
 | ❌ Jack of All Trades | Skill | 0 | 0 | No | - | Add 1 random Colorless card to hand. Exhaust | Add 2 random Colorless cards to hand. Exhaust | Shop |
 | ❌ Madness | Skill | 1 | 0 | No | - | A random card in hand costs 0 for rest of combat. Exhaust | A random card in hand costs 0 for rest of combat. Exhaust | Shop |
 | ❌ Mind Blast | Attack | 2 | 1 | No | - | Innate. Deal damage equal to number of cards in draw pile | Innate. Deal damage equal to number of cards in draw pile | Shop |
-| ❌ Panacea | Skill | 0 | 0 | No | - | Gain 1 Artifact. Exhaust | Gain 2 Artifact. Exhaust | Shop |
-| ❌ Panic Button | Skill | 0 | 0 | No | - | Gain 30 Block. Cannot gain Block from cards for 2 turns. Exhaust | Gain 40 Block. Cannot gain Block from cards for 2 turns. Exhaust | Shop |
+| ✅ Panacea | Skill | 0 | 0 | Yes | [panacea.rs](src/cards/colorless/panacea.rs) | Gain 1 Artifact. Exhaust | Gain 2 Artifact. Exhaust | Shop |
+| ✅ Panic Button | Skill | 0 | 0 | Yes | [panic_button.rs](src/cards/colorless/panic_button.rs) | Gain 30 Block. Exhaust | Gain 40 Block. Exhaust | Shop |
 | ❌ Purity | Skill | 0 | 0 | No | - | Choose and Exhaust 3 cards in hand. Exhaust | Choose and Exhaust 5 cards in hand. Exhaust | Shop |
-| ❌ Swift Strike | Attack | 0 | 0 | No | - | Deal 7 damage | Deal 10 damage | Shop |
-| ❌ Trip | Skill | 0 | 0 | No | - | Apply 2 Vulnerable to ALL enemies | Apply 2 Vulnerable to ALL enemies | Shop |
+| ✅ Swift Strike | Attack | 0 | 0 | Yes | [swift_strike.rs](src/cards/colorless/swift_strike.rs) | Deal 7 damage | Deal 10 damage | Shop |
+| ✅ Trip | Skill | 0 | 0 | Yes | [trip.rs](src/cards/colorless/trip.rs) | Apply 2 Vulnerable to ALL enemies | Apply 2 Vulnerable to ALL enemies | Shop |
 
 **Note:** Many uncommon colorless cards cost 0 energy, making them flexible utility options.
 
@@ -57,7 +57,7 @@ Unlike character-specific cards, colorless cards do not appear in normal card re
 | ❌ Chrysalis | Skill | 2 | 2 | No | - | Add 3 random Skills to draw pile. They cost 0 this combat. Exhaust | Add 5 random Skills to draw pile. They cost 0 this combat. Exhaust | Shop |
 | ❌ Hand of Greed | Attack | 2 | 2 | No | - | Deal 20 damage. If this kills a non-minion enemy, gain 20 Gold | Deal 25 damage. If this kills a non-minion enemy, gain 25 Gold | Shop |
 | ❌ Magnetism | Power | 2 | 1 | No | - | At start of turn, add random colorless card to hand | At start of turn, add random colorless card to hand | Shop |
-| ❌ Master of Strategy | Skill | 0 | 0 | No | - | Draw 3 cards. Exhaust | Draw 4 cards. Exhaust | Shop |
+| ✅ Master of Strategy | Skill | 0 | 0 | Yes | [master_of_strategy.rs](src/cards/colorless/master_of_strategy.rs) | Draw 3 cards. Exhaust | Draw 4 cards. Exhaust | Shop |
 | ❌ Mayhem | Power | 2 | 1 | No | - | At start of turn, play top card of draw pile | At start of turn, play top card of draw pile | Shop |
 | ❌ Metamorphosis | Skill | 2 | 2 | No | - | Add 3 random Attacks to draw pile. They cost 0 this combat. Exhaust | Add 5 random Attacks to draw pile. They cost 0 this combat. Exhaust | Shop |
 | ❌ Panache | Power | 0 | 0 | No | - | Every 5 cards played in one turn, deal 10 damage to ALL enemies | Every 5 cards played in one turn, deal 14 damage to ALL enemies | Shop |
@@ -232,7 +232,39 @@ Once framework features are available, implement in this order:
 
 ## Recently Implemented Cards
 
-None yet - colorless cards not implemented.
+### 2025-12-23: Implemented 5 New Colorless Cards
+
+1. **Master of Strategy** (Rare)
+   - File: [master_of_strategy.rs](src/cards/colorless/master_of_strategy.rs)
+   - Effects: Draw 3(4) cards. Exhaust
+   - Notes: Powerful card draw with exhaust cost
+
+2. **Dark Shackles** (Uncommon)
+   - File: [dark_shackles.rs](src/cards/colorless/dark_shackles.rs)
+   - Effects: Enemy loses 9(15) Strength this turn (restored at end of turn). Exhaust
+   - Notes: Temporary strength reduction that restores at end of turn, strong for big turns
+   - Framework: Uses end-of-turn effects to restore the lost strength
+
+3. **Impatience** (Uncommon)
+   - File: [impatience.rs](src/cards/colorless/impatience.rs)
+   - Effects: If you have no Attack cards in hand, draw 2(3) cards
+   - Notes: Conditional card draw for skill-heavy decks
+   - Framework: Added new `HandNoAttacks` condition to support this card
+
+4. **Panic Button** (Uncommon)
+   - File: [panic_button.rs](src/cards/colorless/panic_button.rs)
+   - Effects: Gain 30(40) Block. Exhaust
+   - Notes: Emergency defense card
+   - Note: Full game version also prevents gaining Block from cards for 2 turns (debuff system not yet implemented)
+
+5. **Panacea** (Uncommon)
+   - File: [panacea.rs](src/cards/colorless/panacea.rs)
+   - Effects: Gain 1(2) Artifact. Exhaust
+   - Notes: Provides Artifact charges to block debuffs
+
+### Previously Implemented (8 cards)
+
+Swift Strike, Finesse, Flash of Steel, Blind, Trip, Good Instincts, Bandage Up, Deep Breath
 
 ## Summary Statistics
 
@@ -240,7 +272,7 @@ None yet - colorless cards not implemented.
 - **Uncommon**: 22 cards (38.6%)
 - **Rare**: 18 cards (31.6%)
 - **Special**: 17 cards (29.8%)
-- **Implemented**: 0 cards (0%)
+- **Implemented**: 13 cards (22.8%)
 - **Attack Type**: 9 cards
 - **Skill Type**: 44 cards
 - **Power Type**: 4 cards

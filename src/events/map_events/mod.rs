@@ -9,6 +9,8 @@ mod golden_idol;
 mod shining_light;
 mod world_of_goop;
 mod wing_statue;
+mod purifier;
+mod living_wall;
 
 use crate::game::effect::Effect;
 use crate::game::global_info::GlobalInfo;
@@ -31,6 +33,10 @@ pub enum MapEvent {
     WorldOfGoop,
     /// Wing Statue - A statue with a missing wing
     WingStatue,
+    /// Purifier - Shrine that removes cards from deck
+    Purifier,
+    /// Living Wall - A mysterious wall offering deck improvements
+    LivingWall,
 }
 
 /// Represents a choice the player can make in an event
@@ -73,6 +79,8 @@ impl MapEvent {
             MapEvent::ShiningLight => shining_light::shining_light_choices(80, 0),  // Default max HP, ascension 0
             MapEvent::WorldOfGoop => world_of_goop::world_of_goop_choices(),
             MapEvent::WingStatue => wing_statue::wing_statue_choices(),
+            MapEvent::Purifier => purifier::purifier_choices(),
+            MapEvent::LivingWall => living_wall::living_wall_choices(),
         }
     }
 
@@ -88,6 +96,8 @@ impl MapEvent {
             MapEvent::ShiningLight => shining_light::shining_light_choices(ctx.player_max_hp, ctx.ascension),
             MapEvent::WorldOfGoop => world_of_goop::world_of_goop_choices(),
             MapEvent::WingStatue => wing_statue::wing_statue_choices(),
+            MapEvent::Purifier => purifier::purifier_choices(),
+            MapEvent::LivingWall => living_wall::living_wall_choices(),
         }
     }
 
@@ -101,6 +111,8 @@ impl MapEvent {
             MapEvent::ShiningLight => shining_light::shining_light_description(),
             MapEvent::WorldOfGoop => world_of_goop::world_of_goop_description(),
             MapEvent::WingStatue => wing_statue::wing_statue_description(),
+            MapEvent::Purifier => purifier::purifier_description(),
+            MapEvent::LivingWall => living_wall::living_wall_description(),
         }
     }
 }
@@ -116,6 +128,8 @@ pub fn sample_sls_event(_global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> 
         MapEvent::ShiningLight,
         MapEvent::WorldOfGoop,
         MapEvent::WingStatue,
+        MapEvent::Purifier,
+        MapEvent::LivingWall,
     ];
 
     // TODO: In the future, this could be expanded to:

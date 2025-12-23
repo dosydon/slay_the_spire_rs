@@ -946,6 +946,38 @@ impl Battle {
             BaseEffect::EnterSelectCardsToUpgrade { .. } => {
                 // TODO: This should be handled by the event system
             },
+            BaseEffect::UpgradeRandomCards { count } => {
+                // This effect upgrades random cards from the player's master deck (not battle deck)
+                // It should be handled by the Game/event system, not the Battle system.
+                //
+                // Implementation notes for when event system is integrated:
+                // 1. Get all upgradeable cards from master deck (cards where is_upgraded() == false)
+                // 2. Randomly select `count` cards from upgradeable cards
+                // 3. For each selected card:
+                //    - Get card at index
+                //    - Call card.upgrade()
+                //    - Replace card in deck at same index
+                //
+                // Example code (to be implemented in Game struct):
+                // let upgradeable = deck.get_cards().enumerate()
+                //     .filter(|(_, card)| !card.is_upgraded())
+                //     .collect::<Vec<_>>();
+                // let mut rng = rand::thread_rng();
+                // let to_upgrade = upgradeable.choose_multiple(&mut rng, count as usize);
+                // for (index, card) in to_upgrade {
+                //     let upgraded = card.clone().upgrade();
+                //     deck.remove_card(index);
+                //     deck.insert_card(index, upgraded);
+                // }
+
+                info!("UpgradeRandomCards effect called with count: {}. This should be handled by the event system.", count);
+            },
+            BaseEffect::EnterSelectCardsToRemove { .. } => {
+                // TODO: This should be handled by the event system
+            },
+            BaseEffect::EnterSelectCardsToTransform { .. } => {
+                // TODO: This should be handled by the event system
+            },
             BaseEffect::TriggerCombatEvent => {
                 // TODO: This should be handled by the event system
             },
