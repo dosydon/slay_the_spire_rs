@@ -395,6 +395,9 @@ impl CardRewardPool {
             CardEnum::GoodInstincts => crate::cards::colorless::good_instincts::good_instincts(),
             CardEnum::BandageUp => crate::cards::colorless::bandage_up::bandage_up(),
             CardEnum::DeepBreath => crate::cards::colorless::deep_breath::deep_breath(),
+            CardEnum::MasterOfStrategy => crate::cards::colorless::master_of_strategy::master_of_strategy(),
+            CardEnum::DarkShackles => crate::cards::colorless::dark_shackles::dark_shackles(),
+            CardEnum::Impatience => crate::cards::colorless::impatience::impatience(),
 
             // Status/Curse Cards (should not be in reward pools but included for completeness)
             CardEnum::Slimed => crate::cards::status::slimed::slimed(),

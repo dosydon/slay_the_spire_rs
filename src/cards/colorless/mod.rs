@@ -7,6 +7,9 @@ pub mod trip;
 pub mod good_instincts;
 pub mod bandage_up;
 pub mod deep_breath;
+pub mod master_of_strategy;
+pub mod dark_shackles;
+pub mod impatience;
 
 // Re-export all colorless cards
 pub use good_instincts::good_instincts;
@@ -25,3 +28,9 @@ pub use blind::blind;
 pub use blind::blind_upgraded;
 pub use trip::trip;
 pub use trip::trip_upgraded;
+pub use master_of_strategy::master_of_strategy;
+pub use master_of_strategy::master_of_strategy_upgraded;
+pub use dark_shackles::dark_shackles;
+pub use dark_shackles::dark_shackles_upgraded;
+pub use impatience::impatience;
+pub use impatience::impatience_upgraded;

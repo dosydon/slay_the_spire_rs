@@ -280,9 +280,16 @@ impl Game {
                             // Shop - enter shop state with 5 cards for sale
                             self.start_shop(rng);
                         },
+                        NodeType::Treasure => {
+                            // Treasure chest - sample chest type and create reward state
+                            use crate::game::reward_state::ChestType;
+                            let chest_type = ChestType::sample(rng);
+                            let reward_state = chest_type.create_reward_state(rng);
+                            info!("Entered treasure room with {:?} chest", chest_type);
+                            self.set_game_state(GameState::Reward(reward_state));
+                        },
                         _ => {
                             // Other encounter types - for now just stay on map
-                            // Future: implement treasure rooms, etc.
                         }
                     }
                 }
@@ -331,6 +338,28 @@ impl Game {
 
                     // Mark potion as claimed
                     reward_state.potion_claimed = true;
+                    self.set_game_state(GameState::Reward(reward_state));
+
+                    Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
+                } else {
+                    Err(GameError::InvalidState)
+                }
+            },
+
+            GameAction::ClaimRelic => {
+                // Only valid when in Reward state with unclaimed relic
+                let mut reward_state = match self.current_state() {
+                    GameState::Reward(reward) if !reward.relic_claimed && reward.relic_reward.is_some() => reward.clone(),
+                    GameState::Reward(_) => return Err(GameError::InvalidState), // No relic or already claimed
+                    _ => return Err(GameError::InvalidState),
+                };
+
+                // Get the relic rarity and claim it
+                if let Some(relic_rarity) = reward_state.claim_relic() {
+                    // TODO: When relic system is implemented, sample an actual relic of the given rarity
+                    // For now, just log the relic rarity that would be obtained
+                    info!("Claimed {:?} rarity relic from treasure chest", relic_rarity);
+
                     self.set_game_state(GameState::Reward(reward_state));
 
                     Ok(GameResult { outcome: GameOutcome::Continue, game_events: Vec::new() })
@@ -746,6 +775,8 @@ impl Game {
             gold_claimed: false,
             potion_reward: potion_drop.flatten(), // Convert Option<Option<Potion>> to Option<Potion>
             potion_claimed: false,
+            relic_reward: None,
+            relic_claimed: false,
         }
     }
 
@@ -768,9 +799,24 @@ impl Game {
         }
     }
 
-    /// Start an SLS Event
+    /// Get event choices with current game context
+    pub fn get_event_choices(&self, event: &MapEvent) -> Vec<EventChoice> {
+        use crate::events::map_events::EventContext;
+
+        let ctx = EventContext {
+            floor: self.global_info.current_floor,
+            player_hp: self.player_hp,
+            player_max_hp: self.player_max_hp,
+            gold: self.gold,
+            ascension: self.global_info.ascention,
+        };
+
+        event.get_choices_with_context(&ctx)
+    }
+
+    /// Start an SLS Event (using game context for event choices)
     pub fn start_event(&mut self, event: MapEvent) {
-        let choices = event.get_choices();
+        let choices = self.get_event_choices(&event);
         self.set_game_state(GameState::InEvent(event, choices));
         info!("Started event: {}", event.get_description());
     }
@@ -1101,6 +1147,8 @@ mod tests {
             gold_claimed: false,
             potion_reward: None,
             potion_claimed: false,
+            relic_reward: None,
+            relic_claimed: false,
         };
         game.start_card_reward_selection(&mut rng, test_reward_state);
 
@@ -1130,6 +1178,8 @@ mod tests {
             gold_claimed: false,
             potion_reward: None,
             potion_claimed: false,
+            relic_reward: None,
+            relic_claimed: false,
         };
         game.start_card_reward_selection(&mut rng, test_reward_state);
         let initial_deck_size = game.deck.size();
@@ -1178,6 +1228,8 @@ mod tests {
             gold_claimed: false,
             potion_reward: None,
             potion_claimed: false,
+            relic_reward: None,
+            relic_claimed: false,
         };
         game.start_card_reward_selection(&mut rng, test_reward_state);
 
@@ -1207,6 +1259,8 @@ mod tests {
             gold_claimed: false,
             potion_reward: None,
             potion_claimed: false,
+            relic_reward: None,
+            relic_claimed: false,
         };
         game.start_card_reward_selection(&mut rng, test_reward_state.clone());
         let first_options = game.get_card_reward_options().to_vec();
@@ -1235,6 +1289,8 @@ mod tests {
             gold_claimed: false,
             potion_reward: None,
             potion_claimed: false,
+            relic_reward: None,
+            relic_claimed: false,
         };
         game.start_card_reward_selection(&mut rng, test_reward_state);
         let reward_options = game.get_card_reward_options();
@@ -1269,11 +1325,11 @@ mod tests {
         let choices = game.get_current_event_choices();
         assert_eq!(choices.len(), 3); // Big Fish has 3 choices
 
-        // Check choice texts
+        // Check choice texts contain the expected keywords
         let choice_texts: Vec<String> = choices.iter().map(|c| c.text.clone()).collect();
-        assert!(choice_texts.contains(&"Banana".to_string()));
-        assert!(choice_texts.contains(&"Donut".to_string()));
-        assert!(choice_texts.contains(&"Box".to_string()));
+        assert!(choice_texts.iter().any(|t| t.contains("Banana")));
+        assert!(choice_texts.iter().any(|t| t.contains("Donut")));
+        assert!(choice_texts.iter().any(|t| t.contains("Box")));
     }
 
     #[test]
@@ -1652,6 +1708,8 @@ mod tests {
             gold_claimed: false,
             potion_reward: Some(Potion::StrengthPotion),
             potion_claimed: false,
+            relic_reward: None,
+            relic_claimed: false,
         };
         game.set_game_state(GameState::Reward(reward_state));
 
@@ -1699,6 +1757,8 @@ mod tests {
             gold_claimed: false,
             potion_reward: Some(Potion::StrengthPotion),
             potion_claimed: false,
+            relic_reward: None,
+            relic_claimed: false,
         };
         game.set_game_state(GameState::Reward(reward_state));
 
@@ -1706,5 +1766,326 @@ mod tests {
         let result = game.eval_action(GameAction::ClaimPotion, &mut rng);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), GameError::InvalidState);
+    }
+
+    #[test]
+    fn test_cleric_event_uses_game_context() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 10 };
+        let (map, _) = create_test_map();
+
+        // Create game with damaged player (50/80 HP)
+        let game = Game::new(deck, global_info, map, 50, 80);
+
+        // Get choices for Cleric event
+        let choices = game.get_event_choices(&MapEvent::TheCleric);
+
+        // Should have 2 choices
+        assert_eq!(choices.len(), 2);
+
+        // First choice should show correct heal amount (30 HP) and gold cost
+        // Gold cost at floor 10 = 35 + (10 * 2 / 5) = 35 + 4 = 39 gold
+        let heal_choice = &choices[0];
+        assert!(heal_choice.text.contains("30 HP"));
+        assert!(heal_choice.text.contains("39 gold"));
+
+        // Second choice should be "Leave"
+        assert_eq!(choices[1].text, "Leave");
+    }
+
+    #[test]
+    fn test_cleric_event_gold_cost_scales_with_floor() {
+        let deck = starter_deck();
+        let (map, _) = create_test_map();
+
+        // Test at floor 0
+        let global_info = GlobalInfo { ascention: 0, current_floor: 0 };
+        let game = Game::new(deck.clone(), global_info, map.clone(), 50, 80);
+        let choices = game.get_event_choices(&MapEvent::TheCleric);
+        // Floor 0: 35 + (0 * 2 / 5) = 35
+        assert!(choices[0].text.contains("35 gold"));
+
+        // Test at floor 5
+        let global_info = GlobalInfo { ascention: 0, current_floor: 5 };
+        let game = Game::new(deck.clone(), global_info, map.clone(), 50, 80);
+        let choices = game.get_event_choices(&MapEvent::TheCleric);
+        // Floor 5: 35 + (5 * 2 / 5) = 35 + 2 = 37
+        assert!(choices[0].text.contains("37 gold"));
+
+        // Test at floor 15
+        let global_info = GlobalInfo { ascention: 0, current_floor: 15 };
+        let game = Game::new(deck.clone(), global_info, map.clone(), 50, 80);
+        let choices = game.get_event_choices(&MapEvent::TheCleric);
+        // Floor 15: 35 + (15 * 2 / 5) = 35 + 6 = 41
+        assert!(choices[0].text.contains("41 gold"));
+    }
+
+    #[test]
+    fn test_treasure_chest_rewards() {
+        use crate::game::reward_state::{ChestType, RelicRarity};
+        use crate::map::node::NodeType;
+        use crate::map::Map;
+
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 5 };
+        let mut map = Map::new();
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        let treasure_node = MapNode::new(1, 0, NodeType::Treasure);
+        map.add_node(start_node);
+        map.add_node(treasure_node);
+        map.add_edge((0, 0), (1, 0)).unwrap();
+        map.set_starting_position((0, 0)).unwrap();
+
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let mut rng = rand::rng();
+
+        // Move to treasure node
+        let result = game.eval_action(GameAction::ChoosePath(0), &mut rng);
+        assert!(result.is_ok());
+
+        // Should now be in Reward state
+        assert!(matches!(game.get_game_state(), GameState::Reward(_)));
+
+        // Reward should have a relic but no card selection
+        if let GameState::Reward(reward) = game.current_state() {
+            assert!(reward.relic_reward.is_some());
+            assert!(!reward.card_selection_available);
+            assert!(!reward.relic_claimed);
+        }
+    }
+
+    #[test]
+    fn test_claim_relic_from_chest() {
+        use crate::game::reward_state::{ChestType, RelicRarity};
+
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, _) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let mut rng = rand::rng();
+
+        // Create a chest reward with a common relic
+        let chest_reward = RewardState {
+            gold_reward: 25,
+            card_selection_available: false,
+            gold_claimed: false,
+            potion_reward: None,
+            potion_claimed: false,
+            relic_reward: Some(RelicRarity::Common),
+            relic_claimed: false,
+        };
+        game.set_game_state(GameState::Reward(chest_reward));
+
+        // Claim the relic
+        let result = game.eval_action(GameAction::ClaimRelic, &mut rng);
+        assert!(result.is_ok());
+
+        // Relic should be marked as claimed
+        if let GameState::Reward(reward) = game.current_state() {
+            assert!(reward.relic_claimed);
+            assert!(reward.relic_reward.is_none());
+        }
+
+        // Trying to claim again should fail
+        let result = game.eval_action(GameAction::ClaimRelic, &mut rng);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_chest_type_sampling_distribution() {
+        use crate::game::reward_state::ChestType;
+
+        let mut rng = rand::rng();
+        let mut small_count = 0;
+        let mut medium_count = 0;
+        let mut large_count = 0;
+
+        // Sample 1000 chests
+        for _ in 0..1000 {
+            match ChestType::sample(&mut rng) {
+                ChestType::Small => small_count += 1,
+                ChestType::Medium => medium_count += 1,
+                ChestType::Large => large_count += 1,
+            }
+        }
+
+        // Check distributions are roughly correct (50%, 33%, 17%)
+        // Allow 10% margin of error
+        assert!((small_count as f64 / 1000.0 - 0.50).abs() < 0.10, "Small: {}", small_count);
+        assert!((medium_count as f64 / 1000.0 - 0.33).abs() < 0.10, "Medium: {}", medium_count);
+        assert!((large_count as f64 / 1000.0 - 0.17).abs() < 0.10, "Large: {}", large_count);
+    }
+
+    #[test]
+    fn test_chest_gold_rewards() {
+        use crate::game::reward_state::ChestType;
+
+        let mut rng = rand::rng();
+
+        // Test small chest gold range
+        for _ in 0..100 {
+            let reward = ChestType::Small.create_reward_state(&mut rng);
+            if reward.gold_reward > 0 {
+                assert!(reward.gold_reward >= 23 && reward.gold_reward <= 27);
+            }
+        }
+
+        // Test medium chest gold range
+        for _ in 0..100 {
+            let reward = ChestType::Medium.create_reward_state(&mut rng);
+            if reward.gold_reward > 0 {
+                assert!(reward.gold_reward >= 45 && reward.gold_reward <= 55);
+            }
+        }
+
+        // Test large chest gold range
+        for _ in 0..100 {
+            let reward = ChestType::Large.create_reward_state(&mut rng);
+            if reward.gold_reward > 0 {
+                assert!(reward.gold_reward >= 68 && reward.gold_reward <= 82);
+            }
+        }
+    }
+
+    #[test]
+    fn test_chest_relic_rarity_distribution() {
+        use crate::game::reward_state::{ChestType, RelicRarity};
+
+        let mut rng = rand::rng();
+
+        // Test small chest relic distribution (75% Common, 25% Uncommon)
+        let mut common = 0;
+        let mut uncommon = 0;
+        for _ in 0..1000 {
+            let reward = ChestType::Small.create_reward_state(&mut rng);
+            match reward.relic_reward.unwrap() {
+                RelicRarity::Common => common += 1,
+                RelicRarity::Uncommon => uncommon += 1,
+                RelicRarity::Rare => panic!("Small chest should not give rare relics"),
+            }
+        }
+        assert!((common as f64 / 1000.0 - 0.75).abs() < 0.10);
+        assert!((uncommon as f64 / 1000.0 - 0.25).abs() < 0.10);
+
+        // Test large chest relic distribution (75% Uncommon, 25% Rare)
+        let mut uncommon = 0;
+        let mut rare = 0;
+        for _ in 0..1000 {
+            let reward = ChestType::Large.create_reward_state(&mut rng);
+            match reward.relic_reward.unwrap() {
+                RelicRarity::Common => panic!("Large chest should not give common relics"),
+                RelicRarity::Uncommon => uncommon += 1,
+                RelicRarity::Rare => rare += 1,
+            }
+        }
+        assert!((uncommon as f64 / 1000.0 - 0.75).abs() < 0.10);
+        assert!((rare as f64 / 1000.0 - 0.25).abs() < 0.10);
+    }
+
+    #[test]
+    fn test_skip_reward_from_beginning() {
+        use crate::game::potion::Potion;
+
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, _) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let mut rng = rand::rng();
+
+        // Set up a reward state with unclaimed rewards
+        let reward_state = RewardState {
+            gold_reward: 25,
+            card_selection_available: true,
+            gold_claimed: false,
+            potion_reward: Some(Potion::StrengthPotion),
+            potion_claimed: false,
+            relic_reward: None,
+            relic_claimed: false,
+        };
+        game.set_game_state(GameState::Reward(reward_state));
+
+        // Player should be able to skip immediately without claiming anything
+        let result = game.eval_action(GameAction::Skip, &mut rng);
+        assert!(result.is_ok());
+
+        // Should now be back on the map
+        assert!(matches!(game.get_game_state(), GameState::OnMap));
+
+        // Gold should not have been added (still at starting 99)
+        assert_eq!(game.gold, 99);
+
+        // Potion inventory should still be empty
+        assert_eq!(game.potions.potion_count(), 0);
+    }
+
+    #[test]
+    fn test_skip_treasure_chest_without_claiming() {
+        use crate::game::reward_state::RelicRarity;
+
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, _) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let mut rng = rand::rng();
+
+        // Set up a treasure chest reward with unclaimed relic and gold
+        let chest_reward = RewardState {
+            gold_reward: 50,
+            card_selection_available: false,
+            gold_claimed: false,
+            potion_reward: None,
+            potion_claimed: false,
+            relic_reward: Some(RelicRarity::Uncommon),
+            relic_claimed: false,
+        };
+        game.set_game_state(GameState::Reward(chest_reward));
+
+        // Skip without claiming the relic or gold
+        let result = game.eval_action(GameAction::Skip, &mut rng);
+        assert!(result.is_ok());
+
+        // Should be back on map
+        assert!(matches!(game.get_game_state(), GameState::OnMap));
+
+        // Gold should not have been claimed
+        assert_eq!(game.gold, 99);
+    }
+
+    #[test]
+    fn test_continue_to_map_after_partial_claims() {
+        use crate::game::potion::Potion;
+
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let (map, _) = create_test_map();
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+        let mut rng = rand::rng();
+
+        // Set up a reward state with multiple rewards
+        let reward_state = RewardState {
+            gold_reward: 30,
+            card_selection_available: true,
+            gold_claimed: false,
+            potion_reward: Some(Potion::StrengthPotion),
+            potion_claimed: false,
+            relic_reward: None,
+            relic_claimed: false,
+        };
+        game.set_game_state(GameState::Reward(reward_state));
+
+        // Claim only the gold
+        let result = game.eval_action(GameAction::ClaimGold, &mut rng);
+        assert!(result.is_ok());
+        assert_eq!(game.gold, 129); // 99 + 30
+
+        // Now skip the rest (potion and card selection)
+        let result = game.eval_action(GameAction::Skip, &mut rng);
+        assert!(result.is_ok());
+
+        // Should be back on map
+        assert!(matches!(game.get_game_state(), GameState::OnMap));
+
+        // Potion should not have been claimed
+        assert_eq!(game.potions.potion_count(), 0);
     }
 }

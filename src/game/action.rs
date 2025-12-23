@@ -22,6 +22,10 @@ pub enum GameAction {
     /// Only valid when in Reward state with unclaimed potion
     ClaimPotion,
 
+    /// Claim relic reward from treasure chest
+    /// Only valid when in Reward state with unclaimed relic
+    ClaimRelic,
+
     /// Request card selection (transitions from Reward state to CardRewardSelection state)
     /// Only valid when in Reward state with card_selection_available = true
     RequestCardSelection,

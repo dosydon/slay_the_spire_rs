@@ -93,6 +93,9 @@ pub enum CardEnum {
     GoodInstincts,
     BandageUp,
     DeepBreath,
+    MasterOfStrategy,
+    DarkShackles,
+    Impatience,
     // Add more cards as needed
 }
 
@@ -185,6 +188,9 @@ impl CardEnum {
             CardEnum::GoodInstincts => "Good Instincts",
             CardEnum::BandageUp => "Bandage Up",
             CardEnum::DeepBreath => "Deep Breath",
+            CardEnum::MasterOfStrategy => "Master of Strategy",
+            CardEnum::DarkShackles => "Dark Shackles",
+            CardEnum::Impatience => "Impatience",
         }
     }
     
@@ -288,6 +294,9 @@ impl CardEnum {
             CardEnum::GoodInstincts => crate::cards::colorless::good_instincts::good_instincts(),
             CardEnum::BandageUp => crate::cards::colorless::bandage_up::bandage_up(),
             CardEnum::DeepBreath => crate::cards::colorless::deep_breath::deep_breath(),
+            CardEnum::MasterOfStrategy => crate::cards::colorless::master_of_strategy::master_of_strategy(),
+            CardEnum::DarkShackles => crate::cards::colorless::dark_shackles::dark_shackles(),
+            CardEnum::Impatience => crate::cards::colorless::impatience::impatience(),
         }
     }
 }

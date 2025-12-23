@@ -8,6 +8,7 @@ pub enum Condition {
 
     // Hand conditions
     HandAllAttacks,
+    HandNoAttacks,
 
     // Enemy state conditions
     EnemyIsAttacking,
@@ -111,6 +112,13 @@ pub enum Effect {
     EnemyEscape, // Enemy escapes from combat (used by Looter)
     SplitIntoMediumSlimes, // Split into 2 medium slimes (used by large slimes on death)
     LoseHpPerCardInHand { damage_per_card: u32 }, // Lose HP for each card in hand (used by Regret)
+
+    // Event-specific effects
+    GainGold { amount: u32 }, // Gain gold (for events)
+    SpendGold { amount: u32 }, // Spend/lose gold (for events)
+    ObtainRandomRelic, // Obtain a random relic
+    EnterSelectCardsToUpgrade { count: u32 }, // Transition to SelectCardsToUpgrade state (for upgrading multiple cards)
+    TriggerCombatEvent, // Trigger a combat encounter from an event
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -406,6 +414,19 @@ pub enum BaseEffect {
         source: Entity,
         damage_per_card: u32,
     },
+
+    // Event-specific base effects
+    GainGold {
+        amount: u32,
+    },
+    SpendGold {
+        amount: u32,
+    },
+    ObtainRandomRelic,
+    EnterSelectCardsToUpgrade {
+        count: u32,
+    },
+    TriggerCombatEvent,
 }
 
 impl BaseEffect {
@@ -506,6 +527,13 @@ impl BaseEffect {
             Effect::EnemyEscape => BaseEffect::EnemyEscape { source },
             Effect::SplitIntoMediumSlimes => BaseEffect::SplitIntoMediumSlimes { source },
             Effect::LoseHpPerCardInHand { damage_per_card } => BaseEffect::LoseHpPerCardInHand { source, damage_per_card },
+
+            // Event-specific effect conversions
+            Effect::GainGold { amount } => BaseEffect::GainGold { amount },
+            Effect::SpendGold { amount } => BaseEffect::SpendGold { amount },
+            Effect::ObtainRandomRelic => BaseEffect::ObtainRandomRelic,
+            Effect::EnterSelectCardsToUpgrade { count } => BaseEffect::EnterSelectCardsToUpgrade { count },
+            Effect::TriggerCombatEvent => BaseEffect::TriggerCombatEvent,
         }
     }
 }

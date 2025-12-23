@@ -605,6 +605,11 @@ impl Battle {
                         let hand = self.cards.get_hand();
                         hand.iter().all(|c| c.get_card_type() == crate::game::card_type::CardType::Attack)
                     },
+                    crate::game::effect::Condition::HandNoAttacks => {
+                        // Check if there are no attack cards in hand
+                        let hand = self.cards.get_hand();
+                        hand.iter().all(|c| c.get_card_type() != crate::game::card_type::CardType::Attack)
+                    },
                     crate::game::effect::Condition::True => true,
                     crate::game::effect::Condition::False => false,
                     crate::game::effect::Condition::EnemyIsAttacking => {
@@ -925,6 +930,24 @@ impl Battle {
                 if total_damage > 0 {
                     self.apply_damage(*source, total_damage);
                 }
+            },
+
+            // Event-specific effects - these are not handled in battle
+            // They should be handled by the event system outside of combat
+            BaseEffect::GainGold { .. } => {
+                // TODO: This should be handled by the event system
+            },
+            BaseEffect::SpendGold { .. } => {
+                // TODO: This should be handled by the event system
+            },
+            BaseEffect::ObtainRandomRelic => {
+                // TODO: This should be handled by the event system
+            },
+            BaseEffect::EnterSelectCardsToUpgrade { .. } => {
+                // TODO: This should be handled by the event system
+            },
+            BaseEffect::TriggerCombatEvent => {
+                // TODO: This should be handled by the event system
             },
         }
     }

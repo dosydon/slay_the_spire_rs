@@ -256,6 +256,9 @@ impl Card {
             CardEnum::GoodInstincts => crate::cards::colorless::good_instincts::good_instincts_upgraded(),
             CardEnum::BandageUp => crate::cards::colorless::bandage_up::bandage_up_upgraded(),
             CardEnum::DeepBreath => crate::cards::colorless::deep_breath::deep_breath_upgraded(),
+            CardEnum::MasterOfStrategy => crate::cards::colorless::master_of_strategy::master_of_strategy_upgraded(),
+            CardEnum::DarkShackles => crate::cards::colorless::dark_shackles::dark_shackles_upgraded(),
+            CardEnum::Impatience => crate::cards::colorless::impatience::impatience_upgraded(),
             CardEnum::AscendersCurse => crate::cards::curse::ascenders_curse(), // Curse cards don't have upgrades
             CardEnum::Injury => crate::cards::curse::injury(), // Curse cards don't have upgrades
             CardEnum::Clumsy => crate::cards::curse::clumsy(), // Curse cards don't have upgrades

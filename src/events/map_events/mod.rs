@@ -2,14 +2,35 @@
 //!
 //! Events present the player with multiple choices, each leading to effects or subsequent choices.
 
+mod big_fish;
+mod the_cleric;
+mod dead_adventurer;
+mod golden_idol;
+mod shining_light;
+mod world_of_goop;
+mod wing_statue;
+
 use crate::game::effect::Effect;
 use crate::game::global_info::GlobalInfo;
+use rand::prelude::IndexedRandom;
 
 /// All non-combat events in Slay the Spire
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum MapEvent {
     /// The Big Fish event - A large fish appears with multiple interaction options
     BigFish,
+    /// The Cleric - A cleric offers healing services for gold
+    TheCleric,
+    /// Dead Adventurer - Find a dead adventurer's belongings
+    DeadAdventurer,
+    /// Golden Idol - Steal a golden idol from a trap
+    GoldenIdol,
+    /// Shining Light - Divine light offers to upgrade cards
+    ShiningLight,
+    /// World of Goop - Slime world offers gold but debuffs you
+    WorldOfGoop,
+    /// Wing Statue - A statue with a missing wing
+    WingStatue,
 }
 
 /// Represents a choice the player can make in an event
@@ -30,65 +51,80 @@ pub enum EventOutcome {
     NextChoices(Vec<EventChoice>),
 }
 
+/// Context needed to generate event choices with game state
+pub struct EventContext {
+    pub floor: u32,
+    pub player_hp: u32,
+    pub player_max_hp: u32,
+    pub gold: u32,
+    pub ascension: u32,
+}
+
 impl MapEvent {
-    /// Get the initial choices for this event
+    /// Get the initial choices for this event (basic version without game context)
+    /// Note: Some events may have simplified choices without game context.
+    /// Prefer using get_choices_with_context for full game integration.
     pub fn get_choices(&self) -> Vec<EventChoice> {
         match self {
-            MapEvent::BigFish => big_fish_choices(),
+            MapEvent::BigFish => big_fish::big_fish_choices(80),  // Default max HP
+            MapEvent::TheCleric => the_cleric::the_cleric_choices(0, 0, 0),
+            MapEvent::DeadAdventurer => dead_adventurer::dead_adventurer_choices(),
+            MapEvent::GoldenIdol => golden_idol::golden_idol_choices(),
+            MapEvent::ShiningLight => shining_light::shining_light_choices(80, 0),  // Default max HP, ascension 0
+            MapEvent::WorldOfGoop => world_of_goop::world_of_goop_choices(),
+            MapEvent::WingStatue => wing_statue::wing_statue_choices(),
+        }
+    }
+
+    /// Get the initial choices for this event with game context
+    /// This allows events to adjust their choices based on game state
+    /// (e.g., gold cost scaling with floor, heal amounts based on current HP)
+    pub fn get_choices_with_context(&self, ctx: &EventContext) -> Vec<EventChoice> {
+        match self {
+            MapEvent::BigFish => big_fish::big_fish_choices(ctx.player_max_hp),
+            MapEvent::TheCleric => the_cleric::the_cleric_choices(ctx.floor, ctx.player_hp, ctx.player_max_hp),
+            MapEvent::DeadAdventurer => dead_adventurer::dead_adventurer_choices(),
+            MapEvent::GoldenIdol => golden_idol::golden_idol_choices(),
+            MapEvent::ShiningLight => shining_light::shining_light_choices(ctx.player_max_hp, ctx.ascension),
+            MapEvent::WorldOfGoop => world_of_goop::world_of_goop_choices(),
+            MapEvent::WingStatue => wing_statue::wing_statue_choices(),
         }
     }
 
     /// Get the event title/description text
     pub fn get_description(&self) -> &'static str {
         match self {
-            MapEvent::BigFish => {
-                "A massive fish emerges from the depths, its scales shimmering with an otherworldly glow. \
-                 It regards you with ancient, knowing eyes."
-            }
+            MapEvent::BigFish => big_fish::big_fish_description(),
+            MapEvent::TheCleric => the_cleric::the_cleric_description(),
+            MapEvent::DeadAdventurer => dead_adventurer::dead_adventurer_description(),
+            MapEvent::GoldenIdol => golden_idol::golden_idol_description(),
+            MapEvent::ShiningLight => shining_light::shining_light_description(),
+            MapEvent::WorldOfGoop => world_of_goop::world_of_goop_description(),
+            MapEvent::WingStatue => wing_statue::wing_statue_description(),
         }
     }
 }
 
 /// Sample a random SLS Event based on the current game state
-pub fn sample_sls_event(_global_info: &GlobalInfo, _rng: &mut impl rand::Rng) -> MapEvent {
-    // For now, only return BigFish since that's the only event we have implemented
-    // In the future, this could be expanded to sample from a distribution based on floor, act, etc.
-    MapEvent::BigFish
-}
+pub fn sample_sls_event(_global_info: &GlobalInfo, rng: &mut impl rand::Rng) -> MapEvent {
+    // All Act 1 events currently implemented
+    let act1_events = vec![
+        MapEvent::BigFish,
+        MapEvent::TheCleric,
+        MapEvent::DeadAdventurer,
+        MapEvent::GoldenIdol,
+        MapEvent::ShiningLight,
+        MapEvent::WorldOfGoop,
+        MapEvent::WingStatue,
+    ];
 
-/// Big Fish event choices
-/// Based on: https://slay-the-spire.fandom.com/wiki/Big_Fish
-/// - Banana: Gain 5 Max HP
-/// - Donut: Heal for 1/3 of Max HP (implementation note: exact amount depends on player max HP)
-/// - Box: Obtain a random relic
-fn big_fish_choices() -> Vec<EventChoice> {
-    vec![
-        EventChoice {
-            text: "Banana".to_string(),
-            outcome: EventOutcome::Effects(vec![
-                Effect::HealAndIncreaseMaxHp(5),  // Gain 5 Max HP
-            ]),
-        },
-        EventChoice {
-            text: "Donut".to_string(),
-            outcome: EventOutcome::Effects(vec![
-                // Heal for 1/3 of Max HP
-                // Note: The actual heal amount needs to be calculated based on player's max HP
-                // This will need special handling in the event resolution system
-                // For now, we use a placeholder value that will need to be overridden
-                Effect::Heal(0),  // 0 indicates: calculate as max_hp / 3
-            ]),
-        },
-        EventChoice {
-            text: "Box".to_string(),
-            outcome: EventOutcome::Effects(vec![
-                // Obtain a random relic
-                // TODO: This will need a new effect type like Effect::ObtainRandomRelic
-                // or special handling in the event system to add a relic
-                // For now, we'll leave it as an empty effect list
-            ]),
-        },
-    ]
+    // TODO: In the future, this could be expanded to:
+    // - Filter events based on act number
+    // - Weight events differently based on floor
+    // - Track event history to avoid repeats
+    // - Apply ascension-specific event pool changes
+
+    *act1_events.choose(rng).unwrap()
 }
 
 #[cfg(test)]
@@ -108,7 +144,8 @@ mod tests {
         let choices = event.get_choices();
 
         let banana = &choices[0];
-        assert_eq!(banana.text, "Banana");
+        assert!(banana.text.contains("Banana"));
+        assert!(banana.text.contains("Gain 5 Max HP"));
 
         match &banana.outcome {
             EventOutcome::Effects(effects) => {
@@ -125,7 +162,9 @@ mod tests {
         let choices = event.get_choices();
 
         let donut = &choices[1];
-        assert_eq!(donut.text, "Donut");
+        assert!(donut.text.contains("Donut"));
+        assert!(donut.text.contains("Heal"));
+        assert!(donut.text.contains("26 HP")); // 80 / 3 = 26 (default max HP)
 
         match &donut.outcome {
             EventOutcome::Effects(effects) => {
@@ -143,12 +182,14 @@ mod tests {
         let choices = event.get_choices();
 
         let box_choice = &choices[2];
-        assert_eq!(box_choice.text, "Box");
+        assert!(box_choice.text.contains("Box"));
+        assert!(box_choice.text.contains("relic"));
 
         match &box_choice.outcome {
             EventOutcome::Effects(effects) => {
-                // Box should give a relic, but we haven't implemented that effect yet
-                assert_eq!(effects.len(), 0);
+                // Box should give a random relic
+                assert_eq!(effects.len(), 1);
+                assert_eq!(effects[0], Effect::ObtainRandomRelic);
             }
             _ => panic!("Expected Effects outcome"),
         }
