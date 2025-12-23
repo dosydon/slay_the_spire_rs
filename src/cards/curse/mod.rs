@@ -37,6 +37,15 @@ pub fn regret() -> Card {
         .set_end_of_turn(vec![Effect::LoseHpPerCardInHand { damage_per_card: 1 }])
 }
 
+/// Writhe - A curse card that is innate (starts in every hand)
+/// Cost: 0, Effect: Unplayable. Innate.
+/// Properties: Can be removed from deck, Innate (always starts in hand)
+pub fn writhe() -> Card {
+    Card::new(CardEnum::Writhe, 0, CardClass::Curse, vec![])
+        .set_playable(false)
+        .set_innate(true)
+}
+
 /// Note: Ascender's Curse doesn't have an upgraded version in the original game
 /// The curse effects are typically handled by the game system rather than card effects
 #[cfg(test)]
@@ -106,5 +115,21 @@ mod tests {
         let end_of_turn_effects = card.get_end_of_turn().unwrap();
         assert_eq!(end_of_turn_effects.len(), 1);
         assert!(matches!(end_of_turn_effects[0], Effect::LoseHpPerCardInHand { damage_per_card: 1 }));
+    }
+
+    #[test]
+    fn test_writhe_creation() {
+        let card = writhe();
+        assert_eq!(card.get_name(), "Writhe");
+        assert_eq!(card.get_cost(), 0);
+        assert_eq!(card.get_card_type(), CardType::Curse);
+        assert!(!card.is_upgraded());
+        assert!(!card.is_playable()); // Writhe is unplayable
+        assert!(card.is_innate()); // Writhe is innate
+        assert!(card.is_removable()); // Writhe can be removed from deck
+
+        // Writhe should have no effects
+        let effects = card.get_effects();
+        assert_eq!(effects.len(), 0);
     }
 }

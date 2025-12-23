@@ -405,6 +405,7 @@ impl CardRewardPool {
             CardEnum::Injury => crate::cards::curse::injury(), // For completeness, though not used in rewards
             CardEnum::Clumsy => crate::cards::curse::clumsy(), // For completeness, though not used in rewards
             CardEnum::Regret => crate::cards::curse::regret(), // For completeness, though not used in rewards
+            CardEnum::Writhe => crate::cards::curse::writhe(), // For completeness, though not used in rewards
         }
     }
 }

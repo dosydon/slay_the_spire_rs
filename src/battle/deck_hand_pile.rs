@@ -572,4 +572,32 @@ mod tests {
         let hand = deck_hand_pile.get_hand();
         assert!(hand.iter().any(|c| c.is_innate()), "Innate card should be drawn from discard");
     }
+
+    #[test]
+    fn test_writhe_innate_behavior() {
+        // Create a deck with Writhe curse (which is innate)
+        let writhe = crate::cards::curse::writhe();
+        let cards = vec![writhe.clone(), strike(), defend()];
+        let deck = Deck::new(cards);
+        let mut deck_hand_pile = DeckHandPile::new(deck);
+
+        // Draw initial hand - Writhe should be in hand
+        deck_hand_pile.draw_initial_hand(3);
+        assert_eq!(deck_hand_pile.hand_size(), 3);
+
+        // Verify Writhe is in hand
+        let hand = deck_hand_pile.get_hand();
+        assert!(hand.iter().any(|c| c.get_name() == "Writhe"), "Writhe should be in starting hand");
+
+        // Verify Writhe properties
+        let writhe_in_hand = hand.iter().find(|c| c.get_name() == "Writhe").unwrap();
+        assert!(writhe_in_hand.is_innate(), "Writhe should be innate");
+        assert!(!writhe_in_hand.is_playable(), "Writhe should be unplayable");
+        assert!(writhe_in_hand.is_removable(), "Writhe should be removable");
+
+        // Discard entire hand - Writhe should go to discard
+        deck_hand_pile.discard_entire_hand();
+        assert_eq!(deck_hand_pile.hand_size(), 0);
+        assert_eq!(deck_hand_pile.discard_pile_size(), 3);
+    }
 }

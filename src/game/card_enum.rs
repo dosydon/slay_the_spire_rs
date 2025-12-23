@@ -82,6 +82,7 @@ pub enum CardEnum {
     Injury,
     Clumsy,
     Regret,
+    Writhe,
 
     // Colorless Cards
     SwiftStrike,
@@ -175,6 +176,7 @@ impl CardEnum {
             CardEnum::Injury => "Injury",
             CardEnum::Clumsy => "Clumsy",
             CardEnum::Regret => "Regret",
+            CardEnum::Writhe => "Writhe",
             CardEnum::SwiftStrike => "Swift Strike",
             CardEnum::Finesse => "Finesse",
             CardEnum::FlashOfSteel => "Flash of Steel",
@@ -275,6 +277,7 @@ impl CardEnum {
             CardEnum::Injury => crate::cards::curse::injury(),
             CardEnum::Clumsy => crate::cards::curse::clumsy(),
             CardEnum::Regret => crate::cards::curse::regret(),
+            CardEnum::Writhe => crate::cards::curse::writhe(),
 
             // Colorless Cards
             CardEnum::SwiftStrike => crate::cards::colorless::swift_strike::swift_strike(),

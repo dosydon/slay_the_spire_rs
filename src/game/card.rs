@@ -260,6 +260,7 @@ impl Card {
             CardEnum::Injury => crate::cards::curse::injury(), // Curse cards don't have upgrades
             CardEnum::Clumsy => crate::cards::curse::clumsy(), // Curse cards don't have upgrades
             CardEnum::Regret => crate::cards::curse::regret(), // Curse cards don't have upgrades
+            CardEnum::Writhe => crate::cards::curse::writhe(), // Curse cards don't have upgrades
         };
 
         upgraded_card
