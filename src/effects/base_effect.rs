@@ -44,6 +44,10 @@ pub enum BaseEffect {
     ApplyVulnerableAll {
         duration: u32,
     },
+    ApplyVulnerableToAll {
+        duration: u32,
+    },
+    HealToFull,
     ApplyWeak {
         target: Entity,
         duration: u32,
@@ -158,6 +162,10 @@ pub enum BaseEffect {
         amount: u32,
     },
     GainPlatedArmor {
+        source: Entity,
+        amount: u32,
+    },
+    GainRegen {
         source: Entity,
         amount: u32,
     },
@@ -335,6 +343,8 @@ impl BaseEffect {
             BattleEffect::GainDefense { amount } => BaseEffect::GainDefense { source, amount },
             BattleEffect::ApplyVulnerable { duration } => BaseEffect::ApplyVulnerable { target, duration },
             BattleEffect::ApplyVulnerableAll { duration } => BaseEffect::ApplyVulnerableAll { duration },
+            BattleEffect::ApplyVulnerableToAll { duration } => BaseEffect::ApplyVulnerableToAll { duration },
+            BattleEffect::HealToFull => BaseEffect::HealToFull,
             BattleEffect::ApplyWeak { duration } => BaseEffect::ApplyWeak { target, duration },
             BattleEffect::ApplyFrail { duration } => BaseEffect::ApplyFrail { target, duration },
             BattleEffect::ApplyEntangled { duration } => BaseEffect::ApplyEntangled { target, duration },
@@ -366,6 +376,7 @@ impl BaseEffect {
             BattleEffect::HealAndIncreaseMaxHp(amount) => BaseEffect::HealAndIncreaseMaxHp { target, amount },
             BattleEffect::LoseHp(amount) => BaseEffect::LoseHp { target: source, amount },
             BattleEffect::GainPlatedArmor(amount) => BaseEffect::GainPlatedArmor { source, amount },
+            BattleEffect::GainRegen { amount } => BaseEffect::GainRegen { source, amount },
             BattleEffect::DoubleBlock => BaseEffect::DoubleBlock { source },
             BattleEffect::ActivateCombust(amount) => BaseEffect::ActivateCombust { source, amount },
             BattleEffect::ApplyDamageReduction(percentage) => BaseEffect::ApplyDamageReduction { target, percentage },

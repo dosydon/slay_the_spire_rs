@@ -4,9 +4,9 @@ This document tracks the implementation status of all Colorless cards in the Sla
 
 ## Summary
 
-- ✅ **13 cards implemented**
+- ✅ **14 cards implemented**
 - 🎯 **57 total Colorless cards** (22 Uncommon + 18 Rare + 17 Special)
-- 📋 **Implementation Progress: 22.8%** of Colorless cards
+- 📋 **Implementation Progress: 24.6%** of Colorless cards
 
 **Note:** All tables include Cost, Cost+ (upgraded cost), Base Effects, and Upgraded Effects columns for clarity.
 
@@ -31,7 +31,7 @@ Unlike character-specific cards, colorless cards do not appear in normal card re
 | ✅ Dark Shackles | Skill | 0 | 0 | Yes | [dark_shackles.rs](src/cards/colorless/dark_shackles.rs) | Enemy loses 9 Strength this turn (restored at end of turn). Exhaust | Enemy loses 15 Strength this turn (restored at end of turn). Exhaust | Shop |
 | ✅ Deep Breath | Skill | 0 | 0 | Yes | [deep_breath.rs](src/cards/colorless/deep_breath.rs) | Shuffle discard pile into draw pile. Draw 1 card | Shuffle discard pile into draw pile. Draw 2 cards | Shop |
 | ❌ Discovery | Skill | 1 | 1 | No | - | Discover 1 of 3 random cards to add to hand, costs 0 this turn. Exhaust | Discover 1 of 3 random cards to add to hand, costs 0 this turn. Exhaust | Shop |
-| ❌ Dramatic Entrance | Attack | 0 | 0 | No | - | Innate. Deal 8 damage to ALL enemies. Exhaust | Innate. Deal 12 damage to ALL enemies. Exhaust | Shop |
+| ✅ Dramatic Entrance | Attack | 0 | 0 | Yes | [dramatic_entrance.rs](src/cards/colorless/dramatic_entrance.rs) | Innate. Deal 8 damage to ALL enemies. Exhaust | Innate. Deal 12 damage to ALL enemies. Exhaust | Shop |
 | ❌ Enlightenment | Skill | 0 | 0 | No | - | Reduce cost of cards in hand to 1 this turn | Reduce cost of cards in hand to 1 this combat | Shop |
 | ✅ Finesse | Skill | 0 | 0 | Yes | [finesse.rs](src/cards/colorless/finesse.rs) | Gain 2 Block. Draw 1 card | Gain 4 Block. Draw 1 card | Shop |
 | ✅ Flash of Steel | Attack | 0 | 0 | Yes | [flash_of_steel.rs](src/cards/colorless/flash_of_steel.rs) | Deal 3 damage. Draw 1 card | Deal 6 damage. Draw 1 card | Shop |
@@ -232,39 +232,17 @@ Once framework features are available, implement in this order:
 
 ## Recently Implemented Cards
 
-### 2025-12-23: Implemented 5 New Colorless Cards
+### 2025-12-24: Implemented 1 New Colorless Card
 
-1. **Master of Strategy** (Rare)
-   - File: [master_of_strategy.rs](src/cards/colorless/master_of_strategy.rs)
-   - Effects: Draw 3(4) cards. Exhaust
-   - Notes: Powerful card draw with exhaust cost
+1. **Dramatic Entrance** (Uncommon)
+   - File: [dramatic_entrance.rs](src/cards/colorless/dramatic_entrance.rs)
+   - Effects: Innate. Deal 8(12) damage to ALL enemies. Exhaust
+   - Notes: Starts in opening hand. Excellent AOE damage for opening turns
+   - Framework: Uses `set_innate(true)` to start in hand
 
-2. **Dark Shackles** (Uncommon)
-   - File: [dark_shackles.rs](src/cards/colorless/dark_shackles.rs)
-   - Effects: Enemy loses 9(15) Strength this turn (restored at end of turn). Exhaust
-   - Notes: Temporary strength reduction that restores at end of turn, strong for big turns
-   - Framework: Uses end-of-turn effects to restore the lost strength
+### Previously Implemented (13 cards)
 
-3. **Impatience** (Uncommon)
-   - File: [impatience.rs](src/cards/colorless/impatience.rs)
-   - Effects: If you have no Attack cards in hand, draw 2(3) cards
-   - Notes: Conditional card draw for skill-heavy decks
-   - Framework: Added new `HandNoAttacks` condition to support this card
-
-4. **Panic Button** (Uncommon)
-   - File: [panic_button.rs](src/cards/colorless/panic_button.rs)
-   - Effects: Gain 30(40) Block. Exhaust
-   - Notes: Emergency defense card
-   - Note: Full game version also prevents gaining Block from cards for 2 turns (debuff system not yet implemented)
-
-5. **Panacea** (Uncommon)
-   - File: [panacea.rs](src/cards/colorless/panacea.rs)
-   - Effects: Gain 1(2) Artifact. Exhaust
-   - Notes: Provides Artifact charges to block debuffs
-
-### Previously Implemented (8 cards)
-
-Swift Strike, Finesse, Flash of Steel, Blind, Trip, Good Instincts, Bandage Up, Deep Breath
+Master of Strategy, Dark Shackles, Impatience, Panic Button, Panacea, Swift Strike, Finesse, Flash of Steel, Blind, Trip, Good Instincts, Bandage Up, Deep Breath
 
 ## Summary Statistics
 

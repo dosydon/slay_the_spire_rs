@@ -7,6 +7,7 @@ pub mod player;
 pub mod deck_hand_pile;
 pub mod enemy_in_battle;
 pub mod battle_state;
+pub mod listeners;
 
 // Re-export commonly used types for easier access
 pub use target::Entity;

@@ -69,6 +69,11 @@ impl Map {
         self.nodes.get(&node_id)
     }
 
+    /// Get a node by ID (mutable version)
+    pub fn get_node_mut(&mut self, node_id: (u32, u32)) -> Option<&mut MapNode> {
+        self.nodes.get_mut(&node_id)
+    }
+
     /// Get all nodes
     pub fn get_all_nodes(&self) -> Vec<&MapNode> {
         let mut nodes: Vec<&MapNode> = self.nodes.values().collect();

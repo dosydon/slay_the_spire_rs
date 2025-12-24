@@ -11,7 +11,7 @@ pub enum CombatType {
 
 /// Card rarity for categorizing cards
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum Rarity {
+pub enum Rarity {
     Common,
     Uncommon,
     Rare,
@@ -36,31 +36,71 @@ pub struct CardRewardPool {
 impl CardRewardPool {
     /// Create a new card reward pool with all currently implemented cards
     /// Offset starts at -5% as per Slay the Spire mechanics
+    ///
+    /// This dynamically builds pools by iterating through all CardEnum values
+    /// and categorizing them by rarity, filtering out non-rewardable cards
+    /// (basic cards, status cards, and curse cards)
     pub fn new() -> Self {
-        // Ironclad Common Cards
-        // These are the most frequently appearing rewards
-        // Excluding basic cards (Strike, Defend) which should never be rewards
-        let common_pool = vec![
-            CardEnum::Cleave,
-            CardEnum::Clothesline,
-            CardEnum::Flex,
-            CardEnum::HeavyBlade,
-            CardEnum::IronWave,
-            CardEnum::PerfectedStrike,
-            CardEnum::PommelStrike,
-            CardEnum::ShrugItOff,
-            CardEnum::Thunderclap,
-            CardEnum::TwinStrike,
-            CardEnum::WildStrike,
-            CardEnum::Anger,
+        use crate::game::card_enum::CardEnum;
+
+        let mut common_pool = Vec::new();
+        let mut uncommon_pool = Vec::new();
+        let mut rare_pool = Vec::new();
+
+        // Dynamically iterate through all CardEnum values
+        // Note: We need to explicitly list all cards here since CardEnum is not iterable
+        // This is still better than manually maintaining separate pool lists
+        let all_cards = [
+            // Ironclad Cards
+            CardEnum::Strike,
+            CardEnum::Defend,
+            CardEnum::Bash,
             CardEnum::BodySlam,
+            CardEnum::Clash,
+            CardEnum::Carnage,
+            CardEnum::Cleave,
+            CardEnum::Embrace,
+            CardEnum::Flex,
+            CardEnum::Inflame,
+            CardEnum::Immolate,
+            CardEnum::IronWave,
+            CardEnum::PommelStrike,
+            CardEnum::PowerThrough,
+            CardEnum::ShrugItOff,
+            CardEnum::TwinStrike,
+            CardEnum::Clothesline,
+            CardEnum::HeavyBlade,
+            CardEnum::PerfectedStrike,
+            CardEnum::Thunderclap,
+            CardEnum::WildStrike,
             CardEnum::Combust,
+            CardEnum::Disarm,
             CardEnum::Dropkick,
+            CardEnum::FeelNoPain,
             CardEnum::Entrench,
+            CardEnum::Bludgeon,
+            CardEnum::Anger,
+            CardEnum::SwordBoomerang,
+            CardEnum::Hemokinesis,
+            CardEnum::Armaments,
+            CardEnum::Impervious,
+            CardEnum::Brutality,
+            CardEnum::Offering,
+            CardEnum::Shockwave,
+            CardEnum::Uppercut,
+            CardEnum::Intimidate,
+            CardEnum::SeeingRed,
+            CardEnum::GhostlyArmor,
             CardEnum::Havoc,
             CardEnum::Headbutt,
             CardEnum::TrueGrit,
             CardEnum::Warcry,
+            CardEnum::Corruption,
+            CardEnum::LimitBreak,
+            CardEnum::Metallicize,
+            CardEnum::FlameBarrier,
+            CardEnum::Rage,
+            CardEnum::Rampage,
             CardEnum::RecklessCharge,
             CardEnum::SearingBlow,
             CardEnum::SeverSoul,
@@ -70,36 +110,27 @@ impl CardRewardPool {
             CardEnum::Evolve,
             CardEnum::Sentinel,
             CardEnum::Whirlwind,
+            CardEnum::DemonForm,
             CardEnum::SecondWind,
             CardEnum::Rupture,
             CardEnum::DualWield,
             CardEnum::DoubleTap,
+            CardEnum::Exhume,
+            CardEnum::Feed,
             CardEnum::Reaper,
             CardEnum::FiendFire,
             CardEnum::FireBreathing,
-            CardEnum::SwordBoomerang,
-        ];
-
-        // Ironclad Uncommon Cards + Colorless Cards
-        let uncommon_pool = vec![
-            // Ironclad Uncommon
-            CardEnum::Armaments,
-            CardEnum::Bludgeon,
-            CardEnum::Disarm,
-            CardEnum::GhostlyArmor,
-            CardEnum::Impervious,
-            CardEnum::PowerThrough,
-            CardEnum::Shockwave,
-            CardEnum::Uppercut,
-            CardEnum::SeeingRed,
-            CardEnum::FlameBarrier,
-            CardEnum::Metallicize,
-            CardEnum::Rage,
-            CardEnum::LimitBreak,
-            CardEnum::DemonForm,
-            CardEnum::Exhume,
-            CardEnum::FeelNoPain,
-            CardEnum::Clash,
+            // Status Cards
+            CardEnum::Slimed,
+            CardEnum::Wound,
+            CardEnum::Burn,
+            CardEnum::Dazed,
+            // Curse Cards
+            CardEnum::AscendersCurse,
+            CardEnum::Injury,
+            CardEnum::Clumsy,
+            CardEnum::Regret,
+            CardEnum::Writhe,
             // Colorless Cards
             CardEnum::SwiftStrike,
             CardEnum::Finesse,
@@ -109,22 +140,25 @@ impl CardRewardPool {
             CardEnum::GoodInstincts,
             CardEnum::BandageUp,
             CardEnum::DeepBreath,
-            CardEnum::Carnage,
+            CardEnum::MasterOfStrategy,
+            CardEnum::DarkShackles,
+            CardEnum::Impatience,
+            CardEnum::PanicButton,
+            CardEnum::Panacea,
+            CardEnum::DramaticEntrance,
         ];
 
-        // Ironclad Rare Cards
-        let rare_pool = vec![
-            CardEnum::Corruption,
-            CardEnum::Immolate,
-            CardEnum::Embrace,
-            CardEnum::Inflame,
-            CardEnum::Brutality,
-            CardEnum::Offering,
-            CardEnum::Intimidate,
-            CardEnum::Hemokinesis,
-            CardEnum::Rampage,
-            CardEnum::Feed,
-        ];
+        // Categorize cards by rarity
+        for card in all_cards {
+            if let Some(rarity) = card.rarity() {
+                match rarity {
+                    Rarity::Common => common_pool.push(card),
+                    Rarity::Uncommon => uncommon_pool.push(card),
+                    Rarity::Rare => rare_pool.push(card),
+                }
+            }
+            // Non-rewardable cards (None rarity) are filtered out automatically
+        }
 
         Self {
             common_pool,
@@ -411,6 +445,7 @@ impl CardRewardPool {
             CardEnum::Clumsy => crate::cards::curse::clumsy(), // For completeness, though not used in rewards
             CardEnum::Regret => crate::cards::curse::regret(), // For completeness, though not used in rewards
             CardEnum::Writhe => crate::cards::curse::writhe(), // For completeness, though not used in rewards
+            CardEnum::DramaticEntrance => crate::cards::colorless::dramatic_entrance::dramatic_entrance(),
         }
     }
 }
@@ -445,9 +480,10 @@ mod tests {
         let rare_count = pool.get_rare_cards().len();
 
         // Check that we have reasonable pool sizes
-        assert!(common_count > 30, "Should have many common cards: {}", common_count);
-        assert!(uncommon_count > 15, "Should have many uncommon cards: {}", uncommon_count);
-        assert!(rare_count >= 10, "Should have rare cards: {}", rare_count);
+        // Updated to reflect actual card rarities defined in card implementations
+        assert!(common_count >= 15, "Should have common cards: {}", common_count);
+        assert!(uncommon_count >= 20, "Should have uncommon cards: {}", uncommon_count);
+        assert!(rare_count >= 5, "Should have rare cards: {}", rare_count);
     }
 
     #[test]

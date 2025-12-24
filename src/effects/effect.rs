@@ -30,6 +30,8 @@ pub enum BattleEffect {
     GainDefense { amount: u32 },
     ApplyVulnerable { duration: u32 },
     ApplyVulnerableAll { duration: u32 },
+    ApplyVulnerableToAll { duration: u32 }, // Apply Vulnerable to all enemies
+    HealToFull, // Heal to full HP
     ApplyWeak { duration: u32 },
     ApplyFrail { duration: u32 },
     ApplyEntangled { duration: u32 }, // Prevents Attack card plays
@@ -91,6 +93,7 @@ pub enum BattleEffect {
     AttackRandomEnemy { amount: u32, num_attacks: u32, strength_multiplier: u32 }, // Deal damage to a random enemy
     AddFireBreathing { damage_per_status: u32 }, // Activates Fire Breathing for dealing damage when Status/Curse cards are drawn
     ShuffleDiscardIntoDraw, // Shuffle discard pile into draw pile
+    GainRegen { amount: u32 }, // Gain regeneration (heals X HP at end of turn, decreases by 1 each turn)
     AttackAllEnemiesForCurrentEnergy { amount_per_hit: u32 }, // Spend all energy and attack all enemies X times where X is energy spent
     AddStatusToDiscard { status_card: CardEnum }, // Add a status card to discard pile
     GainEnergyIfNoBlock { amount: u32 }, // Gain energy if player has no block

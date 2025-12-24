@@ -1,5 +1,7 @@
 //! Card enum for type-safe card references
 
+use crate::game::card_reward::Rarity;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CardEnum {
     // Ironclad Cards
@@ -98,6 +100,7 @@ pub enum CardEnum {
     Impatience,
     PanicButton,
     Panacea,
+    DramaticEntrance,
     // Add more cards as needed
 }
 
@@ -143,7 +146,7 @@ impl CardEnum {
             CardEnum::Uppercut => "Uppercut",
             CardEnum::Intimidate => "Intimidate",
             CardEnum::SeeingRed => "Seeing Red",
-            CardEnum::GhostlyArmor => "Ghostly Armor",
+            CardEnum::GhostlyArmor => "Ghost Armor",
             CardEnum::Havoc => "Havoc",
             CardEnum::Headbutt => "Headbutt",
             CardEnum::TrueGrit => "True Grit",
@@ -195,12 +198,37 @@ impl CardEnum {
             CardEnum::Impatience => "Impatience",
             CardEnum::PanicButton => "Panic Button",
             CardEnum::Panacea => "Panacea",
+            CardEnum::DramaticEntrance => "Dramatic Entrance",
         }
     }
-    
+
     /// Get the upgraded name for this card
     pub fn upgraded_name(&self) -> String {
         format!("{}+", self.name())
+    }
+
+    /// Get the rarity of this card (if rewardable)
+    /// Returns None for basic cards, status cards, and curse cards
+    /// This references the actual card definition's CardClass to get the rarity
+    pub fn rarity(&self) -> Option<Rarity> {
+        let card = self.to_card();
+        let card_rarity = card.get_rarity();
+
+        // Convert from card::Rarity to card_reward::Rarity
+        // Only return rarity if the card is rewardable (not Basic, Status, or Curse)
+        use super::card::Rarity as CardRarity;
+        match card_rarity {
+            CardRarity::Basic => None,
+            CardRarity::Common => Some(Rarity::Common),
+            CardRarity::Uncommon => Some(Rarity::Uncommon),
+            CardRarity::Rare => Some(Rarity::Rare),
+        }
+    }
+
+    /// Check if this card can appear in reward pools
+    /// Basic cards, status cards, and curse cards should not be rewards
+    pub fn is_rewardable(&self) -> bool {
+        self.rarity().is_some()
     }
 
     /// Create a Card instance from this CardEnum
@@ -303,6 +331,7 @@ impl CardEnum {
             CardEnum::Impatience => crate::cards::colorless::impatience::impatience(),
             CardEnum::PanicButton => crate::cards::colorless::panic_button::panic_button(),
             CardEnum::Panacea => crate::cards::colorless::panacea::panacea(),
+            CardEnum::DramaticEntrance => crate::cards::colorless::dramatic_entrance::dramatic_entrance(),
         }
     }
 }

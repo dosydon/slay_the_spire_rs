@@ -35,7 +35,9 @@ The game is organized into three main modules:
 
 **`src/cards/`** - Card implementations
 - `ironclad/` - Character-specific cards (Strike, Defend, Bash, etc.)
+- `colorless/` - Neutral cards available to all characters
 - `status/` - Status effect cards (Wound, etc.)
+- `curse/` - Curse cards (Ascender's Curse, Injury, etc.)
 - Cards are implemented as factory functions returning `Card` instances
 
 **`src/enemies/`** - Enemy implementations
@@ -52,6 +54,7 @@ The game is organized into three main modules:
 - `burning_blood.rs` - Heals 6 HP at combat victory (GameEventListener)
 - `anchor.rs` - Starts combat with 10 block (BattleEventListener)
 - `blood_vial.rs` - Heals 2 HP at combat start (BattleEventListener)
+- `lantern.rs` - Gain 1 Energy on first turn of each combat (BattleEventListener)
 - Relics use event-driven architecture with separate Game and Battle event systems
 
 ### Key Design Patterns
@@ -73,8 +76,6 @@ The game is organized into three main modules:
 
 6. **Modular Relic System**: `Relic` enum provides `to_game_event_listener()` and `to_battle_event_listener()` methods for automatic conversion to appropriate listeners
 
-7. **CLI Architecture**: `GameCli` handles game flow (map navigation, battles, rewards) while `BattleCli` handles individual combat encounters
-
 ### Current State
 
 The codebase has evolved significantly with major systems implemented:
@@ -87,6 +88,10 @@ The codebase has evolved significantly with major systems implemented:
 - **Card Effects**: Most card effects are properly implemented and processed
 - **Enemy AI**: Multiple enemy types with unique moves and behaviors
 - **Event System**: Separate Game and Battle event systems for different scopes
+- **Potion System**: 13 potions implemented with rarity-based distribution (Common/Uncommon)
+- **Colorless Cards**: 14 colorless cards implemented (Dramatic Entrance and 13 others)
+- **Regen Mechanic**: Regeneration system with end-of-turn healing that decreases by 1 each turn
+- **Relic Rewards**: Elite combats provide guaranteed relic rewards (85% Uncommon, 15% Rare)
 
 **⚠️ Partially Implemented:**
 - **Effect Queue**: Basic structure exists but some complex effects may need refinement
@@ -100,15 +105,18 @@ The codebase has evolved significantly with major systems implemented:
 5. **IMPORTANT**: Update `RELICS.md` to mark the relic as implemented with proper cost and effects
 
 **🎯 How to Add New Cards:**
-1. Create factory function in appropriate character module (e.g., `src/cards/ironclad/`)
+1. Create factory function in appropriate character module (e.g., `src/cards/ironclad/` or `src/cards/colorless/`)
 2. Create both base and upgraded versions (e.g., `card_name()` and `card_name_upgraded()`)
-3. Define effects using the `Effect` enum
-4. Add card to starter deck or reward pools as needed
-5. **IMPORTANT**: Update `IRONCLAD_CARDS.md` to mark the card as implemented with:
-   - Base cost and upgraded cost
-   - Base effects and upgraded effects
-   - File location
-   - Any special mechanics or implementation notes
+3. Define effects using the `BattleEffect` enum
+4. Add card variant to `CardEnum` in `src/game/card_enum.rs`
+5. Add name mapping in `CardEnum::name()` method
+6. Add `to_card()` implementation in `CardEnum`
+7. Add upgrade() match arm in `src/game/card.rs`
+8. Add card to `src/game/card_reward.rs` for reward pools
+9. **IMPORTANT**: Update the appropriate documentation file:
+   - For Ironclad cards: `IRONCLAD_CARDS.md`
+   - For Colorless cards: `COLORLESS_CARDS.md`
+   - Include: Base cost, upgraded cost, base effects, upgraded effects, file location
 
 When implementing new features, follow the existing patterns of effects-based actions, trait-based entities, and event-driven architecture.
 
@@ -117,7 +125,11 @@ When implementing new features, follow the existing patterns of effects-based ac
 **CRITICAL: Always keep documentation synchronized with code changes.**
 
 When you implement a new card or relic:
-- ✅ **DO**: Update the corresponding markdown file (`IRONCLAD_CARDS.md` or `RELICS.md`) immediately after implementation
+- ✅ **DO**: Update the corresponding markdown file immediately after implementation:
+  - `IRONCLAD_CARDS.md` for Ironclad cards
+  - `COLORLESS_CARDS.md` for colorless cards
+  - `RELICS.md` for relics
+  - `POTIONS.md` for potions
 - ✅ **DO**: Include all required details: cost, upgraded cost, base effects, upgraded effects, file location
 - ✅ **DO**: Update the summary statistics (total implemented count, percentage progress)
 - ✅ **DO**: Add to "Recently Implemented" section if it introduces new mechanics
@@ -139,6 +151,13 @@ When you implement a new card or relic:
   - Shows next priority cards for implementation
   - Documents recently implemented cards and their mechanics
 
+- **`COLORLESS_CARDS.md`** - Complete documentation of colorless card implementation status
+  - Lists all 57 colorless cards across Uncommon, Rare, and Special categories
+  - Currently 14 cards implemented (24.6% completion rate)
+  - Documents required framework features (Innate, Retain, Ethereal, etc.)
+  - Includes recommended implementation order and technical considerations
+  - Shows recently implemented cards with detailed mechanics
+
 - **`RELICS.md`** - Complete documentation of relic implementation status
   - Lists all implemented and missing relics across all categories
   - Explains the event-driven relic architecture
@@ -146,10 +165,22 @@ When you implement a new card or relic:
   - Shows next priority relics for implementation
   - Includes implementation notes and required framework features
 
+- **`POTIONS.md`** - Comprehensive documentation of potion implementation status
+  - Lists all 45 potions with rarity and character availability
+  - Currently 13 potions implemented (28.9% completion rate)
+  - Documents potion mechanics and drop rates
+  - Includes targeting requirements and special mechanics
+
+- **`ENEMIES.md`** - Complete documentation of enemy implementation status
+  - Lists all implemented enemies with their behaviors and patterns
+  - Documents encounter types and spawn mechanics
+
+- **`EVENTS.md`** - Documentation of map events implementation status
+
 **How to Use These References:**
-1. **Check Implementation Status**: Before implementing a new card or relic, check the appropriate file to see if it's already implemented
+1. **Check Implementation Status**: Before implementing a new feature, check the appropriate file to see if it's already implemented
 2. **Follow Patterns**: Use the documented implementation patterns for consistency
 3. **Avoid Duplication**: Prevent implementing already-completed features
 4. **Prioritize Work**: Use the "Next Priority" sections to focus on impactful features
 5. **Understand Architecture**: Read the technical notes to understand the current system capabilities
-6. **Keep Documentation Updated**: After implementing any card or relic, immediately update the corresponding markdown file with all details (costs, effects, file location)
+6. **Keep Documentation Updated**: After implementing any feature, immediately update the corresponding markdown file with all details (costs, effects, file location)

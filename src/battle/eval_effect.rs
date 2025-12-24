@@ -82,6 +82,26 @@ impl Battle {
                     }
                 }
             },
+            BaseEffect::ApplyVulnerableToAll { duration } => {
+                // Apply vulnerable to all enemies (same as ApplyVulnerableAll)
+                for enemy_idx in 0..self.enemies.len() {
+                    if self.enemies[enemy_idx].battle_info.is_alive() {
+                        if !self.enemies[enemy_idx].battle_info.consume_artifact() {
+                            self.enemies[enemy_idx].battle_info.apply_vulnerable(*duration);
+                        }
+                    }
+                }
+            },
+            BaseEffect::HealToFull => {
+                // Heal player to full HP
+                let max_hp = self.player.get_max_hp();
+                let current_hp = self.player.battle_info.current_hp;
+                if current_hp < max_hp {
+                    let heal_amount = max_hp - current_hp;
+                    self.player.battle_info.heal(heal_amount);
+                    info!("Healed to full HP: {} -> {}", current_hp, max_hp);
+                }
+            },
             BaseEffect::ApplyWeak { target, duration } => {
                 match target {
                     Entity::Player => {
@@ -404,6 +424,21 @@ impl Battle {
                     },
                     Entity::Enemy(_) => {
                         // Enemies typically don't get plated armor
+                    },
+                    Entity::None => {} // No source
+                }
+            },
+            BaseEffect::GainRegen { source, amount } => {
+                // Add regen listener to the battle
+                use crate::battle::listeners::RegenListener;
+                match source {
+                    Entity::Player => {
+                        let regen_listener = Box::new(RegenListener::new(*amount, Entity::Player));
+                        self.add_listener(regen_listener);
+                        info!("Gained {} regen", amount);
+                    },
+                    Entity::Enemy(_) => {
+                        // Enemies typically don't get regen
                     },
                     Entity::None => {} // No source
                 }

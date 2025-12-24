@@ -16,6 +16,7 @@ pub mod reward_state;
 pub mod shop;
 pub mod potion;
 pub mod player_run_state;
+pub mod eval_action;
 
 // Re-export commonly used types for easier access
 pub use game_state::GameState;

@@ -13,8 +13,8 @@ This document lists all potions available in Slay the Spire, organized by rarity
 | Colorless Potion | Common | All | ❌ Not Implemented |
 | Dexterity Potion | Common | All | ✅ Implemented |
 | Energy Potion | Common | All | ✅ Implemented |
-| Explosive Potion | Common | All | ❌ Not Implemented |
-| Fear Potion | Common | All | ❌ Not Implemented |
+| Explosive Potion | Common | All | ✅ Implemented |
+| Fear Potion | Common | All | ✅ Implemented |
 | Fire Potion | Common | All | ✅ Implemented |
 | Flex Potion | Common | All | ❌ Not Implemented |
 | Power Potion | Common | All | ❌ Not Implemented |
@@ -22,21 +22,21 @@ This document lists all potions available in Slay the Spire, organized by rarity
 | Speed Potion | Common | All | ❌ Not Implemented |
 | Strength Potion | Common | All | ✅ Implemented |
 | Swift Potion | Common | All | ✅ Implemented |
-| Weak Potion | Common | All | ❌ Not Implemented |
+| Weak Potion | Common | All | ✅ Implemented |
 | **Character-Specific Common** |
 | Blood Potion | Common | Ironclad | ✅ Implemented |
 | Poison Potion | Common | Silent | ❌ Not Implemented |
 | Focus Potion | Common | Defect | ❌ Not Implemented |
 | Bottled Miracle | Common | Watcher | ❌ Not Implemented |
 | **Uncommon Potions** |
-| Ancient Potion | Uncommon | All | ❌ Not Implemented |
+| Ancient Potion | Uncommon | All | ✅ Implemented |
 | Distilled Chaos | Uncommon | All | ❌ Not Implemented |
 | Duplication Potion | Uncommon | All | ❌ Not Implemented |
-| Essence of Steel | Uncommon | All | ❌ Not Implemented |
+| Essence of Steel | Uncommon | All | ✅ Implemented |
 | Gambler's Brew | Uncommon | All | ❌ Not Implemented |
 | Liquid Bronze | Uncommon | All | ❌ Not Implemented |
 | Liquid Memories | Uncommon | All | ❌ Not Implemented |
-| Regen Potion | Uncommon | All | ❌ Not Implemented |
+| Regen Potion | Uncommon | All | ✅ Implemented |
 | Smoke Bomb | Uncommon | All | ❌ Not Implemented |
 | Snecko Oil | Uncommon | All | ❌ Not Implemented |
 | **Character-Specific Uncommon** |
@@ -55,7 +55,7 @@ This document lists all potions available in Slay the Spire, organized by rarity
 | Essence of Darkness | Rare | Defect | ❌ Not Implemented |
 | Ambrosia | Rare | Watcher | ❌ Not Implemented |
 
-**Summary**: 7 / 45 potions implemented (15.6%)
+**Summary**: 13 / 45 potions implemented (28.9%)
 
 ---
 

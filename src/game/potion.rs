@@ -142,11 +142,9 @@ impl Potion {
                 ])
             }
             Potion::RegenPotion => {
-                // Regen potion - note: Regen is not yet implemented as a BattleEffect
-                // For now, we'll use Heal as a substitute
-                // TODO: Add proper Regen support
+                // Regen potion grants 5 regen (heals 5 HP at end of turn, decreases by 1 each turn)
                 (Some(Entity::Player), vec![
-                    BattleEffect::Heal(10) // Simplified - should be 5 Regen
+                    BattleEffect::GainRegen { amount: 5 }
                 ])
             }
             Potion::EssenceOfSteelPotion => {

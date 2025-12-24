@@ -24,6 +24,9 @@ pub mod art_of_war;
 pub mod ink_bottle;
 pub mod kunai;
 pub mod letter_opener;
+pub mod shuriken;
+pub mod ornamental_fan;
+pub mod red_mask;
 
 pub use burning_blood::BurningBloodRelic;
 pub use anchor::AnchorRelic;
@@ -51,6 +54,9 @@ pub use art_of_war::ArtOfWarRelic;
 pub use ink_bottle::InkBottleRelic;
 pub use kunai::KunaiRelic;
 pub use letter_opener::LetterOpenerRelic;
+pub use shuriken::ShurikenRelic;
+pub use ornamental_fan::OrnamentalFanRelic;
+pub use red_mask::RedMaskRelic;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Relic {
@@ -80,6 +86,9 @@ pub enum Relic {
     InkBottle,
     Kunai,
     LetterOpener,
+    Shuriken,
+    OrnamentalFan,
+    RedMask,
 }
 
 impl Relic {
@@ -112,6 +121,9 @@ impl Relic {
             Relic::InkBottle => "Ink Bottle",
             Relic::Kunai => "Kunai",
             Relic::LetterOpener => "Letter Opener",
+            Relic::Shuriken => "Shuriken",
+            Relic::OrnamentalFan => "Ornamental Fan",
+            Relic::RedMask => "Red Mask",
         }
     }
 
@@ -151,6 +163,9 @@ impl Relic {
             Relic::InkBottle => Some(Box::new(InkBottleRelic::new(crate::battle::target::Entity::Player))),
             Relic::Kunai => Some(Box::new(KunaiRelic::new(crate::battle::target::Entity::Player))),
             Relic::LetterOpener => Some(Box::new(LetterOpenerRelic::new(crate::battle::target::Entity::Player))),
+            Relic::Shuriken => Some(Box::new(ShurikenRelic::new(crate::battle::target::Entity::Player))),
+            Relic::OrnamentalFan => Some(Box::new(OrnamentalFanRelic::new(crate::battle::target::Entity::Player))),
+            Relic::RedMask => Some(Box::new(RedMaskRelic::new(crate::battle::target::Entity::Player))),
             _ => None,
         }
     }
@@ -167,7 +182,7 @@ impl Relic {
             Relic::TheBoot,
         ];
 
-        const UNCOMMON_RELICS: [Relic; 8] = [
+        const UNCOMMON_RELICS: [Relic; 10] = [
             Relic::BagOfMarbles,
             Relic::BronzeScales,
             Relic::HornCleat,
@@ -176,6 +191,8 @@ impl Relic {
             Relic::OddlySmoothStone,
             Relic::PenNib,
             Relic::Vajra,
+            Relic::Shuriken,
+            Relic::OrnamentalFan,
         ];
 
         const RARE_RELICS: [Relic; 10] = [

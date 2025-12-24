@@ -12,6 +12,7 @@ pub mod dark_shackles;
 pub mod impatience;
 pub mod panic_button;
 pub mod panacea;
+pub mod dramatic_entrance;
 
 // Re-export all colorless cards
 pub use good_instincts::good_instincts;
@@ -40,3 +41,5 @@ pub use panic_button::panic_button;
 pub use panic_button::panic_button_upgraded;
 pub use panacea::panacea;
 pub use panacea::panacea_upgraded;
+pub use dramatic_entrance::dramatic_entrance;
+pub use dramatic_entrance::dramatic_entrance_upgraded;

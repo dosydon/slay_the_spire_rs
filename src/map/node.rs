@@ -8,6 +8,7 @@ pub enum NodeType {
     /// Rest site where player can heal or upgrade cards
     RestSite,
     /// Random event with choices and consequences
+    /// (Also used for Unknown Location ? rooms before sampling)
     Event,
     /// Shop where player can buy cards, relics, and potions
     Shop,
