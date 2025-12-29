@@ -1,4 +1,4 @@
-use crate::game::effect::{Effect, BattleEffect, GameEffect};
+use crate::game::effect::{Effect, GameEffect};
 use crate::events::map_events::{EventChoice, EventOutcome};
 
 /// Purifier shrine event

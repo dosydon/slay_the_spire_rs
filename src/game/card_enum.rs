@@ -231,6 +231,86 @@ impl CardEnum {
         self.rarity().is_some()
     }
 
+    /// Get all Ironclad Attack cards
+    /// Returns a vector of all CardEnums that are Ironclad Attack cards
+    pub fn all_ironclad_attacks() -> Vec<CardEnum> {
+        use crate::game::card_type::CardType;
+
+        // Get all Ironclad cards
+        let all_ironclad = vec![
+            CardEnum::Strike, CardEnum::Defend, CardEnum::Bash,
+            CardEnum::BodySlam, CardEnum::Clash, CardEnum::Carnage,
+            CardEnum::Cleave, CardEnum::Embrace, CardEnum::Flex,
+            CardEnum::Inflame, CardEnum::Immolate, CardEnum::IronWave,
+            CardEnum::PommelStrike, CardEnum::PowerThrough, CardEnum::ShrugItOff,
+            CardEnum::TwinStrike, CardEnum::Clothesline, CardEnum::HeavyBlade,
+            CardEnum::PerfectedStrike, CardEnum::Thunderclap, CardEnum::WildStrike,
+            CardEnum::Combust, CardEnum::Disarm, CardEnum::Dropkick,
+            CardEnum::FeelNoPain, CardEnum::Entrench, CardEnum::Bludgeon,
+            CardEnum::Anger, CardEnum::SwordBoomerang, CardEnum::Hemokinesis,
+            CardEnum::Armaments, CardEnum::Impervious, CardEnum::Brutality,
+            CardEnum::Offering, CardEnum::Shockwave, CardEnum::Uppercut,
+            CardEnum::Intimidate, CardEnum::SeeingRed, CardEnum::GhostlyArmor,
+            CardEnum::Havoc, CardEnum::Headbutt, CardEnum::TrueGrit,
+            CardEnum::Warcry, CardEnum::Corruption, CardEnum::LimitBreak,
+            CardEnum::Metallicize, CardEnum::FlameBarrier, CardEnum::Rage,
+            CardEnum::Rampage, CardEnum::RecklessCharge, CardEnum::SearingBlow,
+            CardEnum::SeverSoul, CardEnum::SpotWeakness, CardEnum::Pummel,
+            CardEnum::InfernalBlade, CardEnum::Evolve, CardEnum::Sentinel,
+            CardEnum::Whirlwind, CardEnum::DemonForm, CardEnum::SecondWind,
+            CardEnum::Rupture, CardEnum::DualWield, CardEnum::DoubleTap,
+            CardEnum::Exhume, CardEnum::Feed, CardEnum::Reaper,
+            CardEnum::FiendFire, CardEnum::FireBreathing,
+        ];
+
+        // Filter to only Attack cards
+        all_ironclad.into_iter()
+            .filter(|card_enum| {
+                let card = card_enum.to_card();
+                card.get_card_type() == CardType::Attack
+            })
+            .collect()
+    }
+
+    pub fn all_ironclad_skills() -> Vec<CardEnum> {
+        use crate::game::card_type::CardType;
+
+        // Get all Ironclad cards
+        let all_ironclad = vec![
+            CardEnum::Strike, CardEnum::Defend, CardEnum::Bash,
+            CardEnum::BodySlam, CardEnum::Clash, CardEnum::Carnage,
+            CardEnum::Cleave, CardEnum::Embrace, CardEnum::Flex,
+            CardEnum::Inflame, CardEnum::Immolate, CardEnum::IronWave,
+            CardEnum::PommelStrike, CardEnum::PowerThrough, CardEnum::ShrugItOff,
+            CardEnum::TwinStrike, CardEnum::Clothesline, CardEnum::HeavyBlade,
+            CardEnum::PerfectedStrike, CardEnum::Thunderclap, CardEnum::WildStrike,
+            CardEnum::Combust, CardEnum::Disarm, CardEnum::Dropkick,
+            CardEnum::FeelNoPain, CardEnum::Entrench, CardEnum::Bludgeon,
+            CardEnum::Anger, CardEnum::SwordBoomerang, CardEnum::Hemokinesis,
+            CardEnum::Armaments, CardEnum::Impervious, CardEnum::Brutality,
+            CardEnum::Offering, CardEnum::Shockwave, CardEnum::Uppercut,
+            CardEnum::Intimidate, CardEnum::SeeingRed, CardEnum::GhostlyArmor,
+            CardEnum::Havoc, CardEnum::Headbutt, CardEnum::TrueGrit,
+            CardEnum::Warcry, CardEnum::Corruption, CardEnum::LimitBreak,
+            CardEnum::Metallicize, CardEnum::FlameBarrier, CardEnum::Rage,
+            CardEnum::Rampage, CardEnum::RecklessCharge, CardEnum::SearingBlow,
+            CardEnum::SeverSoul, CardEnum::SpotWeakness, CardEnum::Pummel,
+            CardEnum::InfernalBlade, CardEnum::Evolve, CardEnum::Sentinel,
+            CardEnum::Whirlwind, CardEnum::DemonForm, CardEnum::SecondWind,
+            CardEnum::Rupture, CardEnum::DualWield, CardEnum::DoubleTap,
+            CardEnum::Exhume, CardEnum::Feed, CardEnum::Reaper,
+            CardEnum::FiendFire, CardEnum::FireBreathing,
+        ];
+
+        // Filter to only Skill cards
+        all_ironclad.into_iter()
+            .filter(|card_enum| {
+                let card = card_enum.to_card();
+                card.get_card_type() == CardType::Skill
+            })
+            .collect()
+    }
+
     /// Create a Card instance from this CardEnum
     /// This provides a centralized way to get card definitions
     pub fn to_card(&self) -> super::card::Card {
@@ -332,6 +412,33 @@ impl CardEnum {
             CardEnum::PanicButton => crate::cards::colorless::panic_button::panic_button(),
             CardEnum::Panacea => crate::cards::colorless::panacea::panacea(),
             CardEnum::DramaticEntrance => crate::cards::colorless::dramatic_entrance::dramatic_entrance(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_all_ironclad_attacks() {
+        let attacks = CardEnum::all_ironclad_attacks();
+
+        // Print for debugging
+        println!("\nTotal Ironclad Attack cards: {}", attacks.len());
+        for attack in &attacks {
+            println!("  - {}", attack.name());
+        }
+
+        // Should have significantly more than the old hardcoded list of 17
+        assert!(attacks.len() > 17, "Should have more than 17 attack cards, got {}", attacks.len());
+
+        // Verify all returned cards are actually Attacks
+        use crate::game::card_type::CardType;
+        for attack_enum in &attacks {
+            let card = attack_enum.to_card();
+            assert_eq!(card.get_card_type(), CardType::Attack,
+                      "{} should be an Attack card", attack_enum.name());
         }
     }
 }

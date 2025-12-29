@@ -216,12 +216,18 @@ impl Battle {
                 }
             }
         }
-        
+
         // Check if battle is over after the action
         let battle_events = self.take_battle_events();
-        if !self.player.is_alive() {
+        let player_alive = self.player.is_alive();
+        let all_enemies_dead = self.enemies.iter().all(|e| !e.battle_info.is_alive());
+
+        log::info!("Battle result check - Player alive: {}, Player HP: {}, All enemies dead: {}",
+                   player_alive, self.player.battle_info.get_hp(), all_enemies_dead);
+
+        if !player_alive {
             Ok(BattleResult::Lost(battle_events))
-        } else if self.enemies.iter().all(|e| !e.battle_info.is_alive()) {
+        } else if all_enemies_dead {
             Ok(BattleResult::Won(battle_events))
         } else {
             Ok(BattleResult::Continued(battle_events))

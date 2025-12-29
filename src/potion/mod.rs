@@ -1,3 +1,6 @@
+pub mod attack_potion;
+pub mod skill_potion;
+
 use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
@@ -32,6 +35,8 @@ pub enum Potion {
     EssenceOfSteelPotion,
     /// Attack Potion: Choose 1 of 3 random Attack cards to add to your hand (2 copies). They cost 0 this turn.
     AttackPotion,
+    /// Skill Potion: Choose 1 of 3 random Skill cards to add to your hand. It costs 0 this turn.
+    SkillPotion,
 }
 
 impl Potion {
@@ -51,7 +56,8 @@ impl Potion {
             Potion::AncientPotion => "Ancient Potion",
             Potion::RegenPotion => "Regen Potion",
             Potion::EssenceOfSteelPotion => "Essence of Steel",
-            Potion::AttackPotion => "Attack Potion",
+            Potion::AttackPotion => attack_potion::ATTACK_POTION_NAME,
+            Potion::SkillPotion => skill_potion::SKILL_POTION_NAME,
         }
     }
 
@@ -71,7 +77,8 @@ impl Potion {
             Potion::AncientPotion => "Gain 1 Artifact",
             Potion::RegenPotion => "Gain 5 Regeneration",
             Potion::EssenceOfSteelPotion => "Gain 4 Plated Armor",
-            Potion::AttackPotion => "Choose 1 of 3 random Attack cards to add to your hand (2 copies). They cost 0 this turn.",
+            Potion::AttackPotion => attack_potion::ATTACK_POTION_DESCRIPTION,
+            Potion::SkillPotion => skill_potion::SKILL_POTION_DESCRIPTION,
         }
     }
 
@@ -157,14 +164,8 @@ impl Potion {
                     BattleEffect::GainPlatedArmor(4)
                 ])
             }
-            Potion::AttackPotion => {
-                // Attack Potion adds 3 random Attack cards to choose from (2 copies each, cost 0)
-                // This requires special handling in the battle system to present card choices
-                // For now, we'll use a placeholder effect that indicates card selection is needed
-                (Some(Entity::Player), vec![
-                    BattleEffect::AddRandomAttackCardsToHand { num_choices: 3, num_copies: 2, cost: 0 }
-                ])
-            }
+            Potion::AttackPotion => attack_potion::get_attack_potion_effects(),
+            Potion::SkillPotion => skill_potion::get_skill_potion_effects(),
         }
     }
 
@@ -350,6 +351,7 @@ impl PotionPool {
             Potion::FearPotion,
             Potion::WeakPotion,
             Potion::AttackPotion,
+            Potion::SkillPotion,
         ];
 
         let uncommon_potions = vec![

@@ -1229,7 +1229,8 @@ mod tests {
 
         // Potion might be None or Some depending on RNG, but it should be valid
         if let Some(potion) = reward_state.potion_reward {
-            assert_eq!(potion.name(), "Strength Potion"); // Only potion currently implemented
+            // Verify the potion has a valid name (not empty)
+            assert!(!potion.name().is_empty(), "Potion should have a valid name");
         }
     }
 
