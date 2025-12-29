@@ -382,6 +382,46 @@ impl Battle {
                     }
                 }
             },
+            BaseEffect::AddRandomAttackCardsToHand { source, num_choices, num_copies, cost } => {
+                // Present player with N random Attack cards to choose from
+                // The chosen card will be added M times to hand with cost override
+                if let Entity::Player = source {
+                    let ironclad_attacks = vec![
+                        crate::game::card_enum::CardEnum::Strike,
+                        crate::game::card_enum::CardEnum::Bash,
+                        crate::game::card_enum::CardEnum::Cleave,
+                        crate::game::card_enum::CardEnum::Clothesline,
+                        crate::game::card_enum::CardEnum::HeavyBlade,
+                        crate::game::card_enum::CardEnum::IronWave,
+                        crate::game::card_enum::CardEnum::PerfectedStrike,
+                        crate::game::card_enum::CardEnum::PommelStrike,
+                        crate::game::card_enum::CardEnum::Thunderclap,
+                        crate::game::card_enum::CardEnum::TwinStrike,
+                        crate::game::card_enum::CardEnum::WildStrike,
+                        crate::game::card_enum::CardEnum::BodySlam,
+                        crate::game::card_enum::CardEnum::Carnage,
+                        crate::game::card_enum::CardEnum::Clash,
+                        crate::game::card_enum::CardEnum::Headbutt,
+                        crate::game::card_enum::CardEnum::Hemokinesis,
+                        crate::game::card_enum::CardEnum::SwordBoomerang,
+                    ];
+
+                    // Select N random unique attack cards
+                    use rand::seq::SliceRandom;
+                    let mut rng = rand::rng();
+                    let choices: Vec<crate::game::card_enum::CardEnum> = ironclad_attacks
+                        .choose_multiple(&mut rng, *num_choices as usize)
+                        .cloned()
+                        .collect();
+
+                    // Transition to card selection state
+                    self.battle_state = crate::battle::battle_state::BattleState::SelectCardFromChoices {
+                        choices,
+                        num_copies: *num_copies,
+                        cost_override: Some(*cost),
+                    };
+                }
+            },
             BaseEffect::ActivateEvolve { source: _ } => {
                 // Evolve activation - currently just draws 1 card immediately
                 // In full implementation, would add a listener for Status card draws

@@ -41,6 +41,16 @@ impl Battle {
                     _ => {}
                 }
             }
+            crate::battle::battle_state::BattleState::SelectCardFromChoices { .. } => {
+                match action {
+                    BattleAction::PlayCard(_, _) => return Err(BattleError::InvalidAction),
+                    BattleAction::EndTurn => return Err(BattleError::InvalidAction),
+                    BattleAction::SelectCardInHand(_) => return Err(BattleError::InvalidAction),
+                    BattleAction::SelectCardInDiscard(_) => return Err(BattleError::InvalidAction),
+                    BattleAction::SelectCardInExhaust(_) => return Err(BattleError::InvalidAction),
+                    _ => {}
+                }
+            }
         }
 
         match action {
@@ -166,6 +176,44 @@ impl Battle {
 
                 // Return to player turn state
                 self.battle_state = crate::battle::battle_state::BattleState::PlayerTurn;
+            }
+            BattleAction::SelectCardFromChoices(choice_index) => {
+                // Check if we're in the SelectCardFromChoices state
+                match &self.battle_state {
+                    crate::battle::battle_state::BattleState::SelectCardFromChoices {
+                        choices,
+                        num_copies,
+                        cost_override
+                    } => {
+                        // Validate choice index
+                        if choice_index >= choices.len() {
+                            return Err(BattleError::InvalidAction);
+                        }
+
+                        // Get the selected card
+                        let selected_card_enum = choices[choice_index];
+
+                        // Create the card instance from the enum
+                        let card_reward_pool = crate::game::card_reward::CardRewardPool::new();
+                        let mut card = card_reward_pool.create_card_from_enum(selected_card_enum);
+
+                        // Apply cost override if specified
+                        if let Some(cost) = cost_override {
+                            card = card.set_cost(*cost);
+                        }
+
+                        // Add the card num_copies times to the player's hand
+                        for _ in 0..*num_copies {
+                            self.cards.add_card_to_hand(card.clone());
+                        }
+
+                        // Return to player turn state
+                        self.battle_state = crate::battle::battle_state::BattleState::PlayerTurn;
+                    }
+                    _ => {
+                        return Err(BattleError::InvalidAction);
+                    }
+                }
             }
         }
         

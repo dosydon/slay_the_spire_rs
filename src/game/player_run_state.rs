@@ -11,7 +11,7 @@ pub struct PlayerRunState {
     /// Relics collected during the run
     pub relics: Vec<crate::relics::Relic>,
     /// Potion inventory
-    pub potions: crate::game::potion::PotionInventory,
+    pub potions: crate::potion::PotionInventory,
 }
 
 impl PlayerRunState {
@@ -22,7 +22,7 @@ impl PlayerRunState {
             max_hp,
             gold,
             relics: Vec::new(),
-            potions: crate::game::potion::PotionInventory::default(),
+            potions: crate::potion::PotionInventory::default(),
         }
     }
 
@@ -33,7 +33,7 @@ impl PlayerRunState {
             max_hp,
             gold,
             relics,
-            potions: crate::game::potion::PotionInventory::default(),
+            potions: crate::potion::PotionInventory::default(),
         }
     }
 
@@ -43,7 +43,7 @@ impl PlayerRunState {
         max_hp: u32,
         gold: u32,
         relics: Vec<crate::relics::Relic>,
-        potions: crate::game::potion::PotionInventory,
+        potions: crate::potion::PotionInventory,
     ) -> Self {
         Self {
             current_hp,

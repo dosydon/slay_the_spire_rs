@@ -110,4 +110,5 @@ pub enum BattleEffect {
     EnemyEscape, // Enemy escapes from combat (used by Looter)
     SplitIntoMediumSlimes, // Split into 2 medium slimes (used by large slimes on death)
     LoseHpPerCardInHand { damage_per_card: u32 }, // Lose HP for each card in hand (used by Regret)
+    AddRandomAttackCardsToHand { num_choices: u32, num_copies: u32, cost: u32 }, // Choose 1 of N random Attack cards to add to hand (M copies, cost X)
 }

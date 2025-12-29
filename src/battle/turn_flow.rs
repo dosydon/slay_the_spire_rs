@@ -46,6 +46,9 @@ impl Battle {
         };
         self.emit_event(end_turn_event);
 
+        // Clear temporary cost modifications from all cards in hand
+        self.cards.clear_hand_modified_costs();
+
         // Exhaust all ethereal cards from hand (before discarding)
         let mut i = 0;
         while i < self.cards.hand_size() {

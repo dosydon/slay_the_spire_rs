@@ -16,8 +16,8 @@ pub struct Game {
     pub player_hp: u32,
     pub player_max_hp: u32,
     pub gold: u32,
-    pub potions: crate::game::potion::PotionInventory,
-    pub potion_pool: crate::game::potion::PotionPool,
+    pub potions: crate::potion::PotionInventory,
+    pub potion_pool: crate::potion::PotionPool,
     card_reward_pool: CardRewardPool,
     pub(crate) relics: Vec<crate::relics::Relic>,
     game_event_listeners: Vec<Box<dyn GameEventListener>>,
@@ -41,8 +41,8 @@ impl Game {
             player_hp: starting_hp,
             player_max_hp: max_hp,
             gold: 99, // Starting gold (Ironclad starts with 99 gold)
-            potions: crate::game::potion::PotionInventory::default(),
-            potion_pool: crate::game::potion::PotionPool::default(),
+            potions: crate::potion::PotionInventory::default(),
+            potion_pool: crate::potion::PotionPool::default(),
             card_reward_pool: CardRewardPool::new(),
             relics: Vec::new(),
             game_event_listeners: Vec::new(),
@@ -1258,7 +1258,7 @@ mod tests {
 
     #[test]
     fn test_claim_potion_action() {
-        use crate::game::potion::Potion;
+        use crate::potion::Potion;
 
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
@@ -1301,7 +1301,7 @@ mod tests {
 
     #[test]
     fn test_claim_potion_full_inventory() {
-        use crate::game::potion::Potion;
+        use crate::potion::Potion;
 
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
@@ -1549,7 +1549,7 @@ mod tests {
 
     #[test]
     fn test_skip_reward_from_beginning() {
-        use crate::game::potion::Potion;
+        use crate::potion::Potion;
 
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
@@ -1618,7 +1618,7 @@ mod tests {
 
     #[test]
     fn test_continue_to_map_after_partial_claims() {
-        use crate::game::potion::Potion;
+        use crate::potion::Potion;
 
         let deck = starter_deck();
         let global_info = GlobalInfo { ascention: 0, current_floor: 1 };

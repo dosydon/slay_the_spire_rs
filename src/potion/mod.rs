@@ -30,6 +30,8 @@ pub enum Potion {
     RegenPotion,
     /// Essence of Steel: Gain 4 Plated Armor
     EssenceOfSteelPotion,
+    /// Attack Potion: Choose 1 of 3 random Attack cards to add to your hand (2 copies). They cost 0 this turn.
+    AttackPotion,
 }
 
 impl Potion {
@@ -49,6 +51,7 @@ impl Potion {
             Potion::AncientPotion => "Ancient Potion",
             Potion::RegenPotion => "Regen Potion",
             Potion::EssenceOfSteelPotion => "Essence of Steel",
+            Potion::AttackPotion => "Attack Potion",
         }
     }
 
@@ -68,6 +71,7 @@ impl Potion {
             Potion::AncientPotion => "Gain 1 Artifact",
             Potion::RegenPotion => "Gain 5 Regeneration",
             Potion::EssenceOfSteelPotion => "Gain 4 Plated Armor",
+            Potion::AttackPotion => "Choose 1 of 3 random Attack cards to add to your hand (2 copies). They cost 0 this turn.",
         }
     }
 
@@ -151,6 +155,14 @@ impl Potion {
                 // Essence of Steel grants Plated Armor (permanent armor)
                 (Some(Entity::Player), vec![
                     BattleEffect::GainPlatedArmor(4)
+                ])
+            }
+            Potion::AttackPotion => {
+                // Attack Potion adds 3 random Attack cards to choose from (2 copies each, cost 0)
+                // This requires special handling in the battle system to present card choices
+                // For now, we'll use a placeholder effect that indicates card selection is needed
+                (Some(Entity::Player), vec![
+                    BattleEffect::AddRandomAttackCardsToHand { num_choices: 3, num_copies: 2, cost: 0 }
                 ])
             }
         }
@@ -337,6 +349,7 @@ impl PotionPool {
             Potion::ExplosivePotion,
             Potion::FearPotion,
             Potion::WeakPotion,
+            Potion::AttackPotion,
         ];
 
         let uncommon_potions = vec![

@@ -14,7 +14,6 @@ pub mod game_result;
 pub mod game_state;
 pub mod reward_state;
 pub mod shop;
-pub mod potion;
 pub mod player_run_state;
 pub mod eval_action;
 

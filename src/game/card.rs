@@ -32,6 +32,7 @@ pub struct Card {
     end_of_turn: Option<Vec<BattleEffect>>, // Effects that trigger at end of turn
     is_removable: bool, // Whether this card can be removed from the deck (false for Ascender's Bane, Curse of the Bell, Necronomicurse)
     is_innate: bool, // Whether this card is innate (starts in every hand and returns to hand after played)
+    modified_cost_this_turn: Option<u32>, // Temporary cost override for this turn (e.g., from potions making cards cost 0)
 }
 
 impl Card {
@@ -49,6 +50,7 @@ impl Card {
             end_of_turn: None,
             is_removable: true, // Default to removable
             is_innate: false, // Default to not innate
+            modified_cost_this_turn: None, // Default to no cost modification
         }
     }
 
@@ -110,6 +112,12 @@ impl Card {
         self
     }
 
+    /// Builder pattern method to set the card's temporary cost for this turn
+    pub fn set_cost(mut self, cost: u32) -> Self {
+        self.modified_cost_this_turn = Some(cost);
+        self
+    }
+
     pub fn get_name(&self) -> String {
         if self.upgrade_level > 0 {
             self.card_enum.upgraded_name()
@@ -117,13 +125,14 @@ impl Card {
             self.card_enum.name().to_string()
         }
     }
-    
+
     pub fn get_card_enum(&self) -> CardEnum {
         self.card_enum
     }
 
     pub fn get_cost(&self) -> u32 {
-        self.cost
+        // Return modified cost if set, otherwise return base cost
+        self.modified_cost_this_turn.unwrap_or(self.cost)
     }
 
     pub fn get_card_type(&self) -> CardType {
@@ -303,6 +312,7 @@ impl Card {
             end_of_turn: self.end_of_turn,
             is_removable: self.is_removable,
             is_innate: self.is_innate,
+            modified_cost_this_turn: self.modified_cost_this_turn,
         }
     }
 
@@ -328,6 +338,11 @@ impl Card {
     /// Returns false for non-removable curses like Ascender's Bane, Curse of the Bell, and Necronomicurse
     pub fn is_removable(&self) -> bool {
         self.is_removable
+    }
+
+    /// Clears the temporary cost modification (should be called at end of turn)
+    pub fn clear_modified_cost(&mut self) {
+        self.modified_cost_this_turn = None;
     }
 
     /// Checks if this card is innate

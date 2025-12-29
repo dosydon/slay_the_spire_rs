@@ -54,7 +54,7 @@ pub struct Battle {
     /// Events that occurred during the last action (for GUI to read)
     pub battle_events: Vec<BattleEvent>,
     /// Potion inventory for the player
-    potions: crate::game::potion::PotionInventory,
+    potions: crate::potion::PotionInventory,
 }
 
 impl Battle {
@@ -282,12 +282,12 @@ impl Battle {
     }
 
     /// Get reference to the potion inventory
-    pub fn get_potions(&self) -> &crate::game::potion::PotionInventory {
+    pub fn get_potions(&self) -> &crate::potion::PotionInventory {
         &self.potions
     }
 
     /// Get mutable reference to the potion inventory
-    pub fn get_potions_mut(&mut self) -> &mut crate::game::potion::PotionInventory {
+    pub fn get_potions_mut(&mut self) -> &mut crate::potion::PotionInventory {
         &mut self.potions
     }
 
@@ -384,6 +384,8 @@ impl Battle {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::battle::battle_action::BattleAction;
+    use crate::battle::battle_state::BattleState;
     use crate::cards::ironclad::starter_deck::starter_deck;
     use crate::game::enemy::EnemyTrait;
     use crate::enemies::{red_louse::RedLouse, enemy_enum::EnemyEnum};
@@ -408,7 +410,7 @@ mod tests {
 
     #[test]
     fn test_potion_usage() {
-        use crate::game::potion::Potion;
+        use crate::potion::Potion;
 
         let deck = starter_deck();
         let mut rng = rand::rng();
@@ -462,7 +464,7 @@ mod tests {
 
     #[test]
     fn test_use_potion_action() {
-        use crate::game::potion::Potion;
+        use crate::potion::Potion;
         use crate::battle::battle_action::BattleAction;
 
         let deck = starter_deck();
@@ -497,5 +499,59 @@ mod tests {
         // UsePotion action should no longer be in available actions
         let available = battle.list_available_actions();
         assert!(!available.iter().any(|a| matches!(a, BattleAction::UsePotion(_, _))));
+    }
+
+    #[test]
+    fn test_attack_potion_adds_two_copies() {
+        use crate::potion::Potion;
+
+        let deck = starter_deck();
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+
+        let mut player_state = PlayerRunState::new(80, 80, 0);
+        player_state.potions.add_potion(Potion::AttackPotion);
+
+        let mut battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
+
+        let initial_hand_size = battle.cards.hand_size();
+
+        // Use the Attack Potion (slot 0, no target needed)
+        let use_potion_action = BattleAction::UsePotion(0, None);
+        let result = battle.eval_action(use_potion_action, &mut rng);
+        assert!(result.is_ok(), "UsePotion action failed");
+
+        // Check that we're now in SelectCardFromChoices state
+        match &battle.battle_state {
+            BattleState::SelectCardFromChoices { choices, num_copies, cost_override } => {
+                assert_eq!(choices.len(), 3, "Should have 3 choices");
+                assert_eq!(*num_copies, 2, "Should add 2 copies");
+                assert_eq!(*cost_override, Some(0), "Cost should be 0");
+            },
+            _ => panic!("Should be in SelectCardFromChoices state"),
+        }
+
+        // Select the first card
+        let select_action = BattleAction::SelectCardFromChoices(0);
+        let result = battle.eval_action(select_action, &mut rng);
+        assert!(result.is_ok(), "SelectCardFromChoices action failed");
+
+        // Check that we're back in PlayerTurn state
+        assert_eq!(battle.battle_state, BattleState::PlayerTurn);
+
+        // Check hand size increased by 2
+        let final_hand_size = battle.cards.hand_size();
+        assert_eq!(final_hand_size, initial_hand_size + 2, "Hand should have 2 more cards");
+
+        // Check that both cards cost 0
+        let hand = battle.cards.get_hand();
+        let new_card_1 = &hand[initial_hand_size];
+        let new_card_2 = &hand[initial_hand_size + 1];
+
+        assert_eq!(new_card_1.get_cost(), 0, "First card should cost 0");
+        assert_eq!(new_card_2.get_cost(), 0, "Second card should cost 0");
+        assert_eq!(new_card_1.get_name(), new_card_2.get_name(), "Both cards should be the same");
     }
 }

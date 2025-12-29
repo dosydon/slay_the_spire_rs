@@ -304,6 +304,12 @@ pub enum BaseEffect {
         source: Entity,
         damage_per_card: u32,
     },
+    AddRandomAttackCardsToHand {
+        source: Entity,
+        num_choices: u32,
+        num_copies: u32,
+        cost: u32,
+    },
 
     // Event-specific base effects
     GainGold {
@@ -429,6 +435,7 @@ impl BaseEffect {
             BattleEffect::EnemyEscape => BaseEffect::EnemyEscape { source },
             BattleEffect::SplitIntoMediumSlimes => BaseEffect::SplitIntoMediumSlimes { source },
             BattleEffect::LoseHpPerCardInHand { damage_per_card } => BaseEffect::LoseHpPerCardInHand { source, damage_per_card },
+            BattleEffect::AddRandomAttackCardsToHand { num_choices, num_copies, cost } => BaseEffect::AddRandomAttackCardsToHand { source, num_choices, num_copies, cost },
         }
     }
 }

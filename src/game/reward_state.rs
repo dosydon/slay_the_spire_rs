@@ -29,7 +29,7 @@ pub struct RewardState {
     /// Whether the gold has been claimed
     pub gold_claimed: bool,
     /// Optional potion reward (40% chance in normal/elite combats)
-    pub potion_reward: Option<crate::game::potion::Potion>,
+    pub potion_reward: Option<crate::potion::Potion>,
     /// Whether the potion has been claimed
     pub potion_claimed: bool,
     /// Optional relic reward (from treasure chests)
@@ -71,7 +71,7 @@ impl RewardState {
             gold_reward: rng.random_range(50..=75),
             card_selection_available: true,
             gold_claimed: false,
-            potion_reward: Some(crate::game::potion::Potion::StrengthPotion), // Will be replaced when more potions are implemented
+            potion_reward: Some(crate::potion::Potion::StrengthPotion), // Will be replaced when more potions are implemented
             potion_claimed: false,
             relic_reward: None,
             relic_claimed: false,
@@ -79,9 +79,9 @@ impl RewardState {
     }
 
     /// Roll for a potion drop with given probability (0.0 to 1.0)
-    pub fn roll_potion_drop(rng: &mut impl rand::Rng, probability: f64) -> Option<crate::game::potion::Potion> {
+    pub fn roll_potion_drop(rng: &mut impl rand::Rng, probability: f64) -> Option<crate::potion::Potion> {
         if rng.random::<f64>() < probability {
-            Some(crate::game::potion::Potion::StrengthPotion) // Will be replaced when more potions are implemented
+            Some(crate::potion::Potion::StrengthPotion) // Will be replaced when more potions are implemented
         } else {
             None
         }
@@ -93,7 +93,7 @@ impl RewardState {
     }
 
     /// Set the potion reward
-    pub fn set_potion_reward(&mut self, potion: Option<crate::game::potion::Potion>) {
+    pub fn set_potion_reward(&mut self, potion: Option<crate::potion::Potion>) {
         self.potion_reward = potion;
     }
 
@@ -108,7 +108,7 @@ impl RewardState {
     }
 
     /// Claim the potion reward
-    pub fn claim_potion(&mut self) -> Option<crate::game::potion::Potion> {
+    pub fn claim_potion(&mut self) -> Option<crate::potion::Potion> {
         if !self.potion_claimed {
             self.potion_claimed = true;
             self.potion_reward.take()

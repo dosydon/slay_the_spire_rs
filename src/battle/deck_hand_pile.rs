@@ -241,7 +241,14 @@ impl DeckHandPile {
     pub fn get_exhausted(&self) -> &Vec<Card> {
         &self.exhausted
     }
-    
+
+    /// Clear temporary cost modifications from all cards in hand (called at end of turn)
+    pub fn clear_hand_modified_costs(&mut self) {
+        for card in &mut self.hand {
+            card.clear_modified_cost();
+        }
+    }
+
     pub fn hand_size(&self) -> usize {
         self.hand.len()
     }
