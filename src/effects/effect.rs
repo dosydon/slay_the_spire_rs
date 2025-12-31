@@ -112,4 +112,5 @@ pub enum BattleEffect {
     LoseHpPerCardInHand { damage_per_card: u32 }, // Lose HP for each card in hand (used by Regret)
     AddRandomAttackCardsToHand { num_choices: u32, num_copies: u32, cost: u32 }, // Choose 1 of N random Attack cards to add to hand (M copies, cost X)
     AddRandomSkillCardsToHand { num_choices: u32, num_copies: u32, cost: u32 }, // Choose 1 of N random Skill cards to add to hand (M copies, cost X)
+    ActivateGrantRitualNextTurn { amount: u32 }, // Activates listener to grant Ritual at start of next enemy turn
 }

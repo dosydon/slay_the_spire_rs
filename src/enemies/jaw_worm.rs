@@ -190,8 +190,6 @@ impl EnemyTrait for JawWorm {
         let move_distribution = self.choose_next_move(global_info);
         let selected_move = move_distribution.sample_owned(rng);
         
-        println!("JawWorm selected move: {:?}", selected_move);
-        
         // Record the move for move tracking
         self.record_move(selected_move);
         

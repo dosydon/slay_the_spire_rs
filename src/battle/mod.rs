@@ -8,16 +8,18 @@ pub mod deck_hand_pile;
 pub mod enemy_in_battle;
 pub mod battle_state;
 pub mod listeners;
-
-// Re-export commonly used types for easier access
-pub use target::Entity;
-pub use battle_result::BattleResult;
+pub mod battle_builder;
 mod turn_flow;
 mod eval_action;
 mod play_card;
 mod eval_effect;
 mod enemy_manager;
 mod listener_manager;
+
+// Re-export commonly used types for easier access
+pub use target::Entity;
+pub use battle_result::BattleResult;
+pub use battle_builder::BattleBuilder;
 
 use crate::{enemies::enemy_enum::EnemyMove, game::{card::Card, deck::Deck, effect::{BaseEffect, BattleEffect}, global_info::GlobalInfo, player_run_state::PlayerRunState}, relics::Relic};
 use self::{battle_events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle};
@@ -55,6 +57,8 @@ pub struct Battle {
     pub battle_events: Vec<BattleEvent>,
     /// Potion inventory for the player
     potions: crate::potion::PotionInventory,
+    /// Cards that need to be discarded after effects are processed
+    to_be_discarded: Vec<Card>,
 }
 
 impl Battle {
@@ -82,6 +86,7 @@ impl Battle {
             gold_stolen: 0,
             battle_events: Vec::new(),
             potions: player_state.potions,
+            to_be_discarded: Vec::new(),
         };
 
         // Initialize event listeners for enemies
@@ -289,6 +294,13 @@ impl Battle {
     /// Get mutable reference to the potion inventory
     pub fn get_potions_mut(&mut self) -> &mut crate::potion::PotionInventory {
         &mut self.potions
+    }
+
+    /// Flush all cards in to_be_discarded to the discard pile
+    pub(crate) fn flush_to_be_discarded(&mut self) {
+        for card in self.to_be_discarded.drain(..) {
+            self.cards.add_card_to_discard(card);
+        }
     }
 
     /// Use a potion at the specified slot index

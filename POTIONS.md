@@ -7,7 +7,7 @@ This document lists all potions available in Slay the Spire, organized by rarity
 | Potion Name | Rarity | Character | Status |
 |------------|--------|-----------|---------|
 | **Common Potions** |
-| Attack Potion | Common | All | ❌ Not Implemented |
+| Attack Potion | Common | All | ✅ Implemented |
 | Blessing of the Forge | Common | All | ❌ Not Implemented |
 | Block Potion | Common | All | ✅ Implemented |
 | Colorless Potion | Common | All | ❌ Not Implemented |
@@ -55,7 +55,7 @@ This document lists all potions available in Slay the Spire, organized by rarity
 | Essence of Darkness | Rare | Defect | ❌ Not Implemented |
 | Ambrosia | Rare | Watcher | ❌ Not Implemented |
 
-**Summary**: 13 / 45 potions implemented (28.9%)
+**Summary**: 14 / 45 potions implemented (31.1%)
 
 ---
 
@@ -71,7 +71,7 @@ This document lists all potions available in Slay the Spire, organized by rarity
 ## Common Potions (Available to All Characters)
 
 ### Attack Potion
-- **Effect**: Choose 1 of 3 random Attack cards to add to your hand (2 copies). They cost 0 this turn.
+- **Effect**: Choose 1 of 3 random Attack cards to add to your hand. It costs 0 this turn.
 - **Target**: Player
 - **Usage**: Combat only
 

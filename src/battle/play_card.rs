@@ -100,8 +100,12 @@ impl Battle {
 
             Ok(())
         } else {
-            // Regular cards (Attack, Skill, Status without Exhaust) go to discard pile
-            if let Some(_played_card) = self.cards.play_card_from_hand(idx) {
+            // Regular cards (Attack, Skill, Status without Exhaust)
+            // Remove from hand and add to to_be_discarded (will be moved to discard after effects process)
+            if let Some(played_card) = self.cards.play_card_from_hand(idx) {
+                // Store card for later discard
+                self.to_be_discarded.push(played_card);
+
                 // Queue all effects
                 for effect in card_effects {
                     self.queue_effect(BaseEffect::from_effect(effect, Entity::Player, target));
@@ -114,6 +118,12 @@ impl Battle {
 
         // Process all queued effects
         self.process_effect_queue();
+
+        // Flush to_be_discarded to discard pile if we're in PlayerTurn state
+        // (don't flush if we're in SelectCardInDiscard or other special states)
+        if self.battle_state == crate::battle::battle_state::BattleState::PlayerTurn {
+            self.flush_to_be_discarded();
+        }
 
         result
     }

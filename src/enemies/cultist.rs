@@ -1,4 +1,8 @@
-use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use crate::{
+    game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo},
+    utils::CategoricalDistribution,
+    battle::{battle_events::{BattleEvent, EventListener}, target::Entity},
+};
 
 #[derive(Clone, Debug)]
 pub struct Cultist {
@@ -66,8 +70,8 @@ impl Cultist {
     pub fn get_move_effects(&self, move_type: CultistMove) -> Vec<BattleEffect> {
         match move_type {
             CultistMove::Incantation => {
-                // Gain Ritual (which grants Strength every turn)
-                vec![BattleEffect::GainRitual(self.ritual_amount)]
+                // Grant Ritual at the start of the next enemy turn
+                vec![BattleEffect::ActivateGrantRitualNextTurn { amount: self.ritual_amount }]
             }
             CultistMove::DarkStrike => {
                 // Deal 6 damage
@@ -124,6 +128,48 @@ impl EnemyTrait for Cultist {
     }
 }
 
+/// Listener that grants Ritual at the start of the next enemy turn
+pub struct GrantRitualNextTurnListener {
+    owner: Entity,
+    ritual_amount: u32,
+    has_triggered: bool,
+}
+
+impl GrantRitualNextTurnListener {
+    pub fn new(owner: Entity, ritual_amount: u32) -> Self {
+        GrantRitualNextTurnListener {
+            owner,
+            ritual_amount,
+            has_triggered: false,
+        }
+    }
+}
+
+impl EventListener for GrantRitualNextTurnListener {
+    fn on_event(&mut self, event: &BattleEvent) -> Vec<BattleEffect> {
+        match event {
+            BattleEvent::StartOfEnemyTurn { enemy_index }
+                if !self.has_triggered && self.owner == Entity::Enemy(*enemy_index) => {
+                self.has_triggered = true;
+                vec![BattleEffect::GainRitual(self.ritual_amount)]
+            }
+            _ => vec![]
+        }
+    }
+
+    fn is_active(&self) -> bool {
+        !self.has_triggered
+    }
+
+    fn get_owner(&self) -> Entity {
+        self.owner
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -175,9 +221,9 @@ mod tests {
     fn test_cultist_effects() {
         let cultist = Cultist::new(50, 3);
 
-        // Test Incantation effects
+        // Test Incantation effects - now grants Ritual at start of next turn instead of immediately
         let incantation_effects = cultist.get_move_effects(CultistMove::Incantation);
-        assert_eq!(incantation_effects, vec![BattleEffect::GainRitual(3)]);
+        assert_eq!(incantation_effects, vec![BattleEffect::ActivateGrantRitualNextTurn { amount: 3 }]);
 
         // Test Dark Strike effects
         let dark_strike_effects = cultist.get_move_effects(CultistMove::DarkStrike);

@@ -205,12 +205,12 @@ impl DeckHandPile {
         }
     }
 
-    // Play card from hand (removes from hand, adds to discard pile, returns the card)
+    // Play card from hand (removes from hand, returns the card)
+    // Note: Card is no longer immediately added to discard pile
+    // Caller is responsible for adding to to_be_discarded or handling the card
     pub(in crate::battle) fn play_card_from_hand(&mut self, hand_index: usize) -> Option<Card> {
         if hand_index < self.hand.len() {
-            let card = self.hand.remove(hand_index);
-            self.discard_pile.push(card.clone());
-            Some(card)
+            Some(self.hand.remove(hand_index))
         } else {
             None
         }

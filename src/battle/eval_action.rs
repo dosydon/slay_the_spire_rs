@@ -154,6 +154,9 @@ impl Battle {
                     self.cards.put_card_on_top_of_deck(card_to_move);
                 }
 
+                // Flush any cards pending discard (e.g., Headbutt that triggered this state)
+                self.flush_to_be_discarded();
+
                 // Return to player turn state
                 self.battle_state = crate::battle::battle_state::BattleState::PlayerTurn;
             }

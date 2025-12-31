@@ -316,6 +316,10 @@ pub enum BaseEffect {
         num_copies: u32,
         cost: u32,
     },
+    ActivateGrantRitualNextTurn {
+        source: Entity,
+        amount: u32,
+    },
 
     // Event-specific base effects
     GainGold {
@@ -443,6 +447,7 @@ impl BaseEffect {
             BattleEffect::LoseHpPerCardInHand { damage_per_card } => BaseEffect::LoseHpPerCardInHand { source, damage_per_card },
             BattleEffect::AddRandomAttackCardsToHand { num_choices, num_copies, cost } => BaseEffect::AddRandomAttackCardsToHand { source, num_choices, num_copies, cost },
             BattleEffect::AddRandomSkillCardsToHand { num_choices, num_copies, cost } => BaseEffect::AddRandomSkillCardsToHand { source, num_choices, num_copies, cost },
+            BattleEffect::ActivateGrantRitualNextTurn { amount } => BaseEffect::ActivateGrantRitualNextTurn { source, amount },
         }
     }
 }

@@ -37,6 +37,14 @@ pub enum Potion {
     AttackPotion,
     /// Skill Potion: Choose 1 of 3 random Skill cards to add to your hand. It costs 0 this turn.
     SkillPotion,
+    /// Cultist Potion: Gain 1 Ritual
+    CultistPotion,
+    /// Distilled Chaos: Play the top 3 cards of your draw pile
+    DistilledChaos,
+    /// Blessing of the Forge: Upgrade all cards in your hand
+    BlessingOfTheForge,
+    /// Fruit Juice: Gain 5 Max HP
+    FruitJuice,
 }
 
 impl Potion {
@@ -58,6 +66,10 @@ impl Potion {
             Potion::EssenceOfSteelPotion => "Essence of Steel",
             Potion::AttackPotion => attack_potion::ATTACK_POTION_NAME,
             Potion::SkillPotion => skill_potion::SKILL_POTION_NAME,
+            Potion::CultistPotion => "Cultist Potion",
+            Potion::DistilledChaos => "Distilled Chaos",
+            Potion::BlessingOfTheForge => "Blessing of the Forge",
+            Potion::FruitJuice => "Fruit Juice",
         }
     }
 
@@ -79,6 +91,10 @@ impl Potion {
             Potion::EssenceOfSteelPotion => "Gain 4 Plated Armor",
             Potion::AttackPotion => attack_potion::ATTACK_POTION_DESCRIPTION,
             Potion::SkillPotion => skill_potion::SKILL_POTION_DESCRIPTION,
+            Potion::CultistPotion => "Gain 1 Ritual",
+            Potion::DistilledChaos => "Play the top 3 cards of your draw pile",
+            Potion::BlessingOfTheForge => "Upgrade all cards in your hand",
+            Potion::FruitJuice => "Gain 5 Max HP",
         }
     }
 
@@ -166,6 +182,28 @@ impl Potion {
             }
             Potion::AttackPotion => attack_potion::get_attack_potion_effects(),
             Potion::SkillPotion => skill_potion::get_skill_potion_effects(),
+            Potion::CultistPotion => {
+                (Some(Entity::Player), vec![
+                    BattleEffect::GainRitual(1)
+                ])
+            }
+            Potion::DistilledChaos => {
+                (Some(Entity::Player), vec![
+                    BattleEffect::PlayTopCard,
+                    BattleEffect::PlayTopCard,
+                    BattleEffect::PlayTopCard,
+                ])
+            }
+            Potion::BlessingOfTheForge => {
+                (Some(Entity::Player), vec![
+                    BattleEffect::UpgradeAllCardsInHand
+                ])
+            }
+            Potion::FruitJuice => {
+                (Some(Entity::Player), vec![
+                    BattleEffect::HealAndIncreaseMaxHp(5)
+                ])
+            }
         }
     }
 
@@ -360,11 +398,13 @@ impl PotionPool {
             Potion::AncientPotion,
             Potion::RegenPotion,
             Potion::EssenceOfSteelPotion,
+            Potion::CultistPotion,
         ];
 
-        // TODO: Add rare potions
         let rare_potions = vec![
-            Potion::SwiftPotion, // Placeholder - use uncommon for now
+            Potion::DistilledChaos,
+            Potion::BlessingOfTheForge,
+            Potion::FruitJuice,
         ];
 
         let potion = if roll < 0.75 {

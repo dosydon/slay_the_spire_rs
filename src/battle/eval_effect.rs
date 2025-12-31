@@ -912,6 +912,14 @@ impl Battle {
                     self.add_listener(listener);
                 }
             },
+            BaseEffect::ActivateGrantRitualNextTurn { source, amount } => {
+                // Activate listener to grant Ritual at start of next enemy turn
+                if let Entity::Enemy(_) = source {
+                    use crate::enemies::cultist::GrantRitualNextTurnListener;
+                    let listener = Box::new(GrantRitualNextTurnListener::new(*source, *amount));
+                    self.add_listener(listener);
+                }
+            },
             BaseEffect::StealGold { source: _, amount } => {
                 // Steal gold from the player (Looter mechanic)
                 // Track stolen gold - will be synced with Game state after battle
