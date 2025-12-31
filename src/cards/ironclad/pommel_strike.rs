@@ -87,6 +87,10 @@ mod integration_tests {
         for _ in 0..4 {
             deck_cards.push(crate::cards::ironclad::strike::strike());
         }
+        // Add more cards to ensure there are enough to draw without reshuffling
+        for _ in 0..5 {
+            deck_cards.push(crate::cards::ironclad::defend::defend());
+        }
         let deck = Deck::new(deck_cards);
 
         let mut rng = rand::rng();
@@ -96,8 +100,6 @@ mod integration_tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
-
-        battle.at_start_of_player_turn(&mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
         let initial_hand_size = battle.get_hand().len();
@@ -136,8 +138,6 @@ mod integration_tests {
         let red_louse = RedLouse::instantiate(&mut rng, &global_info);
         let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
         let mut battle = Battle::new(deck, global_info, PlayerRunState::new(80, 80, 0), enemies, &mut rng);
-
-        battle.at_start_of_player_turn(&mut rng);
 
         let initial_enemy_hp = battle.get_enemies()[0].battle_info.get_hp();
         let initial_hand_size = battle.get_hand().len();

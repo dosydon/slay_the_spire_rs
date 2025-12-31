@@ -334,17 +334,19 @@ mod tests {
         let cards = vec![strike(), defend(), strike()];
         let deck = Deck::new(cards);
         let mut deck_hand_pile = DeckHandPile::new(deck);
-        
+
         // Draw some cards into hand first
         deck_hand_pile.draw_n(2);
-        
+
         let initial_hand_size = deck_hand_pile.hand_size();
+        let initial_discard_size = deck_hand_pile.discard_pile_size();
         let played_card = deck_hand_pile.play_card_from_hand(0);
-        
+
         assert!(played_card.is_some());
         assert_eq!(deck_hand_pile.hand_size(), initial_hand_size - 1);
-        // Playing a card now puts it in discard pile automatically
-        assert_eq!(deck_hand_pile.discard_pile_size(), 1);
+        // play_card_from_hand now only removes from hand (doesn't add to discard)
+        // The caller (Battle) is responsible for managing the card after removal
+        assert_eq!(deck_hand_pile.discard_pile_size(), initial_discard_size);
     }
     
     #[test]

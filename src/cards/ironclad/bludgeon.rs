@@ -18,7 +18,7 @@ pub fn bludgeon() -> Card {
 /// Cost: 2
 /// Effect: Deal 42 damage
 pub fn bludgeon_upgraded() -> Card {
-    Card::new(CardEnum::Bludgeon, 2, CardClass::IronClad(Rarity::Rare, CardType::Attack), vec![
+    Card::new(CardEnum::Bludgeon, 3, CardClass::IronClad(Rarity::Rare, CardType::Attack), vec![
         BattleEffect::AttackToTarget {
             amount: 42,
             num_attacks: 1,

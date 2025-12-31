@@ -146,7 +146,7 @@ impl CardEnum {
             CardEnum::Uppercut => "Uppercut",
             CardEnum::Intimidate => "Intimidate",
             CardEnum::SeeingRed => "Seeing Red",
-            CardEnum::GhostlyArmor => "Ghost Armor",
+            CardEnum::GhostlyArmor => "Ghostly Armor",
             CardEnum::Havoc => "Havoc",
             CardEnum::Headbutt => "Headbutt",
             CardEnum::TrueGrit => "True Grit",

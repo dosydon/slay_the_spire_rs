@@ -100,20 +100,14 @@ mod tests {
         let result = battle.play_card(0, Entity::Player);
         assert!(result.is_ok());
 
-        // TODO: BUG - Havoc should go to discard pile, not exhaust pile
-        // User feedback: "No Havoc should not be exhausted" and "Havoc plays the top card for free"
-        // Currently there's a bug where Havoc is being exhausted instead of going to discard pile
-        // This test documents the current buggy behavior until the battle system bug is fixed
-
-        // Verify Havoc was exhausted (current buggy behavior)
+        // Verify Havoc goes to discard pile (correct behavior)
         assert_eq!(battle.cards.hand_size(), initial_hand_size - 1); // Havoc removed from hand
-        assert_eq!(battle.cards.discard_pile_size(), initial_discard_size); // No cards in discard pile
-        assert_eq!(battle.cards.exhausted_size(), 1); // Havoc exhausted (bug)
+        assert_eq!(battle.cards.discard_pile_size(), initial_discard_size + 1); // Havoc in discard pile
+        assert_eq!(battle.cards.exhausted_size(), 0); // Nothing exhausted
 
-        // Verify Havoc is in the exhaust pile (current buggy behavior)
-        let exhausted_pile = battle.cards.get_exhausted();
-        assert_eq!(exhausted_pile.len(), 1);
-        assert_eq!(exhausted_pile[0].get_name(), "Havoc");
+        // Verify Havoc is in the discard pile
+        let discard_pile = battle.cards.get_discard_pile();
+        assert_eq!(discard_pile.last().unwrap().get_name(), "Havoc");
     }
 
     #[test]
