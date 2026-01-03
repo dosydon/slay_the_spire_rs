@@ -1,8 +1,10 @@
+use serde::{Serialize, Deserialize};
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Gremlin Horn - Whenever an enemy dies, gain 1 Energy and draw 1 card
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GremlinHornRelic {
     owner: Entity,
 }
@@ -37,6 +39,11 @@ impl EventListener for GremlinHornRelic {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

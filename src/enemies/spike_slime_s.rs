@@ -1,13 +1,14 @@
 use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SpikeSlimeS {
     base_damage: u32,
     hp: u32,
 }
 
 
-#[derive(Copy, Debug, Clone, PartialEq)]
+#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SpikeSlimeSMove {
     Tackle,
 }

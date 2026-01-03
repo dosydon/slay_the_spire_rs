@@ -1,13 +1,14 @@
 use crate::game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo};
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct GremlinWizard {
     hp: u32,
     charge_count: u32,
     has_used_first_blast: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum GremlinWizardMove {
     Charging,
     UltimateBlast,

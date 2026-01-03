@@ -4,6 +4,7 @@ use crate::game::effect::BattleEffect;
 use crate::utils::CategoricalDistribution;
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
+use serde::{Serialize, Deserialize};
 
 /// Lagavulin - Act 1 Elite Enemy
 ///
@@ -26,7 +27,7 @@ use crate::battle::target::Entity;
 /// 2. Siphon Soul - Applies -1 Dexterity and -1 Strength (-2/-2 at A18+)
 ///
 /// **Pattern:** Attack → Attack → Siphon Soul (repeating)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Lagavulin {
     hp: u32,
     max_hp: u32,
@@ -36,14 +37,14 @@ pub struct Lagavulin {
     ascension: u32,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum LagavulinState {
     Asleep,
     Stunned,
     Awake,
 }
 
-#[derive(Copy, Debug, Clone, PartialEq)]
+#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum LagavulinMove {
     Asleep,
     Stunned,
@@ -230,6 +231,7 @@ impl EnemyTrait for Lagavulin {
 /// - Grants 8 block at combat start
 /// - Wakes up (to Stunned) when damaged while asleep
 /// - Transitions from Stunned to Awake at start of enemy turn
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LagavulinListener {
     enemy_index: usize,
     has_given_initial_block: bool,
@@ -277,6 +279,11 @@ impl EventListener for LagavulinListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

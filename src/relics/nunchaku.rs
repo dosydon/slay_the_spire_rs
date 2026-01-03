@@ -1,8 +1,10 @@
+use serde::{Serialize, Deserialize};
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Nunchaku - Every time you play 10 Attacks, gain 1 Energy
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NunchakuRelic {
     attack_count: u8,
     owner: Entity,
@@ -52,6 +54,11 @@ impl EventListener for NunchakuRelic {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

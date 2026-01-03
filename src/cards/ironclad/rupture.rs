@@ -1,9 +1,10 @@
+use serde::{Serialize, Deserialize};
 use crate::game::{card::Card, effect::BattleEffect, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Rupture Listener
 /// Gains 1 Strength whenever player loses HP
-#[derive(Debug)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RuptureListener {
     owner: Entity,
     is_active: bool,
@@ -39,6 +40,11 @@ impl EventListener for RuptureListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

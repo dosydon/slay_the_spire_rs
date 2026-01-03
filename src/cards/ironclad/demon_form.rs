@@ -1,3 +1,4 @@
+use serde::{Serialize, Deserialize};
 use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{target::Entity, battle_events::BattleEvent, battle_events::EventListener};
 
@@ -348,6 +349,7 @@ mod tests {
     }
 }
 
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DemonFormListener {
     source: Entity,
     strength_per_turn: u32,
@@ -380,5 +382,10 @@ impl EventListener for DemonFormListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }

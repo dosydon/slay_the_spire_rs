@@ -1,8 +1,10 @@
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
+use serde::{Serialize, Deserialize};
 
 /// Regeneration - heals HP at the end of each turn, decreasing by 1 each turn
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RegenListener {
     current_regen: u32,
     owner: Entity,
@@ -40,6 +42,11 @@ impl EventListener for RegenListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

@@ -1,10 +1,10 @@
 use super::Battle;
-use crate::battle::{target::Entity, battle_events::{BattleEvent, EventListener}};
+use crate::battle::{target::Entity, battle_events::{BattleEvent, EventListener}, event_listener_enum::EventListenerEnum};
 use crate::game::effect::BaseEffect;
 
 impl Battle {
     /// Add an event listener to the battle
-    pub fn add_listener(&mut self, listener: Box<dyn EventListener>) {
+    pub fn add_listener(&mut self, listener: EventListenerEnum) {
         self.event_listeners.push(listener);
     }
 

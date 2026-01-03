@@ -1,7 +1,8 @@
 use crate::{battle::target::Entity, game::effect::BattleEffect};
 use std::any::Any;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BattleEvent {
     DamageTaken {
         target: Entity,
@@ -58,4 +59,8 @@ pub trait EventListener: Any + Send + Sync {
 
     /// Downcast to Any for dynamic type checking
     fn as_any_mut(&mut self) -> &mut dyn Any;
+
+    /// Hash this listener's state for MCTS transposition table
+    /// Object-safe alternative to implementing Hash directly
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher);
 }

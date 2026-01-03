@@ -1,6 +1,7 @@
 use crate::{enemies::enemy_enum::EnemyEnum, battle::character_battle_info::CharacterBattleInfo};
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct EnemyInBattle {
     pub enemy: EnemyEnum,
     pub battle_info: CharacterBattleInfo,

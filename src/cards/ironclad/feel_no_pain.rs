@@ -1,10 +1,11 @@
+use serde::{Serialize, Deserialize};
 use crate::game::{card::{Card, Rarity, CardClass}, card_type::CardType, card_enum::CardEnum, effect::BattleEffect};
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 
 /// Event listener for Feel No Pain power
 /// Whenever a card is exhausted, gain block
-#[derive(Debug)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FeelNoPainListener {
     owner: Entity,
     block_per_exhaust: u32,
@@ -42,6 +43,11 @@ impl EventListener for FeelNoPainListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

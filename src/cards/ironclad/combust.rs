@@ -1,9 +1,10 @@
+use serde::{Serialize, Deserialize};
 use crate::game::{card::Card, card_type::CardType, card_enum::CardEnum, effect::BattleEffect, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Combust Power Listener
 /// At the end of your turn, deal 6 damage to ALL enemies.
-#[derive(Debug)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CombustListener {
     owner: Entity,
     damage: u32,
@@ -45,6 +46,11 @@ impl EventListener for CombustListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

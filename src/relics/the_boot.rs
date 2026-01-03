@@ -1,3 +1,4 @@
+use serde::{Serialize, Deserialize};
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
@@ -6,6 +7,7 @@ use crate::battle::target::Entity;
 /// Note: This relic modifies the damage of attacks, but it's difficult to implement
 /// without hooking into the damage calculation system. For now, we'll implement
 /// a simplified version that triggers when small damage is dealt.
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TheBootRelic {
     owner: Entity,
 }
@@ -34,6 +36,11 @@ impl EventListener for TheBootRelic {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

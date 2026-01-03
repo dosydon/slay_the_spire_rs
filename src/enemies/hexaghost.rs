@@ -27,7 +27,7 @@ use crate::battle::target::Entity;
 /// - **Inflame**: Gains 12 Block + 2 Strength (3 Strength at A19+)
 /// - **Inferno**: 2×6 hits (3×6 at A4+) + 3 Burns to discard + upgrades all existing Burns
 /// - **Divider**: (N+1)×6 damage where N = player HP ÷ 12 (rounded down)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Hexaghost {
     hp: u32,
     max_hp: u32,
@@ -36,7 +36,7 @@ pub struct Hexaghost {
     inferno_upgrades_active: bool,
 }
 
-#[derive(Copy, Debug, Clone, PartialEq)]
+#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum HexaghostMove {
     /// Activate - Turn 1 only, does nothing
     Activate,
@@ -262,6 +262,7 @@ impl EnemyTrait for Hexaghost {
 
 /// Event listener for Hexaghost's mechanics
 /// - No special mechanics needed for current implementation
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct HexaghostListener {
     enemy_index: usize,
 }
@@ -287,6 +288,11 @@ impl EventListener for HexaghostListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

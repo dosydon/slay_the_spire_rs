@@ -1,6 +1,7 @@
 use super::character_battle_info::CharacterBattleInfo;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Player {
     pub battle_info: CharacterBattleInfo,
 }

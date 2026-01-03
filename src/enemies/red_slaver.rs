@@ -1,15 +1,16 @@
 use crate::game::enemy::EnemyTrait;
 use crate::game::effect::BattleEffect;
 use crate::game::global_info::GlobalInfo;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct RedSlaver {
     hp: u32,
     move_history: Vec<RedSlaverMove>,
     has_used_entangle: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum RedSlaverMove {
     Stab,
     Scrape,

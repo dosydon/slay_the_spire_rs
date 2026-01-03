@@ -1,8 +1,9 @@
 use crate::game::enemy::EnemyTrait;
 use crate::game::effect::BattleEffect;
 use crate::game::global_info::GlobalInfo;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Looter {
     hp: u32,
     gold_stolen: u32,
@@ -10,7 +11,7 @@ pub struct Looter {
     has_used_smoke_bomb: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum LooterMove {
     Mug,
     Lunge,

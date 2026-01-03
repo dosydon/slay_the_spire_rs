@@ -291,34 +291,34 @@ impl Battle {
             BaseEffect::LoseStrengthAtEndOfTurn { source, amount } => {
                 // Create a LoseStrengthListener to handle strength loss at end of turn
                 let lose_listener = crate::cards::ironclad::flex::LoseStrengthListener::new(*source, *amount);
-                self.add_listener(Box::new(lose_listener));
+                self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::LoseStrength(lose_listener));
             },
             BaseEffect::ActivateEnrage { source, amount } => {
                 // Add EnrageListener for the specified enemy
                 if let Entity::Enemy(_enemy_idx) = source {
                     let enrage_listener = EnrageListener::new(*source, *amount);
-                    self.add_listener(Box::new(enrage_listener));
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::Enrage(enrage_listener));
                 }
             },
             BaseEffect::ActivateEmbrace { source } => {
                 // Add EmbraceListener for the player
                 if let Entity::Player = source {
                     let embrace_listener = crate::cards::ironclad::embrace::EmbraceListener::new(*source);
-                    self.add_listener(Box::new(embrace_listener));
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::Embrace(embrace_listener));
                 }
             },
             BaseEffect::ActivateFeelNoPain { source, block_per_exhaust } => {
                 // Add FeelNoPainListener for the player
                 if let Entity::Player = source {
                     let feel_no_pain_listener = crate::cards::ironclad::feel_no_pain::FeelNoPainListener::new(*source, *block_per_exhaust);
-                    self.add_listener(Box::new(feel_no_pain_listener));
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::FeelNoPain(feel_no_pain_listener));
                 }
             },
             BaseEffect::ActivateBrutality { source } => {
                 // Add BrutalityListener for the player
                 if let Entity::Player = source {
                     let brutality_listener = crate::cards::ironclad::brutality::BrutalityListener::new(*source);
-                    self.add_listener(Box::new(brutality_listener));
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::Brutality(brutality_listener));
                 }
             },
             BaseEffect::ActivateCorruption { source: _ } => {
@@ -330,28 +330,28 @@ impl Battle {
                 // Add MetallicizeListener for the player
                 if let Entity::Player = source {
                     let metallicize_listener = crate::cards::ironclad::metallicize::MetallicizeListener::new(*source, *amount);
-                    self.add_listener(Box::new(metallicize_listener));
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::Metallicize(metallicize_listener));
                 }
             },
             BaseEffect::ActivateFlameBarrier { source, damage } => {
                 // Add FlameBarrierListener for the player
                 if let Entity::Player = source {
                     let flame_barrier_listener = crate::cards::ironclad::flame_barrier::FlameBarrierListener::new(*source, *damage);
-                    self.add_listener(Box::new(flame_barrier_listener));
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::FlameBarrier(flame_barrier_listener));
                 }
             },
                         BaseEffect::ActivateDemonForm { source, strength_per_turn } => {
                 // Add DemonFormListener for the player
                 if let Entity::Player = source {
                     let demon_form_listener = crate::cards::ironclad::demon_form::DemonFormListener::new(*source, *strength_per_turn);
-                    self.add_listener(Box::new(demon_form_listener));
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::DemonForm(demon_form_listener));
                 }
             },
             BaseEffect::ActivateRage { source, block_per_attack } => {
                 // Add RageListener for the player
                 if let Entity::Player = source {
                     let rage_listener = crate::cards::ironclad::rage::RageListener::new(*source, *block_per_attack);
-                    self.add_listener(Box::new(rage_listener));
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::Rage(rage_listener));
                 }
             },
             BaseEffect::AddRandomAttackToHand { source } => {
@@ -481,8 +481,8 @@ impl Battle {
                 use crate::battle::listeners::RegenListener;
                 match source {
                     Entity::Player => {
-                        let regen_listener = Box::new(RegenListener::new(*amount, Entity::Player));
-                        self.add_listener(regen_listener);
+                        let regen_listener = RegenListener::new(*amount, Entity::Player);
+                        self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::Regen(regen_listener));
                         info!("Gained {} regen", amount);
                     },
                     Entity::Enemy(_) => {
@@ -513,7 +513,7 @@ impl Battle {
                 // Add CombustListener for the player
                 if let Entity::Player = source {
                     let combust_listener = crate::cards::ironclad::combust::CombustListener::new(*source, *amount);
-                    self.add_listener(Box::new(combust_listener));
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::Combust(combust_listener));
                 }
             },
             BaseEffect::ApplyDamageReduction { target, percentage: _ } => {
@@ -737,13 +737,13 @@ impl Battle {
             BaseEffect::ActivateRupture => {
                 // Activate Rupture listener for gaining Strength when losing HP
                 let rupture_listener = crate::cards::ironclad::rupture::RuptureListener::new(crate::battle::target::Entity::Player);
-                self.add_listener(Box::new(rupture_listener));
+                self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::Rupture(rupture_listener));
             },
             BaseEffect::ActivateDoubleTap { remaining_attacks } => {
                 // Activate DoubleTap listener for playing next Attack(s) twice
                 if let Entity::Player = crate::battle::target::Entity::Player {
                     let double_tap_listener = crate::cards::ironclad::double_tap::DoubleTapListener::new(crate::battle::target::Entity::Player, *remaining_attacks);
-                    self.add_listener(Box::new(double_tap_listener));
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::DoubleTap(double_tap_listener));
                 }
             },
             BaseEffect::HealOnKill { amount: _ } => {
@@ -843,7 +843,7 @@ impl Battle {
             BaseEffect::ActivateFireBreathing { source: _, damage_per_status } => {
                 // Activate Fire Breathing listener for dealing damage when Status/Curse cards are drawn
                 let fire_breathing_listener = crate::cards::ironclad::fire_breathing::FireBreathingListener::new(crate::battle::target::Entity::Player, *damage_per_status);
-                self.add_listener(Box::new(fire_breathing_listener));
+                self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::FireBreathing(fire_breathing_listener));
             },
             BaseEffect::ActivateSentinel { source: _, energy_on_exhaust: _ } => {
                 // Sentinel now uses on_exhaust card property instead of a listener
@@ -869,10 +869,13 @@ impl Battle {
             },
             BaseEffect::RemoveMetallicize { enemy_index } => {
                 // Deactivate all Metallicize listeners for this enemy
+                use crate::battle::battle_events::EventListener;
+                use crate::battle::event_listener_enum::EventListenerEnum;
+
                 for listener in &mut self.event_listeners {
                     if listener.get_owner() == Entity::Enemy(*enemy_index) {
-                        // Check if this is a MetallicizeListener by attempting a downcast
-                        if let Some(metallicize) = listener.as_any_mut().downcast_mut::<crate::cards::ironclad::metallicize::MetallicizeListener>() {
+                        // Check if this is a MetallicizeListener using pattern matching
+                        if let EventListenerEnum::Metallicize(metallicize) = listener {
                             metallicize.deactivate();
                         }
                     }
@@ -908,16 +911,16 @@ impl Battle {
                 // Activate Angry listener for Mad Gremlin
                 if let Entity::Enemy(_) = source {
                     use crate::enemies::mad_gremlin::AngryListener;
-                    let listener = Box::new(AngryListener::new(*source, *amount));
-                    self.add_listener(listener);
+                    let listener = AngryListener::new(*source, *amount);
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::Angry(listener));
                 }
             },
             BaseEffect::ActivateGrantRitualNextTurn { source, amount } => {
                 // Activate listener to grant Ritual at start of next enemy turn
                 if let Entity::Enemy(_) = source {
                     use crate::enemies::cultist::GrantRitualNextTurnListener;
-                    let listener = Box::new(GrantRitualNextTurnListener::new(*source, *amount));
-                    self.add_listener(listener);
+                    let listener = GrantRitualNextTurnListener::new(*source, *amount);
+                    self.add_listener(crate::battle::event_listener_enum::EventListenerEnum::GrantRitualNextTurn(listener));
                 }
             },
             BaseEffect::StealGold { source: _, amount } => {

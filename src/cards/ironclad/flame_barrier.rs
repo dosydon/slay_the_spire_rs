@@ -1,9 +1,10 @@
+use serde::{Serialize, Deserialize};
 use crate::game::{card::Card, effect::{BattleEffect, Condition}, card_type::CardType, card_enum::CardEnum, card::{Rarity, CardClass}};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
 
 /// Flame Barrier Listener
 /// When player takes damage from enemy attacks this turn, deal damage back
-#[derive(Debug)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlameBarrierListener {
     owner: Entity,
     damage_to_deal: u32,
@@ -45,6 +46,11 @@ impl EventListener for FlameBarrierListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

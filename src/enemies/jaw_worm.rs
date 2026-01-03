@@ -1,6 +1,7 @@
 use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct JawWorm {
     last_move: Option<JawWormMove>,
     consecutive_thrash_count: u32,
@@ -8,7 +9,7 @@ pub struct JawWorm {
     is_act3: bool,
 }
 
-#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum JawWormMove {
     Chomp,
     Bellow,

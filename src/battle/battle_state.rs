@@ -1,6 +1,7 @@
 use crate::game::card_enum::CardEnum;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BattleState {
     PlayerTurn,
     SelectCardInHand (CardInHandTo),
@@ -16,7 +17,7 @@ pub enum BattleState {
     },
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CardInHandTo {
     PutOnDeck,
     Upgrade,

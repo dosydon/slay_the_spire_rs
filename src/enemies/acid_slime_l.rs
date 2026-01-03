@@ -2,14 +2,15 @@ use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalI
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 use std::any::Any;
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct AcidSlimeL {
     last_moves: Vec<AcidSlimeLMove>,
     hp: u32,
 }
 
-#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum AcidSlimeLMove {
     CorrosiveSpit,
     Tackle,
@@ -240,6 +241,7 @@ mod tests {
 }
 
 /// Acid Slime L half-HP split listener - creates 2 Acid Slime M when Acid Slime L drops below half HP
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AcidSlimeLSplitListener {
     owner: Entity,
     active: bool,
@@ -284,5 +286,10 @@ impl EventListener for AcidSlimeLSplitListener {
 
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }

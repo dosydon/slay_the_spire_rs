@@ -14,12 +14,12 @@ impl Battle {
                 EnemyEnum::RedLouse(_) => {
                     // Red Louse gets a curl up listener with randomly generated block amount
                     let curl_up = CurlUpListener::new(Entity::Enemy(i), global_info.ascention, rng);
-                    self.event_listeners.push(Box::new(curl_up));
+                    self.event_listeners.push(crate::battle::event_listener_enum::EventListenerEnum::CurlUp(curl_up));
                 }
                 EnemyEnum::GreenLouse(_) => {
                     // Green Louse also gets a curl up listener with randomly generated block amount
                     let curl_up = CurlUpListener::new(Entity::Enemy(i), global_info.ascention, rng);
-                    self.event_listeners.push(Box::new(curl_up));
+                    self.event_listeners.push(crate::battle::event_listener_enum::EventListenerEnum::CurlUp(curl_up));
                 }
                 EnemyEnum::JawWorm(_) => {
                     // Jaw Worm has no special listeners
@@ -36,7 +36,7 @@ impl Battle {
                 EnemyEnum::SpikeSlimeL(_) => {
                     // Spike Slime (L) gets a half-HP split listener
                     let split_listener = SpikeSlimeLSplitListener::new(i);
-                    self.event_listeners.push(Box::new(split_listener));
+                    self.event_listeners.push(crate::battle::event_listener_enum::EventListenerEnum::SpikeSlimeLSplit(split_listener));
                 }
                 EnemyEnum::AcidSlimeS(_) => {
                     // Acid Slime (S) has no special listeners
@@ -47,7 +47,7 @@ impl Battle {
                 EnemyEnum::AcidSlimeL(_) => {
                     // Acid Slime (L) gets a half-HP split listener
                     let split_listener = AcidSlimeLSplitListener::new(i);
-                    self.event_listeners.push(Box::new(split_listener));
+                    self.event_listeners.push(crate::battle::event_listener_enum::EventListenerEnum::AcidSlimeLSplit(split_listener));
                 }
                 EnemyEnum::GremlinNob(_) => {
                     // Gremlin Nob gets an enrage listener only AFTER it uses its first move (Bellow)
@@ -56,16 +56,16 @@ impl Battle {
                 EnemyEnum::Lagavulin(_) => {
                     // Lagavulin gets a listener for wake-from-damage, initial block, and Stunned→Awake transition
                     let lagavulin_listener = crate::enemies::lagavulin::LagavulinListener::new(i);
-                    self.event_listeners.push(Box::new(lagavulin_listener));
+                    self.event_listeners.push(crate::battle::event_listener_enum::EventListenerEnum::Lagavulin(lagavulin_listener));
 
                     // Lagavulin starts with Metallicize 8 while asleep (removed when awakened)
                     let metallicize_listener = crate::cards::ironclad::metallicize::MetallicizeListener::new(Entity::Enemy(i), 8);
-                    self.event_listeners.push(Box::new(metallicize_listener));
+                    self.event_listeners.push(crate::battle::event_listener_enum::EventListenerEnum::Metallicize(metallicize_listener));
                 }
                 EnemyEnum::Sentry(_) => {
                     // Sentry gets 1 Artifact at combat start
                     let sentry_listener = crate::enemies::sentry::SentryListener::new(i);
-                    self.event_listeners.push(Box::new(sentry_listener));
+                    self.event_listeners.push(crate::battle::event_listener_enum::EventListenerEnum::Sentry(sentry_listener));
                 }
                 EnemyEnum::FatGremlin(_) => {
                     // Fat Gremlin has no special listeners
@@ -78,7 +78,7 @@ impl Battle {
                     use crate::enemies::mad_gremlin::AngryListener;
                     let angry_amount = mad_gremlin.get_angry_stacks();
                     let listener = AngryListener::new(Entity::Enemy(i), angry_amount);
-                    self.event_listeners.push(Box::new(listener));
+                    self.event_listeners.push(crate::battle::event_listener_enum::EventListenerEnum::Angry(listener));
                 }
                 EnemyEnum::ShieldGremlin(_) => {
                     // Shield Gremlin has no special listeners
@@ -92,7 +92,7 @@ impl Battle {
                 EnemyEnum::FungiBeast(_) => {
                     // Fungi Beast gets a Spore Cloud listener that triggers on death
                     let spore_cloud_listener = crate::enemies::fungi_beast::SporeCloudListener::new(i);
-                    self.event_listeners.push(Box::new(spore_cloud_listener));
+                    self.event_listeners.push(crate::battle::event_listener_enum::EventListenerEnum::SporeCloud(spore_cloud_listener));
                 }
                 EnemyEnum::BlueSlaver(_) => {
                     // Blue Slaver has no special listeners

@@ -1,11 +1,13 @@
 use crate::{enemies::enemy_enum::EnemyMove, game::{card::Card, deck::Deck, effect::{BaseEffect, BattleEffect}, global_info::GlobalInfo, player_run_state::PlayerRunState}, relics::Relic};
-use super::{battle_events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle, battle_error::BattleError, target::Entity, battle_state::BattleState};
+use super::{battle_events::{EventListener, BattleEvent}, player::Player, deck_hand_pile::DeckHandPile, enemy_in_battle::EnemyInBattle, battle_error::BattleError, target::Entity, battle_state::BattleState, event_listener_enum::EventListenerEnum};
+use serde::{Serialize, Deserialize};
 
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Battle {
     pub(super) player: Player,
     pub(super) enemies: Vec<EnemyInBattle>,
     pub(crate) cards: DeckHandPile,
-    pub(super) event_listeners: Vec<Box<dyn EventListener>>,
+    pub(super) event_listeners: Vec<EventListenerEnum>,
     pub(super) global_info: GlobalInfo,
     /// Stores the next move and effects for each enemy (index corresponds to enemies Vec)
     pub(super) enemy_actions: Vec<Option<(EnemyMove, Vec<BattleEffect>)>>,
@@ -137,6 +139,40 @@ impl Battle {
         &self.enemies
     }
 
+    /// Compute a hash of the battle state for transposition table
+    /// Hashes all relevant state for MCTS duplicate detection
+    pub fn hash_state(&self) -> u64 {
+        use std::hash::{Hash, Hasher};
+        use std::collections::hash_map::DefaultHasher;
+
+        let mut hasher = DefaultHasher::new();
+
+        // Hash player state
+        self.player.get_current_hp().hash(&mut hasher);
+        self.player.get_max_hp().hash(&mut hasher);
+        self.player.get_block().hash(&mut hasher);
+        self.player.get_energy().hash(&mut hasher);
+
+        // Hash enemy state
+        for enemy in &self.enemies {
+            enemy.get_name().hash(&mut hasher);
+            enemy.get_current_hp().hash(&mut hasher);
+            enemy.battle_info.get_block().hash(&mut hasher);
+        }
+
+        // Hash card state
+        self.cards.get_hand().len().hash(&mut hasher);
+        self.cards.deck_size().hash(&mut hasher);
+        self.cards.discard_pile_size().hash(&mut hasher);
+
+        // Hash event listeners (relics) using the object-safe hash_to method
+        for listener in &self.event_listeners {
+            listener.hash_to(&mut hasher);
+        }
+
+        hasher.finish()
+    }
+
     /// Get mutable enemies (for testing purposes)
     pub fn get_enemies_mut(&mut self) -> &mut Vec<EnemyInBattle> {
         &mut self.enemies
@@ -258,6 +294,11 @@ impl Battle {
     /// Get mutable reference to the potion inventory
     pub fn get_potions_mut(&mut self) -> &mut crate::potion::PotionInventory {
         &mut self.potions
+    }
+
+    /// Get the player's relics
+    pub fn get_relics(&self) -> &Vec<Relic> {
+        &self.relics
     }
 
     /// Flush all cards in to_be_discarded to the discard pile

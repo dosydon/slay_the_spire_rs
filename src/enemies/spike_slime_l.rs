@@ -2,14 +2,15 @@ use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalI
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 use std::any::Any;
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SpikeSlimeL {
     last_moves: Vec<SpikeSlimeLMove>,
     hp: u32,
 }
 
-#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SpikeSlimeLMove {
     Lick,
     FlameTackle,
@@ -253,6 +254,7 @@ mod tests {
 }
 
 /// Spike Slime L half-HP split listener - creates 2 Spike Slime M when Spike Slime L drops below half HP
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SpikeSlimeLSplitListener {
     owner: Entity,
     active: bool,
@@ -297,5 +299,10 @@ impl EventListener for SpikeSlimeLSplitListener {
 
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }

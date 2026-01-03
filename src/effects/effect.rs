@@ -2,10 +2,11 @@ use crate::battle::target::Entity;
 use crate::game::card_enum::CardEnum;
 use super::condition::Condition;
 use super::game_effect::GameEffect;
+use serde::{Serialize, Deserialize};
 
 /// Unified effect type that can be either a battle effect or a game effect
 /// This provides type-level safety to prevent using game effects in battle context
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Effect {
     Battle(BattleEffect),
     Game(GameEffect),
@@ -13,7 +14,7 @@ pub enum Effect {
 
 /// Battle-specific effects that operate within combat context
 /// These effects modify battle state, deal damage, apply buffs/debuffs, etc.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BattleEffect {
     AttackToTarget {
         amount: u32,

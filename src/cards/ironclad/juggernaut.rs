@@ -16,6 +16,7 @@ pub fn juggernaut_upgraded() -> Card {
         .set_playable(true)
 }
 
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct JuggernautListener {
     source: Entity,
     damage_per_block: u32,
@@ -60,6 +61,11 @@ impl EventListener for JuggernautListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

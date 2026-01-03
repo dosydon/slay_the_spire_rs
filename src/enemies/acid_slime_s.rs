@@ -1,12 +1,13 @@
 use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}};
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct AcidSlimeS {
     hp: u32,
     next_move_is_lick: bool,
 }
 
-#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum AcidSlimeSMove {
     Lick,
     Tackle,

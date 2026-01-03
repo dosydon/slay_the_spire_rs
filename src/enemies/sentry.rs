@@ -1,13 +1,14 @@
 use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, battle::{battle_events::{BattleEvent, EventListener}, target::Entity}};
 use std::any::Any;
+use serde::{Serialize, Deserialize};
 
-#[derive(Copy, Debug, Clone, PartialEq)]
+#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SentryMove {
     Bolt,  // Debuff intent - adds Dazed cards
     Beam,  // Attack intent - deals damage
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Sentry {
     hp: u32,
     ascension: u32,
@@ -158,6 +159,7 @@ impl EnemyTrait for Sentry {
 
 /// Event listener for Sentry enemies
 /// Grants 1 Artifact at combat start
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SentryListener {
     enemy_index: usize,
     has_given_artifact: bool,
@@ -193,6 +195,11 @@ impl EventListener for SentryListener {
 
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

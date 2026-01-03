@@ -1,8 +1,10 @@
+use serde::{Serialize, Deserialize};
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Happy Flower - Every 3 turns, gain 1 Energy
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HappyFlowerRelic {
     turn_count: u32,
     owner: Entity,
@@ -46,6 +48,11 @@ impl EventListener for HappyFlowerRelic {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

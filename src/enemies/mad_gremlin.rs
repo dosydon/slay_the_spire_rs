@@ -1,13 +1,14 @@
 use crate::game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct MadGremlin {
     hp: u32,
     angry_stacks: u32,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum MadGremlinMove {
     Scratch,
 }
@@ -84,7 +85,7 @@ impl EnemyTrait for MadGremlin {
 
 // AngryListener implementation for MadGremlin
 // Whenever this creature takes damage, it gains Strength
-#[derive(Debug)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AngryListener {
     angry_amount: u32,
     owner: Entity,
@@ -120,6 +121,11 @@ impl EventListener for AngryListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

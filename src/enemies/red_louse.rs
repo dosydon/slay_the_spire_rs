@@ -1,14 +1,15 @@
 use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct RedLouse {
     last_moves: Vec<RedLouseMove>,
     base_damage: u32,
     hp: u32,
 }
 
-#[derive(Copy, Debug, Clone, PartialEq)]
+#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum RedLouseMove {
     Attack,
     Grow,
@@ -142,7 +143,7 @@ impl EnemyTrait for RedLouse {
 }
 
 // CurlUpListener implementation for Louse enemies
-#[derive(Debug)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CurlUpListener {
     used: bool,
     block_amount: u32,
@@ -187,6 +188,11 @@ impl EventListener for CurlUpListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

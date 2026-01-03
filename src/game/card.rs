@@ -1,9 +1,10 @@
 use crate::game::card_type::CardType;
 use crate::game::card_enum::CardEnum;
 use crate::game::effect::{BattleEffect, Condition};
+use serde::{Serialize, Deserialize};
 
 /// Card rarity for classification and reward generation
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Rarity {
     Basic,      // Strike, Defend - never in reward pools
     Common,     // Most frequent rewards (~75% of pool)
@@ -11,7 +12,7 @@ pub enum Rarity {
     Rare,       // Rare rewards (~5% of pool)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CardClass {
     IronClad(Rarity, CardType),
     Colorless(Rarity, CardType),
@@ -19,7 +20,7 @@ pub enum CardClass {
     Curse,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Card {
     card_enum: CardEnum,
     cost: u32,

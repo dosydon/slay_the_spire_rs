@@ -58,7 +58,9 @@ pub use shuriken::ShurikenRelic;
 pub use ornamental_fan::OrnamentalFanRelic;
 pub use red_mask::RedMaskRelic;
 
-#[derive(Debug, Clone, PartialEq)]
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Relic {
     BurningBlood,
     Anchor,
@@ -139,33 +141,36 @@ impl Relic {
     }
 
     /// Convert this relic to a battle event listener
-    pub fn to_battle_event_listener(self) -> Option<Box<dyn crate::battle::battle_events::EventListener>> {
+    pub fn to_battle_event_listener(self) -> Option<crate::battle::event_listener_enum::EventListenerEnum> {
+        use crate::battle::event_listener_enum::EventListenerEnum;
+        use crate::battle::target::Entity;
+
         match self {
-            Relic::Anchor => Some(Box::new(AnchorRelic::new(crate::battle::target::Entity::Player))),
-            Relic::BloodVial => Some(Box::new(BloodVialRelic::new(crate::battle::target::Entity::Player))),
-            Relic::BagOfMarbles => Some(Box::new(BagOfMarblesRelic::new(crate::battle::target::Entity::Player))),
-            Relic::Vajra => Some(Box::new(VajraRelic::new(crate::battle::target::Entity::Player))),
-            Relic::Lantern => Some(Box::new(LanternRelic::new(crate::battle::target::Entity::Player))),
-            Relic::MercuryHourglass => Some(Box::new(MercuryHourglassRelic::new(crate::battle::target::Entity::Player))),
-            Relic::HornCleat => Some(Box::new(HornCleatRelic::new(crate::battle::target::Entity::Player))),
-            Relic::BronzeScales => Some(Box::new(BronzeScalesRelic::new(crate::battle::target::Entity::Player))),
-            Relic::BagOfPreparation => Some(Box::new(BagOfPreparationRelic::new(crate::battle::target::Entity::Player))),
-            Relic::OddlySmoothStone => Some(Box::new(OddlySmoothStoneRelic::new(crate::battle::target::Entity::Player))),
-            Relic::CentennialPuzzle => Some(Box::new(CentennialPuzzleRelic::new(crate::battle::target::Entity::Player))),
-            Relic::Orichalcum => Some(Box::new(OrichalcumRelic::new(crate::battle::target::Entity::Player))),
-            Relic::Nunchaku => Some(Box::new(NunchakuRelic::new(crate::battle::target::Entity::Player))),
-            Relic::Akabeko => Some(Box::new(AkabekoRelic::new(crate::battle::target::Entity::Player))),
-            Relic::TheBoot => Some(Box::new(TheBootRelic::new(crate::battle::target::Entity::Player))),
-            Relic::GremlinHorn => Some(Box::new(GremlinHornRelic::new(crate::battle::target::Entity::Player))),
-            Relic::HappyFlower => Some(Box::new(HappyFlowerRelic::new(crate::battle::target::Entity::Player))),
-            Relic::PenNib => Some(Box::new(PenNibRelic::new(crate::battle::target::Entity::Player))),
-            Relic::ArtOfWar => Some(Box::new(ArtOfWarRelic::new(crate::battle::target::Entity::Player))),
-            Relic::InkBottle => Some(Box::new(InkBottleRelic::new(crate::battle::target::Entity::Player))),
-            Relic::Kunai => Some(Box::new(KunaiRelic::new(crate::battle::target::Entity::Player))),
-            Relic::LetterOpener => Some(Box::new(LetterOpenerRelic::new(crate::battle::target::Entity::Player))),
-            Relic::Shuriken => Some(Box::new(ShurikenRelic::new(crate::battle::target::Entity::Player))),
-            Relic::OrnamentalFan => Some(Box::new(OrnamentalFanRelic::new(crate::battle::target::Entity::Player))),
-            Relic::RedMask => Some(Box::new(RedMaskRelic::new(crate::battle::target::Entity::Player))),
+            Relic::Anchor => Some(EventListenerEnum::Anchor(AnchorRelic::new(Entity::Player))),
+            Relic::BloodVial => Some(EventListenerEnum::BloodVial(BloodVialRelic::new(Entity::Player))),
+            Relic::BagOfMarbles => Some(EventListenerEnum::BagOfMarbles(BagOfMarblesRelic::new(Entity::Player))),
+            Relic::Vajra => Some(EventListenerEnum::Vajra(VajraRelic::new(Entity::Player))),
+            Relic::Lantern => Some(EventListenerEnum::Lantern(LanternRelic::new(Entity::Player))),
+            Relic::MercuryHourglass => Some(EventListenerEnum::MercuryHourglass(MercuryHourglassRelic::new(Entity::Player))),
+            Relic::HornCleat => Some(EventListenerEnum::HornCleat(HornCleatRelic::new(Entity::Player))),
+            Relic::BronzeScales => Some(EventListenerEnum::BronzeScales(BronzeScalesRelic::new(Entity::Player))),
+            Relic::BagOfPreparation => Some(EventListenerEnum::BagOfPreparation(BagOfPreparationRelic::new(Entity::Player))),
+            Relic::OddlySmoothStone => Some(EventListenerEnum::OddlySmoothStone(OddlySmoothStoneRelic::new(Entity::Player))),
+            Relic::CentennialPuzzle => Some(EventListenerEnum::CentennialPuzzle(CentennialPuzzleRelic::new(Entity::Player))),
+            Relic::Orichalcum => Some(EventListenerEnum::Orichalcum(OrichalcumRelic::new(Entity::Player))),
+            Relic::Nunchaku => Some(EventListenerEnum::Nunchaku(NunchakuRelic::new(Entity::Player))),
+            Relic::Akabeko => Some(EventListenerEnum::Akabeko(AkabekoRelic::new(Entity::Player))),
+            Relic::TheBoot => Some(EventListenerEnum::TheBoot(TheBootRelic::new(Entity::Player))),
+            Relic::GremlinHorn => Some(EventListenerEnum::GremlinHorn(GremlinHornRelic::new(Entity::Player))),
+            Relic::HappyFlower => Some(EventListenerEnum::HappyFlower(HappyFlowerRelic::new(Entity::Player))),
+            Relic::PenNib => Some(EventListenerEnum::PenNib(PenNibRelic::new(Entity::Player))),
+            Relic::ArtOfWar => Some(EventListenerEnum::ArtOfWar(ArtOfWarRelic::new(Entity::Player))),
+            Relic::InkBottle => Some(EventListenerEnum::InkBottle(InkBottleRelic::new(Entity::Player))),
+            Relic::Kunai => Some(EventListenerEnum::Kunai(KunaiRelic::new(Entity::Player))),
+            Relic::LetterOpener => Some(EventListenerEnum::LetterOpener(LetterOpenerRelic::new(Entity::Player))),
+            Relic::Shuriken => Some(EventListenerEnum::Shuriken(ShurikenRelic::new(Entity::Player))),
+            Relic::OrnamentalFan => Some(EventListenerEnum::OrnamentalFan(OrnamentalFanRelic::new(Entity::Player))),
+            Relic::RedMask => Some(EventListenerEnum::RedMask(RedMaskRelic::new(Entity::Player))),
             _ => None,
         }
     }

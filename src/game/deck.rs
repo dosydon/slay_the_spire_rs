@@ -1,7 +1,8 @@
 
 use crate::game::card::Card;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Deck {
     cards: Vec<Card>,
 }

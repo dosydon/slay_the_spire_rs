@@ -2,6 +2,7 @@ use crate::game::game_event::{GameEvent, GameEventListener};
 use crate::game::effect::BattleEffect;
 
 /// Strawberry - Raise your Max HP by 7 (one-time effect on pickup)
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct StrawberryRelic {
     applied: bool,
 }

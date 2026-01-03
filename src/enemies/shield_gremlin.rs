@@ -1,11 +1,12 @@
 use crate::game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo};
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ShieldGremlin {
     hp: u32,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ShieldGremlinMove {
     Protect,
     ShieldBash,

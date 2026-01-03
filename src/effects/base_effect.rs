@@ -2,8 +2,9 @@ use crate::battle::target::Entity;
 use crate::game::card_enum::CardEnum;
 use super::condition::Condition;
 use super::effect::BattleEffect;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BaseEffect {
     AttackToTarget {
         source: Entity,

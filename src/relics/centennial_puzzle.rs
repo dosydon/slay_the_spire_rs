@@ -1,8 +1,10 @@
+use serde::{Serialize, Deserialize};
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 
 /// Centennial Puzzle - The first time you lose HP each combat, draw 3 cards
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CentennialPuzzleRelic {
     triggered: bool,
     owner: Entity,
@@ -46,6 +48,11 @@ impl EventListener for CentennialPuzzleRelic {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

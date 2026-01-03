@@ -1,7 +1,7 @@
 use crate::game::game_event::{GameEvent, GameEventListener};
 use crate::game::effect::BattleEffect;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct BurningBloodRelic {
     used: bool,
 }

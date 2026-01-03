@@ -1,7 +1,8 @@
 use crate::game::{card::Card, deck::Deck};
 use rand::Rng;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct DeckHandPile {
     deck: Deck,
     hand: Vec<Card>,

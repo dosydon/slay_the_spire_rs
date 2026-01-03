@@ -1,7 +1,8 @@
 use crate::{game::{effect::BattleEffect, enemy::EnemyTrait, global_info::GlobalInfo}, utils::CategoricalDistribution};
 use crate::battle::{battle_events::{BattleEvent, EventListener}, target::Entity};
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct GremlinNob {
     hp: u32,
     enrage_stacks: u32,
@@ -10,7 +11,7 @@ pub struct GremlinNob {
     has_used_first_move: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum GremlinNobMove {
     Bellow,
     SkullBash,
@@ -221,7 +222,7 @@ impl EnemyTrait for GremlinNob {
 }
 
 // EnrageListener implementation for GremlinNob
-#[derive(Debug)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EnrageListener {
     enrage_amount: u32,
     owner: Entity,
@@ -257,6 +258,11 @@ impl EventListener for EnrageListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

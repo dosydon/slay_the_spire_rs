@@ -3,8 +3,9 @@ use crate::{
     utils::CategoricalDistribution,
     battle::{battle_events::{BattleEvent, EventListener}, target::Entity},
 };
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Cultist {
     base_damage: u32,
     hp: u32,
@@ -12,7 +13,7 @@ pub struct Cultist {
     has_used_incantation: bool,
 }
 
-#[derive(Copy, Debug, Clone, PartialEq)]
+#[derive(Copy, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CultistMove {
     Incantation,
     DarkStrike,
@@ -129,6 +130,7 @@ impl EnemyTrait for Cultist {
 }
 
 /// Listener that grants Ritual at the start of the next enemy turn
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GrantRitualNextTurnListener {
     owner: Entity,
     ritual_amount: u32,
@@ -167,6 +169,11 @@ impl EventListener for GrantRitualNextTurnListener {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 

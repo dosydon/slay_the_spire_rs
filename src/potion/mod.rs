@@ -3,9 +3,10 @@ pub mod skill_potion;
 
 use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
+use serde::{Serialize, Deserialize};
 
 /// Represents different types of potions available in the game
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Potion {
     /// Strength Potion: Grants 2 Strength
     StrengthPotion,
@@ -221,7 +222,7 @@ impl Potion {
 }
 
 /// Potion inventory with a maximum capacity
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct PotionInventory {
     /// List of potions currently in inventory
     potions: Vec<Option<Potion>>,

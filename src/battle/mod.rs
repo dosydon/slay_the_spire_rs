@@ -9,8 +9,8 @@ pub mod deck_hand_pile;
 pub mod enemy_in_battle;
 pub mod battle_state;
 pub mod listeners;
-pub mod battle_builder;
 pub mod battle_error;
+pub mod event_listener_enum;
 
 // Private modules
 mod battle;
@@ -24,6 +24,6 @@ mod listener_manager;
 // Re-export commonly used types for easier access
 pub use target::Entity;
 pub use battle_result::BattleResult;
-pub use battle_builder::BattleBuilder;
 pub use battle_error::BattleError;
 pub use battle::Battle;
+pub use event_listener_enum::EventListenerEnum;

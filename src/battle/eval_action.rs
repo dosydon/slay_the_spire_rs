@@ -333,8 +333,8 @@ impl Battle {
             valid_targets.push(Entity::Player);
         }
         
-        // If no specific targeting logic applies, default to allowing both enemy and player targets
-        // This handles cards with mixed effects or unknown effect types
+        // If no specific targeting logic applies, default to allowing enemy targets only
+        // This handles cards with unknown effect types - default to assuming they target enemies
         if valid_targets.is_empty() {
             // Add all alive enemies as potential targets
             for (enemy_index, enemy) in self.enemies.iter().enumerate() {
@@ -342,10 +342,8 @@ impl Battle {
                     valid_targets.push(Entity::Enemy(enemy_index));
                 }
             }
-            // Also add player as target
-            valid_targets.push(Entity::Player);
         }
-        
+
         valid_targets
     }
     
@@ -710,5 +708,32 @@ mod tests {
         // Verify the blood vial relic is now inactive (used once per combat)
         // Since we can't directly check listeners, we verify the effect was applied
         assert!(battle.player.battle_info.get_hp() > 48);
+    }
+
+    #[test]
+    fn test_strike_cannot_target_player() {
+        use crate::cards::ironclad::strike;
+        let deck = Deck::new(vec![strike()]);
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let battle = Battle::new(deck, global_info, player_state, enemies, &mut rng);
+
+        let available_actions = battle.list_available_actions();
+
+        // Check that no Strike action targets the player
+        for action in &available_actions {
+            if let BattleAction::PlayCard(index, target) = action {
+                let card = &battle.get_hand()[*index];
+                if card.get_name() == "Strike" {
+                    assert!(
+                        !matches!(target, Entity::Player),
+                        "Strike should not be able to target Player"
+                    );
+                }
+            }
+        }
     }
 }

@@ -1,8 +1,9 @@
 //! Card enum for type-safe card references
 
 use crate::game::card_reward::Rarity;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CardEnum {
     // Ironclad Cards
     Strike,

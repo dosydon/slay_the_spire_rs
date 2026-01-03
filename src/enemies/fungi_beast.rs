@@ -4,8 +4,9 @@ use crate::game::global_info::GlobalInfo;
 use crate::battle::battle_events::{BattleEvent, EventListener};
 use crate::battle::target::Entity;
 use std::any::Any;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct FungiBeast {
     pub hp: u32,
     strength: u32,
@@ -13,7 +14,7 @@ pub struct FungiBeast {
     consecutive_bites: u32,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum FungiBeastMove {
     Bite,
     Grow,
@@ -76,6 +77,7 @@ impl FungiBeast {
 }
 
 /// Spore Cloud listener - applies Vulnerable when Fungi Beast dies
+#[derive(Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SporeCloudListener {
     owner: Entity,
     active: bool,
@@ -120,6 +122,11 @@ impl EventListener for SporeCloudListener {
 
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
+    }
+
+    fn hash_to(&self, state: &mut std::collections::hash_map::DefaultHasher) {
+        use std::hash::Hash;
+        self.hash(state);
     }
 }
 
