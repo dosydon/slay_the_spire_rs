@@ -1,8 +1,9 @@
 use crate::game::{card::Card, card_enum::CardEnum};
 use crate::utils::categorical_distribution::CategoricalDistribution;
+use serde::{Serialize, Deserialize};
 
 /// Types of combat encounters for determining reward rarity
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CombatType {
     Normal,
     Elite,
@@ -10,7 +11,7 @@ pub enum CombatType {
 }
 
 /// Card rarity for categorizing cards
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Rarity {
     Common,
     Uncommon,
@@ -20,6 +21,7 @@ pub enum Rarity {
 /// Card reward pool for generating random card rewards
 /// Uses uniform distribution within each rarity tier and implements offset system
 /// based on the actual Slay the Spire mechanics
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct CardRewardPool {
     /// Common cards - drawn with equal probability
     common_pool: Vec<CardEnum>,

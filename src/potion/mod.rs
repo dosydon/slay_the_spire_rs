@@ -4,6 +4,7 @@ pub mod skill_potion;
 use crate::game::effect::BattleEffect;
 use crate::battle::target::Entity;
 use serde::{Serialize, Deserialize};
+use ordered_float::NotNan;
 
 /// Represents different types of potions available in the game
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -332,14 +333,14 @@ impl Default for PotionInventory {
 
 /// Potion drop pool that tracks drop history to increase drop rates
 /// Drop chance increases by 10% each time a potion doesn't drop, resets on drop
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct PotionPool {
     /// Number of combats since last potion drop (for increasing drop chance)
     combats_since_drop: u32,
     /// Base drop chance (0.4 = 40%)
-    base_drop_chance: f64,
+    base_drop_chance: NotNan<f64>,
     /// Drop chance increase per combat without drop (0.1 = 10%)
-    chance_increase_per_combat: f64,
+    chance_increase_per_combat: NotNan<f64>,
 }
 
 impl PotionPool {
@@ -347,16 +348,16 @@ impl PotionPool {
     pub fn new() -> Self {
         Self {
             combats_since_drop: 0,
-            base_drop_chance: 0.4,
-            chance_increase_per_combat: 0.1,
+            base_drop_chance: NotNan::new(0.4).unwrap(),
+            chance_increase_per_combat: NotNan::new(0.1).unwrap(),
         }
     }
 
     /// Get the current drop chance based on history
     /// Increases by 10% per combat without a drop, capped at 100%
     pub fn get_current_drop_chance(&self) -> f64 {
-        let increased_chance = self.base_drop_chance
-            + (self.combats_since_drop as f64 * self.chance_increase_per_combat);
+        let increased_chance = *self.base_drop_chance
+            + (self.combats_since_drop as f64 * *self.chance_increase_per_combat);
         increased_chance.min(1.0)
     }
 

@@ -1,5 +1,7 @@
+use serde::{Serialize, Deserialize};
+
 /// Types of encounters available on the map
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum NodeType {
     /// Combat encounter with enemies
     Combat,
@@ -21,7 +23,7 @@ pub enum NodeType {
 }
 
 /// A node in the map graph representing an encounter
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct MapNode {
     /// Floor level (0-based)
     pub floor: u32,

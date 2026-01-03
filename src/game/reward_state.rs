@@ -1,7 +1,9 @@
 //! Reward state types for post-combat rewards and treasure chests
 
+use serde::{Serialize, Deserialize};
+
 /// Types of treasure chests
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ChestType {
     /// Small chest: 75% Common, 25% Uncommon relic; 50% chance of 23-27 gold
     Small,
@@ -12,7 +14,7 @@ pub enum ChestType {
 }
 
 /// Relic rarity types
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum RelicRarity {
     Common,
     Uncommon,
@@ -20,7 +22,7 @@ pub enum RelicRarity {
 }
 
 /// Reward state after combat or treasure chest, containing various reward types
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct RewardState {
     /// Gold reward earned from combat or chest
     pub gold_reward: u32,

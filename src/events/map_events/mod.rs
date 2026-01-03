@@ -15,9 +15,10 @@ mod living_wall;
 use crate::game::effect::Effect;
 use crate::game::global_info::GlobalInfo;
 use rand::prelude::IndexedRandom;
+use serde::{Serialize, Deserialize};
 
 /// All non-combat events in Slay the Spire
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy, Serialize, Deserialize)]
 pub enum MapEvent {
     /// The Big Fish event - A large fish appears with multiple interaction options
     BigFish,
@@ -40,7 +41,7 @@ pub enum MapEvent {
 }
 
 /// Represents a choice the player can make in an event
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct EventChoice {
     /// Display text for this choice
     pub text: String,
@@ -49,7 +50,7 @@ pub struct EventChoice {
 }
 
 /// What happens after making a choice
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum EventOutcome {
     /// Apply a list of effects and end the event
     Effects(Vec<Effect>),

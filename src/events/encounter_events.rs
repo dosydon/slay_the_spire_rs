@@ -5,8 +5,9 @@ use crate::utils::CategoricalDistribution;
 use crate::enemies::sentry::Sentry;
 use crate::enemies::lagavulin::Lagavulin;
 use crate::events::SLSEvent;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy, Serialize, Deserialize)]
 pub enum EncounterEvent {
     // Act 1 Easy Pool (First 3 encounters)
     TwoLouses,      // Two Louses (Red or Green)

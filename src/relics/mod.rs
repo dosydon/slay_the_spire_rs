@@ -130,12 +130,14 @@ impl Relic {
     }
 
     /// Convert this relic to a game event listener
-    pub fn to_game_event_listener(self) -> Option<Box<dyn crate::game::game_event::GameEventListener>> {
+    pub fn to_game_event_listener(self) -> Option<crate::game::game_event_listener_enum::GameEventListenerEnum> {
+        use crate::game::game_event_listener_enum::GameEventListenerEnum;
+
         match self {
-            Relic::BurningBlood => Some(Box::new(BurningBloodRelic::new())),
-            Relic::Strawberry => Some(Box::new(StrawberryRelic::new())),
-            Relic::Pear => Some(Box::new(PearRelic::new())),
-            Relic::Mango => Some(Box::new(MangoRelic::new())),
+            Relic::BurningBlood => Some(GameEventListenerEnum::BurningBlood(BurningBloodRelic::new())),
+            Relic::Strawberry => Some(GameEventListenerEnum::Strawberry(StrawberryRelic::new())),
+            Relic::Pear => Some(GameEventListenerEnum::Pear(PearRelic::new())),
+            Relic::Mango => Some(GameEventListenerEnum::Mango(MangoRelic::new())),
             _ => None,
         }
     }

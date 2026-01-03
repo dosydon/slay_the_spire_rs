@@ -1,8 +1,9 @@
 use crate::game::game_event::{GameEvent, GameEventListener};
 use crate::game::effect::BattleEffect;
+use serde::{Deserialize, Serialize};
 
 /// Mango - Raise your Max HP by 14 (one-time effect on pickup)
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MangoRelic {
     applied: bool,
 }

@@ -2,9 +2,10 @@
 
 use crate::game::{shop::ShopState, reward_state::RewardState};
 use crate::events::map_events::{MapEvent, EventChoice};
+use serde::{Serialize, Deserialize};
 
 /// The overall state of the game
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum GameState {
     /// Player is currently in a battle
     InBattle,
@@ -25,7 +26,7 @@ pub enum GameState {
     Shop(ShopState),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CardFromDeckTo {
     Upgrade,
     Remove,

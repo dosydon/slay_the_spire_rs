@@ -6,7 +6,7 @@ use serde::{Serialize, Deserialize};
 
 /// Unified effect type that can be either a battle effect or a game effect
 /// This provides type-level safety to prevent using game effects in battle context
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Effect {
     Battle(BattleEffect),
     Game(GameEffect),

@@ -5,15 +5,19 @@ use crate::{
         deck::Deck,
         global_info::GlobalInfo,
         player_run_state::PlayerRunState,
+        enemy::EnemyTrait,
     },
     battle::enemy_in_battle::EnemyInBattle,
     enemies::enemy_enum::EnemyEnum,
     enemies::cultist::Cultist,
     enemies::jaw_worm::JawWorm,
+    enemies::gremlin_nob::GremlinNob,
+    enemies::lagavulin::Lagavulin,
     cards::ironclad::starter_deck::starter_deck,
     potion::PotionInventory,
     relics::Relic,
 };
+use rand::Rng;
 
 /// Builder for creating Battle instances with customizable parameters
 pub struct BattleBuilder {
@@ -53,6 +57,9 @@ impl BattleBuilder {
     ///   - "cultist": One Cultist with 50 HP and 3 ritual amount
     ///   - "cultist_orichalcum": Cultist battle with Orichalcum relic (gain 6 Block at end of turn if you have no Block)
     ///   - "jaw_worm" or "jawworm": One Jaw Worm with 40 HP (not angry)
+    ///   - "gremlin_nob" or "gremlinnob": One Gremlin Nob (Elite enemy with Enrage mechanic, 82-86 HP at Ascension 0)
+    ///   - "lagavulin": One Lagavulin (Elite enemy that sleeps, 109-111 HP at Ascension 0, Metallicize 8)
+    /// * `rng` - Random number generator for enemies that need randomized stats
     ///
     /// # Returns
     /// * `Ok(BattleBuilder)` - Builder configured with the named battle
@@ -60,10 +67,11 @@ impl BattleBuilder {
     ///
     /// # Example
     /// ```
-    /// let battle = BattleBuilder::from_name("cultist")?.build();
-    /// let battle = BattleBuilder::from_name("jaw_worm")?.build();
+    /// let mut rng = rand::rng();
+    /// let battle = BattleBuilder::from_name("cultist", &mut rng)?.build();
+    /// let battle = BattleBuilder::from_name("gremlin_nob", &mut rng)?.build();
     /// ```
-    pub fn from_name(name: &str) -> Result<Self, String> {
+    pub fn from_name<R: Rng>(name: &str, rng: &mut R) -> Result<Self, String> {
         match name.to_lowercase().as_str() {
             "cultist" => {
                 let cultist = Cultist::new(50, 3);
@@ -78,6 +86,16 @@ impl BattleBuilder {
             "jaw_worm" | "jawworm" => {
                 let jaw_worm = JawWorm::new(40, false);
                 Ok(BattleBuilder::new().add_enemy(EnemyEnum::JawWorm(jaw_worm)))
+            }
+            "gremlin_nob" | "gremlinnob" => {
+                let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+                let gremlin_nob = GremlinNob::instantiate(rng, &global_info);
+                Ok(BattleBuilder::new().add_enemy(EnemyEnum::GremlinNob(gremlin_nob)))
+            }
+            "lagavulin" => {
+                let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+                let lagavulin = Lagavulin::instantiate(rng, &global_info);
+                Ok(BattleBuilder::new().add_enemy(EnemyEnum::Lagavulin(lagavulin)))
             }
             _ => Err(format!("Unknown battle name: {}", name))
         }
@@ -328,7 +346,8 @@ mod tests {
 
     #[test]
     fn test_from_name_cultist() {
-        let battle = BattleBuilder::from_name("cultist")
+        let mut rng = rand::rng();
+        let battle = BattleBuilder::from_name("cultist", &mut rng)
             .expect("Should create Cultist battle")
             .build();
 
@@ -343,11 +362,12 @@ mod tests {
 
     #[test]
     fn test_from_name_case_insensitive() {
+        let mut rng = rand::rng();
         // Test various capitalizations
-        let battle1 = BattleBuilder::from_name("cultist").expect("lowercase should work");
-        let battle2 = BattleBuilder::from_name("Cultist").expect("capitalized should work");
-        let battle3 = BattleBuilder::from_name("CULTIST").expect("uppercase should work");
-        let battle4 = BattleBuilder::from_name("CuLtIsT").expect("mixed case should work");
+        let battle1 = BattleBuilder::from_name("cultist", &mut rng).expect("lowercase should work");
+        let battle2 = BattleBuilder::from_name("Cultist", &mut rng).expect("capitalized should work");
+        let battle3 = BattleBuilder::from_name("CULTIST", &mut rng).expect("uppercase should work");
+        let battle4 = BattleBuilder::from_name("CuLtIsT", &mut rng).expect("mixed case should work");
 
         // All should create battles successfully
         assert_eq!(battle1.build().get_enemies().len(), 1);
@@ -358,7 +378,8 @@ mod tests {
 
     #[test]
     fn test_from_name_unknown_battle() {
-        let result = BattleBuilder::from_name("unknown_battle");
+        let mut rng = rand::rng();
+        let result = BattleBuilder::from_name("unknown_battle", &mut rng);
         assert!(result.is_err());
         if let Err(err) = result {
             assert_eq!(err, "Unknown battle name: unknown_battle");
@@ -367,7 +388,8 @@ mod tests {
 
     #[test]
     fn test_from_name_with_customization() {
-        let battle = BattleBuilder::from_name("cultist")
+        let mut rng = rand::rng();
+        let battle = BattleBuilder::from_name("cultist", &mut rng)
             .expect("Should create Cultist battle")
             .with_hp(50, 100)
             .with_gold(200)
@@ -385,7 +407,8 @@ mod tests {
 
     #[test]
     fn test_from_name_jaw_worm() {
-        let battle = BattleBuilder::from_name("jaw_worm")
+        let mut rng = rand::rng();
+        let battle = BattleBuilder::from_name("jaw_worm", &mut rng)
             .expect("Should create Jaw Worm battle")
             .build();
 
@@ -400,11 +423,12 @@ mod tests {
 
     #[test]
     fn test_from_name_jaw_worm_aliases() {
+        let mut rng = rand::rng();
         // Test both spellings
-        let battle1 = BattleBuilder::from_name("jaw_worm").expect("jaw_worm should work");
-        let battle2 = BattleBuilder::from_name("jawworm").expect("jawworm should work");
-        let battle3 = BattleBuilder::from_name("JawWorm").expect("JawWorm should work");
-        let battle4 = BattleBuilder::from_name("JAW_WORM").expect("JAW_WORM should work");
+        let battle1 = BattleBuilder::from_name("jaw_worm", &mut rng).expect("jaw_worm should work");
+        let battle2 = BattleBuilder::from_name("jawworm", &mut rng).expect("jawworm should work");
+        let battle3 = BattleBuilder::from_name("JawWorm", &mut rng).expect("JawWorm should work");
+        let battle4 = BattleBuilder::from_name("JAW_WORM", &mut rng).expect("JAW_WORM should work");
 
         // All should create battles successfully with Jaw Worm
         assert_eq!(battle1.build().get_enemies()[0].get_name(), "Jaw Worm");
@@ -415,7 +439,8 @@ mod tests {
 
     #[test]
     fn test_from_name_cultist_orichalcum() {
-        let battle = BattleBuilder::from_name("cultist_orichalcum")
+        let mut rng = rand::rng();
+        let battle = BattleBuilder::from_name("cultist_orichalcum", &mut rng)
             .expect("Should create Cultist with Orichalcum battle")
             .build();
 
@@ -429,6 +454,70 @@ mod tests {
         let relics = battle.get_relics();
         assert_eq!(relics.len(), 1);
         assert!(matches!(relics[0], Relic::Orichalcum));
+    }
+
+    #[test]
+    fn test_from_name_gremlin_nob() {
+        let mut rng = rand::rng();
+        let battle = BattleBuilder::from_name("gremlin_nob", &mut rng)
+            .expect("Should create Gremlin Nob battle")
+            .build();
+
+        // Should have exactly one enemy
+        assert_eq!(battle.get_enemies().len(), 1);
+
+        // Enemy should be a Gremlin Nob with HP in expected range (82-86 for Ascension 0)
+        let enemy = &battle.get_enemies()[0];
+        assert_eq!(enemy.get_name(), "Gremlin Nob");
+        let hp = enemy.get_current_hp();
+        assert!(hp >= 82 && hp <= 86, "Gremlin Nob HP should be 82-86, got {}", hp);
+    }
+
+    #[test]
+    fn test_from_name_gremlin_nob_aliases() {
+        let mut rng = rand::rng();
+        // Test both spellings
+        let battle1 = BattleBuilder::from_name("gremlin_nob", &mut rng).expect("gremlin_nob should work");
+        let battle2 = BattleBuilder::from_name("gremlinnob", &mut rng).expect("gremlinnob should work");
+        let battle3 = BattleBuilder::from_name("GremlinNob", &mut rng).expect("GremlinNob should work");
+        let battle4 = BattleBuilder::from_name("GREMLIN_NOB", &mut rng).expect("GREMLIN_NOB should work");
+
+        // All should create battles successfully with Gremlin Nob
+        assert_eq!(battle1.build().get_enemies()[0].get_name(), "Gremlin Nob");
+        assert_eq!(battle2.build().get_enemies()[0].get_name(), "Gremlin Nob");
+        assert_eq!(battle3.build().get_enemies()[0].get_name(), "Gremlin Nob");
+        assert_eq!(battle4.build().get_enemies()[0].get_name(), "Gremlin Nob");
+    }
+
+    #[test]
+    fn test_from_name_lagavulin() {
+        let mut rng = rand::rng();
+        let battle = BattleBuilder::from_name("lagavulin", &mut rng)
+            .expect("Should create Lagavulin battle")
+            .build();
+
+        // Should have exactly one enemy
+        assert_eq!(battle.get_enemies().len(), 1);
+
+        // Enemy should be a Lagavulin with HP in expected range (109-111 for Ascension 0)
+        let enemy = &battle.get_enemies()[0];
+        assert_eq!(enemy.get_name(), "Lagavulin");
+        let hp = enemy.get_current_hp();
+        assert!(hp >= 109 && hp <= 111, "Lagavulin HP should be 109-111, got {}", hp);
+    }
+
+    #[test]
+    fn test_from_name_lagavulin_case_insensitive() {
+        let mut rng = rand::rng();
+        // Test case variations
+        let battle1 = BattleBuilder::from_name("lagavulin", &mut rng).expect("lowercase should work");
+        let battle2 = BattleBuilder::from_name("Lagavulin", &mut rng).expect("capitalized should work");
+        let battle3 = BattleBuilder::from_name("LAGAVULIN", &mut rng).expect("uppercase should work");
+
+        // All should create battles successfully with Lagavulin
+        assert_eq!(battle1.build().get_enemies()[0].get_name(), "Lagavulin");
+        assert_eq!(battle2.build().get_enemies()[0].get_name(), "Lagavulin");
+        assert_eq!(battle3.build().get_enemies()[0].get_name(), "Lagavulin");
     }
 
     #[test]

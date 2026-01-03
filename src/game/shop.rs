@@ -1,7 +1,8 @@
 use crate::game::card::Card;
+use serde::{Serialize, Deserialize};
 
 /// State for a shop visit
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ShopState {
     /// Cards available for purchase
     pub cards_for_sale: Vec<Card>,

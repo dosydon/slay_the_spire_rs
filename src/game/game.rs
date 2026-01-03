@@ -1,12 +1,14 @@
-use crate::{events::SLSEvent, game::{card_reward::CardRewardPool, deck::Deck, game_error::GameError, game_event::{GameEvent, GameEventListener}, global_info::GlobalInfo, game_state::GameState, reward_state::RewardState}};
+use crate::{events::SLSEvent, game::{card_reward::CardRewardPool, deck::Deck, game_error::GameError, game_event::{GameEvent, GameEventListener}, game_event_listener_enum::GameEventListenerEnum, global_info::GlobalInfo, game_state::GameState, reward_state::RewardState}};
 use crate::map::{Map, NodeType, MapNode};
 use crate::battle::Battle;
 use crate::events::map_events::{MapEvent, EventChoice};
 use log::{info, debug};
+use serde::{Serialize, Deserialize};
 
 #[cfg(test)]
 use crate::game::{action::{GameAction, RestSiteAction}, game_result::{GameResult, GameOutcome}};
 
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Game {
     pub global_info: GlobalInfo,
     pub deck: Deck,
@@ -20,7 +22,7 @@ pub struct Game {
     pub potion_pool: crate::potion::PotionPool,
     card_reward_pool: CardRewardPool,
     pub(crate) relics: Vec<crate::relics::Relic>,
-    game_event_listeners: Vec<Box<dyn GameEventListener>>,
+    game_event_listeners: Vec<GameEventListenerEnum>,
     pub(crate) event_history: Vec<SLSEvent>,
     state_stack: Vec<GameState>,
 }
@@ -53,7 +55,7 @@ impl Game {
 
     
     /// Add a game event listener to the game
-    pub fn add_game_event_listener(&mut self, listener: Box<dyn GameEventListener>) {
+    pub fn add_game_event_listener(&mut self, listener: GameEventListenerEnum) {
         self.game_event_listeners.push(listener);
     }
 

@@ -1,5 +1,7 @@
 use crate::events::{encounter_events::EncounterEvent, map_events::MapEvent};
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Clone, PartialEq, Eq, Copy, Hash, Serialize, Deserialize)]
 pub enum SLSEvent {
     EncounterEvent(EncounterEvent),
     MapEvent(MapEvent),

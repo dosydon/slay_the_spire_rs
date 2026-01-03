@@ -1,15 +1,16 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use crate::map::node::MapNode;
 use crate::map::error::MapError;
+use serde::{Serialize, Deserialize};
 
 /// Static graph-based map representation
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Map {
     /// All nodes in the map, indexed by (floor, position)
-    nodes: HashMap<(u32, u32), MapNode>,
+    nodes: BTreeMap<(u32, u32), MapNode>,
     /// Adjacency list representation: (floor, position) -> list of connected (floor, position)
     /// Order is preserved to maintain consistent path choices
-    adjacency_list: HashMap<(u32, u32), Vec<(u32, u32)>>,
+    adjacency_list: BTreeMap<(u32, u32), Vec<(u32, u32)>>,
     /// Starting position on the map (typically the Start node)
     starting_position: Option<(u32, u32)>,
 }
@@ -18,8 +19,8 @@ impl Map {
     /// Create a new empty map
     pub fn new() -> Self {
         Map {
-            nodes: HashMap::new(),
-            adjacency_list: HashMap::new(),
+            nodes: BTreeMap::new(),
+            adjacency_list: BTreeMap::new(),
             starting_position: None,
         }
     }
@@ -82,7 +83,7 @@ impl Map {
     }
 
     /// Get the adjacency list
-    pub fn get_adjacency_list(&self) -> &HashMap<(u32, u32), Vec<(u32, u32)>> {
+    pub fn get_adjacency_list(&self) -> &BTreeMap<(u32, u32), Vec<(u32, u32)>> {
         &self.adjacency_list
     }
 
