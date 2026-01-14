@@ -518,3 +518,68 @@ mod tests {
         assert!(!available.iter().any(|a| matches!(a, BattleAction::UsePotion(_, _))));
     }
 }
+
+impl crate::agents::ForwardSimulation for Battle {
+    type Action = super::battle_action::BattleAction;
+
+    fn list_available_actions(&self) -> Vec<Self::Action> {
+        self.list_available_actions()
+    }
+
+    fn eval_action(&mut self, action: Self::Action, rng: &mut impl rand::Rng) -> Result<(), crate::game::game_error::GameError> {
+        self.eval_action(action, rng)
+            .map(|_| ())
+            .map_err(crate::game::game_error::GameError::Battle)
+    }
+
+    fn is_terminal(&self) -> bool {
+        self.is_battle_over()
+    }
+
+    fn evaluate(&self) -> f32 {
+        // Terminal: player dead
+        if !self.player.battle_info.is_alive() {
+            return 0.0;
+        }
+
+        // Terminal: victory (all enemies dead)
+        if self.enemies.iter().all(|e| !e.battle_info.is_alive()) {
+            let player_hp = self.player.battle_info.get_hp() as f32;
+            let player_max_hp = self.player.battle_info.get_max_hp() as f32;
+            let hp_ratio = if player_max_hp > 0.0 {
+                player_hp / player_max_hp
+            } else {
+                0.0
+            };
+            // Victory reward: 1.2 + (hp_ratio * 0.5) → range [1.2, 1.7]
+            return 1.2 + (hp_ratio * 0.5);
+        }
+
+        // Non-terminal: heuristic evaluation
+        // Player HP ratio
+        let player_hp = self.player.battle_info.get_hp() as f32;
+        let player_max_hp = self.player.battle_info.get_max_hp() as f32;
+        let player_ratio = if player_max_hp > 0.0 {
+            player_hp / player_max_hp
+        } else {
+            0.0
+        };
+
+        // Enemy HP ratios
+        let total_enemy_hp: f32 = self.enemies.iter()
+            .map(|e| e.battle_info.get_hp() as f32)
+            .sum();
+        let total_enemy_max_hp: f32 = self.enemies.iter()
+            .map(|e| e.battle_info.get_max_hp() as f32)
+            .sum();
+
+        let enemy_ratio = if total_enemy_max_hp > 0.0 {
+            total_enemy_hp / total_enemy_max_hp
+        } else {
+            0.0
+        };
+
+        // Combined score: player_ratio - enemy_ratio → range [-1, 1]
+        player_ratio - enemy_ratio
+    }
+}

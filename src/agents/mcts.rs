@@ -1,20 +1,20 @@
 /// Monte Carlo Tree Search (MCTS) agent using Expectimax for stochastic games
 ///
 /// This implementation properly handles stochastic actions in Slay the Spire by using:
-/// - Decision nodes: Contain BattleState, player chooses actions
-/// - Chance nodes: Contain BattleAction, environment determines outcome
+/// - Decision nodes: Contain state, player chooses actions
+/// - Chance nodes: Contain Action, environment determines outcome
 ///
 /// Tree structure:
 /// Decision Node (state) -> [Chance Node (action1), Chance Node (action2), ...]
 /// Chance Node (action) -> [Decision Node (outcome1), Decision Node (outcome2), ...]
-use crate::battle::{Battle, battle_action::BattleAction};
+use crate::agents::ForwardSimulation;
 use super::traits::Agent;
 use super::decision_node::MCTSDecisionNode;
 use super::chance_node::MCTSChanceNode;
 use std::collections::HashMap;
 
 /// MCTS agent with integrated tree structure
-pub struct MCTS {
+pub struct MCTS<S: ForwardSimulation> {
     /// Number of MCTS iterations to run per action selection
     pub iterations: usize,
     /// UCT exploration constant (typically sqrt(2) ≈ 1.41)
@@ -25,15 +25,15 @@ pub struct MCTS {
     pub samples_per_action: usize,
 
     /// Tree structure
-    decision_nodes: Vec<MCTSDecisionNode>,
-    chance_nodes: Vec<MCTSChanceNode>,
+    decision_nodes: Vec<MCTSDecisionNode<S>>,
+    chance_nodes: Vec<MCTSChanceNode<S::Action>>,
 
-    /// Global transposition table: maps any battle state to its decision node ID
+    /// Global transposition table: maps any state to its decision node ID
     /// Allows reuse of nodes across different parts of the tree and different root states
-    global_transposition_table: HashMap<Battle, usize>,
+    global_transposition_table: HashMap<S, usize>,
 }
 
-impl MCTS {
+impl<S: ForwardSimulation> MCTS<S> {
     /// Create a new MCTS agent
     ///
     /// # Arguments
@@ -53,34 +53,34 @@ impl MCTS {
 
     /// Run MCTS and return both the best action and statistics for all explored actions
     /// Returns (best_action, Vec<(action, visits, q_value)>)
-    pub fn select_action(&mut self, root_battle: &Battle, rng: &mut impl rand::Rng)
-        -> (BattleAction, Vec<(BattleAction, usize, f32)>) {
-        // Check if this battle state already exists in global transposition table
-        let root_id = if let Some(&existing_id) = self.global_transposition_table.get(root_battle) {
+    pub fn select_action(&mut self, root_state: &S, rng: &mut impl rand::Rng)
+        -> (S::Action, Vec<(S::Action, usize, f32)>) {
+        // Check if this state already exists in global transposition table
+        let root_id = if let Some(&existing_id) = self.global_transposition_table.get(root_state) {
             // Reuse existing decision node as root
             existing_id
         } else {
             // Create new decision node for this root state
             let new_id = self.decision_nodes.len();
-            self.decision_nodes.push(MCTSDecisionNode::new(None, root_battle.clone()));
-            self.global_transposition_table.insert(root_battle.clone(), new_id);
+            self.decision_nodes.push(MCTSDecisionNode::new(None, root_state.clone()));
+            self.global_transposition_table.insert(root_state.clone(), new_id);
             new_id
         };
 
         // Run MCTS iterations
         for _ in 0..self.iterations {
-            // Clone battle for this iteration
-            let battle = root_battle.clone();
+            // Clone state for this iteration
+            let state = root_state.clone();
 
             // Run one iteration: select, expand, simulate, backpropagate
-            let reward = self.run_iteration(root_id, battle, rng);
+            let reward = self.run_iteration(root_id, state, rng);
 
             // Backpropagation is handled within run_iteration
             let _ = reward; // Suppress unused warning
         }
 
         // Select best action and get statistics
-        let best_action = self.select_best_action(root_id, root_battle);
+        let best_action = self.select_best_action(root_id, root_state);
         let stats = self.get_action_statistics(root_id);
 
         (best_action, stats)
@@ -90,7 +90,7 @@ impl MCTS {
     fn run_iteration(
         &mut self,
         root_id: usize,
-        mut battle: Battle,
+        mut state: S,
         rng: &mut impl rand::Rng,
     ) -> f32 {
         // Track path: (is_decision_node, node_id)
@@ -100,16 +100,16 @@ impl MCTS {
 
         // Phase 1: Selection - traverse tree using UCT
         loop {
-            if battle.is_battle_over() {
+            if state.is_terminal() {
                 // Terminal state - evaluate and backpropagate
-                let reward = self.evaluate_terminal_state(&battle);
+                let reward = state.evaluate();
                 self.backpropagate(&path, reward);
                 return reward;
             }
 
             if at_decision {
                 // At a decision node: select or expand an action
-                let available_actions = battle.list_available_actions();
+                let available_actions = state.list_available_actions();
                 let decision_node = &self.decision_nodes[current_id];
 
                 if !decision_node.is_fully_expanded(&available_actions) {
@@ -119,13 +119,14 @@ impl MCTS {
                         path.push((false, chance_id));
 
                         // Execute action and continue from resulting decision node
-                        if let Ok(_) = battle.eval_action(action, rng) {
-                            let (outcome_id, is_new_node) = self.add_decision_node(chance_id, &battle);
+                        let action_clone = action.clone();
+                        if let Ok(_) = state.eval_action(action, rng) {
+                            let (outcome_id, is_new_node) = self.add_decision_node(chance_id, &state);
                             path.push((true, outcome_id));
 
                             // Phase 2: Rollout - only if we created a new decision node
                             if is_new_node {
-                                let reward = self.rollout(battle, rng);
+                                let reward = self.rollout(state, rng);
                                 self.backpropagate(&path, reward);
                                 return reward;
                             }
@@ -136,7 +137,20 @@ impl MCTS {
                             continue;
                         } else {
                             // Action failed - this should never happen for actions from list_available_actions
-                            panic!("eval_action failed for action returned by list_available_actions - this is a bug!");
+                            let action_for_error = action_clone.clone();
+                            let error = state.eval_action(action_clone, rng).unwrap_err();
+                            panic!(
+                                "MCTS Bug: eval_action failed for an action from list_available_actions()\n\
+                                 State Type: {}\n\
+                                 Failed Action: {:?}\n\
+                                 Error: {:?}\n\
+                                 Available Actions: {:?}\n\
+                                 This indicates list_available_actions() returned an invalid action.",
+                                std::any::type_name::<S>(),
+                                action_for_error,
+                                error,
+                                available_actions
+                            );
                         }
                     }
                 }
@@ -168,13 +182,14 @@ impl MCTS {
 
                 if !is_fully_expanded {
                     // Sample a new outcome by executing the action
-                    if let Ok(_) = battle.eval_action(action, rng) {
-                        let (outcome_id, is_new_node) = self.add_decision_node(current_id, &battle);
+                    let action_clone = action.clone();
+                    if let Ok(_) = state.eval_action(action, rng) {
+                        let (outcome_id, is_new_node) = self.add_decision_node(current_id, &state);
                         path.push((true, outcome_id));
 
                         // Phase 2: Rollout - only if we created a new decision node
                         if is_new_node {
-                            let reward = self.rollout(battle, rng);
+                            let reward = self.rollout(state, rng);
                             self.backpropagate(&path, reward);
                             return reward;
                         }
@@ -185,25 +200,35 @@ impl MCTS {
                         continue;
                     } else {
                         // Action failed - this should never happen for actions from list_available_actions
-                        panic!("eval_action failed for action returned by list_available_actions - this is a bug!");
+                        let error = state.eval_action(action_clone, rng).unwrap_err();
+                        panic!(
+                            "MCTS Bug: eval_action failed for an action from list_available_actions()\n\
+                             State Type: {}\n\
+                             Failed Action: {:?}\n\
+                             Error: {:?}\n\
+                             This indicates list_available_actions() returned an invalid action.",
+                            std::any::type_name::<S>(),
+                            chance_node.action,
+                            error
+                        );
                     }
                 }
 
                 // Fully expanded: use simulator to sample a fresh outcome
-                // Get the parent decision node's battle state
+                // Get the parent decision node's state state
                 let parent_decision_id = chance_node.parent;
-                let parent_battle_state = &self.decision_nodes[parent_decision_id].battle_state;
+                let parent_state = &self.decision_nodes[parent_decision_id].state;
 
-                // Clone the parent battle state and execute the action to get a fresh outcome
-                let mut fresh_battle = parent_battle_state.clone();
-                if let Ok(_) = fresh_battle.eval_action(chance_node.action.clone(), rng) {
-                    let (outcome_id, is_new_node) = self.add_decision_node(current_id, &fresh_battle);
+                // Clone the parent state state and execute the action to get a fresh outcome
+                let mut fresh_state = parent_state.clone();
+                if let Ok(_) = fresh_state.eval_action(chance_node.action.clone(), rng) {
+                    let (outcome_id, is_new_node) = self.add_decision_node(current_id, &fresh_state);
                     path.push((true, outcome_id));
-                    battle = fresh_battle;
+                    state = fresh_state;
 
                     // Phase 2: Rollout - only if we created a new decision node
                     if is_new_node {
-                        let reward = self.rollout(battle, rng);
+                        let reward = self.rollout(state, rng);
                         self.backpropagate(&path, reward);
                         return reward;
                     }
@@ -213,48 +238,58 @@ impl MCTS {
                     current_id = outcome_id;
                 } else {
                     // Action failed - this should never happen for actions from list_available_actions
-                    panic!("eval_action failed for action returned by list_available_actions - this is a bug!");
+                    let error = fresh_state.eval_action(chance_node.action.clone(), rng).unwrap_err();
+                    panic!(
+                        "MCTS Bug: eval_action failed for an action from list_available_actions()\n\
+                         State Type: {}\n\
+                         Failed Action: {:?}\n\
+                         Error: {:?}\n\
+                         This occurred during fresh outcome sampling from a fully expanded chance node.",
+                        std::any::type_name::<S>(),
+                        chance_node.action,
+                        error
+                    );
                 }
             }
         }
     }
 
-    /// Perform a random rollout from the current battle state
+    /// Perform a random rollout from the current state state
     /// Returns the reward from the terminal state
-    fn rollout(&self, mut battle: Battle, rng: &mut impl rand::Rng) -> f32 {
+    fn rollout(&self, mut state: S, rng: &mut impl rand::Rng) -> f32 {
         let mut depth = 0;
         let max_depth = self.max_rollout_depth.unwrap_or(100);
 
         loop {
             // Terminal state - evaluate
-            if battle.is_battle_over() {
-                return self.evaluate_terminal_state(&battle);
+            if state.is_terminal() {
+                return state.evaluate();
             }
 
             // Safety limit to prevent infinite rollouts
             if depth >= max_depth * 2 {
-                return self.evaluate_state(&battle);
+                return state.evaluate();
             }
 
             // Get available actions
-            let available_actions = battle.list_available_actions();
+            let available_actions = state.list_available_actions();
 
             if available_actions.is_empty() {
-                return self.evaluate_state(&battle);
+                return state.evaluate();
             }
 
             // Select a random action
             let random_action = available_actions[rng.gen_range(0..available_actions.len())].clone();
 
             // Execute the action
-            match battle.eval_action(random_action, rng) {
+            match state.eval_action(random_action, rng) {
                 Ok(_) => {
                     depth += 1;
                     continue;
                 }
                 Err(_) => {
                     // Action failed - evaluate current state
-                    return self.evaluate_state(&battle);
+                    return state.evaluate();
                 }
             }
         }
@@ -264,7 +299,7 @@ impl MCTS {
     fn expand_decision_node(
         &mut self,
         decision_node_id: usize,
-        action: BattleAction,
+        action: S::Action,
     ) -> usize {
         // Create new chance node
         let chance_id = self.chance_nodes.len();
@@ -280,9 +315,9 @@ impl MCTS {
     /// Add or reuse a decision node as child of a chance node
     /// Uses global transposition table to detect duplicate states across entire tree
     /// Returns (node_id, is_new) where is_new is true if a new node was created
-    fn add_decision_node(&mut self, chance_node_id: usize, battle: &Battle) -> (usize, bool) {
+    fn add_decision_node(&mut self, chance_node_id: usize, state: &S) -> (usize, bool) {
         // Check global transposition table for existing state
-        if let Some(&existing_node_id) = self.global_transposition_table.get(battle) {
+        if let Some(&existing_node_id) = self.global_transposition_table.get(state) {
             // Reuse existing decision node
             // Add to chance node's children if not already there
             let chance_node = &mut self.chance_nodes[chance_node_id];
@@ -294,11 +329,11 @@ impl MCTS {
 
         // Create new decision node
         let decision_id = self.decision_nodes.len();
-        self.decision_nodes.push(MCTSDecisionNode::new(Some(chance_node_id), battle.clone()));
+        self.decision_nodes.push(MCTSDecisionNode::new(Some(chance_node_id), state.clone()));
 
         // Add to chance node's children and global transposition table
         self.chance_nodes[chance_node_id].children.push(decision_id);
-        self.global_transposition_table.insert(battle.clone(), decision_id);
+        self.global_transposition_table.insert(state.clone(), decision_id);
 
         (decision_id, true)
     }
@@ -317,12 +352,12 @@ impl MCTS {
     }
 
     /// Select the best action based on visit counts of chance nodes
-    fn select_best_action(&self, root_id: usize, battle: &Battle) -> BattleAction {
+    fn select_best_action(&self, root_id: usize, state: &S) -> S::Action {
         let root = &self.decision_nodes[root_id];
 
         if root.children.is_empty() {
             // Fallback: return first available action
-            let actions = battle.list_available_actions();
+            let actions = state.list_available_actions();
             return actions[0].clone();
         }
 
@@ -337,7 +372,7 @@ impl MCTS {
 
     /// Get statistics for all actions explored from the root
     /// Returns a vector of (action, visits, q_value)
-    pub fn get_action_statistics(&self, root_id: usize) -> Vec<(BattleAction, usize, f32)> {
+    pub fn get_action_statistics(&self, root_id: usize) -> Vec<(S::Action, usize, f32)> {
         let root = &self.decision_nodes[root_id];
 
         root.children.iter()
@@ -353,45 +388,13 @@ impl MCTS {
             .collect()
     }
 
-    /// Evaluate a terminal battle state
-    fn evaluate_terminal_state(&self, battle: &Battle) -> f32 {
-        if battle.get_player().is_alive() && battle.get_enemies().iter().all(|e| !e.battle_info.is_alive()) {
-            // Victory: reward is remaining HP (normalized to 0-1)
-            battle.get_current_hp() as f32 / battle.get_max_hp() as f32
-        } else {
-            // Defeat: zero reward
-            0.0
-        }
-    }
-
-    /// Evaluate a non-terminal state (heuristic)
-    fn evaluate_state(&self, battle: &Battle) -> f32 {
-        let player_hp_ratio = battle.get_current_hp() as f32 / battle.get_max_hp() as f32;
-
-        let total_enemy_hp: u32 = battle.get_enemies().iter()
-            .map(|e| e.battle_info.get_hp())
-            .sum();
-
-        let total_enemy_max_hp: u32 = battle.get_enemies().iter()
-            .map(|e| e.battle_info.get_max_hp())
-            .sum();
-
-        let enemy_hp_ratio = if total_enemy_max_hp > 0 {
-            total_enemy_hp as f32 / total_enemy_max_hp as f32
-        } else {
-            0.0
-        };
-
-        // Simple heuristic: player HP ratio - enemy HP ratio
-        // Scale to 0-1 range
-        (player_hp_ratio - enemy_hp_ratio + 1.0) / 2.0
-    }
 }
 
-impl Agent for MCTS {
-    fn select_action(&mut self, battle: &Battle, rng: &mut impl rand::Rng) -> BattleAction {
+// Backward-compatible Agent implementation for Battle
+impl Agent for MCTS<crate::battle::Battle> {
+    fn select_action(&mut self, state: &crate::battle::Battle, rng: &mut impl rand::Rng) -> crate::battle::battle_action::BattleAction {
         // Call select_action and extract just the action component
-        let (action, _stats) = <MCTS>::select_action(self, battle, rng);
+        let (action, _stats) = <MCTS<crate::battle::Battle>>::select_action(self, state, rng);
         action
     }
 
@@ -406,29 +409,30 @@ mod tests {
     use crate::battle_builder::BattleBuilder;
     use crate::enemies::jaw_worm::JawWorm;
     use crate::enemies::enemy_enum::EnemyEnum;
+    use crate::battle::Battle;
 
     #[test]
     fn test_mcts_agent_selects_valid_action() {
-        let battle = BattleBuilder::new()
+        let state = BattleBuilder::new()
             .add_enemy(EnemyEnum::JawWorm(JawWorm::new(40, false)))
             .build();
 
-        let mut agent = MCTS::new(50, 1.41); // Fewer iterations for testing
+        let mut agent = MCTS::<Battle>::new(50, 1.41); // Fewer iterations for testing
         let mut rng = rand::rng();
 
-        let action = agent.select_action(&battle, &mut rng);
+        let (action, _stats) = agent.select_action(&state, &mut rng);
 
         // Action should be valid
-        let available = battle.list_available_actions();
+        let available = state.list_available_actions();
         assert!(available.contains(&action));
     }
 
     #[test]
     fn test_decision_node_creation() {
-        let battle = BattleBuilder::new()
+        let state = BattleBuilder::new()
             .add_enemy(EnemyEnum::JawWorm(JawWorm::new(40, false)))
             .build();
-        let node = MCTSDecisionNode::new(None, battle);
+        let node = MCTSDecisionNode::<Battle>::new(None, state);
         assert_eq!(node.visits, 0);
         assert_eq!(node.total_reward, 0.0);
         assert!(node.children.is_empty());
@@ -437,13 +441,13 @@ mod tests {
 
     #[test]
     fn test_chance_node_creation() {
-        let battle = BattleBuilder::new()
+        let state = BattleBuilder::new()
             .add_enemy(EnemyEnum::JawWorm(JawWorm::new(40, false)))
             .build();
-        let actions = battle.list_available_actions();
+        let actions = state.list_available_actions();
         let action = actions[0].clone();
 
-        let node = MCTSChanceNode::new(action.clone(), 0);
+        let node = MCTSChanceNode::<crate::battle::battle_action::BattleAction>::new(action.clone(), 0);
         assert_eq!(node.parent, 0);
         assert_eq!(node.visits, 0);
         assert!(node.children.is_empty());
@@ -451,19 +455,19 @@ mod tests {
 
     #[test]
     fn test_mcts_agent_name() {
-        let agent = MCTS::new(1000, 1.41);
+        let agent = MCTS::<Battle>::new(1000, 1.41);
         assert_eq!(agent.name(), "MCTS-Expectimax");
     }
 
     #[test]
     fn test_node_uct_calculation() {
-        let battle = BattleBuilder::new()
+        let state = BattleBuilder::new()
             .add_enemy(EnemyEnum::JawWorm(JawWorm::new(40, false)))
             .build();
-        let actions = battle.list_available_actions();
+        let actions = state.list_available_actions();
         let action = actions[0].clone();
 
-        let mut node = MCTSChanceNode::new(action, 0);
+        let mut node = MCTSChanceNode::<crate::battle::battle_action::BattleAction>::new(action, 0);
         node.visits = 10;
         node.total_reward = 5.0;
 

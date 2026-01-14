@@ -2,11 +2,12 @@ use crate::{events::SLSEvent, game::{card_reward::CardRewardPool, deck::Deck, ga
 use crate::map::{Map, NodeType, MapNode};
 use crate::battle::Battle;
 use crate::events::map_events::{MapEvent, EventChoice};
+use crate::game::action::GameAction;
 use log::{info, debug};
 use serde::{Serialize, Deserialize};
 
 #[cfg(test)]
-use crate::game::{action::{GameAction, RestSiteAction}, game_result::{GameResult, GameOutcome}};
+use crate::game::{action::RestSiteAction, game_result::{GameResult, GameOutcome}};
 
 #[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Game {
@@ -25,6 +26,8 @@ pub struct Game {
     game_event_listeners: Vec<GameEventListenerEnum>,
     pub(crate) event_history: Vec<SLSEvent>,
     state_stack: Vec<GameState>,
+    /// Tracks if the current battle is a boss battle
+    pub current_battle_is_boss: bool,
 }
 
 impl Game {
@@ -50,6 +53,7 @@ impl Game {
             game_event_listeners: Vec::new(),
             event_history: Vec::new(),
             state_stack: vec![GameState::OnMap],
+            current_battle_is_boss: false,
         }
     }
 
@@ -1655,5 +1659,141 @@ mod tests {
 
         // Potion should not have been claimed
         assert_eq!(game.potions.potion_count(), 0);
+    }
+
+    #[test]
+    fn test_boss_beaten_transition_on_victory() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let mut rng = rand::rng();
+
+        // Create a map with a boss node
+        let mut map = Map::new();
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        let boss_node = MapNode::new(1, 0, NodeType::Boss);
+        map.add_node(start_node);
+        map.add_node(boss_node);
+        map.add_edge((0, 0), (1, 0)).unwrap();
+        map.set_starting_position((0, 0)).unwrap();
+
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+
+        // Initially should not be in a boss battle
+        assert!(!game.current_battle_is_boss);
+
+        // Move to boss node
+        let result = game.eval_action(GameAction::ChoosePath(0), &mut rng);
+        assert!(result.is_ok());
+
+        // Should now be in battle with boss flag set
+        assert_eq!(game.get_game_state(), &GameState::InBattle);
+        assert!(game.current_battle_is_boss, "Boss battle flag should be set");
+
+        // Manually end the battle in victory state
+        // (In a real scenario, you'd play through the battle)
+        // For this test, we'll simulate a battle victory by directly manipulating state
+        game.battle = None;
+        game.current_battle_is_boss = false;
+        game.set_game_state(GameState::BossBeaten);
+
+        // Verify we're in BossBeaten state
+        assert_eq!(game.get_game_state(), &GameState::BossBeaten);
+
+        // Verify no actions are available in BossBeaten state
+        use crate::agents::ForwardSimulation;
+        let actions = game.list_available_actions();
+        assert!(actions.is_empty(), "No actions should be available in BossBeaten state");
+
+        // Verify game is terminal
+        assert!(game.is_terminal(), "Game should be terminal when boss is beaten");
+    }
+
+    #[test]
+    fn test_regular_battle_does_not_set_boss_flag() {
+        let deck = starter_deck();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+        let mut rng = rand::rng();
+
+        // Create a map with a regular combat node
+        let mut map = Map::new();
+        let start_node = MapNode::new(0, 0, NodeType::Start);
+        let combat_node = MapNode::new(1, 0, NodeType::Combat);
+        map.add_node(start_node);
+        map.add_node(combat_node);
+        map.add_edge((0, 0), (1, 0)).unwrap();
+        map.set_starting_position((0, 0)).unwrap();
+
+        let mut game = Game::new(deck, global_info, map, 80, 80);
+
+        // Move to combat node
+        let result = game.eval_action(GameAction::ChoosePath(0), &mut rng);
+        assert!(result.is_ok());
+
+        // Should be in battle but NOT a boss
+        assert_eq!(game.get_game_state(), &GameState::InBattle);
+        assert!(!game.current_battle_is_boss, "Boss battle flag should NOT be set for regular combat");
+    }
+}
+
+impl crate::agents::ForwardSimulation for Game {
+    type Action = GameAction;
+
+    fn list_available_actions(&self) -> Vec<Self::Action> {
+        self.list_available_actions()
+    }
+
+    fn eval_action(&mut self, action: Self::Action, rng: &mut impl rand::Rng) -> Result<(), GameError> {
+        self.eval_action(action, rng).map(|_| ())
+    }
+
+    fn is_terminal(&self) -> bool {
+        // Game is terminal if player is dead or boss is beaten
+        !self.is_player_alive() || matches!(self.get_game_state(), GameState::BossBeaten)
+    }
+
+    fn evaluate(&self) -> f32 {
+        // Terminal: player dead
+        if !self.is_player_alive() {
+            return 0.0;
+        }
+
+        // Terminal: BOSS BEATEN - very high reward!
+        if matches!(self.get_game_state(), GameState::BossBeaten) {
+            return 50.0 + self.state_score();
+        }
+
+        // Non-terminal: state score
+        self.state_score()
+    }
+}
+
+// Helper method to compute the state score (private to Game impl)
+impl Game {
+    fn state_score(&self) -> f32 {
+        // Heuristic evaluation for game state
+        // Consider HP, gold, deck quality, and position
+
+        // HP ratio (0-1)
+        let hp_ratio = if self.player_max_hp > 0 {
+            self.player_hp as f32 / self.player_max_hp as f32
+        } else {
+            0.0
+        };
+
+        // Gold (normalized, assume 500 is a lot)
+        let gold_score = (self.gold as f32 / 500.0).min(1.0);
+
+        // Deck size (normalize around 15 cards)
+        let deck_size = self.deck.size() as f32;
+        let deck_score = 1.0 - ((deck_size - 15.0).abs() / 15.0).min(1.0);
+
+        // Relics (normalize around 10 relics)
+        let relic_score = (self.relics.len() as f32 / 10.0).min(1.0);
+
+        // Potions (normalize around 3 potions)
+        let potion_score = (self.potions.potion_count() as f32 / 3.0).min(1.0);
+
+        // Combine scores with weights
+        0.4 * hp_ratio + 0.2 * gold_score + 0.15 * deck_score + 0.15 * relic_score + 0.1 * potion_score
     }
 }

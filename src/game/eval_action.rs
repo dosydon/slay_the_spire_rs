@@ -34,15 +34,24 @@ impl Game {
                                         // Note: relics remain unchanged as they are static during battle
                                     }
 
+                                    // Check if this was a boss battle
+                                    let was_boss_battle = self.current_battle_is_boss;
                                     self.battle = None;
+                                    self.current_battle_is_boss = false; // Reset flag
                                     self.global_info.current_floor += 1;
 
                                     // Emit combat victory event for relic effects
                                     self.emit_game_event(GameEvent::CombatVictory);
 
-                                    // Create reward state based on the node type that was just completed
-                                    let reward_state = self.create_reward_state_for_current_node(rng);
-                                    self.set_game_state(GameState::Reward(reward_state));
+                                    // Transition to appropriate state based on battle type
+                                    if was_boss_battle {
+                                        // Boss beaten - game is won!
+                                        self.set_game_state(GameState::BossBeaten);
+                                    } else {
+                                        // Regular/elite battle - create reward state
+                                        let reward_state = self.create_reward_state_for_current_node(rng);
+                                        self.set_game_state(GameState::Reward(reward_state));
+                                    }
 
                                     GameOutcome::Continue
                                 },
@@ -56,6 +65,7 @@ impl Game {
                                         self.potions = final_state.potions;
                                     }
                                     self.battle = None;
+                                    self.current_battle_is_boss = false; // Reset flag
                                     self.set_game_state(GameState::OnMap); // For now, just return to map
                                     GameOutcome::Defeat
                                 },
@@ -118,9 +128,10 @@ impl Game {
                                 self.potions.clone(),
                             );
 
-                            // Start a battle
+                            // Start a battle - not a boss
                             let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, player_state, enemies, rng);
                             self.battle = Some(battle);
+                            self.current_battle_is_boss = false;
                             self.set_game_state(GameState::InBattle);
                         },
                         NodeType::Elite => {
@@ -140,9 +151,10 @@ impl Game {
                                 self.potions.clone(),
                             );
 
-                            // Start a battle
+                            // Start a battle - not a boss (elite, not boss)
                             let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, player_state, enemies, rng);
                             self.battle = Some(battle);
+                            self.current_battle_is_boss = false;
                             self.set_game_state(GameState::InBattle);
                         },
                         NodeType::Boss => {
@@ -162,9 +174,10 @@ impl Game {
                                 self.potions.clone(),
                             );
 
-                            // Start a battle
+                            // Start a battle - this IS a boss
                             let battle = Battle::new_with_shuffle(self.deck.clone(), self.global_info, player_state, enemies, rng);
                             self.battle = Some(battle);
+                            self.current_battle_is_boss = true;
                             self.set_game_state(GameState::InBattle);
                         },
                         NodeType::Event => {

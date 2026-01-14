@@ -16,6 +16,7 @@ pub mod game_state;
 pub mod reward_state;
 pub mod shop;
 pub mod player_run_state;
+pub mod list_available_actions;
 pub mod eval_action;
 
 // Re-export commonly used types for easier access

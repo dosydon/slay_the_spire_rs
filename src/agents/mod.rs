@@ -27,12 +27,14 @@
 
 mod traits;
 mod random;
+mod forward_simulation;
 mod decision_node;
 mod chance_node;
 mod mcts;
 
 pub use traits::Agent;
 pub use random::RandomAgent;
+pub use forward_simulation::ForwardSimulation;
 pub use decision_node::MCTSDecisionNode;
 pub use chance_node::MCTSChanceNode;
 pub use mcts::MCTS;

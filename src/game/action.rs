@@ -4,7 +4,7 @@ use bevy::prelude::Event;
 use crate::battle::battle_action::BattleAction as BattleAction;
 
 /// High-level game actions that encompass the entire game flow
-#[derive(Debug, Clone, PartialEq, Event)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Event)]
 pub enum GameAction {
     /// Execute a battle action (PlayCard, EndTurn, etc.)
     /// Only valid when in battle
@@ -59,8 +59,8 @@ pub enum GameAction {
     ShopAction(ShopAction),
 }
 
-/// Rest site actions that can be chosen by the player
-#[derive(Debug, Clone, PartialEq)]
+/// Shop actions that can be chosen by the player
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ShopAction {
     /// Buy a card from the shop (0-based index)
     BuyCard(usize),
@@ -68,7 +68,7 @@ pub enum ShopAction {
 }
 
 /// Rest site actions that can be chosen by the player
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum RestSiteAction {
     /// Rest and heal 30% of max HP (minimum 15)
     Rest,

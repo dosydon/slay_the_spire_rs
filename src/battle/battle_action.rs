@@ -1,6 +1,6 @@
 use crate::battle::target::Entity;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum BattleAction {
     PlayCard(usize, Entity), // Play a card from hand by its index with a target
     SelectCardInHand(usize), // Select a card from hand (for upgrade, put on deck, or duplicate effects)

@@ -106,6 +106,11 @@ impl Battle {
 
     /// Sample and store the next action and effects for all enemies
     pub(crate) fn sample_enemy_actions(&mut self, rng: &mut impl rand::Rng) {
+        // Ensure storage matches enemy count in case new enemies were spawned mid-turn
+        if self.enemy_actions.len() < self.enemies.len() {
+            self.enemy_actions.resize(self.enemies.len(), None);
+        }
+
         for (i, enemy) in self.enemies.iter_mut().enumerate() {
             let (enemy_move, effects) = enemy.enemy.sample_move_and_effects(&self.global_info, rng);
             self.enemy_actions[i] = Some((enemy_move, effects));

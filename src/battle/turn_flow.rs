@@ -125,6 +125,11 @@ impl Battle {
     /// Process all enemy effects during enemy turn phase
     pub(crate) fn process_enemy_effects(&mut self, _rng: &mut impl rand::Rng, _global_info: &GlobalInfo) {
         let mut all_effects = Vec::new();
+
+        // Resize in case enemies were added (e.g., slimes splitting) after intent sampling
+        if self.enemy_actions.len() < self.enemies.len() {
+            self.enemy_actions.resize(self.enemies.len(), None);
+        }
         
         for i in 0..self.enemies.len() {
             let source = Entity::Enemy(i);
@@ -132,13 +137,17 @@ impl Battle {
             // Skip processing effects for defeated enemies
             if !self.enemies[i].battle_info.is_alive() {
                 // Clear the stored action for dead enemies
-                self.enemy_actions[i].take();
+                if let Some(slot) = self.enemy_actions.get_mut(i) {
+                    slot.take();
+                }
                 continue;
             }
             
             // Use stored effects - panic if none were stored (this should never happen)
-            let (_, stored_effects) = self.enemy_actions[i].take()
-                .expect("No enemy action stored - actions should be sampled at start of turn");
+            let Some((_, stored_effects)) = self.enemy_actions.get_mut(i).and_then(|slot| slot.take()) else {
+                // Newly spawned enemies may not have sampled actions yet; skip them this turn
+                continue;
+            };
             
             for effect in stored_effects {
                 let base_effect = BaseEffect::from_effect(effect, source, Entity::Player);
@@ -288,6 +297,31 @@ mod tests {
         assert!(!battle.enemies[0].battle_info.is_alive(), "First enemy should still be dead");
         assert!(battle.enemies[1].battle_info.is_alive(), "Second enemy should still be alive");
         assert!(battle.player.battle_info.is_alive(), "Player should still be alive");
+    }
+
+    #[test]
+    fn test_process_enemy_effects_handles_spawned_enemies_without_actions() {
+        let mut rng = rand::rng();
+        let global_info = GlobalInfo { ascention: 0, current_floor: 1 };
+
+        // Start with a single enemy and a simple strike-only deck
+        let deck = Deck::new(vec![strike(), strike(), strike(), strike(), strike()]);
+        let red_louse = RedLouse::instantiate(&mut rng, &global_info);
+        let enemies = vec![EnemyInBattle::new(EnemyEnum::RedLouse(red_louse))];
+        let player_state = PlayerRunState::new(80, 80, 0);
+        let mut battle = Battle::new(deck, global_info.clone(), player_state, enemies, &mut rng);
+
+        // Simulate a new enemy spawning after intents were sampled (e.g., slime split)
+        let spawned_enemy = EnemyInBattle::new(EnemyEnum::RedLouse(RedLouse::instantiate(&mut rng, &global_info)));
+        battle.enemies.push(spawned_enemy);
+
+        // Mirror the pre-fix mismatch: only one stored intent for two enemies
+        battle.enemy_actions.truncate(1);
+
+        // Should not panic and should align enemy_actions with the new enemy count
+        battle.process_enemy_effects(&mut rng, &global_info);
+
+        assert_eq!(battle.enemy_actions.len(), battle.enemies.len());
     }
 
     #[test]

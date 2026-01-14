@@ -1,10 +1,10 @@
-use crate::battle::battle_action::BattleAction;
+use std::hash::Hash;
 
 /// Chance node: stochastic outcome of taking an action
 #[derive(Clone)]
-pub struct MCTSChanceNode {
+pub struct MCTSChanceNode<A: Clone + PartialEq + Eq + Hash> {
     /// The action this chance node represents
-    pub action: BattleAction,
+    pub action: A,
     /// Number of visits to this node
     pub visits: usize,
     /// Total reward accumulated through this node
@@ -15,8 +15,8 @@ pub struct MCTSChanceNode {
     pub parent: usize,
 }
 
-impl MCTSChanceNode {
-    pub fn new(action: BattleAction, parent: usize) -> Self {
+impl<A: Clone + PartialEq + Eq + Hash> MCTSChanceNode<A> {
+    pub fn new(action: A, parent: usize) -> Self {
         MCTSChanceNode {
             action,
             visits: 0,

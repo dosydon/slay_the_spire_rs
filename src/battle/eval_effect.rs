@@ -1660,6 +1660,9 @@ impl Battle {
                     eprintln!("Warning: Cannot spawn non-medium slime type: {}", slime_type);
                 }
             }
+
+            // Keep enemy_actions aligned with the enemies list so intent sampling won't panic
+            self.enemy_actions.push(None);
         }
 
         // Emit enemy spawn event to notify UI systems

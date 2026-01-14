@@ -24,6 +24,8 @@ pub enum GameState {
     SelectingCardFromDeck(CardFromDeckTo),
     /// Player is in a shop
     Shop(ShopState),
+    /// Player has beaten the boss - game is over in victory
+    BossBeaten,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
